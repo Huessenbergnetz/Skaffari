@@ -1,0 +1,62 @@
+{# Skaffari - a mail account administration web interface based on Cutelyst #}
+{# Copyright (C) 2017 Matthias Fehring <kontakt@buschmann23.de> #}
+
+{# This program is free software: you can redistribute it and/or modify #}
+{# it under the terms of the GNU Affero General Public License as #}
+{# published by the Free Software Foundation, either version 3 of the #}
+{# License, or (at your option) any later version. #}
+
+{# This program is distributed in the hope that it will be useful, #}
+{# but WITHOUT ANY WARRANTY; without even the implied warranty of #}
+{# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the #}
+{# GNU Affero General Public License for more details. #}
+
+{# You should have received a copy of the GNU Affero General Public License #}
+{# along with this program.  If not, see <http://www.gnu.org/licenses/>. #}
+
+<div class="row">
+    <div class="col"><h2><i class="fa fa-envelope"></i> {{ _("New email address") }} <small class="text-muted">{{ account.username }}</small></h2></div>
+</div> 
+
+<div class="row mt-1">
+    <section class="col-12 col-sm-12 col-md-6">
+    
+        <form method="post">
+        
+            {% if domain.freeAddress %}
+            <div class="row form-group">
+                <div class="col-6">
+                    <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" value="{{ newlocalpart }}">
+                </div>
+                <div class="col-6">
+                    <select class="form-control" id="newmaildomain" name="newmaildomain" class="form-control">
+                        {% for dom in maildomains %}
+                        <option value="{{ dom.name }}"{% if dom.name == newmaildomain|default:domain.name %} selected{% endif %}>@{{ dom.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% else %}
+            <div class="row form-group">
+                <div class="col">
+                    <div class="input-group">
+                        <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" value="{{ newlocalpart }}">
+                        <span class="input-group-addon">@{{ domain.name }}</span>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="newmaildomain" value="{{ domain.name }}">
+            {% endif %}
+            
+            <div class="form-group row">
+                <div class="col">
+                    <a href="/account/{{ domain.id }}/{{ account.id }}/addresses" class="btn btn-outline-warning">{{ _("Cancel") }}</a>
+                    <button type="submit" class="btn btn-outline-primary">{{ _("Create") }}</button>
+                </div>
+            </div>
+        
+        </form>
+        
+    </section>
+    
+</div>

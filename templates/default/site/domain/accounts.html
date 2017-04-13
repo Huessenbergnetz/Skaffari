@@ -1,0 +1,75 @@
+<div class="row">
+    <div class="col-12 col-lg-6">
+        <h2><i class="fa fa-users"></i> {{ _("Accounts") }} <small class="text-muted">{{ domain.name }}</small></h2>
+    </div>
+    <div class="col-12 col-lg-6">
+        {% ifequal userType 0 %}
+        <a class="btn btn-outline-danger float-right ml-1" href="/domain/{{ domain.id }}/remove"><i class="fa fa-trash"></i> {{ _("Delete") }}</a>
+        {% endifequal %}
+        <a class="btn btn-outline-info float-right ml-1" href="/domain/{{ domain.id }}/edit"><i class="fa fa-edit"></i> {{ _("Edit") }}</a>
+        <a class="btn btn-outline-primary float-right" href="/domain/{{ domain.id }}/add_account"><i class="fa fa-plus"></i> {{ _("Add account") }}</a>
+    </div>
+</div>
+
+{% if pagination.accounts.size %}
+<div class="row mt-1">
+    <div class="col">
+        <table id="accountsTable" class="table table-responsive">
+            <thead>
+                <tr>
+                    <th>{{ _("Actions") }}</th>
+                    <th>{{ _("Username") }}</th>
+                    <th>{{ _("Email addresses") }}</th>
+                    <th>{{ _("Forwards") }}</th>
+                    <th>{{ _("Quota used") }}</th>
+                    <th>{{ _("Services") }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in pagination.accounts %}
+                <tr>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("User account actions") }}">
+                            <a href="/account/{{ domain.id }}/{{ account.id }}/addresses" title='{{ _("Edit email addresses") }}' class="btn btn-primary"><i class="fa fa-envelope-o fa-fw"></i></a>
+                            <a href="/account/{{ domain.id }}/{{ account.id }}/edit" class="btn btn-secondary" title='{{ _("Edit account") }}'><i class="fa fa-edit fa-fw"></i></a>
+                            <a href="/account/{{ domain.id }}/{{ account.id }}/forwards" title='{{ _("Forward") }}' class="btn btn-secondary"><i class="fa fa-mail-forward fa-fw"></i></a>
+                            {# <a href="#" title='{{ _("Set catch all") }}' class="btn btn-secondary"><i class="fa fa-truck fa-fw"></i></a> #}
+                            <a href="/account/{{ domain.id }}/{{ account.id }}/remove" title='{{ _("Delete account") }}' class="btn btn-danger"><i class="fa fa-trash fa-fw"></i></a>
+                        </div>
+                    </td>
+                    <td><a href="/account/{{ domain.id }}/{{ account.id }}/edit">{{ account.username }}</a></td>
+                    <td>{{ account.addresses|join:"<br>" }}</td>
+                    <td>{{ account.forwards|join:"<br>" }}</td>
+                    <td>
+                        <div class="progress" title="{{ account.usagePercent }}%">
+                            <div class="progress-bar bg-info pb-w-{{ account.usagePercentFlat }}" role="progressbar" aria-valuenow="{{ account.usage }}" aria-valuemin="0" aria-valuemax="{{ account.quota }}" title="{{ account.usagePercent|floatformat:2 }}">{{ account.usagePercent|floatformat:2 }}%</div>
+                        </div>
+                        <p class="text-right"><small>{{ _(account.usage) }}/{{ _(account.quota) }} KiB</small></p>
+                    </td>
+                    <td>
+                        <i class="fa {% if account.imap %}fa-check-square-o text-success{% else %}fa-square-o text-danger{% endif %} fa-fw"></i> IMAP<br />
+                        <i class="fa {% if account.pop %}fa-check-square-o text-success{% else %}fa-square-o text-danger{% endif %} fa-fw"></i> POP<br />
+                        <i class="fa {% if account.sieve %}fa-check-square-o text-success{% else %}fa-square-o text-danger{% endif %} fa-fw"></i> Sieve<br />
+                        <i class="fa {% if account.smtpauth %}fa-check-square-o text-success{% else %}fa-square-o text-danger{% endif %} fa-fw"></i> SMTP-Auth<br />
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+
+<div class="row mt-4 justify-content-center">
+    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
+        <div class="card card-outline-primary text-center">
+            <div class="card-block">
+                <h2 class="card-title">{% i18n "No accounts for %1" domain.name %}</h2>
+                <p class="card-text">{{ _("There are no user accounts for this domain. Add new email accounts by hitting the button below.") }}</p>
+                <a href="/domain/{{ domain.id }}/add_account" class="btn btn-primary"><i class="fa fa-plus"></i> {{ _("Add Account") }}</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}

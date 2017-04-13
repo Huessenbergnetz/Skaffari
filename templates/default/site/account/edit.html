@@ -1,0 +1,129 @@
+<div class="row">
+    <div class="col"><h2><i class="fa fa-user"></i> {{ _("Edit account") }} <small class="text-muted">{{ account.username }}</small></h2></div>
+</div>
+
+<div class="row mt-1">
+    <section class="col-12 col-sm-12 col-md-6">
+    
+        <form method="post">
+            
+            <div class="from-group row">
+                <label class="col-12 col-lg-4 col-form-label">{{ _("Created") }}</label>
+                <div class="col-12 col-lg-8">
+                    <p class="form-control-static">{{ _(account.created) }}</p>
+                </div>
+            </div>
+            
+            <div class="from-group row">
+                <label class="col-12 col-lg-4 col-form-label">{{ _("Updated") }}</label>
+                <div class="col-12 col-lg-8">
+                    <p class="form-control-static">{{ _(account.updated) }}</p>
+                </div>
+            </div>
+            
+            <div class="from-group row">
+                <label class="col-12 col-lg-4 col-form-label">{{ _("Email addresses") }}</label>
+                <div class="col-12 col-lg-8">
+                    <p class="form-control-static">{% for address in account.addresses %}{{ address }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</p>
+                </div>
+            </div>
+            
+            {% if account.forwards.count %}
+            <div class="from-group row">
+                <label class="col-12 col-lg-4 col-form-label">{{ _("Forwards") }}</label>
+                <div class="col-12 col-lg-8">
+                    <p class="form-control-static">{% for forward in account.forwards %}{{ forward }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="form-group row">
+                <label for="quota" class="col-12 col-lg-4 col-form-label">{{ _("Quota") }}</label>
+                <div class="col-12 col-lg-8{% if validationErrors.quota.count %} has-warning{% endif %}">
+                    <div class="input-group">
+                        <input type="number" id="quota" name="quota" class="form-control{% if validationErrors.localpart.count %} form-control-warning{% endif %}" value="{{ account.quota }}" placeholder="{{ _("Quota") }}" aria-describedby="quota-addon" min="0" max="{{ freequota }}">
+                        <span class="input-group-addon" id="quota-addon">KiB</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="password" class="col-12 col-lg-4 col-form-label">{{ _("Password") }}</label>
+                <div class="col-12 col-lg-8{% if validationErrors.password.count %} has-warning{% endif %}">
+                    <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ _("Password") }}">
+                    {% if validationErrors.password.count %}<div class="form-control-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="password_confirmation" class="col-12 col-lg-4 col-form-label">{{ _("Password confirmation") }}</label>
+                <div class="col-12 col-lg-8{% if validationErrors.password.count %} has-warning{% endif %}">
+                    <input type="password" id="password_confirmation" name="password_confirmation" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ _("Password confirmation") }}">
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="validUntil" class="col-12 col-lg-4 col-form-label">{{ _("Valid until") }}</label>
+                <div class="col-12 col-lg-8{% if validationErrors.validUntil.count %} has-warning{% endif %}">
+                    <input type="text" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD hh:mm:ss") }}" value="{{ account.validUntilString }}" required>
+                    {% if validationErrors.validUntil.count %}<div class="form-control-feedback"><small>{{ validationErrors.validUntil.0 }}</small></div>{% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="imap" class="col-6 col-lg-4">{{ _("IMAP Access") }}</label>
+                <div class="col">
+                    <div class="form-check">
+                        <input type="checkbox" id="imap" name="imap" value="1"{% if account.imap %} checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="pop" class="col-6 col-lg-4">{{ _("POP3 Access") }}</label>
+                <div class="col">
+                    <div class="form-check">
+                        <input type="checkbox" id="pop" name="pop" value="1"{% if account.pop %} checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="sieve" class="col-6 col-lg-4">{{ _("Sieve Access") }}</label>
+                <div class="col">
+                    <div class="form-check">
+                        <input type="checkbox" id="sieve" name="sieve" value="1"{% if account.sieve %} checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="smtpauth" class="col-6 col-lg-4">{{ _("SMTP Access") }}</label>
+                <div class="col">
+                    <div class="form-check">
+                        <input type="checkbox" id="smtpauth" name="smtpauth" value="1"{% if account.smtpauth %} checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <div class="col">
+                    <a href="/domain/{{ domain.id }}/accounts" class="btn btn-outline-warning">{{ _("Cancel") }}</a>
+                    <button type="submit" class="btn btn-outline-primary">{{ _("Update") }}</button>
+                </div>
+            </div>
+            
+        </form>
+        
+    </section>
+    
+    <section class="col-12 col-sm-12 col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="fa fa-life-ring"></i> {{ _("Help") }}</div>
+            <div class="card-block">
+                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur. Donec ut libero sed arcu vehicula ultricies a non tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ut gravida lorem. Ut turpis felis, pulvinar a semper sed, adipiscing id dolor. Pellentesque auctor nisi id magna consequat sagittis. Curabitur dapibus enim sit amet elit pharetra tincidunt feugiat nisl imperdiet. Ut convallis libero in urna ultrices accumsan. Donec sed odio eros. Donec viverra mi quis quam pulvinar at malesuada arcu rhoncus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. In rutrum accumsan ultricies. Mauris vitae nisi at sem facilisis semper ac in est.</p>
+            </div>
+        </div>
+    </section>
+</div>
+

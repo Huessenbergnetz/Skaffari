@@ -1,0 +1,19 @@
+$enable-flex:   true;
+@import "node_modules/bootstrap/scss/bootstrap";
+
+$fa-font-path: "../fonts";
+@import "node_modules/font-awesome/scss/font-awesome";
+
+
+body {
+    padding-top: 60px;
+    padding-bottom: 60px;
+}
+
+
+/******* PROGRESSBAR WIDTH *********/
+@for $w from 0 through 100 {
+    .pb-w-#{$w} {
+        width: 1% * $w;
+    }
+}

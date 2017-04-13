@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <title>Skaffari - {{ site_title }}{% if site_subtitle %} - {{ site_subtitle }}{% endif %}</title>
+
+
+        <link href="/css/style.css" rel="stylesheet">
+    </head>
+    
+    <body>
+        <nav class="navbar fixed-top navbar-toggleable-md navbar-inverse bg-inverse bg-faded">
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"  data-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="{{ _("Toggle navigation") }}">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <a class="navbar-brand" href="/">Skaffari</a>
+            
+            <div class="collapse navbar-collapse" id="mainNav">
+                <div class="navbar-nav mr-auto">
+                    {% ifequal userType 0 %}
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="mainNavDomainMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-cubes"></i> {{ _("Domains") }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="mainNavDomainMenu">
+                            <a class="dropdown-item" href="/domain"><i class="fa fa-cubes fa-fw"></i> {{ _("Show all") }}</a>
+                            <a class="dropdown-item" href="/domain/create"><i class="fa fa-plus fa-fw"></i> {{ _("Add domain") }}</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="nav-item">
+                        <a class="nav-link" href="/domain"><i class="fa fa-cubes"></i> {{ _("Domains") }}</a>
+                    </div>
+                    {% endifequal %}
+                    
+                    {% if domain.isValid %}
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="mainNavCurrentDomain" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-cube"></i> {{ domain.name }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="mainNavCurrentDomain">
+                            <a class="dropdown-item" href="/domain/{{ domain.id }}/accounts"><i class="fa fa-users fa-fw"></i> {{ _("Accounts") }}</a>
+                            <a class="dropdown-item" href="/domain/{{ domain.id }}/add_account"><i class="fa fa-user-plus fa-fw"></i> {{ _("Add account") }}</a>
+                            <a class="dropdown-item" href="/domain/{{ domain.id }}/edit"><i class="fa fa-edit fa-fw"></i> {{ _("Edit domain") }}</a>
+                            {% ifequal userType 0 %}
+                            <a class="dropdown-item" href="/domain/{{ domain.id }}/remove"><i class="fa fa-trash fa-fw"></i> {{ _("Delete domain") }}</a>
+                            {% endifequal %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if account.isValid %}
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="mainNavCurrentAccount" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-user"></i> {{ account.username }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="mainNavCurrentAccount">
+                            <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/edit"><i class="fa fa-edit fa-fw"></i> {{ _("Edit accout") }}</a>
+                            <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/addresses"><i class="fa fa-envelope-o fa-fw"></i> {{ _("Email addresses") }}</a>
+                            <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/forwards"><i class="fa fa-mail-forward fa-fw"></i> {{ _("Forwards") }}</a>
+                            {# <a class="dropdown-item" href="#"><i class="fa fa-truck fa-fw"></i> {{ _("Catch all") }}</a> #}
+                            <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/remove"><i class="fa fa-trash fa-fw"></i> {{ _("Delete account") }}</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="navbar-nav">
+                    {% ifequal userType 0 %}
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="mainNavSettingsMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-sliders"></i> {{ _("Settings") }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="mainNavSettingsMenu">
+                            <a class="dropdown-item" href="/admin"><i class="fa fa-users fa-fw"></i> {{ _("Admin users") }}</a>
+                        </div>
+                    </div>
+                    {% endifequal %}
+                    
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="mainNavUserMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-user"></i> {{ userName }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="mainNavUserMenu">
+                            <a class="dropdown-item" href="/myaccount"><i class="fa fa-user fa-fw"></i> {{ _("Account") }}</a>
+                            <a class="dropdown-item" href="/logout"><i class="fa fa-sign-out fa-fw"></i> {{ _("Log out") }}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
+        {% if error_msg or status_msg %}
+        <div class="container-fluid">
+        
+            {% if error_msg %}
+            <div class="row">
+                <div class="col">
+                    <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="{{ _("Close") }}">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        {{ error_msg }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if status_msg %}
+            <div class="row">
+                <div class="col">
+                    <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="{{ _("Close") }}">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        {{ status_msg }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        
+        </div>
+        {% endif %}
+        
+        <main class="container-fluid mt-3">
+            {% include template %}
+        </main>
+        
+        <script src="/js/scripts.js"></script>
+    </body>
+</html>

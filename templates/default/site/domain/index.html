@@ -1,0 +1,74 @@
+<div class="row">
+    <div class="col-12 col-lg-6">
+        <h2><i class="fa fa-cubes"></i> {{ _("Domains") }}</h2>
+    </div>
+    <div class="col-12 col-lg-6">
+        {% ifequal userType 0 %}
+        <a class="btn btn-outline-primary pull-right" href="/domain/create"><i class="fa fa-plus"></i> Add domain</a>
+        {% endifequal %}
+    </div>
+</div>
+
+{% if domains.size %}
+<div class="row mt-1">
+    <div class="col">
+        <table id="domainTable" class="table table-responsive">
+            <thead>
+                <tr>
+                    <th>{{ _("Actions") }}</th>
+                    <th>{{ _("Domain name") }}</th>
+                    <th>{{ _("Prefix") }}</th>
+                    <th class="text-right">{{ _("Accounts") }}</th>
+                    <th class="text-right">{{ _("Default quota") }}</th>
+                    <th class="text-right">{{ _("Domain quota") }}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for domain in domains %}
+                <tr>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Admin actions") }}">
+                            <a href="/domain/{{ domain.id }}/edit" class="btn btn-primary" title='{{ _("Edit domain") }}'><i class="fa fa-edit fa-fw"></i></a>
+                            <a href="/domain/{{ domain.id }}/add_account" class="btn btn-secondary" title='{{ _("Add account") }}'><i class="fa fa-user-plus fa-fw"></i></a>
+                            <a href="#" class="btn btn-secondary" title='{{ _("Manage alias addresses") }}'><i class="fa fa-mail-forward fa-fw"></i></a>
+                            {% ifequal userType 0 %}
+                            <a href="/domain/{{ domain.id }}/remove" class="btn btn-danger" title='{{ _("Delete domain") }}'><i class="fa fa-trash fa-fw"></i></a>
+                            {% endifequal %}
+                        </div>
+                    </td>
+                    <td><a href="/domain/{{ domain.id }}/accounts" title="{{ _("Manage accounts") }}">{{ domain.name }}</a></td>
+                    <td>{{ domain.prefix }}</td>
+                    <td class="text-right">{{ domain.accounts }}/{{ _(domain.maxAccounts) }}</td>
+                    <td class="text-right">{% ifequal domain.quota 0 %}{{ _("not set") }}{% else %}{{ _(domain.quota) }} KiB{% endifequal %}</td>
+                    {% ifequal domain.domainQuota 0 %}
+                    <td class="text-right">{{ _("not set") }}</td>
+                    {% else %}
+                    <td class="text-right">
+                        <div class="progress" title="{{ domain.domainQuotaUsagePercent|floatformat:2 }}%">
+                            <div class="progress-bar bg-info pb-w-{{ domain.domainQuotaUsagePercentFlat }}" role="progressbar" aria-valuenow="{{ domain.domainQuotaUsed }}" aria-valuemin="0" aria-valuemax="{{ domain.domainQuota }}">{{ domain.domainQuotaUsagePercent|floatformat:2 }}%</div>
+                        </div>
+                        <small>{{ _(domain.domainQuotaUsed) }}/{{ _(domain.domainQuota) }} KiB</small>
+                    </td>
+                    {% endifequal %}
+                    {# <td class="text-right">{% ifequal domain.domainQuota 0 %}{{ _("not set") }}{% else %}{{ _(domain.domainQuotaUsed) }}/{{ _(domain.domainQuota) }} KiB{% endifequal %}</td> #}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% else %}
+
+<div class="row mt-4 justify-content-center">
+    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
+        <div class="card card-outline-primary text-center">
+            <div class="card-block">
+                <h2 class="card-title">{{ _("Welcome to Skaffari") }}</h2>
+                <p class="card-text">{{ _("You have no domains configured. In order to create email accounts you have to first create at least one domain for which you want to add new email accounts.") }}</p>
+                <a href="/domain/create" class="btn btn-primary"><i class="fa fa-plus"></i> {{ _("Add domain") }}</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

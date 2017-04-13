@@ -1,0 +1,38 @@
+<div class="row">
+    <div class="col-12 col-lg-6">
+        <h2><i class="fa fa-envelope"></i> {{ _("Email addresses") }} <small class="text-muted">{{ account.username }}</small></h2>
+    </div>
+    <div class="col-12 col-lg-6">
+        <a class="btn btn-outline-primary float-right" href="/account/{{ domain.id }}/{{ account.id }}/new_email"><i class="fa fa-plus"></i> {{ _("Add address") }}</a>
+    </div>
+</div>
+
+<div class="row mt-1">
+    <section class="col">
+    
+        <table id="addressesTable" class="table table-responsive">
+            <thead>
+                <tr>
+                    <th>{{ _("Actions") }}</th>
+                    <th>{{ _("Email address") }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for address in account.addresses %}
+                <tr>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Email address actions") }}">
+                            <a href="/account/{{ domain.id }}/{{ account.id }}/email/{{ address }}" class="btn btn-primary" title="{{ _("Edit address") }}" role="button"><i class="fa fa-edit fa-fw"></i></a>
+                            <a href="/account/{{ domain.id }}/{{ account.id }}/remove_email/{{ address }}" class="btn btn-danger{%if account.addresses.count <= 1 %} disabled{% endif %}" title="{{ _("Delete address") }}" role="button" {%if account.addresses.count <= 1 %} aria-disabled="true"{% endif %}><i class="fa fa-trash fa-fw"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="/account/{{ domain.id }}/{{ account.id }}/email/{{ address }}" title="{{ _("Edit address") }}">{{ address }}</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+    </section>    
+</div>

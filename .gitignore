@@ -1,0 +1,12 @@
+.kdev4/
+docs/
+*.kdev4
+*~
+.directory
+templates/*/node_modules
+templates/*/static/css
+templates/*/static/js
+templates/*/static/fonts
+templates/*/gulp
+CMakeLists.txt.user
+

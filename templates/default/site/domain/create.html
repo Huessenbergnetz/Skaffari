@@ -1,0 +1,117 @@
+<div class="row">
+    <div class="col"><h2><i class="fa fa-cube"></i> {{ _("Create new domain") }}</h2></div>
+</div>
+
+<div class="row mt-1">
+    <div class="col-12 col-sm-12 col-md-6">
+    
+        <form method="post">
+    
+            <div class="form-group row">
+                <label for="domainName" class="col-12 col-lg-4 col-form-label">{{ _("Domain name") }}</label>
+                <div class="col-12 col-lg-8{% if validationErrors.domainName.count %} has-warning{% endif %}">
+                    <input type="text" id="domainName" name="domainName" class="form-control{% if validationErrors.domainName.count %} form-control-warning{% endif %}" value="{{ domain.name|default_if_none:domainName }}" placeholder="{{ _("Domain name") }}" pattern="^\S*\.\S{2,}$" required>
+                    {% if validationErrors.domainName.count %}<div class="form-control-feedback"><small>{{ validationErrors.domainName.0 }}</small></div>{% endif %}
+                </div>
+            </div>
+            
+            {% if not domainAsPrefix %}            
+            <div class="form-group row">
+                <label for="prefix" class="col-12 col-lg-4 col-form-label">{{ _("Prefix") }}</label>
+                <div class="col-12 col-lg-8">
+                    <input type="text" id="prefix" name="prefix" class="form-control" value="{{ domain.prefix|default_if_none:prefix }}" placeholder="{{ _("Prefix") }}" required>
+                </div>
+            </div>
+            <input type="hidden" name="domainAsPrefix" value="false">
+            {% endif %}
+            
+            <div class="form-group row">
+                <label for="maxAccounts" class="col-12 col-lg-4 col-form-label">{{ _("Maximum accounts") }}</label>
+                <div class="col-12 col-lg-8">
+                    <input type="number" id="maxAccounts" name="maxAccounts" class="form-control" value="{{ domain.maxAccounts|default:defMaxAccounts}}" min="0" required>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="domainQuota" class="col-12 col-lg-4 col-form-label">{{ _("Domain quota") }}</label>
+                <div class="col-12 col-lg-8">
+                    <div class="input-group">
+                        <input type="number" id="domainQuota" name="domainQuota" class="form-control" value="{{ domain.domainQuota|default:defDomainQuota }}" min="0" aria-describedby="domainQuotaKiB" required>
+                        <span class="input-group-addon" id="domainQuotaKiB">KiB</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="quota" class="col-12 col-lg-4 col-form-label">{{ _("Default quota") }}</label>
+                <div class="col-12 col-lg-8">
+                    <div class="input-group">
+                        <input type="number" id="quota" name="quota" class="form-control" value="{{ domain.quota|default:defQuota}}" min="0" max="domain.domainQuota|default:defDomainQuota" aria-describedby="quotaKiB" required>
+                        <span class="input-group-addon" id="quotaKiB">KiB</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="folders" class="col-12 col-lg-4 col-form-label">{{ _("Standard folders") }}</label>
+                <div class="col-12 col-lg-8">
+                    <input type="text" id="folders" name="folders" class="form-control" value="{{ domain.folders|join:"," }}" placeholder="{{ _("Standard folders") }}">
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="transport" class="col-12 col-lg-4 col-form-label">{{ _("Transport") }}</label>
+                <div class="col-12 col-lg-8">
+                    <select class="form-control" id="transport" name="transport">
+                        <option value="cyrus"{% ifequal transport "cyrus" %} selected{% endifequal %}>Cyrus</option>
+                        <option value="lmtp"{% ifequal transport "lmtp" %} selected{% endifequal %}>LMTP</option>
+                        <option value="smtp"{% ifequal transport "smtp" %} selected{% endifequal %}>SMTP</option>
+                        <option value="uucp"{% ifequal transport "uucp" %} selected{% endifequal %}>UUCP</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="freeNames" class="col-6 col-lg-4">{{ _("Allow free names") }}</label>
+                <div class="col">
+                    <div class="form-check">
+                        <input type="checkbox" id="freeNames" name="freeNames" value="1"{% if domain.freeNames %} checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="freeAddress" class="col-6 col-lg-4">{{ _("Allow free addresses") }}</label>
+                <div class="col">
+                    <div class="form-check">
+                        <input type="checkbox" id="freeAddress" name="freeAddress" value="1"{% if domain.freeAddress %} checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <div class="col">
+                    <a href="/domain" class="btn btn-outline-warning">{{ _("Cancel") }}</a>
+                    <button type="submit" class="btn btn-outline-primary">{{ _("Create") }}</button>
+                </div>
+            </div>
+            
+        </form>
+        
+    </div>
+    
+    <div class="col-12 col-sm-12 col-md-6">
+    
+        <div class="card">
+            <div class="card-block">
+                <h4 class="card-title"><i class="fa fa-life-ring"></i> {{ _("Help") }}</h4>
+                <h6 class="card-subtitle text-muted">{{ _("Domain name") }}</h6>
+                <p class="card-text mb-2">{{ _("The name of the domain you want to manage emails for, like <em>example.com</em>.")|safe }}</p>
+                <h6 class="card-subtitle text-muted">{{ _("Prefix") }}</h6>
+                <p class="card-text mb-2">{{ _("The prefix might be used for automatically generated user names, especially if free names are not allowed for this domain.") }}</p>
+            </div>
+        </div>
+    
+    </div>
+</div>
+ 

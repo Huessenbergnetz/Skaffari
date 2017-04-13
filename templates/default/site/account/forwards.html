@@ -1,0 +1,48 @@
+<div class="row">
+    <div class="col"><h2><i class="fa fa-mail-forward"></i> {{ _("Forwards") }} <small class="text-muted">{{ account.username }}</small></h2></div>
+</div>  
+
+<div class="row mt-1">
+    <section class="col-12 col-sm-12 col-md-6">
+    
+        <form method="post">
+            <div id="forwards" data-count="{{ account.forwards.count }}">
+                {% for forward in account.forwards %}
+                <div id="forward{{ forloop.counter }}" class="form-group">
+                    <div class="input-group">
+                        <input type="email" class="form-control" name="forward" value="{{ forward }}">
+                        <span class="input-group-btn">
+                            <button class="btn btn-danger forward-delete-btn" type="button" data-target="#forward{{ forloop.counter }}"><i class="fa fa-trash"></i></button>
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" id="keeplocal" name="keeplocal" value="1" class="form-check-input"{% if account.keepLocal %} checked{% endif %}>
+                    {{ _("Keep a copy in the user's mailbox") }}
+                </label>
+            </div>
+            
+            <div class="form-group row">
+                <div class="col">
+                    <a href="/domain/{{ domain.id }}/accounts" class="btn btn-outline-warning">{{ _("Cancel") }}</a>
+                    <button type="button" class="btn btn-outline-primary" id="addforward">{{ _("Add forward") }}</button>
+                    <button type="submit" class="btn btn-outline-primary">{{ _("Update") }}</button>
+                </div>
+            </div>
+        </form>
+        
+    </section>
+    
+    <section class="col-12 col-sm-12 col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="fa fa-life-ring"></i> {{ _("Help") }}</div>
+            <div class="card-block">
+                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur. Donec ut libero sed arcu vehicula ultricies a non tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ut gravida lorem. Ut turpis felis, pulvinar a semper sed, adipiscing id dolor. Pellentesque auctor nisi id magna consequat sagittis. Curabitur dapibus enim sit amet elit pharetra tincidunt feugiat nisl imperdiet. Ut convallis libero in urna ultrices accumsan. Donec sed odio eros. Donec viverra mi quis quam pulvinar at malesuada arcu rhoncus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. In rutrum accumsan ultricies. Mauris vitae nisi at sem facilisis semper ac in est.</p>
+            </div>
+        </div>
+    </section>
+</div>

@@ -1,0 +1,141 @@
+<div class="row">
+    <div class="col"><h2><i class="fa fa-user-plus"></i> {{ _("Create new account") }} <small class="text-muted">{{ domain.name }}</small></h2></div>
+</div>
+
+<div class="row mt-1">
+    <section class="col-12 col-sm-12 col-md-6">
+        <form method="post">
+        
+            <div class="form-group row">
+                <label class="col-12 col-lg-4 col-form-label">{{ _("Accounts") }}</label>
+                <div class="col-12 col-lg-8">
+                    <p class="form-control-static">{{ _(domain.accounts) }}/{{ _(domain.maxAccounts) }}</p>
+                </div>
+            </div>
+            
+            {% if domain.domainQuota %}
+            <div class="form-group row">
+                <label class="col-12 col-lg-4 col-form-label">{{ _("Domain quota") }}</label>
+                <div class="col-12 col-lg-8">
+                    <p class="form-control-static">{{ _(domain.domainQuotaUsed) }}/{{ _(domain.domainQuota) }} KiB</p>
+                </div>
+            </div>
+            {% endif %}
+        
+            {% if not domainasprefix %}
+            <div class="form-group row">
+                <label for="username" class="col-12 col-lg-4 col-form-label">{{ _("Account name") }}</label>
+                <div class="col-12 col-lg-8{% if validationErrors.username.count %} has-warning{% endif %}">
+                    {% if domain.freeNames %}
+                    <input type="text" id="username" name="username" class="form-control{% if validationErrors.username.count %} form-control-warning{% endif %}" value="{{ username }}" placeholder="{{ _("Account name") }}" required>
+                    {% else %}
+                    <p class="form-control-static">{{ username }}</p>
+                    {% endif %}
+                    {% if validationErrors.username.count %}<div class="form-control-feedback"><small>{{ validationErrors.username.0 }}</small></div>{% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if domainasprefix or not domain.freeNames %}
+            <input type="hidden" name="username" value="{{ username }}">
+            {% endif %}
+        
+            <div class="form-group row">
+                <label for="localpart" class="col-12 col-lg-4 col-form-label">{{ _("Email address") }}</label>
+                <div class="col-12 col-lg-8{% if validationErrors.localpart.count %} has-warning{% endif %}">
+                    <div class="input-group">
+                        <input type="text" id="localpart" name="localpart" class="form-control{% if validationErrors.localpart.count %} form-control-warning{% endif %}" value="{{ localpart }}" placeholder="{{ _("Local part") }}" aria-describedby="email-addon" required>
+                        <span class="input-group-addon" id="email-addon">@{{ domain.name }}</span>
+                    </div>
+                    {% if validationErrors.localpart.count %}<div class="form-control-feedback"><small>{{ validationErrors.localpart.0 }}</small></div>{% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="quota" class="col-12 col-lg-4 col-form-label">{{ _("Quota") }}</label>
+                <div class="col-12 col-lg-8{% if validationErrors.quota.count %} has-warning{% endif %}">
+                    <div class="input-group">
+                        <input type="number" id="quota" name="quota" class="form-control{% if validationErrors.localpart.count %} form-control-warning{% endif %}" value="{{ quota|default:domain.quota }}" placeholder="{{ _("Quota") }}" aria-describedby="quota-addon" min="0" max="{{ freequota }}">
+                        <span class="input-group-addon" id="quota-addon">KiB</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="password" class="col-12 col-lg-4 col-form-label">{{ _("Password") }}</label>
+                <div class="col-12 col-lg-8{% if validationErrors.password.count %} has-warning{% endif %}">
+                    <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ _("Password") }}" required>
+                    {% if validationErrors.password.count %}<div class="form-control-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="password_confirmation" class="col-12 col-lg-4 col-form-label">{{ _("Password confirmation") }}</label>
+                <div class="col-12 col-lg-8{% if validationErrors.password.count %} has-warning{% endif %}">
+                    <input type="password" id="password_confirmation" name="password_confirmation" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ _("Password confirmation") }}" required>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="validUntil" class="col-12 col-lg-4 col-form-label">{{ _("Valid until") }}</label>
+                <div class="col-12 col-lg-8{% if validationErrors.validUntil.count %} has-warning{% endif %}">
+                    <input type="text" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD HH:mm:ss") }}" value="{{ validUntil|default:"2998-12-31 23:59:59" }}" required>
+                    {% if validationErrors.validUntil.count %}<div class="form-control-feedback"><small>{{ validationErrors.validUntil.0 }}</small></div>{% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="imap" class="col-6 col-lg-4">{{ _("IMAP Access") }}</label>
+                <div class="col">
+                    <div class="form-check">
+                        <input type="checkbox" id="imap" name="imap" value="1"{% if imap %} checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="pop" class="col-6 col-lg-4">{{ _("POP3 Access") }}</label>
+                <div class="col">
+                    <div class="form-check">
+                        <input type="checkbox" id="pop" name="pop" value="1"{% if pop %} checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="sieve" class="col-6 col-lg-4">{{ _("Sieve Access") }}</label>
+                <div class="col">
+                    <div class="form-check">
+                        <input type="checkbox" id="sieve" name="sieve" value="1"{% if sieve %} checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="smtpauth" class="col-6 col-lg-4">{{ _("SMTP Access") }}</label>
+                <div class="col">
+                    <div class="form-check">
+                        <input type="checkbox" id="smtpauth" name="smtpauth" value="1"{% if smtpauth %} checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <div class="col">
+                    <a href="/domain/{{ domain.id }}/accounts" class="btn btn-outline-warning">{{ _("Cancel") }}</a>
+                    <button type="submit" class="btn btn-outline-primary">{{ _("Create") }}</button>
+                </div>
+            </div>
+        
+        </form>
+    </section>
+
+    <section class="col-12 col-sm-12 col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="fa fa-life-ring"></i> {{ _("Help") }}</div>
+            <div class="card-block">
+                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur. Donec ut libero sed arcu vehicula ultricies a non tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ut gravida lorem. Ut turpis felis, pulvinar a semper sed, adipiscing id dolor. Pellentesque auctor nisi id magna consequat sagittis. Curabitur dapibus enim sit amet elit pharetra tincidunt feugiat nisl imperdiet. Ut convallis libero in urna ultrices accumsan. Donec sed odio eros. Donec viverra mi quis quam pulvinar at malesuada arcu rhoncus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. In rutrum accumsan ultricies. Mauris vitae nisi at sem facilisis semper ac in est.</p>
+            </div>
+        </div>
+    </section>
+</div>
