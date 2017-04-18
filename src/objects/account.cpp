@@ -16,25 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define _XOPEN_SOURCE
 #include "account_p.h"
 #include "domain.h"
 #include "skaffarierror.h"
 #include "../utils/timeutils.h"
 #include "../imap/skaffariimap.h"
-#include <unistd.h>
+#include "../../common/password.h"
 #include <Cutelyst/Context>
 #include <Cutelyst/Response>
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <Cutelyst/Plugins/Session/Session>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QFile>
-#include <QCryptographicHash>
 #include <QTimeZone>
 #include <QSqlDatabase>
 #include <QRegularExpression>
-#include <stdlib.h>
 #include <QUrl>
 
 Q_LOGGING_CATEGORY(SK_ACCOUNT, "skaffari.account")
@@ -347,7 +343,9 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     }
 
     const QString password = p.value(QStringLiteral("password"));
-    const QByteArray encpw = Account::encryptPassword(password, pwType, pwMethod, pwRounds);
+//    const QByteArray encpw = Account::encryptPassword(password, pwType, pwMethod, pwRounds);
+    Password pw(password);
+    const QByteArray encpw = pw.encrypt(static_cast<Password::Type>(pwType), static_cast<Password::Method>(pwMethod), pwRounds);
 
     if (Q_UNLIKELY(encpw.isEmpty())) {
         e->setErrorText(c->translate("Account", "Failed to encrypt user password. Please check your encryption settings."));
@@ -780,8 +778,10 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const C
 
     QSqlQuery q;
     if (!password.isEmpty()) {
+        Password pw(password);
+        const QByteArray encPw = pw.encrypt(static_cast<Password::Type>(pwType), static_cast<Password::Method>(pwMethod), pwRounds);
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET password = :password, quota = :quota, valid_until = :validUntil, updated_at = :updated_at WHERE id = :id"));
-        q.bindValue(QStringLiteral(":password"), Account::encryptPassword(password, pwType, pwMethod, pwRounds));
+        q.bindValue(QStringLiteral(":password"), encPw);
     } else {
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET quota = :quota, valid_until = :validUntil, updated_at = :updated_at WHERE id = :id"));
     }
@@ -1055,145 +1055,5 @@ bool Account::updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a,
     ret = true;
 
     return ret;
-}
-
-
-QByteArray Account::encryptPassword(const QString &password, quint8 type, quint8 method, quint32 rounds)
-{
-    QByteArray ba;
-
-    if (type == 0) { // clear text password
-
-        ba = password.toUtf8();
-        qCWarning(SK_ACCOUNT) << "Do not used unencrypted passwords!";
-
-    } else if (type == 1) { // using crypt(3) function
-
-        QByteArray settings;
-        uint pwSize = 0;
-
-        if (method == 0) { // traditional DES-based
-
-            settings = Account::requestSalt(2, QByteArrayLiteral("./0123456789ABCDEFGHIJKLMNJOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
-            pwSize = 13;
-            qCWarning(SK_ACCOUNT) << "Do not use weak hashing/encryption methods for passwords!";
-
-        } else if (method == 1) { // FreeBSD-style MD5-based
-
-            settings = QByteArrayLiteral("$1$");
-            settings.append(Account::requestSalt(8));
-            settings.append(QByteArrayLiteral("$"));
-            pwSize = (settings.size() + 22);
-            qCWarning(SK_ACCOUNT) << "Do not use weak hashing/encryption methods for passwords!";
-
-        } else if ((method == 2) || (method == 3)) { // SHA256 and SHA512 based
-
-            if (method == 2) {
-                settings = QByteArrayLiteral("$5$rounds=");
-            } else {
-                settings = QByteArrayLiteral("$6$rounds=");
-            }
-            if (rounds < 1000) {
-                rounds = 1000;
-            } else if (rounds > 999999999) {
-                rounds = 999999999;
-            }
-            settings.append(QByteArray::number(rounds));
-            settings.append(QByteArrayLiteral("$"));
-            settings.append(Account::requestSalt(16, QByteArrayLiteral("./0123456789ABCDEFGHIJKLMNJOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")));
-            settings.append(QByteArrayLiteral("$"));
-            if (method == 2) {
-                pwSize = (settings.size() + 43);
-            } else {
-                pwSize = (settings.size() + 86);
-            }
-
-        } else if (method == 4) { // OpenBSD-style Blowfish-based (bcrypt)
-
-            pwSize = 60;
-            settings = QByteArrayLiteral("$2y$");
-            if (rounds < 4) {
-                rounds = 4;
-            }
-            if (rounds > 31) {
-                rounds = 31;
-            }
-            if (rounds < 10) {
-                settings.append(QByteArrayLiteral("0"));
-            }
-            settings.append(QByteArray::number(rounds));
-            settings.append(QByteArrayLiteral("$"));
-            settings.append(Account::requestSalt(22, QByteArrayLiteral("./0123456789ABCDEFGHIJKLMNJOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")));
-            settings.append(QByteArrayLiteral("$"));
-
-        } else {
-
-            qCCritical(SK_ACCOUNT) << "Password hashing method not supported!";
-            return ba;
-
-        }
-        ba = QByteArray(crypt(password.toUtf8().constData(), settings.constData()), pwSize);
-
-    } else if (type == 2) { // using MySQL password function
-
-        QSqlQuery q;
-        if (method == 0) {
-            q = CPreparedSqlQueryThread(QStringLiteral("SELECT OLD_PASSWORD(:pw)"));
-        } else {
-            q = CPreparedSqlQueryThread(QStringLiteral("SELECT PASSWORD(:pw)"));
-        }
-        q.bindValue(QStringLiteral(":pw"), password);
-        q.exec();
-        q.next();
-        ba = q.value(0).toString().toUtf8();
-        qCWarning(SK_ACCOUNT) << "Do not use weak hashing/encryption methods for passwords!";
-
-    } else if (type == 3) { // using plain hex MD5
-
-        ba = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Md5).toHex();
-        qCWarning(SK_ACCOUNT) << "Do not use weak hashing/encryption methods for passwords!";
-
-    } else if (type == 4) { // using plain hex SHA1
-
-        ba = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha1).toHex();
-        qCWarning(SK_ACCOUNT) << "Do not use weak hashing/encryption methods for passwords!";
-
-    } else {
-
-        qCCritical(SK_ACCOUNT) << "Password hashing method not supported!";
-
-    }
-
-    return ba;
-}
-
-
-QByteArray Account::requestSalt(quint16 length, const QByteArray allowedChars)
-{
-    QByteArray salt;
-
-    QFile random(QStringLiteral("/dev/urandom"));
-    if (Q_UNLIKELY(!random.open(QIODevice::ReadOnly))) {
-    }
-
-    if (allowedChars.isEmpty()) {
-        salt = random.read(length).toBase64();
-    } else {
-        const QByteArray rand = random.read(4 * length).toBase64();
-        int i = 0;
-        while ((salt.size() < length) && (i < (4 * length))) {
-            char part = rand.at(i);
-            if (allowedChars.contains(part)) {
-                salt.append(part);
-            }
-            ++i;
-        }
-    }
-
-    if (salt.size() > length) {
-        salt.chop(salt.size() - length);
-    }
-
-    return salt;
 }
 

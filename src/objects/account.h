@@ -108,13 +108,8 @@ public:
     static bool removeEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &address);
     static bool updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p);
 
-    static QByteArray encryptPassword(const QString &password, quint8 type, quint8 method, quint32 rounds);
-
 protected:
     QSharedDataPointer<AccountData> d;
-
-private:
-    static QByteArray requestSalt(quint16 length, const QByteArray allowedChars = QByteArray());
 };
 
 Q_DECLARE_METATYPE(Account)
