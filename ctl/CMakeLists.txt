@@ -12,6 +12,8 @@ set(skaffarictl_SRCS
     database.h
     imap.cpp
     imap.h
+    ../common/password.cpp
+    ../common/password.h
 )
 
 add_executable(skaffarictl ${skaffarictl_SRCS})
@@ -21,4 +23,6 @@ target_link_libraries(skaffarictl
     Qt5::Sql
     Qt5::Network
     Cutelyst::Authentication
+    Cutelyst::Utils::Sql
+    crypt
 )

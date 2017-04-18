@@ -26,10 +26,9 @@
 #include <Cutelyst/Plugins/Authentication/credentialpassword.h>
 #include <QCryptographicHash>
 
-#include <QDebug>
-
 #include "database.h"
 #include "imap.h"
+#include "../common/password.h"
 
 Setup::Setup(const QString &confFile) :
     m_confFile(confFile)
@@ -69,27 +68,21 @@ int Setup::exec() const
         printf("%s\n", qUtf8Printable(tr("Creating configuration file at %1.").arg(m_confFile.absoluteFilePath())));
     }
 
-    QString dbhost, dbname, dbpass, dbtype, dbuser, imapuser, imappass, imaphost;
-    quint16 dbport, imapport;
-    quint8 imapprotocol, imapencryption, enctype, cryptmethod;
-    quint32 defaultQuota, defaultDomainQuota, defaultMaxAccounts, cryptrounds, adminPasswordRounds;
-    QCryptographicHash::Algorithm adminPasswordMethod;
 
     QSettings os(m_confFile.absoluteFilePath(), QSettings::IniFormat);
     os.beginGroup(QStringLiteral("Database"));
-    dbhost = os.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
-    dbname = os.value(QStringLiteral("name"), QStringLiteral("maildb")).toString();
-    dbpass = os.value(QStringLiteral("password")).toString();
-    dbtype = os.value(QStringLiteral("type"), QStringLiteral("QMYSQL")).toString();
-    dbuser = os.value(QStringLiteral("user"), QStringLiteral("skaffari")).toString();
-    dbport = os.value(QStringLiteral("port"), 3306).value<quint16>();
+    QString dbhost = os.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
+    QString dbname = os.value(QStringLiteral("name"), QStringLiteral("maildb")).toString();
+    QString dbpass = os.value(QStringLiteral("password")).toString();
+    QString dbtype = os.value(QStringLiteral("type"), QStringLiteral("QMYSQL")).toString();
+    QString dbuser = os.value(QStringLiteral("user"), QStringLiteral("skaffari")).toString();
+    quint16 dbport = os.value(QStringLiteral("port"), 3306).value<quint16>();
     os.endGroup();
 
     Database db;
 
     bool dbaccess = false;
     if (configExists) {
-        printf("%s\n", qUtf8Printable("Try to establish database connection."));
         dbaccess = db.open(dbtype, dbhost, dbport, dbname, dbuser, dbpass);
         if (dbaccess) {
             printf("%s\n", qUtf8Printable(tr("Successfully establisched database connection.")));
@@ -105,12 +98,14 @@ int Setup::exec() const
 
         dbtype = readString(tr("DB Type"), dbtype);
         dbhost = readString(tr("DB Host"), dbhost);
-        dbport = readPort(tr("DB Port"), dbport);
+        if (dbhost[0] != QChar('/')) {
+            dbport = readPort(tr("DB Port"), dbport);
+        }
         dbname = readString(tr("DB Name"), dbname);
         dbuser = readString(tr("DB User"), dbuser);
         dbpass = readString(tr("DB Password"), dbpass);
 
-        printf("%s\n", qUtf8Printable("Try to establish database connection."));
+        printf("%s\n", qUtf8Printable(tr("Trying to establish database connection.")));
 
         if (!db.open()) {
             printf("%s\n", qUtf8Printable(tr("Failed to establish database connection. Aborting.")));
@@ -143,13 +138,15 @@ int Setup::exec() const
     if (dbaccess && !db.checkAdmin()) {
         printf("%s\n", qUtf8Printable(tr("No admin users found in database. Please configure your admin password settings and create a new admin user.")));
 
-        os.beginGroup(QStringLiteral("AdminPassword"));
-        adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(os.value(QStringLiteral("method"), 4).toInt());
-        adminPasswordRounds = os.value(QStringLiteral("rounds"), 32000).value<quint32>();
+        os.beginGroup(QStringLiteral("Admins"));
+        QCryptographicHash::Algorithm adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(os.value(QStringLiteral("pwmethod"), 4).toInt());
+        quint32 adminPasswordRounds = os.value(QStringLiteral("pwrounds"), 32000).value<quint32>();
+        quint8 adminPasswordMinLength = os.value(QStringLiteral("pwminlength"), 8).value<quint8>();
         os.endGroup();
 
         adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(readInt(tr("Admin password method"), static_cast<quint32>(adminPasswordMethod)));
         adminPasswordRounds = readInt(tr("Admin password rounds"), adminPasswordRounds);
+        adminPasswordMinLength = readChar(tr("Admin password min length"), adminPasswordMinLength);
 
         const QString adminUser = readString(tr("Admin user name"), QStringLiteral("admin"));
         const QString adminPass = readString(tr("Admin password"), QString());
@@ -160,28 +157,67 @@ int Setup::exec() const
             return 1;
         }
 
-        os.beginGroup(QStringLiteral("AdminPassword"));
-        os.setValue(QStringLiteral("method"), static_cast<int>(adminPasswordMethod));
-        os.setValue(QStringLiteral("rounds"), adminPasswordRounds);
+        os.beginGroup(QStringLiteral("Admins"));
+        os.setValue(QStringLiteral("pwmethod"), static_cast<int>(adminPasswordMethod));
+        os.setValue(QStringLiteral("pwrounds"), adminPasswordRounds);
+        os.setValue(QStringLiteral("pwminlength"), adminPasswordMinLength);
         os.endGroup();
         os.sync();
 
         printf("%s\n", qUtf8Printable(tr("Successfully created administrator account for user admin.")));
     }
 
+
+    if (!configExists || readBool(tr("Set the mail account password encryption?"), false)) {
+
+        os.beginGroup(QStringLiteral("Accounts"));
+        Password::Type accountsPwType = static_cast<Password::Type>(os.value(QStringLiteral("pwtype"), 1).value<quint8>());
+        Password::Method accountsPwMethod = static_cast<Password::Method>(os.value(QStringLiteral("pwmethod"), 0).value<quint8>());
+        quint32 accountsPwRounds = os.value(QStringLiteral("pwrounds"), 5000).value<quint32>();
+        quint8 accountsPwMinLength = os.value(QStringLiteral("pwminlength"), 8).value<quint8>();
+        os.endGroup();
+
+        accountsPwType = static_cast<Password::Type>(readInt(tr("Encryption type"), accountsPwType));
+        if (accountsPwType == Password::Crypt) {
+            accountsPwMethod = static_cast<Password::Method>(readChar(tr("Encryption method"), accountsPwMethod));
+        } else if (accountsPwType == Password::MySQL) {
+            accountsPwMethod = static_cast<Password::Method>(readChar(tr("Encryption method"), accountsPwMethod));
+        }
+
+        if (accountsPwType == Password::Crypt) {
+            if ((accountsPwMethod == Password::CryptSHA256) || (accountsPwMethod == Password::CryptSHA512) || (accountsPwMethod == Password::CryptBcrypt)) {
+                if ((accountsPwMethod == Password::CryptBcrypt) && (accountsPwRounds > 31)) {
+                    accountsPwRounds = 12;
+                }
+
+                accountsPwRounds = readInt(tr("Encryption rounds"), accountsPwRounds);
+            }
+        }
+
+        accountsPwMinLength = readChar(tr("Password min. length"), accountsPwMinLength);
+
+        os.beginGroup(QStringLiteral("Accounts"));
+        os.setValue(QStringLiteral("pwtype"), static_cast<quint8>(accountsPwType));
+        os.setValue(QStringLiteral("pwmethod"), static_cast<quint8>(accountsPwMethod));
+        os.setValue(QStringLiteral("pwrounds"), accountsPwRounds);
+        os.setValue(QStringLiteral("pwminlength"), accountsPwMinLength);
+        os.endGroup();
+        os.sync();
+    }
+
     os.beginGroup(QStringLiteral("IMAP"));
-    imapuser = os.value(QStringLiteral("user"), QStringLiteral("cyrus")).toString();
-    imappass = os.value(QStringLiteral("password")).toString();
-    imaphost = os.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
-    imapport = os.value(QStringLiteral("port"), 143).value<quint16>();
-    imapprotocol = os.value(QStringLiteral("protocol"), 2).value<quint8>();
-    imapencryption = os.value(QStringLiteral("encryption"), 1).value<quint8>();
+    QString imapuser = os.value(QStringLiteral("user"), QStringLiteral("cyrus")).toString();
+    QString imappass = os.value(QStringLiteral("password")).toString();
+    QString imaphost = os.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
+    quint16 imapport = os.value(QStringLiteral("port"), 143).value<quint16>();
+    quint8 imapprotocol = os.value(QStringLiteral("protocol"), 2).value<quint8>();
+    quint8 imapencryption = os.value(QStringLiteral("encryption"), 1).value<quint8>();
     os.endGroup();
 
     bool imapaccess = false;
     Imap ic(imapuser, imappass, imaphost, imapport, static_cast<QAbstractSocket::NetworkLayerProtocol>(imapprotocol), static_cast<Imap::EncryptionType>(imapencryption));
     if (configExists) {
-        printf("%s\n", qUtf8Printable(tr("Try to login into the IMAP server.")));
+        printf("%s\n", qUtf8Printable(tr("Try to login to the IMAP server.")));
         imapaccess = ic.login();
         if (imapaccess) {
             printf("%s\n", qUtf8Printable(tr("Login to IMAP server was successful.")));
@@ -194,33 +230,11 @@ int Setup::exec() const
         }
     }
 
-    if (!configExists || !imapaccess || readBool(tr("Set the mail account password encryption?"), false)) {
-
-        os.beginGroup(QStringLiteral("Encryption"));
-        enctype = os.value(QStringLiteral("type"), 1).value<quint8>();
-        cryptmethod = os.value(QStringLiteral("cryptmethod"), 2).value<quint8>();
-        cryptrounds = os.value(QStringLiteral("rounds"), 32000).value<quint32>();
-        os.endGroup();
-
-        enctype = readChar(tr("Passwort encryption"), enctype);
-        if (enctype == 1) {
-            cryptmethod = readChar(tr("Crypt method"), cryptmethod);
-        }
-        cryptrounds = readInt(tr("Encryption rounds"), cryptrounds);
-
-        os.beginGroup(QStringLiteral("Encryption"));
-        os.setValue(QStringLiteral("type"), enctype);
-        os.setValue(QStringLiteral("cryptmethod"), cryptmethod);
-        os.setValue(QStringLiteral("rounds"), cryptrounds);
-        os.endGroup();
-
-    }
-
     if (!imapaccess) {
         if (configExists) {
             printf("%s\n", qUtf8Printable(tr("Failed to login into the IMAP server. Please reenter your connection data.")));
         } else {
-            printf("%s\n", qUtf8Printable(tr("Please enter the data to connect to your database system.")));
+            printf("%s\n", qUtf8Printable(tr("Please enter the data to connect to your IMAP server.")));
         }
 
         imaphost = readString(tr("IMAP Host"), imaphost);
@@ -266,49 +280,50 @@ int Setup::exec() const
 
     }
 
-    if (!configExists || readBool(tr("Set default values?"), false)) {
 
-        os.beginGroup(QStringLiteral("DefaultValues"));
-        defaultQuota = os.value(QStringLiteral("quota"), 10000).value<quint32>();
-        defaultDomainQuota = os.value(QStringLiteral("domainquota"), 100000).value<quint32>();
-        defaultMaxAccounts = os.value(QStringLiteral("maxaccounts"), 1000).value<quint32>();
-        os.endGroup();
+    if (!configExists || readBool(tr("Set other IMAP settings?"), false)) {
 
-        defaultQuota = readInt(tr("Default quota"), defaultQuota);
-        defaultDomainQuota = readInt(tr("Default domain quota"), defaultDomainQuota);
-        defaultMaxAccounts = readInt(tr("Default max accounts"), defaultMaxAccounts);
-
-        os.beginGroup(QStringLiteral("DefaultValues"));
-        os.setValue(QStringLiteral("quota"), defaultQuota);
-        os.setValue(QStringLiteral("domainquota"), defaultDomainQuota);
-        os.setValue(QStringLiteral("maxaccounts"), defaultMaxAccounts);
-        os.endGroup();
-    }
-
-    if (!configExists || readBool(tr("Set general settings?"), false)) {
-
-        os.beginGroup(QStringLiteral("General"));
+        os.beginGroup(QStringLiteral("IMAP"));
         bool domainAsPrefix = os.value(QStringLiteral("domainasprefix"), false).toBool();
         bool fqun = os.value(QStringLiteral("fqun"), false).toBool();
-        // currently not supported by cyrus
-//        bool smtputf8 = os.value(QStringLiteral("smtputf8"), false).toBool();
+        quint8 createmailbox = os.value(QStringLiteral("createmailbox"), 2).value<quint8>();
         os.endGroup();
 
         domainAsPrefix = readBool(tr("Domain as prefix"), domainAsPrefix);
         fqun = readBool(tr("FQUN"), fqun);
-        // currently not supported by cyrus
-//        smtputf8 = readBool(tr("SMTPUTF8"), smtputf8);
+        createmailbox = readChar(tr("Create mailboxes"), createmailbox);
 
-        os.beginGroup(QStringLiteral("General"));
+        os.beginGroup(QStringLiteral("IMAP"));
         os.setValue(QStringLiteral("domainasprefix"), domainAsPrefix);
         os.setValue(QStringLiteral("fqun"), fqun);
-        // currently not supported by cyrus
-//        os.setValue(QStringLiteral("smtputf8"), smtputf8);
+        os.setValue(QStringLiteral("createmailbox"), createmailbox);
         os.endGroup();
-
+        os.sync();
     }
 
-    os.sync();
+
+    if (!configExists || readBool(tr("Set default values?"), false)) {
+
+        os.beginGroup(QStringLiteral("Defaults"));
+        QString defaultLang = os.value(QStringLiteral("language"), QStringLiteral("en")).toString();
+        quint32 defaultQuota = os.value(QStringLiteral("quota"), 10000).value<quint32>();
+        quint32 defaultDomainQuota = os.value(QStringLiteral("domainquota"), 100000).value<quint32>();
+        quint32 defaultMaxAccounts = os.value(QStringLiteral("maxaccounts"), 1000).value<quint32>();
+        os.endGroup();
+
+        defaultLang = readString(tr("Default language"), defaultLang);
+        defaultQuota = readInt(tr("Default quota"), defaultQuota);
+        defaultDomainQuota = readInt(tr("Default domain quota"), defaultDomainQuota);
+        defaultMaxAccounts = readInt(tr("Default max accounts"), defaultMaxAccounts);
+
+        os.beginGroup(QStringLiteral("Defaults"));
+        os.setValue(QStringLiteral("language"), defaultLang);
+        os.setValue(QStringLiteral("quota"), defaultQuota);
+        os.setValue(QStringLiteral("domainquota"), defaultDomainQuota);
+        os.setValue(QStringLiteral("maxaccounts"), defaultMaxAccounts);
+        os.endGroup();
+        os.sync();
+    }
 
     printf("%s\n", qUtf8Printable(tr("Skaffari setup was successful.")));
 
