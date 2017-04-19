@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS accountuser (
   quota int(10) unsigned NOT NULL DEFAULT 0,
   created_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   updated_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
-  valid_until datetime NOT NULL DEFAULT '9998-12-31 23:59:59'
+  valid_until datetime NOT NULL DEFAULT '2998-12-31 23:59:59'
   UNIQUE KEY username (username)
 ) ENGINE = MyISAM;
 

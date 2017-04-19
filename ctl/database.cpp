@@ -21,8 +21,7 @@
 #include <QSqlQuery>
 #include <QFile>
 #include <QTextStream>
-
-#include <QDebug>
+#include <QDateTime>
 
 Database::Database()
 {
@@ -322,20 +321,60 @@ bool Database::rollbackAdminDomains(int adminId) const
 }
 
 
-bool Database::checkAdmin() const
+uint Database::checkAdmin() const
 {
-    bool success = false;
+    uint adminCount = 0;
 
     QSqlQuery q(m_db);
 
-    if (!q.exec(QStringLiteral("SELECT username FROM adminuser WHERE type = 0"))) {
-        printf("%s\n", qUtf8Printable(tr("Failed to query admin users from database.")));
+    q.exec(QStringLiteral("SELECT COUNT(id) FROM adminuser WHERE type = 0"));
+
+    if (q.next()) {
+        adminCount = q.value(0).toUInt();
     }
 
-    success = (q.size() > 0);
-    printf("%s\n", qUtf8Printable(tr("Found %n admin user(s) in database.", "", q.size())));
+    return adminCount;
+}
 
-    return success;
+
+bool Database::setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusPassword) const
+{
+    bool ret = false;
+
+    QSqlQuery q(m_db);
+    if (!q.prepare(QStringLiteral("INSERT INTO accountuser (username, domain_id, password, prefix, domain_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"))) {
+        return ret;
+    }
+
+    QDateTime current = QDateTime::currentDateTimeUtc();
+
+    q.addBindValue(cyrusAdmin);
+    q.addBindValue(0);
+    q.addBindValue(cyrusPassword);
+    q.addBindValue(QStringLiteral(""));
+    q.addBindValue(QStringLiteral(""));
+    q.addBindValue(current);
+    q.addBindValue(current);
+
+    ret = q.exec();
+
+    return ret;
+}
+
+
+QString Database::checkCyrusAdmin() const
+{
+    QString admin;
+
+    QSqlQuery q(m_db);
+
+    q.exec(QStringLiteral("SELECT username FROM accountuser WHERE prefix = '' AND domain_name = ''"));
+
+    if (q.next()) {
+        admin = q.value(0).toString();
+    }
+
+    return admin;
 }
 
 
@@ -349,3 +388,4 @@ QFileInfoList Database::getSqlFiles() const
 
     return fil;
 }
+

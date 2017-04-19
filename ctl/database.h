@@ -41,7 +41,10 @@ public:
 
     bool installDatabase() const;
     bool setAdmin(const QString &adminUser, const QByteArray &adminPassword) const;
-    bool checkAdmin() const;
+    uint checkAdmin() const;
+
+    bool setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusPassword) const;
+    QString checkCyrusAdmin() const;
 
     QSqlError lastDbError() const;
 

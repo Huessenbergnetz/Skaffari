@@ -57,6 +57,11 @@ public:
     void setProtocol(NetworkLayerProtocol protocol);
     void setEncryptionType(EncryptionType encType);
 
+    static QString encryptionTypeToString(EncryptionType et);
+    static QString encryptionTypeToString(quint8 et);
+    static QString networkProtocolToString(QAbstractSocket::NetworkLayerProtocol nlp);
+    static QString networkProtocolToString(quint8 nlp);
+
 private:
     bool checkResponse(const QByteArray &resp, const QString &tag = QString());
     QString m_user;

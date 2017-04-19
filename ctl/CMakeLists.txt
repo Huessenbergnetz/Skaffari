@@ -6,6 +6,8 @@ include_directories(
 #file(GLOB_RECURSE skaffarictl_SRCS *.cpp *.h)
 set(skaffarictl_SRCS
     main.cpp
+    consoleoutput.cpp
+    consoleoutput.h
     setup.cpp
     setup.h
     database.cpp

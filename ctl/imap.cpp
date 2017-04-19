@@ -244,3 +244,61 @@ void Imap::setEncryptionType(Imap::EncryptionType encType)
 {
     m_encType = encType;
 }
+
+
+QString Imap::encryptionTypeToString(EncryptionType et)
+{
+    QString str;
+
+    switch(et) {
+    case Unsecured:
+        str = tr("Unsecured");
+        break;
+    case StartTLS:
+        str = tr("StartTLS");
+        break;
+    case IMAPS:
+        str = tr("IMAPS");
+        break;
+    default:
+        break;
+    }
+
+    return str;
+}
+
+
+QString Imap::encryptionTypeToString(quint8 et)
+{
+    return encryptionTypeToString(static_cast<EncryptionType>(et));
+}
+
+
+QString Imap::networkProtocolToString(QAbstractSocket::NetworkLayerProtocol nlp)
+{
+    QString str;
+
+    switch(nlp) {
+    case QAbstractSocket::IPv4Protocol:
+        str = QStringLiteral("IPv4");
+        break;
+    case QAbstractSocket::IPv6Protocol:
+        str = QStringLiteral("IPv6");
+        break;
+    case QAbstractSocket::AnyIPProtocol:
+        str = tr("Either IPv4 or IPv6");
+        break;
+    default:
+        str = tr("Other");
+        break;
+    }
+
+    return str;
+}
+
+
+
+QString Imap::networkProtocolToString(quint8 nlp)
+{
+    return networkProtocolToString(static_cast<QAbstractSocket::NetworkLayerProtocol>(nlp));
+}

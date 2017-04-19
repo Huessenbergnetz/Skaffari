@@ -39,33 +39,38 @@ Setup::Setup(const QString &confFile) :
 
 int Setup::exec() const
 {
+    printMessage(tr("Start to configure Skaffari."));
+
+    printStatus(tr("Checking configuration file"));
+
     bool configExists = m_confFile.exists();
     if (configExists) {
         if (!m_confFile.isReadable()) {
-            printf("%s\n", qUtf8Printable(tr("Configuration file exists at %1 but is not readable.").arg(m_confFile.absoluteFilePath())));
-            return 1;
+            printFailed();
+            return fileError(tr("Configuration file exists at %1 but is not readable.").arg(m_confFile.absoluteFilePath()));
         }
 
         if (!m_confFile.isWritable()) {
-            printf("%s\n", qUtf8Printable(tr("Configuration file exists at %1 but is not writable.").arg(m_confFile.absoluteFilePath())));
-            return 1;
+            printFailed();
+            return fileError(tr("Configuration file exists at %1 but is not writable.").arg(m_confFile.absoluteFilePath()));
         }
-
-        printf("%s\n", qUtf8Printable(tr("Using existing configuration file at %1.").arg(m_confFile.absoluteFilePath())));
+        printDone();
+        printMessage(tr("Using existing configuration file at %1.").arg(m_confFile.absoluteFilePath()));
 
     } else {
 
         QDir confDir = m_confFile.absoluteDir();
         QFileInfo confDirInfo(confDir.absolutePath());
         if (!confDir.exists() && !confDir.mkpath(confDir.absolutePath())) {
-            printf("%s\n", qUtf8Printable(tr("Failed to create configuation directory at %1.").arg(confDir.absolutePath())));
-            return 1;
+            printFailed();
+            return fileError(tr("Failed to create configuation directory at %1.").arg(confDir.absolutePath()));
         } else if (confDir.exists() && !confDirInfo.isWritable()) {
-            printf("%s\n", qUtf8Printable(tr("Can not write to configuration directory at %1.").arg(confDir.absolutePath())));
-            return 1;
+            printFailed();
+            return fileError(tr("Can not write to configuration directory at %1.").arg(confDir.absolutePath()));
         }
 
-        printf("%s\n", qUtf8Printable(tr("Creating configuration file at %1.").arg(m_confFile.absoluteFilePath())));
+        printDone();
+        printMessage(tr("Creating configuration file at %1.").arg(m_confFile.absoluteFilePath()));
     }
 
 
@@ -82,18 +87,29 @@ int Setup::exec() const
     Database db;
 
     bool dbaccess = false;
-    if (configExists) {
+    if (configExists && !dbpass.isEmpty()) {
+        printTable({
+                       {tr("Type"), dbtype},
+                       {tr("Host"), dbhost},
+                       {tr("Port"), QString::number(dbport)},
+                       {tr("Name"), dbname},
+                       {tr("User"), dbuser},
+                       {tr("Password"), QStringLiteral("********")}
+                   }, tr("Database settings"));
+        printStatus(tr("Establishing database connection"));
         dbaccess = db.open(dbtype, dbhost, dbport, dbname, dbuser, dbpass);
         if (dbaccess) {
-            printf("%s\n", qUtf8Printable(tr("Successfully establisched database connection.")));
+            printDone();
+        } else {
+            printFailed();
         }
     }
 
     if (!dbaccess) {
         if (configExists) {
-            printf("%s\n", qUtf8Printable(tr("Failed to establish database connection. Please reenter your connection data.")));
+            printMessage(tr("Failed to establish database connection. Please reenter your connection data."));
         } else {
-            printf("%s\n", qUtf8Printable(tr("Please enter the data to connect to your database system.")));
+            printMessage(tr("Please enter the data to connect to your database system."));
         }
 
         dbtype = readString(tr("DB Type"), dbtype);
@@ -105,14 +121,14 @@ int Setup::exec() const
         dbuser = readString(tr("DB User"), dbuser);
         dbpass = readString(tr("DB Password"), dbpass);
 
-        printf("%s\n", qUtf8Printable(tr("Trying to establish database connection.")));
+        printStatus(tr("Establishing database connection"));
 
         if (!db.open()) {
-            printf("%s\n", qUtf8Printable(tr("Failed to establish database connection. Aborting.")));
-            return 1;
+            printFailed();
+            return dbError(db.lastDbError());
+        } else {
+            printDone();
         }
-
-        printf("%s\n", qUtf8Printable("Connection to database successfully established. Writing configuration to file."));
 
         os.beginGroup(QStringLiteral("Database"));
         os.setValue(QStringLiteral("type"), dbtype);
@@ -125,18 +141,32 @@ int Setup::exec() const
         os.sync();
     }
 
+    printStatus(tr("Checking database layout"));
+
     const QVersionNumber installedVersion = db.installedVersion();
     if (!installedVersion.isNull()) {
-        printf("%s\n", qUtf8Printable(tr("Found Skaffari database installation of version %1.").arg(installedVersion.toString())));
+        printDone(installedVersion.toString());
     } else {
-        printf("%s\n", qUtf8Printable(tr("Performing database installation.")));
+        printFailed();
+        printStatus(tr("Performing database installation"));
         if (!db.installDatabase()) {
-            return 1;
+            printFailed();
+            return dbError(db.lastDbError());
+        } else {
+            printDone();
         }
     }
 
-    if (dbaccess && !db.checkAdmin()) {
-        printf("%s\n", qUtf8Printable(tr("No admin users found in database. Please configure your admin password settings and create a new admin user.")));
+    printStatus(tr("Searching for available admin accounts"));
+    const uint adminCount = db.checkAdmin();
+    if (adminCount > 0) {
+        printDone(tr("Found %1").arg(adminCount));
+    } else {
+        printFailed(tr("None"));
+    }
+
+    if (adminCount == 0) {
+        printMessage(tr("Please configure your admin password settings and create a new admin user."));
 
         os.beginGroup(QStringLiteral("Admins"));
         QCryptographicHash::Algorithm adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(os.value(QStringLiteral("pwmethod"), 4).toInt());
@@ -144,18 +174,22 @@ int Setup::exec() const
         quint8 adminPasswordMinLength = os.value(QStringLiteral("pwminlength"), 8).value<quint8>();
         os.endGroup();
 
-        adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(readInt(tr("Admin password method"), static_cast<quint32>(adminPasswordMethod)));
-        adminPasswordRounds = readInt(tr("Admin password rounds"), adminPasswordRounds);
-        adminPasswordMinLength = readChar(tr("Admin password min length"), adminPasswordMinLength);
+        adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(readInt(tr("Password method"), static_cast<quint32>(adminPasswordMethod)));
+        adminPasswordRounds = readInt(tr("Password rounds"), adminPasswordRounds);
+        adminPasswordMinLength = readChar(tr("Minimum length"), adminPasswordMinLength);
 
-        const QString adminUser = readString(tr("Admin user name"), QStringLiteral("admin"));
-        const QString adminPass = readString(tr("Admin password"), QString());
+        const QString adminUser = readString(tr("User name"), QStringLiteral("admin"));
+        const QString adminPass = readString(tr("Password"), QString());
 
         const QByteArray pw = Cutelyst::CredentialPassword::createPassword(adminPass.toUtf8(), adminPasswordMethod, adminPasswordRounds, 24, 27);
 
+        printStatus(tr("Creating new admin account in database"));
         if (!db.setAdmin(adminUser, pw)) {
-            return 1;
+            printFailed();
+            return dbError(db.lastDbError());
         }
+
+        printDone();
 
         os.beginGroup(QStringLiteral("Admins"));
         os.setValue(QStringLiteral("pwmethod"), static_cast<int>(adminPasswordMethod));
@@ -164,11 +198,28 @@ int Setup::exec() const
         os.endGroup();
         os.sync();
 
-        printf("%s\n", qUtf8Printable(tr("Successfully created administrator account for user admin.")));
+    } else if ((adminCount == 0) || readBool(tr("Do you want to reset your admin password settings?"), false)) {
+
+        os.beginGroup(QStringLiteral("Admins"));
+        QCryptographicHash::Algorithm adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(os.value(QStringLiteral("pwmethod"), 4).toInt());
+        quint32 adminPasswordRounds = os.value(QStringLiteral("pwrounds"), 32000).value<quint32>();
+        quint8 adminPasswordMinLength = os.value(QStringLiteral("pwminlength"), 8).value<quint8>();
+        os.endGroup();
+
+        adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(readInt(tr("Password method"), static_cast<quint32>(adminPasswordMethod)));
+        adminPasswordRounds = readInt(tr("Password rounds"), adminPasswordRounds);
+        adminPasswordMinLength = readChar(tr("Minimum length"), adminPasswordMinLength);
+
+        os.beginGroup(QStringLiteral("Admins"));
+        os.setValue(QStringLiteral("pwmethod"), static_cast<int>(adminPasswordMethod));
+        os.setValue(QStringLiteral("pwrounds"), adminPasswordRounds);
+        os.setValue(QStringLiteral("pwminlength"), adminPasswordMinLength);
+        os.endGroup();
+        os.sync();
     }
 
 
-    if (!configExists || readBool(tr("Set the mail account password encryption?"), false)) {
+    if (!configExists || readBool(tr("Do you want to reset the user password settings?"), false)) {
 
         os.beginGroup(QStringLiteral("Accounts"));
         Password::Type accountsPwType = static_cast<Password::Type>(os.value(QStringLiteral("pwtype"), 1).value<quint8>());
@@ -205,8 +256,40 @@ int Setup::exec() const
         os.sync();
     }
 
+    printStatus(tr("Checking for Cyrus IMAP admin account"));
+    QString cyrusAdmin = db.checkCyrusAdmin();
+    if (!cyrusAdmin.isEmpty()) {
+        printDone(cyrusAdmin);
+    } else {
+        printFailed(tr("None"));
+
+        printMessage(tr("Create the Cyrus IMAP server admin account."));
+        cyrusAdmin = readString(tr("Cyrus admin user"), QStringLiteral("cyrus"));
+        Password cyrusAdminPw(readString(tr("Cyrus admin password"), QString()));
+
+        printStatus(tr("Creating Cyrus admin user in database"));
+        os.beginGroup(QStringLiteral("Accounts"));
+        Password::Type accountsPwType = static_cast<Password::Type>(os.value(QStringLiteral("pwtype"), 1).value<quint8>());
+        Password::Method accountsPwMethod = static_cast<Password::Method>(os.value(QStringLiteral("pwmethod"), 0).value<quint8>());
+        quint32 accountsPwRounds = os.value(QStringLiteral("pwrounds"), 5000).value<quint32>();
+        os.endGroup();
+        QByteArray cyrusAdminPwEnc = cyrusAdminPw.encrypt(accountsPwType, accountsPwMethod, accountsPwRounds);
+        if (cyrusAdminPwEnc.isEmpty()) {
+            printFailed();
+            return configError(tr("Failed to encrypt Cyrus admin password."));
+        }
+
+        if (!db.setCryusAdmin(cyrusAdmin, cyrusAdminPwEnc)) {
+            printFailed();
+            return dbError(db.lastDbError());
+        }
+
+        printDone();
+    }
+
+
     os.beginGroup(QStringLiteral("IMAP"));
-    QString imapuser = os.value(QStringLiteral("user"), QStringLiteral("cyrus")).toString();
+    QString imapuser = os.value(QStringLiteral("user"), cyrusAdmin).toString();
     QString imappass = os.value(QStringLiteral("password")).toString();
     QString imaphost = os.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
     quint16 imapport = os.value(QStringLiteral("port"), 143).value<quint16>();
@@ -215,26 +298,40 @@ int Setup::exec() const
     os.endGroup();
 
     bool imapaccess = false;
-    Imap ic(imapuser, imappass, imaphost, imapport, static_cast<QAbstractSocket::NetworkLayerProtocol>(imapprotocol), static_cast<Imap::EncryptionType>(imapencryption));
-    if (configExists) {
-        printf("%s\n", qUtf8Printable(tr("Try to login to the IMAP server.")));
-        imapaccess = ic.login();
+    Imap imap;
+
+    if (configExists && !imappass.isEmpty()) {
+        printTable({
+                       {tr("Host"), imaphost},
+                       {tr("Port"), QString::number(imapport)},
+                       {tr("Protocol"), Imap::networkProtocolToString(imapprotocol)},
+                       {tr("Encryption"), Imap::encryptionTypeToString(imapencryption)},
+                       {tr("User"), imapuser},
+                       {tr("Password"), QStringLiteral("********")}
+                   }, tr("IMAP settings"));
+
+        printStatus(tr("Establishing IMAP connection"));
+        imap.setHost(imaphost);
+        imap.setPort(imapport);
+        imap.setUser(imapuser);
+        imap.setPassword(imappass);
+        imap.setProtocol(static_cast<QAbstractSocket::NetworkLayerProtocol>(imapprotocol));
+        imap.setEncryptionType(static_cast<Imap::EncryptionType>(imapencryption));
+        imapaccess = imap.login();
         if (imapaccess) {
-            printf("%s\n", qUtf8Printable(tr("Login to IMAP server was successful.")));
-            const QStringList caps = ic.getCapabilities();
-            ic.logout();
-            if (caps.empty()) {
-                return 1;
-            }
-            printf("%s\n", qUtf8Printable(tr("Your IMAP server supports the following capabilities: %1").arg(caps.join(QStringLiteral(", ")))));
+            printDone();
+            imap.logout();
+        } else {
+            printFailed();
         }
     }
 
-    if (!imapaccess) {
-        if (configExists) {
-            printf("%s\n", qUtf8Printable(tr("Failed to login into the IMAP server. Please reenter your connection data.")));
+    if (imappass.isEmpty() || !imapaccess || readBool(tr("Do you want to reset your IMAP connection settings?"), false)) {
+
+        if (!imapaccess) {
+            printMessage(tr("Connection to your IMAP server failed. Please reenter your connection data."));
         } else {
-            printf("%s\n", qUtf8Printable(tr("Please enter the data to connect to your IMAP server.")));
+            printMessage(tr("Please enter the data to connect to your IMAP server."));
         }
 
         imaphost = readString(tr("IMAP Host"), imaphost);
@@ -244,29 +341,21 @@ int Setup::exec() const
         imapprotocol = readChar(tr("IMAP Protocol"), imapprotocol);
         imapencryption = readChar(tr("IMAP Encryption"), imapencryption);
 
-        ic.setHost(imaphost);
-        ic.setPort(imapport);
-        ic.setUser(imapuser);
-        ic.setPassword(imappass);
-        ic.setProtocol(static_cast<QAbstractSocket::NetworkLayerProtocol>(imapprotocol));
-        ic.setEncryptionType(static_cast<Imap::EncryptionType>(imapencryption));
-
-        printf("%s\n", qUtf8Printable(tr("Try to login into the IMAP server.")));
-
-        if (!ic.login()) {
-            printf("%s\n", qUtf8Printable(tr("Failed to login into the IMAP server. Aborting.")));
-            return 1;
+        printStatus(tr("Establishing IMAP connection"));
+        imap.setHost(imaphost);
+        imap.setPort(imapport);
+        imap.setUser(imapuser);
+        imap.setPassword(imappass);
+        imap.setProtocol(static_cast<QAbstractSocket::NetworkLayerProtocol>(imapprotocol));
+        imap.setEncryptionType(static_cast<Imap::EncryptionType>(imapencryption));
+        imapaccess = imap.login();
+        if (imapaccess) {
+            printDone();
+            imap.logout();
+        } else {
+            printFailed();
+            return imapError(tr("Failed to establish connection to IMAP server."));
         }
-
-        printf("%s\n", qUtf8Printable(tr("Login to IMAP server was successful.")));
-
-        const QStringList caps = ic.getCapabilities();
-        ic.logout();
-        if (caps.empty()) {
-            return 1;
-        }
-
-        printf("%s\n", qUtf8Printable(tr("Your IMAP server supports the following capabilities: %1").arg(caps.join(QStringLiteral(", ")))));
 
         os.beginGroup(QStringLiteral("IMAP"));
         os.setValue(QStringLiteral("host"), imaphost);
@@ -279,7 +368,6 @@ int Setup::exec() const
         os.sync();
 
     }
-
 
     if (!configExists || readBool(tr("Set other IMAP settings?"), false)) {
 
@@ -325,19 +413,17 @@ int Setup::exec() const
         os.sync();
     }
 
-    printf("%s\n", qUtf8Printable(tr("Skaffari setup was successful.")));
+    printSuccess(tr("Skaffari setup was successful."));
 
     return 0;
 }
 
 
-QString Setup::readString(const QString &name, const QString &defaultVal, const QString &desc) const
+QString Setup::readString(const QString &name, const QString &defaultVal, const QStringList &desc) const
 {
     QString inputVal;
 
-    if (!desc.isEmpty()) {
-        printf("%s\n", qUtf8Printable(desc));
-    }
+    printDesc(desc);
 
     while (inputVal.isEmpty()) {
         if (!defaultVal.isEmpty()) {
@@ -360,14 +446,11 @@ QString Setup::readString(const QString &name, const QString &defaultVal, const 
 }
 
 
-quint16 Setup::readPort(const QString &name, quint16 defaultVal, const QString &desc) const
+quint16 Setup::readPort(const QString &name, quint16 defaultVal, const QStringList &desc) const
 {
     quint16 inputVal = 0;
 
-    if (!desc.isEmpty()) {
-        printf("%s\n", qUtf8Printable(desc));
-    }
-
+    printDesc(desc);
 
     printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
     std::string in;
@@ -383,13 +466,11 @@ quint16 Setup::readPort(const QString &name, quint16 defaultVal, const QString &
 }
 
 
-quint8 Setup::readChar(const QString &name, quint8 defaultVal, const QString &desc) const
+quint8 Setup::readChar(const QString &name, quint8 defaultVal, const QStringList &desc) const
 {
     quint8 inputVal = 0;
 
-    if (!desc.isEmpty()) {
-        printf("%s\n", qUtf8Printable(desc));
-    }
+    printDesc(desc);
 
     printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
     std::string in;
@@ -405,13 +486,11 @@ quint8 Setup::readChar(const QString &name, quint8 defaultVal, const QString &de
 }
 
 
-quint32 Setup::readInt(const QString &name, quint32 defaultVal, const QString &desc) const
+quint32 Setup::readInt(const QString &name, quint32 defaultVal, const QStringList &desc) const
 {
     quint32 inputVal = 0;
 
-    if (!desc.isEmpty()) {
-        printf("%s\n", qUtf8Printable(desc));
-    }
+    printDesc(desc);
 
     printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
     std::string in;
@@ -427,13 +506,11 @@ quint32 Setup::readInt(const QString &name, quint32 defaultVal, const QString &d
 }
 
 
-bool Setup::readBool(const QString &name, bool defaultVal, const QString &desc) const
+bool Setup::readBool(const QString &name, bool defaultVal, const QStringList &desc) const
 {
     bool retVal = false;
 
-    if (!desc.isEmpty()) {
-        printf("%s\n", qUtf8Printable(desc));
-    }
+    printDesc(desc);
 
     static const QStringList posVals({
                                          //: short for yes
