@@ -54,7 +54,8 @@ public:
     enum CreateMailbox : quint8 {
         DoNotCreate         = 0,
         LoginAfterCreation  = 1,
-        CreateBySkaffari    = 2
+        OnlySetQuota        = 2,
+        CreateBySkaffari    = 3
     };
 
     quint32 getId() const;
