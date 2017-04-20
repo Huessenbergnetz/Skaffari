@@ -40,6 +40,7 @@
 #include "objects/simpledomain.h"
 #include "objects/adminaccount.h"
 #include "objects/account.h"
+#include "objects/folder.h"
 
 #include "utils/language.h"
 
@@ -67,6 +68,7 @@ Skaffari::~Skaffari()
 
 bool Skaffari::init()
 {
+    qRegisterMetaType<Folder>();
     qRegisterMetaType<Domain>();
     qRegisterMetaType<SimpleAdmin>();
     qRegisterMetaType<SimpleDomain>();
@@ -74,6 +76,7 @@ bool Skaffari::init()
     qRegisterMetaType<Language>();
     qRegisterMetaType<Account>();
 
+    Grantlee::registerMetaType<Folder>();
     Grantlee::registerMetaType<Domain>();
     Grantlee::registerMetaType<SimpleAdmin>();
     Grantlee::registerMetaType<SimpleDomain>();
