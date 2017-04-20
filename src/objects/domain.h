@@ -28,8 +28,12 @@
 #include <grantlee5/grantlee/metatype.h>
 #include <Cutelyst/ParamsMultiMap>
 #include <math.h>
+#include <QLoggingCategory>
 
 #include "simpleadmin.h"
+#include "folder.h"
+
+Q_DECLARE_LOGGING_CATEGORY(SK_DOMAIN)
 
 namespace Cutelyst {
 class Context;
@@ -46,7 +50,7 @@ class Domain
 {
 public:
     Domain();
-    Domain(quint32 id, const QString &name, const QString &prefix, const QString &transport, quint32 quota, quint32 maxAccounts, quint32 domainQuota, quint32 domainQuotaUsed, bool freeNames, bool freeAddress, const QStringList &folders, quint32 accounts, const QDateTime &created, const QDateTime &updated);
+    Domain(quint32 id, const QString &name, const QString &prefix, const QString &transport, quint32 quota, quint32 maxAccounts, quint32 domainQuota, quint32 domainQuotaUsed, bool freeNames, bool freeAddress, const QVector<Folder> &folders, quint32 accounts, const QDateTime &created, const QDateTime &updated);
 	Domain(const Domain &other);
 	Domain& operator=(const Domain &other);
     ~Domain();
@@ -61,7 +65,7 @@ public:
     quint32 getDomainQuotaUsed() const;
     bool isFreeNamesEnabled() const;
     bool isFreeAddressEnabled() const;
-    QStringList getFolders() const;
+    QVector<Folder> getFolders() const;
     quint32 getAccounts() const;
     QVector<SimpleAdmin> getAdmins() const;
     /*!
@@ -90,7 +94,7 @@ public:
     void setDomainQuotaUsed(quint32 nDomainQuotaUsed);
     void setFreeNamesEnabled(bool nFreeNames);
     void setFreeAddressEnabled(bool nFreeAddress);
-    void setFolders(const QStringList &nFolders);
+    void setFolders(const QVector<Folder> &nFolders);
     void setAccounts(quint32 nAccounts);
     void setAdmins(const QVector<SimpleAdmin> &adminList);
     /*!

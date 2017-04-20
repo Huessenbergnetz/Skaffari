@@ -27,7 +27,7 @@ class DomainData : public QSharedData
 public:
     DomainData() {}
 
-    DomainData(quint32 _id, const QString &_name, const QString &_prefix, const QString &_transport, quint32 _quota, quint32 _maxAccounts, quint32 _domainQuota, quint32 _domainQuotaUsed, bool _freeNames, bool _freeAddress, const QStringList &_folders, quint32 _accounts, const QDateTime &_created, const QDateTime &_updated) :
+    DomainData(quint32 _id, const QString &_name, const QString &_prefix, const QString &_transport, quint32 _quota, quint32 _maxAccounts, quint32 _domainQuota, quint32 _domainQuotaUsed, bool _freeNames, bool _freeAddress, const QVector<Folder> &_folders, quint32 _accounts, const QDateTime &_created, const QDateTime &_updated) :
         id(_id),
         name(_name),
         prefix(_prefix),
@@ -74,7 +74,7 @@ public:
     quint32 domainQuotaUsed = 0;
     bool freeNames = false;
     bool freeAddress = false;
-    QStringList folders;
+    QVector<Folder> folders;
     quint32 accounts = 0;
     QDateTime created;
     QDateTime updated;
