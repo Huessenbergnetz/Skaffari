@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS accountuser (
   updated_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   valid_until datetime NOT NULL DEFAULT '2998-12-31 23:59:59'
   UNIQUE KEY username (username)
+  KEY idx_accountuser_domain_id (domain_id)
 ) ENGINE = MyISAM;
-
 
 
 CREATE TABLE IF NOT EXISTS adminuser (
@@ -29,7 +29,6 @@ CREATE TABLE IF NOT EXISTS adminuser (
 ) ENGINE = MyISAM;
 
 
-
 CREATE TABLE IF NOT EXISTS alias (
   alias varchar(255) NOT NULL DEFAULT '',
   dest longtext,
@@ -37,7 +36,6 @@ CREATE TABLE IF NOT EXISTS alias (
   status int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (alias)
 ) ENGINE = MyISAM;
-
 
 
 CREATE TABLE IF NOT EXISTS domain (
@@ -51,7 +49,6 @@ CREATE TABLE IF NOT EXISTS domain (
   transport varchar(255) NOT NULL DEFAULT 'cyrus',
   freenames tinyint(1) unsigned NOT NULL DEFAULT 0,
   freeaddress tinyint(1) unsigned NOT NULL DEFAULT 0,
-  folders varchar(255) DEFAULT '',
   accountcount int(10) unsigned NOT NULL DEFAULT 0,
   created_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   updated_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
@@ -60,12 +57,19 @@ CREATE TABLE IF NOT EXISTS domain (
 ) ENGINE = MyISAM;
 
 
+CREATE TABLE IF NOT EXISTS folder (
+  id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  domain_id int(10) unsigned NOT NULL,
+  name varchar(255) NOT NULL,
+  special_use text,
+  KEY idx_folder_domain_id (domain_id)
+) ENGINE = MyISAM;
+
 
 CREATE TABLE IF NOT EXISTS domainadmin (
   domain_id int(10) unsigned NOT NULL,
   admin_id int(10) unsigned NOT NULL
 ) ENGINE = MyISAM;
-
 
 
 CREATE TABLE IF NOT EXISTS log (
