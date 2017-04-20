@@ -46,7 +46,14 @@ Database::Database(const QString &type, const QString &host, quint16 port, const
 
 bool Database::open()
 {
-    return m_db.open();
+    bool ret = false;
+    ret = m_db.open();
+    if (Q_LIKELY(ret)) {
+        m_lastError = QSqlError();
+    } else {
+        m_lastError = m_db.lastError();
+    }
+    return ret;
 }
 
 
@@ -64,13 +71,13 @@ bool Database::open(const QString &type, const QString &host, quint16 port, cons
         m_db.setPort(port);
     }
 
-    return m_db.open();
+    return open();
 }
 
 
 QSqlError Database::lastDbError() const
 {
-    return m_db.lastError();
+    return m_lastError;
 }
 
 
@@ -82,7 +89,7 @@ QVersionNumber Database::installedVersion() const
 
     q.exec(QStringLiteral("SELECT val FROM systeminfo WHERE name = 'skaffari_db_version'"));
 
-    if (q.next()) {
+    if (Q_LIKELY(q.next())) {
         version = QVersionNumber::fromString(q.value(0).toString());
     }
 
@@ -95,7 +102,7 @@ QVersionNumber Database::sqlFilesVersion() const
     QVersionNumber version;
 
     QFileInfoList fil = getSqlFiles();
-    if (!fil.empty()) {
+    if (Q_LIKELY(!fil.empty())) {
         QString fn = fil.last().fileName();
         fn.chop(4);
         version = QVersionNumber::fromString(fn);
@@ -105,20 +112,20 @@ QVersionNumber Database::sqlFilesVersion() const
 }
 
 
-bool Database::installDatabase() const
+bool Database::installDatabase()
 {
     bool success = false;
 
     const QFileInfoList fil = getSqlFiles();
-    if (fil.empty()) {
-        printf("%s\n", qUtf8Printable(tr("Empty SQL file list. Aborting.")));
+    if (Q_UNLIKELY(fil.empty())) {
+        m_lastError = QSqlError(tr("Empty SQL file list. Aborting."), QString(), QSqlError::UnknownError);
         return success;
     }
 
     for (const QFileInfo &fi : fil) {
         QFile f(fi.absoluteFilePath());
-        if (!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
-            printf("%s\n", qUtf8Printable(tr("Failed to open file %1 for reading. Aborting.").arg(fi.absoluteFilePath())));
+        if (Q_UNLIKELY(!f.open(QIODevice::ReadOnly|QIODevice::Text))) {
+            m_lastError = QSqlError(tr("Failed to open file %1 for reading. Aborting.").arg(fi.absoluteFilePath()), QString(), QSqlError::UnknownError);
             return success;
         }
         f.close();
@@ -127,14 +134,14 @@ bool Database::installDatabase() const
     QSqlQuery q(m_db);
 
     for (const QFileInfo &fi : fil) {
-        printf("%s\n", qUtf8Printable(tr("Applying SQL statements from %1.").arg(fi.absoluteFilePath())));
+//        printf("%s\n", qUtf8Printable(tr("Applying SQL statements from %1.").arg(fi.absoluteFilePath())));
         QFile f(fi.absoluteFilePath());
         f.open(QIODevice::ReadOnly|QIODevice::Text);
         QTextStream in(&f);
         const QString sql = in.readAll();
-        if (!q.exec(sql)) {
-            printf("%s\n", qUtf8Printable(q.lastError().text()));
-            printf("%s\n", qUtf8Printable(tr("Failed to apply SQL statements from %1. Aborting.").arg(fi.absoluteFilePath())));
+        if (Q_UNLIKELY(!q.exec(sql))) {
+            m_lastError = q.lastError();
+            m_lastError.setDriverText(tr("Failed to apply SQL statements from %1. Aborting.").arg(fi.absoluteFilePath()));
             return success;
         }
     }
@@ -144,21 +151,21 @@ bool Database::installDatabase() const
     return success;
 }
 
-bool Database::setAdmin(const QString &adminUser, const QByteArray &adminPassword) const
+bool Database::setAdmin(const QString &adminUser, const QByteArray &adminPassword)
 {
     bool ret = false;
 
     const int id = setAdminAccount(adminUser, adminPassword);
-    if (id <= 0) {
+    if (Q_UNLIKELY(id <= 0)) {
         return ret;
     }
 
-    if (!setAdminSettings(id)) {
+    if (Q_UNLIKELY(!setAdminSettings(id))) {
         rollbackAdminAccount(id);
         return ret;
     }
 
-    if (!setAdminDomains(id)) {
+    if (Q_UNLIKELY(!setAdminDomains(id))) {
         rollbackAdminSettings(id);
         rollbackAdminAccount(id);
         return ret;
@@ -170,23 +177,25 @@ bool Database::setAdmin(const QString &adminUser, const QByteArray &adminPasswor
 }
 
 
-int Database::setAdminAccount(const QString &user, const QByteArray &pass) const
+int Database::setAdminAccount(const QString &user, const QByteArray &pass)
 {
     int id = 0;
 
     QSqlQuery q(m_db);
-    if (!q.prepare(QStringLiteral("INSERT INTO adminuser (username, password) VALUES (?, ?)"))) {
-        printf("%s\n", qUtf8Printable(q.lastError().text()));
-        printf("%s\n", qUtf8Printable(tr("Failed to create admin account in database. Aborting.")));
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO adminuser (username, password, type, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")))) {
+        m_lastError = q.lastError();
         return id;
     }
 
+    QDateTime current = QDateTime::currentDateTimeUtc();
     q.addBindValue(user);
     q.addBindValue(pass);
+    q.addBindValue(0);
+    q.addBindValue(current);
+    q.addBindValue(current);
 
-    if (!q.exec()) {
-        printf("%s\n", qUtf8Printable(q.lastError().text()));
-        printf("%s\n", qUtf8Printable(tr("Failed to create admin account in database. Aborting.")));
+    if (Q_UNLIKELY(!q.exec())) {
+        m_lastError = q.lastError();
         return id;
     }
 
@@ -201,17 +210,13 @@ bool Database::rollbackAdminAccount(int adminId) const
     bool ret = false;
 
     QSqlQuery q(m_db);
-    if (!q.prepare(QStringLiteral("DELETE FROM adminuser WHERE id = ?"))) {
-        printf("%s\n", qUtf8Printable(q.lastError().text()));
-        printf("%s\n", qUtf8Printable(tr("Failed to revert admin account changes in database. Aborting.")));
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM adminuser WHERE id = ?")))) {
         return ret;
     }
 
     q.addBindValue(adminId);
 
-    if (!q.exec()) {
-        printf("%s\n", qUtf8Printable(q.lastError().text()));
-        printf("%s\n", qUtf8Printable(tr("Failed to revert admin account changes in database. Aborting.")));
+    if (Q_UNLIKELY(!q.exec())) {
         return ret;
     }
 
@@ -221,22 +226,20 @@ bool Database::rollbackAdminAccount(int adminId) const
 }
 
 
-bool Database::setAdminSettings(int adminId) const
+bool Database::setAdminSettings(int adminId)
 {
     bool ret = false;
 
     QSqlQuery q(m_db);
-    if (!q.prepare(QStringLiteral("INSERT INTO settings (admin_id) VALUES (?)"))) {
-        printf("%s\n", qUtf8Printable(q.lastError().text()));
-        printf("%s\n", qUtf8Printable(tr("Failed to insert admin settings into database. Aborting.")));
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO settings (admin_id) VALUES (?)")))) {
+        m_lastError = q.lastError();
         return ret;
     }
 
     q.addBindValue(adminId);
 
-    if (!q.exec()) {
-        printf("%s\n", qUtf8Printable(q.lastError().text()));
-        printf("%s\n", qUtf8Printable(tr("Failed to insert admin settings into database. Aborting.")));
+    if (Q_UNLIKELY(!q.exec())) {
+        m_lastError = q.lastError();
         return ret;
     }
 
@@ -251,17 +254,13 @@ bool Database::rollbackAdminSettings(int adminId) const
     bool ret = false;
 
     QSqlQuery q(m_db);
-    if (!q.prepare(QStringLiteral("DELETE FROM settings WHERE admin_id = ?"))) {
-        printf("%s\n", qUtf8Printable(q.lastError().text()));
-        printf("%s\n", qUtf8Printable(tr("Failed to revert admin settings in database. Aborting.")));
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM settings WHERE admin_id = ?")))) {
         return ret;
     }
 
     q.addBindValue(adminId);
 
-    if (!q.exec()) {
-        printf("%s\n", qUtf8Printable(q.lastError().text()));
-        printf("%s\n", qUtf8Printable(tr("Failed to revert admin settings in database. Aborting.")));
+    if (Q_UNLIKELY(!q.exec())) {
         return ret;
     }
 
@@ -271,22 +270,20 @@ bool Database::rollbackAdminSettings(int adminId) const
 }
 
 
-bool Database::setAdminDomains(int adminId) const
+bool Database::setAdminDomains(int adminId)
 {
     bool ret = false;
 
     QSqlQuery q(m_db);
-    if (!q.prepare(QStringLiteral("INSERT INTO domainadmin (domain_id, admin_id) VALUES (0, ?)"))) {
-        printf("%s\n", qUtf8Printable(q.lastError().text()));
-        printf("%s\n", qUtf8Printable(tr("Failed to insert admin to domain connection into database. Aborting.")));
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO domainadmin (domain_id, admin_id) VALUES (0, ?)")))) {
+        m_lastError = q.lastError();
         return ret;
     }
 
     q.addBindValue(adminId);
 
-    if (!q.exec()) {
-        printf("%s\n", qUtf8Printable(q.lastError().text()));
-        printf("%s\n", qUtf8Printable(tr("Failed to insert admin to domain connection into database. Aborting.")));
+    if (Q_UNLIKELY(!q.exec())) {
+        m_lastError = q.lastError();
         return ret;
     }
 
@@ -301,17 +298,13 @@ bool Database::rollbackAdminDomains(int adminId) const
     bool ret = false;
 
     QSqlQuery q(m_db);
-    if (!q.prepare(QStringLiteral("DELETE FROM domainadmin WHERE admin_id = ?"))) {
-        printf("%s\n", qUtf8Printable(q.lastError().text()));
-        printf("%s\n", qUtf8Printable(tr("Failed to revert admin to domain connections in database. Aborting.")));
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM domainadmin WHERE admin_id = ?")))) {
         return ret;
     }
 
     q.addBindValue(adminId);
 
-    if (!q.exec()) {
-        printf("%s\n", qUtf8Printable(q.lastError().text()));
-        printf("%s\n", qUtf8Printable(tr("Failed to revert admin to domain connections in database. Aborting.")));
+    if (Q_UNLIKELY(!q.exec())) {
         return ret;
     }
 
@@ -329,7 +322,7 @@ uint Database::checkAdmin() const
 
     q.exec(QStringLiteral("SELECT COUNT(id) FROM adminuser WHERE type = 0"));
 
-    if (q.next()) {
+    if (Q_LIKELY(q.next())) {
         adminCount = q.value(0).toUInt();
     }
 
@@ -337,12 +330,13 @@ uint Database::checkAdmin() const
 }
 
 
-bool Database::setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusPassword) const
+bool Database::setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusPassword)
 {
     bool ret = false;
 
     QSqlQuery q(m_db);
-    if (!q.prepare(QStringLiteral("INSERT INTO accountuser (username, domain_id, password, prefix, domain_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"))) {
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO accountuser (username, domain_id, password, prefix, domain_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)")))) {
+        m_lastError = q.lastError();
         return ret;
     }
 
@@ -357,6 +351,9 @@ bool Database::setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusP
     q.addBindValue(current);
 
     ret = q.exec();
+    if (Q_UNLIKELY(!ret)) {
+        m_lastError = q.lastError();
+    }
 
     return ret;
 }
@@ -370,7 +367,7 @@ QString Database::checkCyrusAdmin() const
 
     q.exec(QStringLiteral("SELECT username FROM accountuser WHERE prefix = '' AND domain_name = ''"));
 
-    if (q.next()) {
+    if (Q_LIKELY(q.next())) {
         admin = q.value(0).toString();
     }
 

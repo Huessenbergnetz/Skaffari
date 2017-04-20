@@ -18,6 +18,8 @@
 
 #include "consoleoutput.h"
 #include <cstdio>
+#include <iostream>
+#include <string>
 #include <QSqlQuery>
 #include <QSqlDatabase>
 #include <QSqlError>
@@ -144,7 +146,27 @@ void ConsoleOutput::printSuccess(const QString &message) const
 
 void ConsoleOutput::printDesc(const QString &desc) const
 {
-    printf("# %s\n", desc.toUtf8().constData());
+    if (desc.length() <= 95) {
+        printf("# %s\n", desc.toUtf8().constData());
+    } else {
+        const QStringList parts = desc.split(QStringLiteral(" "));
+        QStringList out;
+        int outSize = 0;
+        for (const QString &part : parts) {
+            if ((outSize + part.length() + 1) <= 95) {
+                out << part;
+                outSize += (part.length() + 1);
+            } else {
+                printf("# %s\n", out.join(QStringLiteral(" ")).toUtf8().constData());
+                out.clear();
+                out << part;
+                outSize = (part.length() + 1);
+            }
+        }
+        if (!out.isEmpty()) {
+            printf("# %s\n", out.join(QStringLiteral(" ")).toUtf8().constData());
+        }
+    }
 }
 
 
@@ -202,4 +224,155 @@ void ConsoleOutput::printTable(std::initializer_list<std::pair<QString, QString>
     }
 
     printf("%s\n", qUtf8Printable(devider));
+}
+
+
+
+
+QString ConsoleOutput::readString(const QString &name, const QString &defaultVal, const QStringList &desc, const QStringList acceptableInput) const
+{
+    QString inputVal;
+
+    printDesc(desc);
+
+    if (acceptableInput.empty()) {
+        while (inputVal.isEmpty()) {
+            if (!defaultVal.isEmpty()) {
+                printf("%s [%s]: ", qUtf8Printable(name), qUtf8Printable(defaultVal));
+            } else {
+                printf("%s: ", qUtf8Printable(name));
+            }
+            std::string in;
+            std::getline(std::cin, in);
+            inputVal = QString::fromStdString(in);
+            if (inputVal.isEmpty() && !defaultVal.isEmpty()) {
+                inputVal = defaultVal;
+            }
+            if (inputVal.isEmpty()) {
+                printf("%s\n", qUtf8Printable(tr("Can not be empty.")));
+            }
+        }
+    } else {
+        while (!acceptableInput.contains(inputVal)) {
+            if (!defaultVal.isEmpty()) {
+                printf("%s [%s]: ", qUtf8Printable(name), qUtf8Printable(defaultVal));
+            } else {
+                printf("%s: ", qUtf8Printable(name));
+            }
+            std::string in;
+            std::getline(std::cin, in);
+            inputVal = QString::fromStdString(in);
+            if (inputVal.isEmpty() && !defaultVal.isEmpty()) {
+                inputVal = defaultVal;
+            }
+        }
+    }
+
+    return inputVal;
+}
+
+
+quint16 ConsoleOutput::readPort(const QString &name, quint16 defaultVal, const QStringList &desc) const
+{
+    quint16 inputVal = 0;
+
+    printDesc(desc);
+
+    printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
+    std::string in;
+    std::getline(std::cin, in);
+    QString _inputVal = QString::fromStdString(in);
+    if (_inputVal.isEmpty()) {
+        inputVal = defaultVal;
+    } else {
+        inputVal = _inputVal.toUInt();
+    }
+
+    return inputVal;
+}
+
+
+quint8 ConsoleOutput::readChar(const QString &name, quint8 defaultVal, const QStringList &desc, const QList<quint8> acceptableInput) const
+{
+    quint8 inputVal = 255;
+
+    printDesc(desc);
+
+    if (acceptableInput.empty()) {
+        printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
+        std::string in;
+        std::getline(std::cin, in);
+        QString _inputVal = QString::fromStdString(in);
+        if (_inputVal.isEmpty()) {
+            inputVal = defaultVal;
+        } else {
+            inputVal = _inputVal.toUShort();
+        }
+    } else {
+        while(!acceptableInput.contains(inputVal)) {
+            printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
+            std::string in;
+            std::getline(std::cin, in);
+            QString _inputVal = QString::fromStdString(in);
+            if (_inputVal.isEmpty()) {
+                inputVal = defaultVal;
+            } else {
+                inputVal = _inputVal.toUShort();
+            }
+        }
+    }
+
+    return inputVal;
+}
+
+
+quint32 ConsoleOutput::readInt(const QString &name, quint32 defaultVal, const QStringList &desc) const
+{
+    quint32 inputVal = 0;
+
+    printDesc(desc);
+
+    printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
+    std::string in;
+    std::getline(std::cin, in);
+    QString _inputVal = QString::fromStdString(in);
+    if (_inputVal.isEmpty()) {
+        inputVal = defaultVal;
+    } else {
+        inputVal = _inputVal.toULong();
+    }
+
+    return inputVal;
+}
+
+
+bool ConsoleOutput::readBool(const QString &name, bool defaultVal, const QStringList &desc) const
+{
+    bool retVal = false;
+
+    printDesc(desc);
+
+    static const QStringList posVals({
+                                         //: short for yes
+                                         tr("Y"),
+                                         //: short for no
+                                         tr("N"),
+                                         tr("Yes"),
+                                         tr("No")
+                                     });
+    QString inStr;
+    const QString defAnswer = defaultVal ? tr("Yes") : tr("No");
+    while (!posVals.contains(inStr, Qt::CaseInsensitive)) {
+        printf("%s [%s]: ", qUtf8Printable(name), qUtf8Printable(defAnswer));
+        std::string in;
+        std::getline(std::cin, in);
+        inStr = QString::fromStdString(in);
+        if (inStr.isEmpty()) {
+            inStr = defAnswer;
+        }
+    }
+
+    retVal = ((inStr.compare(tr("Y"), Qt::CaseInsensitive) == 0) || (inStr.compare(tr("Yes"), Qt::CaseInsensitive) == 0));
+
+    return retVal;
 }

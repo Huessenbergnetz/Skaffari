@@ -20,8 +20,6 @@
 #define IMAP_H
 
 #include <QSslSocket>
-#include <QRegularExpression>
-#include <QRegularExpressionMatch>
 #include <QStringList>
 
 class Imap : public QSslSocket
@@ -62,6 +60,8 @@ public:
     static QString networkProtocolToString(QAbstractSocket::NetworkLayerProtocol nlp);
     static QString networkProtocolToString(quint8 nlp);
 
+    QString lastError() const;
+
 private:
     bool checkResponse(const QByteArray &resp, const QString &tag = QString());
     QString m_user;
@@ -71,8 +71,9 @@ private:
     NetworkLayerProtocol m_protocol = QAbstractSocket::AnyIPProtocol;
     EncryptionType m_encType = StartTLS;
     QString m_response;
-    QRegularExpression m_responseRegex = QRegularExpression(QStringLiteral("\\s*.* (OK|BAD|WARN) "));
-    QRegularExpressionMatch m_responseRegexMatch;
+    QString m_lastError;
+    bool m_loggedIn = false;
+    QStringList m_capabilities;
 };
 
 #endif // IMAP_H

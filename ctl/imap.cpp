@@ -17,7 +17,8 @@
  */
 
 #include "imap.h"
-#include <cstdio>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 
 Imap::Imap(QObject *parent) : QSslSocket(parent)
 {
@@ -40,6 +41,10 @@ Imap::~Imap()
 
 bool Imap::login()
 {
+    if (m_loggedIn) {
+        return true;
+    }
+
     if (this->state() == QAbstractSocket::UnconnectedState) {
         if (m_encType != IMAPS) {
             this->connectToHost(m_host, m_port, ReadWrite, m_protocol);
@@ -50,18 +55,18 @@ bool Imap::login()
 
     if (m_encType != IMAPS) {
         if (!this->waitForConnected(15000)) {
-            printf("%s\n", qUtf8Printable(tr("Connection to IMAP server timed out.")));
+            m_lastError = tr("Connection to IMAP server timed out while waiting for connection.");
             return false;
         }
     } else {
         if (!this->waitForEncrypted(15000)) {
-            printf("%s\n", qUtf8Printable(tr("Connection to IMAP server timed out.")));
+            m_lastError = tr("Connection to IMAP server timed out while waiting for SSL handshake to complete.");
             return false;
         }
     }
 
-    if (!this->waitForReadyRead(5000)) {
-        printf("%s\n", qUtf8Printable(tr("Connection to IMAP server timed out.")));
+    if (!this->waitForReadyRead(15000)) {
+        m_lastError = tr("Connection to IMAP server timed out while waiting for first response on login.");
         return false;
     }
 
@@ -77,7 +82,7 @@ bool Imap::login()
             this->write(startTLSCommand.toLatin1());
 
             if (!this->waitForReadyRead(5000)) {
-                printf("%s\n", qUtf8Printable(tr("Connection to IMAP server timed out.")));
+                m_lastError = tr("Connection to IMAP server timed out while wating for response to STARTTLS.");
                 return false;
             }
 
@@ -88,7 +93,7 @@ bool Imap::login()
             this->startClientEncryption();
 
         } else {
-            printf("%s\n", qUtf8Printable(tr("STARTLS is not supported. Aborting.")));
+            m_lastError = tr("STARTTLS is not supported. Aborting.");
             return false;
         }
     }
@@ -100,7 +105,7 @@ bool Imap::login()
     this->write(loginData.toLatin1());
 
     if (!this->waitForReadyRead(5000)) {
-        printf("%s\n", qUtf8Printable(tr("Connection to IMAP server timed out.")));
+        m_lastError = tr("Connection to IMAP server timed out while waiting for response to login data.");
         return false;
     }
 
@@ -108,28 +113,59 @@ bool Imap::login()
         return false;
     }
 
+    static const QRegularExpression capAfterLoginRegEx(QStringLiteral(".*\\[CAPABILITY (.*)\\]"));
+    const QRegularExpressionMatch match = capAfterLoginRegEx.match(m_response);
+    const QStringList capabilities = match.captured(1).split(QChar(' '), QString::SkipEmptyParts);
+    if (Q_LIKELY(!capabilities.empty())) {
+        m_capabilities = capabilities;
+    } else {
+        m_capabilities = getCapabilities();
+    }
+
+    m_loggedIn = true;
+
     return true;
 }
 
 
 bool Imap::logout()
 {
+    if (!m_loggedIn) {
+        return true;
+    }
+
     if (this->state() == UnconnectedState) {
+        m_loggedIn = false;
         return true;
     }
 
     if (this->state() == ClosingState) {
+        m_loggedIn = false;
         return true;
     }
 
-    static const QString logoutCommand(QStringLiteral(". LOGGOUT\n"));
+    static const QString logoutCommand(QStringLiteral(". LOGOUT\n"));
     this->write(logoutCommand.toLatin1());
 
-    if (this->waitForReadyRead(5000)) {
-        this->disconnect();
+    this->waitForReadyRead(5000);
+
+    if (Q_UNLIKELY(!this->checkResponse(this->readAll()))) {
+        this->disconnectFromHost();
+        m_lastError = tr("Failed to successfully log out from IMAP server.");
+        if (Q_UNLIKELY(!this->waitForDisconnected(15000))) {
+            m_lastError = tr("Connection to IMAP server timed out while waiting for disconnection.");
+        }
+        return false;
+    }
+
+    m_loggedIn = false;
+
+    this->disconnectFromHost();
+
+    if (Q_LIKELY(this->waitForDisconnected(15000))) {
         return true;
     } else {
-        this->disconnect();
+        m_lastError = tr("Connection to IMAP server timed out while waiting for disconnection.");
         return false;
     }
 }
@@ -144,7 +180,7 @@ QStringList Imap::getCapabilities()
     this->write(capabilitiesCommand.toLatin1());
 
     if (!this->waitForReadyRead(5000)) {
-        printf("%s\n", qUtf8Printable(tr("Connection to IMAP server timed out.")));
+        m_lastError = tr("Connection to IMAP server timed out.");
         return resp;
     }
 
@@ -152,15 +188,13 @@ QStringList Imap::getCapabilities()
         return resp;
     }
 
-    m_response.remove(QRegularExpression(QStringLiteral("\\s*.* (OK|BAD|WARN) .*")));
+    static const QRegularExpression regex(QStringLiteral("^\\* CAPABILITY (.*)\\r\\n"));
+    const QRegularExpressionMatch match = regex.match(m_response);
 
-    resp = m_response.trimmed().split(" ");
+    resp = match.captured(1).split(QChar(' '), QString::SkipEmptyParts);
 
-    if (!resp.empty()) {
-        resp.removeFirst();
-        resp.removeFirst();
-    } else {
-        printf("%s\n", qUtf8Printable(tr("Failed to request capabilities from the IMAP server. Aborting.")));
+    if (Q_UNLIKELY(resp.empty())) {
+        m_lastError = tr("Failed to request capabilities from the IMAP server. Aborting.");
     }
 
     return resp;
@@ -170,40 +204,43 @@ QStringList Imap::getCapabilities()
 
 bool Imap::checkResponse(const QByteArray &resp, const QString &tag)
 {
+    bool ret = false;
+
     m_response = QString(resp);
 
     if (m_response.isEmpty()) {
-        printf("%s\n", qUtf8Printable(tr("The IMAP response is undefined.")));
-        return false;
+        m_lastError = tr("The IMAP response is undefined.");
+        return ret;
     }
+
+    QRegularExpression regex;
 
     if (tag.isEmpty()) {
-        m_responseRegex.setPattern(QStringLiteral("\\s*.* (OK|BAD|WARN) "));
+        regex.setPattern(QStringLiteral("\\s*.* (OK|BAD|WARN|NO) (.*)"));
     } else {
-        m_responseRegex.setPattern(QStringLiteral("\\s*%1 (OK|BAD|WARN) ").arg(tag));
+        regex.setPattern(QStringLiteral("\\s*%1 (OK|BAD|WARN|NO) (.*)").arg(tag));
     }
 
-    m_responseRegexMatch = m_responseRegex.match(m_response);
+    const QRegularExpressionMatch match = regex.match(m_response);
 
-    if (!m_responseRegexMatch.hasMatch()) {
-        printf("%s\n", qUtf8Printable(tr("The IMAP response is undefined.")));
-        return false;
+    if (!match.hasMatch()) {
+        m_lastError = tr("The IMAP response is undefined.");
+        return ret;
     }
 
-    const QString respType = m_responseRegexMatch.captured(1);
+    const QString respType = match.captured(1);
 
     if (respType == QLatin1String("OK")) {
-        return true;
+        ret = true;
     } else if (respType == QLatin1String("NO")) {
-        printf("%s\n", qUtf8Printable(tr("We received a NO response from the IMAP server.")));
-        return false;
+        m_lastError = tr("We received a NO response from the IMAP server: %1").arg(match.captured(2));
     } else if (respType == QLatin1String("BAD")) {
-        printf("%s\n", qUtf8Printable(tr("We received a BAD response from the IMAP server, probably because of a malformed request.")));
-        return false;
+        m_lastError = tr("We received a BAD response from the IMAP server: %1").arg(match.captured(2));
     } else {
-        printf("%s\n", qUtf8Printable(tr("The IMAP response is undefined.")));
-        return false;
+        m_lastError = tr("The IMAP response is undefined.");
     }
+
+    return ret;
 }
 
 
@@ -301,4 +338,10 @@ QString Imap::networkProtocolToString(QAbstractSocket::NetworkLayerProtocol nlp)
 QString Imap::networkProtocolToString(quint8 nlp)
 {
     return networkProtocolToString(static_cast<QAbstractSocket::NetworkLayerProtocol>(nlp));
+}
+
+
+QString Imap::lastError() const
+{
+    return m_lastError;
 }

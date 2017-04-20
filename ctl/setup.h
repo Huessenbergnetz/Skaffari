@@ -32,12 +32,6 @@ public:
 
     int exec() const;
 
-    QString readString(const QString &name, const QString &defaultVal, const QStringList &desc = QStringList()) const;
-    quint16 readPort(const QString &name, quint16 defaultVal, const QStringList &desc = QStringList()) const;
-    quint8 readChar(const QString &name, quint8 defaultVal, const QStringList &desc = QStringList()) const;
-    quint32 readInt(const QString &name, quint32 defaultVal, const QStringList &desc = QStringList()) const;
-    bool readBool(const QString &name, bool defaultVal, const QStringList &desc = QStringList()) const;
-
 private:
     QFileInfo m_confFile;
 };

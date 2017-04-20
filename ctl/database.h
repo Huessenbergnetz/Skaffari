@@ -39,11 +39,11 @@ public:
     QVersionNumber installedVersion() const;
     QVersionNumber sqlFilesVersion() const;
 
-    bool installDatabase() const;
-    bool setAdmin(const QString &adminUser, const QByteArray &adminPassword) const;
+    bool installDatabase();
+    bool setAdmin(const QString &adminUser, const QByteArray &adminPassword);
     uint checkAdmin() const;
 
-    bool setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusPassword) const;
+    bool setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusPassword);
     QString checkCyrusAdmin() const;
 
     QSqlError lastDbError() const;
@@ -53,14 +53,16 @@ private:
 
     QFileInfoList getSqlFiles() const;
 
-    int setAdminAccount(const QString &user, const QByteArray &pass) const;
+    int setAdminAccount(const QString &user, const QByteArray &pass);
     bool rollbackAdminAccount(int adminId) const;
 
-    bool setAdminSettings(int adminId) const;
+    bool setAdminSettings(int adminId);
     bool rollbackAdminSettings(int adminId) const;
 
-    bool setAdminDomains(int adminId) const;
+    bool setAdminDomains(int adminId);
     bool rollbackAdminDomains(int adminId) const;
+
+    QSqlError m_lastError;
 };
 
 #endif // DATABASE_H
