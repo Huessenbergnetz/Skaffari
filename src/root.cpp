@@ -59,10 +59,10 @@ bool Root::Auto(Context* c)
 
     QString lang = Session::value(c, QStringLiteral("lang")).toString();
     if (Q_UNLIKELY(lang.isEmpty())) {
-        const QStringList acceptedLangs = c->req()->header(QStringLiteral("Accept-Language")).split(QChar(','), QString::SkipEmptyParts);
+        const QStringList acceptedLangs = c->req()->header(QStringLiteral("Accept-Language")).split(QLatin1Char(','), QString::SkipEmptyParts);
         if (Q_LIKELY(!acceptedLangs.empty())) {
             for (const QString &al : acceptedLangs) {
-                const QString langPart = al.section(QChar(';'), 0, 0);
+                const QString langPart = al.section(QLatin1Char(';'), 0, 0);
                 if (Language::supportedLangsList().contains(langPart)) {
                     lang = langPart;
                     break;

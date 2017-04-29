@@ -48,7 +48,7 @@ public:
             errorText = qSqlError.text();
         } else {
             errorText = _errorText;
-            errorText.append(QChar(' '));
+            errorText.append(QChar(QChar::Space));
             errorText.append(qSqlError.text());
         }
     }
@@ -62,7 +62,7 @@ public:
             errorText = imapError.errorText();
         } else {
             errorText = _errorText;
-            errorText.append(QChar(' '));
+            errorText.append(QChar(QChar::Space));
             errorText.append(imapError.errorText());
         }
     }

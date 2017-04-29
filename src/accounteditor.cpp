@@ -100,7 +100,7 @@ void AccountEditor::edit(Context* c)
                                         engine->accountConfig(QStringLiteral("pwmethod"), 2).value<quint8>(),
                                         engine->accountConfig(QStringLiteral("pwrounds"), 10000).value<quint32>())) {
 
-                        Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + dom.id());
+                        Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
                         c->setStash(QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated account %1.").arg(a.getUsername()));
                     } else {
                         c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -174,7 +174,7 @@ void AccountEditor::email(Context *c, const QString &address)
             return;
         }
 
-        const QStringList parts = address.split(QChar('@'));
+        const QStringList parts = address.split(QLatin1Char('@'));
 
         if (parts.size() == 2) {
             c->stash({

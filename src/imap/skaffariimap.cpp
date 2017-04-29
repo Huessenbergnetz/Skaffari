@@ -149,7 +149,7 @@ bool SkaffariIMAP::capabilities()
 
 	m_response.remove(QRegularExpression(QStringLiteral("\\s*.* (OK|BAD|WARN) .*")));
 
-	QStringList resp = m_response.trimmed().split(" ");
+    QStringList resp = m_response.trimmed().split(QChar(QChar::Space));
 
 	if (!resp.isEmpty()) {
 		resp.removeFirst();
@@ -178,12 +178,12 @@ QPair<quint32, quint32> SkaffariIMAP::getQuota(const QString& user)
 
     QString getQuotaCommand(QStringLiteral(". GETQUOTA user."));
     getQuotaCommand.append(user);
-	getQuotaCommand.append("\n");
+    getQuotaCommand.append(QChar(QChar::LineFeed));
 
 	this->write(getQuotaCommand.toLatin1());
 
 	if (this->waitForReadyRead(5000)) {
-		QString response(this->readAll());
+        QString response = QString::fromLatin1(this->readAll());
 		QRegularExpression re(QStringLiteral("^\\* QUOTA \\S* \\(STORAGE (\\d+) (\\d+)"));
 		QRegularExpressionMatch match = re.match(response);
 		if (match.hasMatch()) {
@@ -222,7 +222,7 @@ bool SkaffariIMAP::connectionTimeOut()
 
 bool SkaffariIMAP::checkResponse(const QByteArray &resp, const QString &tag)
 {
-	m_response = QString(resp);
+    m_response = QString::fromLatin1(resp);
 
 	if (m_response.isEmpty()) {
 		m_imapError = SkaffariIMAPError(SkaffariIMAPError::UndefinedResponse, tr("The IMAP response is undefined."));

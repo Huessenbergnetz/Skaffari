@@ -331,7 +331,7 @@ void DomainEditor::add_account(Context* c)
                                                       static_cast<Account::CreateMailbox>(engine->imapConfig(QStringLiteral("createmailbox"), 0).value<quint8>()));
                     if (account.isValid()) {
 
-                        Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + dom.id());
+                        Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
                         c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, c->translate("DomainEditor", "Successfully created account %1 with email address %2.").arg(account.getUsername(), account.getAddresses().at(0)))));
                         return;
 
@@ -366,7 +366,7 @@ void DomainEditor::add_account(Context* c)
                     const QString cntStr = QString::number(dom.getAccounts());
                     const quint8 digits = cntStr.size();
                     if (Q_LIKELY(digits < 4)) {
-                        username.append(QString(4 - digits, QChar('0')));
+                        username.append(QString(4 - digits, QLatin1Char('0')));
                     }
                     username.append(cntStr);
 
@@ -397,7 +397,7 @@ void DomainEditor::add_account(Context* c)
                                 const quint32 nextCnt = currentCnt + 1;
                                 const quint8 digits = QString::number(nextCnt).size();
                                 if (Q_LIKELY(digits < 4)) {
-                                    username.append(QString(4 - digits, QChar('0')));
+                                    username.append(QString(4 - digits, QLatin1Char('0')));
                                 }
                                 username.append(QString::number(nextCnt));
 

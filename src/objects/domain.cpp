@@ -328,7 +328,7 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
     const quint32 domainQuota = params.value(QStringLiteral("domainQuota")).toULong();
     const bool freeNames = params.contains(QStringLiteral("freeNames"));
     const bool freeAddress = params.contains(QStringLiteral("freeAddress"));
-    const QStringList folders = Domain::trimStringList(params.value(QStringLiteral("folders")).split(QChar(','), QString::SkipEmptyParts));
+    const QStringList folders = Domain::trimStringList(params.value(QStringLiteral("folders")).split(QLatin1Char(','), QString::SkipEmptyParts));
     const QString transport = params.value(QStringLiteral("transport"), QStringLiteral("cyrus"));
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
@@ -551,7 +551,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
     QSqlQuery q;
 
     const quint32 quota = p.value(QStringLiteral("quota"), QString::number(d->getQuota())).toULong();
-    const QStringList folders = Domain::trimStringList(p.value(QStringLiteral("folders")).split(QChar(','), QString::SkipEmptyParts));
+    const QStringList folders = Domain::trimStringList(p.value(QStringLiteral("folders")).split(QLatin1Char(','), QString::SkipEmptyParts));
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
     if (u.value(QStringLiteral("type")).value<qint16>() == 0) {

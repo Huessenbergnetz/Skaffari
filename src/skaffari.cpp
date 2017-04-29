@@ -85,13 +85,13 @@ bool Skaffari::init()
     Grantlee::registerMetaType<Account>();
 
     QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR);
-    tmplBasePath.append(QChar('/')).append(config(QStringLiteral("template"), QStringLiteral("default")).toString());
+    tmplBasePath.append(QLatin1Char('/')).append(config(QStringLiteral("template"), QStringLiteral("default")).toString());
     QString sitePath = tmplBasePath;
-    sitePath.append(QChar('/')).append(QStringLiteral("site"));
+    sitePath.append(QLatin1Char('/')).append(QStringLiteral("site"));
 
     auto view = new GrantleeView(this);
-	view->setTemplateExtension(".html");
-	view->setWrapper("wrapper.html");
+    view->setTemplateExtension(QStringLiteral(".html"));
+    view->setWrapper(QStringLiteral("wrapper.html"));
 	view->setCache(false);
     view->setIncludePaths({sitePath});
     view->engine()->addDefaultLibrary(QStringLiteral("grantlee_i18ntags"));
@@ -107,7 +107,7 @@ bool Skaffari::init()
 
     auto staticSimple = new StaticSimple(this);
     QString staticPath = tmplBasePath;
-    staticPath.append(QChar('/')).append(QStringLiteral("static"));
+    staticPath.append(QLatin1Char('/')).append(QStringLiteral("static"));
     staticSimple->setIncludePaths({staticPath});
 
 	new Session(this);
@@ -153,7 +153,7 @@ bool Skaffari::postFork()
         db.setUserName(dbuser);
         db.setPassword(dbpass);
 
-        if (dbhost[0] == QChar('/')) {
+        if (dbhost[0] == QLatin1Char('/')) {
             db.setConnectOptions(QStringLiteral("UNIX_SOCKET=%1").arg(dbhost));
         } else {
             db.setHostName(dbhost);

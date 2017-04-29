@@ -36,6 +36,6 @@ void Logout::index(Context *c)
     
     auth->logout(c);
     
-    c->response()->redirect(c->uriFor("/login"));
+    c->response()->redirect(c->uriFor(QLatin1String("/login")));
 }
 

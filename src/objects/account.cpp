@@ -401,7 +401,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
 
     if (!q.exec()) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to create new user account in database."));
-        q = CPreparedSqlQueryThread("DELETE FROM accountuser WHERE id = :id");
+        q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
         q.bindValue(QStringLiteral(":id"), id);
         q.exec();
         return a;
@@ -432,11 +432,11 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     }
 
     if (!mailboxCreated) {
-        q = CPreparedSqlQueryThread("DELETE FROM accountuser WHERE id = :id");
+        q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
         q.bindValue(QStringLiteral(":id"), id);
         q.exec();
 
-        q = CPreparedSqlQueryThread("DELETE FROM virtual WHERE username = :username");
+        q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE username = :username"));
         q.bindValue(QStringLiteral(":username"), username);
         q.exec();
 
@@ -619,7 +619,7 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
         QStringList aliases;
         bool _keepLocal = false;
         while (q2.next()) {
-            const QStringList destinations = q2.value(0).toString().split(QChar(','));
+            const QStringList destinations = q2.value(0).toString().split(QLatin1Char(','));
             if (!destinations.empty()) {
                 for (const QString &dest : destinations) {
                     if (dest != username) {
@@ -705,7 +705,7 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
     q.exec();
     QStringList aliases;
     while (q.next()) {
-        const QStringList destinations = q.value(0).toString().split(QChar(','));
+        const QStringList destinations = q.value(0).toString().split(QLatin1Char(','));
         if (!destinations.empty()) {
             for (const QString &dest : destinations) {
                 if (dest != a.getUsername()) {
@@ -1033,7 +1033,7 @@ bool Account::updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a,
 
         q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest) VALUES (:username, :forwards)"));
         q.bindValue(QStringLiteral(":username"), a->getUsername());
-        q.bindValue(QStringLiteral(":forwards"), checkedForwards.join(QChar(',')));
+        q.bindValue(QStringLiteral(":forwards"), checkedForwards.join(QLatin1Char(',')));
 
         if (Q_UNLIKELY(!q.exec())) {
             e->setSqlError(q.lastError(), c->translate("Account", "Failed to update forwards for account %1 in database.").arg(a->getUsername()));

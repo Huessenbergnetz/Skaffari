@@ -44,6 +44,16 @@ add_definitions("-DSKAFFARI_CONFDIR=\"${CMAKE_INSTALL_SYSCONFDIR}\"")
 add_definitions("-DSKAFFARI_SQLDIR=\"${SQL_INSTALL_DIR}\"")
 add_definitions("-Werror -Wall -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Wformat -Winit-self")
 
+add_definitions(
+    -DQT_NO_KEYWORDS
+    -DQT_NO_CAST_TO_ASCII
+    -DQT_NO_CAST_FROM_ASCII
+    -DQT_STRICT_ITERATORS
+    -DQT_NO_URL_CAST_FROM_STRING
+    -DQT_NO_CAST_FROM_BYTEARRAY
+    -DQT_USE_QSTRINGBUILDER
+)
+
 include_directories(
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}

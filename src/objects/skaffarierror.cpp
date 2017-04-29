@@ -122,7 +122,7 @@ QString SkaffariError::errorText() const
         break;
 	}
 
-    text.append(QChar(' '));
+    text.append(QChar(QChar::Space));
 
 	text.append(d->errorText);
 
@@ -199,7 +199,7 @@ void SkaffariError::setSqlError(const QSqlError &error, const QString &text)
         d->errorText = error.text();
     } else {
         d->errorText = text;
-        d->errorText.append(QChar(' '));
+        d->errorText.append(QChar(QChar::Space));
         d->errorText.append(error.text());
     }
     d->errorData.clear();
@@ -216,7 +216,7 @@ void SkaffariError::setImapError(const SkaffariIMAPError &error, const QString &
         d->errorText = error.errorText();
     } else {
         d->errorText = text;
-        d->errorText.append(QChar(' '));
+        d->errorText.append(QChar(QChar::Space));
         d->errorText.append(error.errorText());
     }
     d->errorData.clear();
