@@ -79,3 +79,5 @@ target_link_libraries(skaffari
     crypt
     ${ICU_LIBRARIES}
 )
+
+install(TARGETS skaffari DESTINATION ${CMAKE_INSTALL_LIBDIR})

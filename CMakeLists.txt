@@ -8,7 +8,7 @@ set(SKAFFARI_VERSION_PATCH "1")
 set(SKAFFARI_VERSION "${SKAFFARI_VERSION_MAJOR}.${SKAFFARI_VERSION_MINOR}.${SKAFFARI_VERSION_PATCH}")
 
 find_package(Qt5 5.6.0 COMPONENTS Core Network Sql)
-find_package(CutelystQt5 1.5.0 REQUIRED)
+find_package(CutelystQt5 1.6.0 REQUIRED)
 find_package(Grantlee5 REQUIRED)
 find_package(PkgConfig REQUIRED)
 
@@ -25,6 +25,7 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 set(CMAKE_INSTALL_BINDIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Directory to install skaffarictl")
 set(CMAKE_INSTALL_DATADIR "${CMAKE_INSTALL_PREFIX}/share" CACHE PATH "Data install directory")
+set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "Library install directory")
 set(APPDIR "${CMAKE_INSTALL_DATADIR}/skaffari")
 set(CMAKE_INSTALL_LOCALEDIR "${APPDIR}/l10n" CACHE PATH "Directory to install translations")
 set(TEMPLATES_INSTALL_DIR "${APPDIR}/templates" CACHE PATH "Directory to install templates")
