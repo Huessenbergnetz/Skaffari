@@ -20,14 +20,16 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 
+QStringList Imap::m_capabilities = QStringList();
+
 Imap::Imap(QObject *parent) : QSslSocket(parent)
 {
 
 }
 
 
-Imap::Imap(const QString &user, const QString &password, const QString &host, quint16 port, NetworkLayerProtocol protocol, EncryptionType conType, QObject *parent) :
-    QSslSocket(parent), m_user(user), m_password(password), m_host(host), m_port(port), m_protocol(protocol), m_encType(conType)
+Imap::Imap(const QString &user, const QString &password, const QString &host, quint16 port, NetworkLayerProtocol protocol, EncryptionType conType, bool unixhierarchysep, QObject *parent) :
+    QSslSocket(parent), m_user(user), m_password(password), m_host(host), m_port(port), m_protocol(protocol), m_encType(conType), m_unixhierarchysep(unixhierarchysep)
 {
 
 }
@@ -45,48 +47,54 @@ bool Imap::login()
         return true;
     }
 
-    if (this->state() == QAbstractSocket::UnconnectedState) {
-        if (m_encType != IMAPS) {
-            this->connectToHost(m_host, m_port, ReadWrite, m_protocol);
-        } else {
-            this->connectToHostEncrypted(m_host, m_port, ReadWrite, m_protocol);
-        }
+    if (m_encType != IMAPS) {
+        this->connectToHost(m_host, m_port, ReadWrite, m_protocol);
+    } else {
+        this->connectToHostEncrypted(m_host, m_port, ReadWrite, m_protocol);
     }
 
     if (m_encType != IMAPS) {
-        if (!this->waitForConnected(15000)) {
+        if (Q_UNLIKELY(!this->waitForConnected())) {
             m_lastError = tr("Connection to IMAP server timed out while waiting for connection.");
+            this->abort();
             return false;
         }
     } else {
-        if (!this->waitForEncrypted(15000)) {
+        if (Q_UNLIKELY(!this->waitForEncrypted())) {
             m_lastError = tr("Connection to IMAP server timed out while waiting for SSL handshake to complete.");
+            this->abort();
             return false;
         }
     }
 
-    if (!this->waitForReadyRead(15000)) {
+    if (Q_UNLIKELY(!this->waitForReadyRead())) {
         m_lastError = tr("Connection to IMAP server timed out while waiting for first response on login.");
+        this->abort();
         return false;
     }
 
-    if (!checkResponse(this->readAll())) {
+    if (Q_UNLIKELY(!checkResponse(this->readAll()))) {
+        this->disconnectFromHost();
+        this->waitForDisconnected();
         return false;
     }
 
     if (m_encType == StartTLS) {
 
-        if (m_response.split(QStringLiteral(" ")).contains(QLatin1String("STARTTLS", 8))) {
+        if (m_response.split(QChar(QChar::Space)).contains(QLatin1String("STARTTLS", 8))) {
 
             static const QString startTLSCommand(QStringLiteral(". STARTTLS\n"));
             this->write(startTLSCommand.toLatin1());
 
-            if (!this->waitForReadyRead(5000)) {
+            if (Q_UNLIKELY(!this->waitForReadyRead())) {
                 m_lastError = tr("Connection to IMAP server timed out while wating for response to STARTTLS.");
+                this->abort();
                 return false;
             }
 
-            if (!checkResponse(this->readAll())) {
+            if (Q_UNLIKELY(!checkResponse(this->readAll()))) {
+                this->disconnectFromHost();
+                this->waitForDisconnected();
                 return false;
             }
 
@@ -94,32 +102,43 @@ bool Imap::login()
 
         } else {
             m_lastError = tr("STARTTLS is not supported. Aborting.");
+            this->disconnectFromHost();
+            this->waitForDisconnected();
             return false;
         }
     }
 
     // build login command
     QString loginData(QStringLiteral(". LOGIN "));
-    loginData.append(m_user).append(QLatin1String(" ", 1)).append(m_password).append(QStringLiteral("\n"));
+    loginData.append(m_user).append(QChar(QChar::Space)).append(m_password).append(QChar(QChar::LineFeed));
 
     this->write(loginData.toLatin1());
 
-    if (!this->waitForReadyRead(5000)) {
+    if (Q_UNLIKELY(!this->waitForReadyRead())) {
         m_lastError = tr("Connection to IMAP server timed out while waiting for response to login data.");
+        this->abort();
         return false;
     }
 
-    if (!this->checkResponse(this->readAll())) {
+    if (Q_UNLIKELY(!this->checkResponse(this->readAll()))) {
+        this->disconnectFromHost();
+        this->waitForDisconnected();
         return false;
     }
 
-    static const QRegularExpression capAfterLoginRegEx(QStringLiteral(".*\\[CAPABILITY (.*)\\]"));
-    const QRegularExpressionMatch match = capAfterLoginRegEx.match(m_response);
-    const QStringList capabilities = match.captured(1).split(QChar(' '), QString::SkipEmptyParts);
-    if (Q_LIKELY(!capabilities.empty())) {
-        m_capabilities = capabilities;
-    } else {
-        m_capabilities = getCapabilities();
+    if (Imap::m_capabilities.isEmpty()) {
+        const QRegularExpression capAfterLoginRegEx(QStringLiteral(".*\\[CAPABILITY (.*)\\]"));
+        const QRegularExpressionMatch match = capAfterLoginRegEx.match(m_response);
+        Imap::m_capabilities = match.captured(1).split(QChar(QChar::Space), QString::SkipEmptyParts);
+        if (Imap::m_capabilities.isEmpty()) {
+            Imap::m_capabilities = getCapabilities();
+            if (Imap::m_capabilities.isEmpty()) {
+                m_lastError = tr("Failed to get capabilities from the IMAP server.");
+                this->disconnectFromHost();
+                this->waitForDisconnected();
+                return false;
+            }
+        }
     }
 
     m_loggedIn = true;
@@ -144,16 +163,17 @@ bool Imap::logout()
         return true;
     }
 
-    static const QString logoutCommand(QStringLiteral(". LOGOUT\n"));
-    this->write(logoutCommand.toLatin1());
+    this->write(QStringLiteral(". LOGOUT\n").toLatin1());
 
-    this->waitForReadyRead(5000);
+    this->waitForReadyRead();
 
     if (Q_UNLIKELY(!this->checkResponse(this->readAll()))) {
         this->disconnectFromHost();
         m_lastError = tr("Failed to successfully log out from IMAP server.");
-        if (Q_UNLIKELY(!this->waitForDisconnected(15000))) {
+        if (Q_UNLIKELY(!this->waitForDisconnected())) {
             m_lastError = tr("Connection to IMAP server timed out while waiting for disconnection.");
+            m_loggedIn = false;
+            this->abort();
         }
         return false;
     }
@@ -162,42 +182,75 @@ bool Imap::logout()
 
     this->disconnectFromHost();
 
-    if (Q_LIKELY(this->waitForDisconnected(15000))) {
+    if (Q_LIKELY(this->waitForDisconnected())) {
         return true;
     } else {
         m_lastError = tr("Connection to IMAP server timed out while waiting for disconnection.");
+        this->abort();
         return false;
     }
 }
 
 
-QStringList Imap::getCapabilities()
+QStringList Imap::getCapabilities(bool forceReload)
 {
-    QStringList resp;
+    if (Imap::m_capabilities.empty() || forceReload) {
 
-    static const QString capabilitiesCommand(QStringLiteral(". CAPABILITY\n"));
+        Imap::m_capabilities.clear();
 
-    this->write(capabilitiesCommand.toLatin1());
+        this->write(QStringLiteral(". CAPABILITY\n").toLatin1());
 
-    if (!this->waitForReadyRead(5000)) {
-        m_lastError = tr("Connection to IMAP server timed out.");
-        return resp;
+        if (Q_UNLIKELY(!this->waitForReadyRead())) {
+            m_lastError = tr("Connection to IMAP server timed out.");
+            return Imap::m_capabilities;
+        }
+
+        if (Q_UNLIKELY(!this->checkResponse(this->readAll()))) {
+            return Imap::m_capabilities;
+        }
+
+        const QRegularExpression regex(QStringLiteral("^\\* CAPABILITY (.*)\\r\\n"));
+        const QRegularExpressionMatch match = regex.match(m_response);
+
+        Imap::m_capabilities = match.captured(1).split(QChar(QChar::Space), QString::SkipEmptyParts);
+
+        if (Q_UNLIKELY(Imap::m_capabilities.empty())) {
+            m_lastError = tr("Failed to request capabilities from the IMAP server. Aborting.");
+        }
+
     }
 
-    if (!this->checkResponse(this->readAll())) {
-        return resp;
+    return Imap::m_capabilities;
+}
+
+
+
+std::pair<quint32,quint32> Imap::getQuota(const QString &user)
+{
+    std::pair<quint32,quint32> quota(0, 0);
+
+    QString command(QStringLiteral(". GETQUOTA user"));
+    if (m_unixhierarchysep) {
+        command.append(QLatin1Char('/'));
+    } else {
+        command.append(QLatin1Char('.'));
+    }
+    command.append(user);
+    command.append(QChar(QChar::LineFeed));
+
+    this->write(command.toLatin1());
+
+    if (Q_LIKELY(this->waitForReadyRead())) {
+        const QString response = QString::fromLatin1(this->readAll());
+        static QRegularExpression re(QStringLiteral("^\\* QUOTA \\S* \\(STORAGE (\\d+) (\\d+)"));
+        const QRegularExpressionMatch match = re.match(response);
+        if (match.hasMatch()) {
+            quota.first = static_cast<quint32>(match.captured(1).toULong());
+            quota.second = static_cast<quint32>(match.captured(2).toULong());
+        }
     }
 
-    static const QRegularExpression regex(QStringLiteral("^\\* CAPABILITY (.*)\\r\\n"));
-    const QRegularExpressionMatch match = regex.match(m_response);
-
-    resp = match.captured(1).split(QChar(' '), QString::SkipEmptyParts);
-
-    if (Q_UNLIKELY(resp.empty())) {
-        m_lastError = tr("Failed to request capabilities from the IMAP server. Aborting.");
-    }
-
-    return resp;
+    return quota;
 }
 
 
@@ -206,7 +259,7 @@ bool Imap::checkResponse(const QByteArray &resp, const QString &tag)
 {
     bool ret = false;
 
-    m_response = QString(resp);
+    m_response = QString::fromLatin1(resp);
 
     if (m_response.isEmpty()) {
         m_lastError = tr("The IMAP response is undefined.");
@@ -280,6 +333,11 @@ void Imap::setProtocol ( QAbstractSocket::NetworkLayerProtocol protocol )
 void Imap::setEncryptionType(Imap::EncryptionType encType)
 {
     m_encType = encType;
+}
+
+void Imap::setUnixHierarchySep(bool unixhierarchysep)
+{
+    m_unixhierarchysep = unixhierarchysep;
 }
 
 

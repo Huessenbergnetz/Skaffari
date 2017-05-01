@@ -22,10 +22,13 @@
 #include <QVersionNumber>
 #include <Cutelyst/Plugins/Authentication/credentialpassword.h>
 #include <QCryptographicHash>
+#include <QStringList>
+#include <QTimeZone>
 
 #include "database.h"
 #include "imap.h"
 #include "../common/password.h"
+#include "../common/config.h"
 
 Setup::Setup(const QString &confFile) :
     m_confFile(confFile)
@@ -119,7 +122,7 @@ int Setup::exec() const
                                             tr("The host your database server is running on. By default this is the local host."),
                                             tr("You can use localhost, a remote host identified by hostname or IP address or an absolute path to a local socket file.")
                                         }));
-        if (dbhost[0] != QChar('/')) {
+        if (dbhost[0] != QLatin1Char('/')) {
             dbport = readPort(tr("DB Port"), dbport, QStringList({tr("The port your database server is listening on.")}));
         }
         dbname = readString(tr("DB Name"), dbname, QStringList({tr("The name of the database used for Skaffari and the SMTP and POP/IMAP servers.")}));
@@ -279,8 +282,8 @@ int Setup::exec() const
                                                                                       tr("The crypt(3) method supports different algorithms to derive a key from a password. To see which algorithms are supported on your system, use man crypt. Especially the bcrypt algorithm that uses Blowfish is not available on every system because it is not part of the default crypt(3) distribution. The not recommended hashing methods are provided for backwards compatibility and if you have to store passwords for use across different operating systems."),
                                                                                       QString(),
                                                                                       tr("Supported algorithms:"),
-                                                                                      tr("0: default - points to SHA-256"),
-                                                                                      tr("1: traditional DES-based - not recommended"),
+                                                                                      tr("0: Default - points to SHA-256"),
+                                                                                      tr("1: Traditional DES-based - not recommended"),
                                                                                       tr("2: FreeBSD-style MD5-based - not recommended"),
                                                                                       tr("3: SHA-256 based"),
                                                                                       tr("4: SHA-512 based"),
@@ -298,7 +301,7 @@ int Setup::exec() const
                                                                                       tr("6: MySQL new"),
                                                                                       tr("7: MySQL old")
                                                                                   }),
-                                                                      QList<quint8>({0, 6,7})));
+                                                                      QList<quint8>({0,6,7})));
         }
 
         if (accountsPwType == Password::Crypt) {
@@ -518,9 +521,14 @@ int Setup::exec() const
         quint32 defaultQuota = os.value(QStringLiteral("quota"), 10000).value<quint32>();
         quint32 defaultDomainQuota = os.value(QStringLiteral("domainquota"), 100000).value<quint32>();
         quint32 defaultMaxAccounts = os.value(QStringLiteral("maxaccounts"), 1000).value<quint32>();
+        QString defaultTimezone = os.value(QStringLiteral("timezone"), QStringLiteral("UTC")).toString();
         os.endGroup();
 
-        defaultLang = readString(tr("Default language"), defaultLang, QStringList({tr("The default language will be used as fallback language if the user's language is not set or can not be determined."), tr("Currently supported languages: %1").arg(QStringLiteral("de en"))}));
+        defaultLang = readString(tr("Default language"), defaultLang, QStringList({tr("The default language will be used as fallback language if the user's language is not set or can not be determined."), tr("Currently supported languages: %1").arg(QStringList(SKAFFARI_SUPPORTED_LANGS).join(QChar(QChar::Space)))}), QStringList(SKAFFARI_SUPPORTED_LANGS));
+        defaultTimezone = readString(tr("Default timezone"), QStringLiteral("UTC"), QStringList(tr("Default timezone for newly created administrators and as fallback option. The timezone will be used to show localized date and time values. Please enter a valid IANA timezone ID.")));
+        while (!QTimeZone::isTimeZoneIdAvailable(defaultTimezone.toUtf8())) {
+            defaultTimezone = readString(tr("Default timezone"), QStringLiteral("UTC"), QStringList(tr("Default timezone for newly created administrators and as fallback option. The timezone will be used to show localized date and time values. Please enter a valid IANA timezone ID.")));
+        }
         defaultQuota = readInt(tr("Default quota"), defaultQuota, QStringList(tr("The default quota in KiB for new accounts when creating a new domain. This can be changed when creating a new domain or editing an exisiting one.")));
         defaultDomainQuota = readInt(tr("Default domain quota"), defaultDomainQuota, QStringList(tr("The default domain quota in KiB when creating new domains. This can be changed when creating a new domain or editing an exisiting one.")));
         defaultMaxAccounts = readInt(tr("Default max accounts"), defaultMaxAccounts, QStringList(tr("The default number of maximum accounts for creating new domains. This can be changed when creating a new domain or editing an exisiting one.")));

@@ -14,6 +14,10 @@ set(skaffarictl_SRCS
     database.h
     imap.cpp
     imap.h
+    webcyradmimporter.cpp
+    webcyradmimporter.h
+    configinput.cpp
+    configinput.h
     ../common/password.cpp
     ../common/password.h
 )

@@ -31,10 +31,10 @@ class Database
     Q_DECLARE_TR_FUNCTIONS(Database)
 public:
     Database();
-    Database(const QString &type, const QString &host, quint16 port, const QString &name, const QString &user, const QString &password);
+    Database(const QString &type, const QString &host, quint16 port, const QString &name, const QString &user, const QString &password, const QString &conName = QLatin1String(QSqlDatabase::defaultConnection));
 
     bool open();
-    bool open(const QString &type, const QString &host, quint16 port, const QString &name, const QString &user, const QString &password);
+    bool open(const QString &type, const QString &host, quint16 port, const QString &name, const QString &user, const QString &password, const QString &conName = QLatin1String(QSqlDatabase::defaultConnection));
 
     QVersionNumber installedVersion() const;
     QVersionNumber sqlFilesVersion() const;
@@ -47,9 +47,12 @@ public:
     QString checkCyrusAdmin() const;
 
     QSqlError lastDbError() const;
+    QSqlDatabase getDb() const;
+    void deleteAll();
 
 private:
     QSqlDatabase m_db;
+    QString m_conName;
 
     QFileInfoList getSqlFiles() const;
 

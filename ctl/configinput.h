@@ -16,23 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SETUP_H
-#define SETUP_H
+#ifndef CONFIGINPUT_H
+#define CONFIGINPUT_H
 
-#include <QFileInfo>
+#include <QString>
 #include <QCoreApplication>
+#include <QVariantHash>
+
 #include "consoleoutput.h"
 
-class Setup : public ConsoleOutput
+class ConfigInput : public ConsoleOutput
 {
-    Q_DECLARE_TR_FUNCTIONS(Setup)
+    Q_DECLARE_TR_FUNCTIONS(ConfigInput)
 public:
-    Setup(const QString &confFile);
+    ConfigInput();
 
-    int exec() const;
-
-private:
-    QFileInfo m_confFile;
+    QVariantHash askDatabaseConfig(const QVariantHash &defaults = QVariantHash()) const;
+    QVariantHash askImapConfig(const QVariantHash &defaults = QVariantHash()) const;
+    QVariantHash askPbkdf2Config(const QVariantHash &defaults = QVariantHash()) const;
 };
 
-#endif // SETUP_H
+#endif // CONFIGINPUT_H

@@ -40,13 +40,14 @@ public:
     };
 
     explicit Imap(QObject *parent = nullptr);
-    Imap(const QString &user, const QString &password, const QString &host = QStringLiteral("localhost"), quint16 port = 143, NetworkLayerProtocol protocol = QAbstractSocket::AnyIPProtocol, EncryptionType conType = StartTLS, QObject* parent = nullptr);
+    Imap(const QString &user, const QString &password, const QString &host = QStringLiteral("localhost"), quint16 port = 143, NetworkLayerProtocol protocol = QAbstractSocket::AnyIPProtocol, EncryptionType conType = StartTLS, bool unixhierarchysep = false, QObject* parent = nullptr);
     ~Imap();
 
     bool login();
     bool logout();
 
-    QStringList getCapabilities();
+    QStringList getCapabilities(bool forceReload = false);
+    std::pair<quint32,quint32> getQuota(const QString &user);
 
     void setUser(const QString &user);
     void setPassword(const QString &password);
@@ -54,6 +55,7 @@ public:
     void setPort(const quint16 &port);
     void setProtocol(NetworkLayerProtocol protocol);
     void setEncryptionType(EncryptionType encType);
+    void setUnixHierarchySep(bool unixhierarchysep);
 
     static QString encryptionTypeToString(EncryptionType et);
     static QString encryptionTypeToString(quint8 et);
@@ -70,10 +72,12 @@ private:
     quint16 m_port = 143;
     NetworkLayerProtocol m_protocol = QAbstractSocket::AnyIPProtocol;
     EncryptionType m_encType = StartTLS;
+    bool m_unixhierarchysep = false;
     QString m_response;
     QString m_lastError;
     bool m_loggedIn = false;
-    QStringList m_capabilities;
+    static QStringList m_capabilities;
+    bool m_connected = false;
 };
 
 #endif // IMAP_H

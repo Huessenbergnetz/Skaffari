@@ -25,7 +25,9 @@
 #include <iostream>
 #include <string>
 
+#include "common/config.h"
 #include "setup.h"
+#include "webcyradmimporter.h"
 
 int main(int argc, char *argv[])
 {
@@ -42,6 +44,9 @@ int main(int argc, char *argv[])
     QCommandLineOption setup(QStringList({QStringLiteral("setup"), QStringLiteral("s")}), QCoreApplication::translate("main", "Create new Skaffari setup."));
     parser.addOption(setup);
 
+    QCommandLineOption import(QStringList({QStringLiteral("import"), QStringLiteral("i")}), QCoreApplication::translate("main", "Import web-cyradm configuration and database."), QStringLiteral("web-cyradm conf file"));
+    parser.addOption(import);
+
     QString confFilePath = QStringLiteral(SKAFFARI_CONFDIR);
     confFilePath.append(QLatin1String("/skaffari.ini"));
     QCommandLineOption iniPath(QStringLiteral("ini-path"), QCoreApplication::translate("main", "Path to the configuration file. Default: %1").arg(confFilePath), QStringLiteral("ini-file"), confFilePath);
@@ -53,6 +58,11 @@ int main(int argc, char *argv[])
 
         Setup s(parser.value(iniPath));
         return s.exec();
+
+    } else if (parser.isSet(import)) {
+
+        WebCyradmImporter importer(parser.value(import), parser.value(iniPath));
+        return importer.exec();
 
     } else {
         parser.showHelp(1);

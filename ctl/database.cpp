@@ -23,19 +23,22 @@
 #include <QTextStream>
 #include <QDateTime>
 
+#include "../common/config.h"
+
 Database::Database()
 {
 
 }
 
-Database::Database(const QString &type, const QString &host, quint16 port, const QString &name, const QString &user, const QString &password)
+Database::Database(const QString &type, const QString &host, quint16 port, const QString &name, const QString &user, const QString &password, const QString &conName) :
+    m_conName(conName)
 {
-    m_db = QSqlDatabase::addDatabase(type);
+    m_db = QSqlDatabase::addDatabase(type, m_conName);
     m_db.setDatabaseName(name);
     m_db.setUserName(user);
     m_db.setPassword(password);
 
-    if (host[0] == QChar('/')) {
+    if (host[0] == QLatin1Char('/')) {
         m_db.setConnectOptions(QStringLiteral("UNIX_SOCKET=%1").arg(host));
     } else {
         m_db.setHostName(host);
@@ -52,19 +55,31 @@ bool Database::open()
         m_lastError = QSqlError();
     } else {
         m_lastError = m_db.lastError();
+        m_db.close();
+        if (QSqlDatabase::contains(m_conName)) {
+            QSqlDatabase::removeDatabase(m_conName);
+        }
     }
     return ret;
 }
 
 
-bool Database::open(const QString &type, const QString &host, quint16 port, const QString &name, const QString &user, const QString &password)
+bool Database::open(const QString &type, const QString &host, quint16 port, const QString &name, const QString &user, const QString &password, const QString &conName)
 {
-    m_db = QSqlDatabase::addDatabase(type);
+    if (m_db.isOpen()) {
+        m_db.close();
+    }
+
+    if (QSqlDatabase::contains(conName)) {
+        QSqlDatabase::removeDatabase(conName);
+    }
+
+    m_db = QSqlDatabase::addDatabase(type, conName);
     m_db.setDatabaseName(name);
     m_db.setUserName(user);
     m_db.setPassword(password);
 
-    if (host[0] == QChar('/')) {
+    if (host[0] == QLatin1Char('/')) {
         m_db.setConnectOptions(QStringLiteral("UNIX_SOCKET=%1").arg(host));
     } else {
         m_db.setHostName(host);
@@ -124,7 +139,7 @@ bool Database::installDatabase()
 
     for (const QFileInfo &fi : fil) {
         QFile f(fi.absoluteFilePath());
-        if (Q_UNLIKELY(!f.open(QIODevice::ReadOnly|QIODevice::Text))) {
+        if (Q_UNLIKELY(!f.open(QFile::ReadOnly|QFile::Text))) {
             m_lastError = QSqlError(tr("Failed to open file %1 for reading. Aborting.").arg(fi.absoluteFilePath()), QString(), QSqlError::UnknownError);
             return success;
         }
@@ -136,7 +151,7 @@ bool Database::installDatabase()
     for (const QFileInfo &fi : fil) {
 //        printf("%s\n", qUtf8Printable(tr("Applying SQL statements from %1.").arg(fi.absoluteFilePath())));
         QFile f(fi.absoluteFilePath());
-        f.open(QIODevice::ReadOnly|QIODevice::Text);
+        f.open(QFile::ReadOnly|QFile::Text);
         QTextStream in(&f);
         const QString sql = in.readAll();
         if (Q_UNLIKELY(!q.exec(sql))) {
@@ -379,10 +394,25 @@ QFileInfoList Database::getSqlFiles() const
 {
     QFileInfoList fil;
 
-    QDir sqlDir(QStringLiteral(SKAFFARI_SQLDIR) + QLatin1String("/") + m_db.driverName());
+    QDir sqlDir(QStringLiteral(SKAFFARI_SQLDIR) + QLatin1Char('/') + m_db.driverName());
 
     fil = sqlDir.entryInfoList(QStringList(QStringLiteral("*.sql")), QDir::Files, QDir::Name);
 
     return fil;
 }
 
+
+
+QSqlDatabase Database::getDb() const
+{
+    return m_db;
+}
+
+
+void Database::deleteAll()
+{
+    QSqlQuery q(m_db);
+    for (const QString &table : m_db.tables()) {
+        q.exec(QStringLiteral("DROP TABLE %1").arg(table));
+    }
+}

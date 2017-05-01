@@ -16,23 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SETUP_H
-#define SETUP_H
+#ifndef WEBCYRADMIMPORTER_H
+#define WEBCYRADMIMPORTER_H
 
 #include <QFileInfo>
-#include <QCoreApplication>
-#include "consoleoutput.h"
+#include "configinput.h"
 
-class Setup : public ConsoleOutput
+class WebCyradmImporter : public ConfigInput
 {
-    Q_DECLARE_TR_FUNCTIONS(Setup)
 public:
-    Setup(const QString &confFile);
+    WebCyradmImporter(const QString &confFileName, const QString &iniFileName);
 
     int exec() const;
 
 private:
-    QFileInfo m_confFile;
+    QFileInfo m_webCyradmConfFile;
+    QFileInfo m_iniFile;
+
+    QString getArrayEntry(const QString &array, const QString &key) const;
 };
 
-#endif // SETUP_H
+#endif // WEBCYRADMIMPORTER_H

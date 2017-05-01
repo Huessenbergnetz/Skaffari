@@ -206,11 +206,11 @@ void ConsoleOutput::printTable(std::initializer_list<std::pair<QString, QString>
         fullLength++;
     }
 
-    QString devider = QChar('+');
+    QString devider(QLatin1Char('+'));
     for (int i = 0; i < fullLength; ++i) {
-        devider.append(QChar('-'));
+        devider.append(QLatin1Char('-'));
     }
-    devider.append(QChar('+'));
+    devider.append(QLatin1Char('+'));
     printf("%s\n", devider.toUtf8().constData());
 
     if (!header.isEmpty()) {
@@ -220,7 +220,7 @@ void ConsoleOutput::printTable(std::initializer_list<std::pair<QString, QString>
     }
 
     for (const std::pair<QString,QString> &col : table) {
-        printf("| %-*s| %-*s|\n", maxLabelLength-1, qUtf8Printable(col.first), maxValueLength-2, qUtf8Printable(col.second));
+        printf("| %-*s| %-*s|\n", maxLabelLength-1, qUtf8Printable(col.first), maxValueLength-1, qUtf8Printable(col.second));
     }
 
     printf("%s\n", qUtf8Printable(devider));
