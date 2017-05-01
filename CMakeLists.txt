@@ -15,8 +15,6 @@ find_package(PkgConfig REQUIRED)
 # Auto generate moc files
 set(CMAKE_AUTOMOC ON)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
-
 # As moc files are generated in the binary dir, tell CMake
 # to always look for includes there:
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -37,11 +35,11 @@ set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATADIR}/doc/skaffari" CACHE PATH "Dir
 # Enable C++11 features
 add_definitions(-std=c++11)
 
-add_definitions("-DSKAFFARI_VERSION=\"${SKAFFARI_VERSION}\"")
-add_definitions("-DSKAFFARI_L10NDIR=\"${CMAKE_INSTALL_LOCALEDIR}\"")
-add_definitions("-DSKAFFARI_TMPLDIR=\"${TEMPLATES_INSTALL_DIR}\"")
-add_definitions("-DSKAFFARI_CONFDIR=\"${CMAKE_INSTALL_SYSCONFDIR}\"")
-add_definitions("-DSKAFFARI_SQLDIR=\"${SQL_INSTALL_DIR}\"")
+#add_definitions("-DSKAFFARI_VERSION=\"${SKAFFARI_VERSION}\"")
+#add_definitions("-DSKAFFARI_L10NDIR=\"${CMAKE_INSTALL_LOCALEDIR}\"")
+#add_definitions("-DSKAFFARI_TMPLDIR=\"${TEMPLATES_INSTALL_DIR}\"")
+#add_definitions("-DSKAFFARI_CONFDIR=\"${CMAKE_INSTALL_SYSCONFDIR}\"")
+#add_definitions("-DSKAFFARI_SQLDIR=\"${SQL_INSTALL_DIR}\"")
 add_definitions("-Werror -Wall -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Wformat -Winit-self")
 
 add_definitions(
@@ -53,6 +51,8 @@ add_definitions(
     -DQT_NO_CAST_FROM_BYTEARRAY
     -DQT_USE_QSTRINGBUILDER
 )
+
+configure_file(common/config.h.in ${CMAKE_BINARY_DIR}/common/config.h)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}

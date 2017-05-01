@@ -44,6 +44,7 @@
 
 #include "utils/language.h"
 
+#include "../common/config.h"
 #include "root.h"
 #include "authstoresql.h"
 #include "login.h"
