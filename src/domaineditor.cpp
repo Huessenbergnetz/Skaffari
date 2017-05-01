@@ -152,7 +152,7 @@ void DomainEditor::accounts(Context* c)
         }
 
         SkaffariError e(c);
-        pag = Account::list(c, &e, dom, pag, sortBy, sortOrder);
+        pag = Account::list(c, &e, dom, pag, engine->imapConfig(), sortBy, sortOrder);
 
         c->stash({
                      {QStringLiteral("pagination"), pag},

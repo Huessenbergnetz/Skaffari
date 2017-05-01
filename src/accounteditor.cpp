@@ -45,7 +45,7 @@ void AccountEditor::base(Context* c, const QString &domainId, const QString& acc
     const quint32 domId = domainId.toULong();
     if (Domain::checkAccess(c, domId)) {
         Domain::toStash(c, domId);
-        Account::toStash(c, Domain::fromStash(c), accountId.toULong());
+        Account::toStash(c, Domain::fromStash(c), accountId.toULong(), engine->imapConfig());
     }
 }
 
