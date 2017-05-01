@@ -77,6 +77,10 @@ public:
      */
     QVariant imapConfig(const QString &key, const QVariant &defaultValue = QVariant()) const;
 
+    /*!
+     * \brief Returns the complete IMAP configuration.
+     * \return All IMAP settings in a map.
+     */
     QVariantMap imapConfig() const;
 
     /*!
@@ -94,21 +98,6 @@ public:
      * \return The value for the config \a key.
      */
     QVariant accountConfig(const QString &key, const QVariant &defaultValue = QVariant()) const;
-
-	/*!
-	 * \brief Tests the IMAP server connection during setup.
-	 *
-	 * During the setup, this function tests the provided data for connection to the IMAP server.
-	 *
-	 * \param user QString IMAP admin user name.
-	 * \param password QString IMAP admin password.
-	 * \param host QString IMAP server host.
-	 * \param port quint16 the IMAP server listens on.
-	 * \param protocol quint8 Network layer protocol to use, as specified by QAbstractSocket::NetworkLayerProtocol.
-	 * \param conType quint8 Connection type to use, as specfied by SkaffariIMAP::EncryptionType.
-	 * \return \c true if login was successfull, otherwise false, details can be returned by \link SkaffariEngine::lastError() lastError() \endlink.
-	 */
-    bool testImapConnection(const QString &user, const QString &password, const QString &host, quint16 port, quint8 protocol, quint8 conType);
 
 private:
     bool initImap();

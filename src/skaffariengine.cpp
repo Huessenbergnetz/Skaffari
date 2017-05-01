@@ -147,33 +147,6 @@ bool SkaffariEngine::initImap()
         return false;
     }
 
-//    const QAbstractSocket::NetworkLayerProtocol protocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(imapConfig(QStringLiteral("protocol"), 2).toInt());
-//    const SkaffariIMAP::EncryptionType encryption = static_cast<SkaffariIMAP::EncryptionType>(imapConfig(QStringLiteral("encryption"), 1).value<quint8>());
-
     return true;
 }
-
-
-
-
-bool SkaffariEngine::testImapConnection(const QString& user, const QString& password, const QString& host, quint16 port, quint8 protocol, quint8 encType)
-{
-	QAbstractSocket::NetworkLayerProtocol prot = static_cast<QAbstractSocket::NetworkLayerProtocol>(protocol);
-	SkaffariIMAP::EncryptionType et = static_cast<SkaffariIMAP::EncryptionType>(encType);
-
-	SkaffariIMAP imap(user, password, host, port, prot, et);
-
-	if (!imap.login()) {
-		return false;
-	}
-
-	if (!imap.capabilities()) {
-		return false;
-	}
-
-	imap.logout();
-
-	return true;
-}
-
 
