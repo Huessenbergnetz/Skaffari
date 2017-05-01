@@ -20,7 +20,7 @@
 #include <Cutelyst/Context>
 #include <Cutelyst/Plugins/Session/Session>
 #include <QTimeZone>
-
+#include <QLocale>
 
 Utils::Utils()
 {
@@ -44,4 +44,31 @@ QDateTime Utils::toUserTZ(Cutelyst::Context *c, const QDateTime &dt)
     }
 
     return retVal;
+}
+
+
+
+QString Utils::humanBinarySize(Cutelyst::Context *c, quint64 sizeInByte)
+{
+    QString sizeStr;
+
+    if (sizeInByte < 1048576) {
+        float kibFloat = (float)sizeInByte/1024.0f;
+        sizeStr = c->locale().toString(kibFloat, 'f', 2);
+        sizeStr.append(QLatin1String(" KiB"));
+    } else if (sizeInByte < 1073741824) {
+        float mibFloat = (float)sizeInByte/1048576.0f;
+        sizeStr = c->locale().toString(mibFloat, 'f', 2);
+        sizeStr.append(QLatin1String(" MiB"));
+    } else if (sizeInByte < 1099511627776) {
+        float gibFloat = (float)sizeInByte/1073741824.0f;
+        sizeStr = c->locale().toString(gibFloat, 'f', 2);
+        sizeStr.append(QLatin1String(" GiB"));
+    } else {
+        float tibFloat = (float)sizeInByte/1099511627776.0f;
+        sizeStr = c->locale().toString(tibFloat, 'f', 2);
+        sizeStr.append(QLatin1String(" TiB"));
+    }
+
+    return sizeStr;
 }

@@ -31,6 +31,7 @@ public:
     Utils();
 
     static QDateTime toUserTZ(Cutelyst::Context *c, const QDateTime &dt);
+    static QString humanBinarySize(Cutelyst::Context *c, quint64 sizeInByte);
 };
 
 #endif // UTILS_H

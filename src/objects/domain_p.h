@@ -51,9 +51,12 @@ public:
         prefix(other.prefix),
         transport(other.transport),
         quota(other.quota),
+        humanQuota(other.humanQuota),
         maxAccounts(other.maxAccounts),
         domainQuota(other.domainQuota),
+        humanDomainQuota(other.humanDomainQuota),
         domainQuotaUsed(other.domainQuotaUsed),
+        humanDomainQuotaUsed(other.humanDomainQuotaUsed),
         freeNames(other.freeNames),
         freeAddress(other.freeAddress),
         folders(other.folders),
@@ -69,9 +72,12 @@ public:
     QString prefix;
     QString transport;
     quint32 quota = 0;
-    quint32  maxAccounts = 0;
+    QString humanQuota;
+    quint32 maxAccounts = 0;
     quint32 domainQuota = 0;
+    QString humanDomainQuota;
     quint32 domainQuotaUsed = 0;
+    QString humanDomainQuotaUsed;
     bool freeNames = false;
     bool freeAddress = false;
     QVector<Folder> folders;

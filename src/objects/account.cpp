@@ -224,6 +224,17 @@ void Account::setQuota(qint32 nQuota)
 }
 
 
+QString Account::getHumanQuota() const
+{
+    return d->humanQuota;
+}
+
+
+void Account::setHumanQuota(const QString &humanQuota)
+{
+    d->humanQuota = humanQuota;
+}
+
 
 qint32 Account::getUsage() const
 {
@@ -234,6 +245,18 @@ qint32 Account::getUsage() const
 void Account::setUsage(qint32 nUsage)
 {
 	d->usage = nUsage;
+}
+
+
+QString Account::getHumanUsage() const
+{
+    return d->humanUsage;
+}
+
+
+void Account::setHumanUsage(const QString &humanUsage)
+{
+    d->humanUsage = humanUsage;
 }
 
 
@@ -310,7 +333,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     const QString username = domainAsPrefix ? p.value(QStringLiteral("localpart")) + (fqun ? QLatin1Char('q') : QLatin1Char('.')) + d.getName() : p.value(QStringLiteral("username"));
 
 // for later use with imap
-//    const QChar separator = domainAsPrefix ? '/' : '.';
+//    const QChar separator = (domainAsPrefix || fqun) ? '/' : '.';
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id FROM accountuser WHERE username = :username"));
     q.bindValue(QStringLiteral(":username"), username);
@@ -343,7 +366,6 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     }
 
     const QString password = p.value(QStringLiteral("password"));
-//    const QByteArray encpw = Account::encryptPassword(password, pwType, pwMethod, pwRounds);
     Password pw(password);
     const QByteArray encpw = pw.encrypt(static_cast<Password::Type>(pwType), static_cast<Password::Method>(pwMethod), pwRounds);
 
@@ -464,6 +486,8 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     a.setCreated(currentUserTime);
     a.setUpdated(currentUserTime);
     a.setValidUntil(Utils::toUserTZ(c, validUntil));
+    a.setHumanQuota(Utils::humanBinarySize(c, (quint64)a.getQuota() * 1024));
+    a.setHumanUsage(Utils::humanBinarySize(c, (quint64)a.getUsage() * 1024));
 
     return a;
 }
@@ -631,24 +655,27 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
             }
         }
 
+        Account a(q.value(0).value<quint32>(),
+                  d.id(),
+                  q.value(1).toString(),
+                  d.getPrefix(),
+                  d.getName(),
+                  q.value(2).toBool(),
+                  q.value(3).toBool(),
+                  q.value(4).toBool(),
+                  q.value(5).toBool(),
+                  emailAddresses,
+                  aliases,
+                  q.value(6).value<quint32>(),
+                  0,
+                  Utils::toUserTZ(c, q.value(7).toDateTime()),
+                  Utils::toUserTZ(c, q.value(8).toDateTime()),
+                  Utils::toUserTZ(c, q.value(9).toDateTime()),
+                  _keepLocal);
+        a.setHumanQuota(Utils::humanBinarySize(c, (quint64)a.getQuota() * 1024));
+        a.setHumanUsage(Utils::humanBinarySize(c, (quint64)a.getUsage() * 1024));
 
-        lst.push_back(Account(q.value(0).value<quint32>(),
-                              d.id(),
-                              q.value(1).toString(),
-                              d.getPrefix(),
-                              d.getName(),
-                              q.value(2).toBool(),
-                              q.value(3).toBool(),
-                              q.value(4).toBool(),
-                              q.value(5).toBool(),
-                              emailAddresses,
-                              aliases,
-                              q.value(6).value<quint32>(),
-                              0,
-                              Utils::toUserTZ(c, q.value(7).toDateTime()),
-                              Utils::toUserTZ(c, q.value(8).toDateTime()),
-                              Utils::toUserTZ(c, q.value(9).toDateTime()),
-                              _keepLocal));
+        lst.push_back(a);
     }
 
     pag.insert(QStringLiteral("accounts"), QVariant::fromValue<std::vector<Account>>(lst));
@@ -689,6 +716,9 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
     a.setDomainId(d.id());
     a.setPrefix(d.getPrefix());
     a.setDomainName(d.getName());
+
+    a.setHumanQuota(Utils::humanBinarySize(c, (quint64)a.getQuota() * 1024));
+    a.setHumanUsage(Utils::humanBinarySize(c, (quint64)a.getUsage() * 1024));
 
     q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias FROM virtual WHERE dest = :username AND username = :username ORDER BY alias ASC"));
     q.bindValue(QStringLiteral(":username"), a.getUsername());

@@ -44,7 +44,7 @@
                         <div class="progress" title="{{ account.usagePercent }}%">
                             <div class="progress-bar bg-info pb-w-{{ account.usagePercentFlat }}" role="progressbar" aria-valuenow="{{ account.usage }}" aria-valuemin="0" aria-valuemax="{{ account.quota }}" title="{{ account.usagePercent|floatformat:2 }}">{{ account.usagePercent|floatformat:2 }}%</div>
                         </div>
-                        <p class="text-right"><small>{{ _(account.usage) }}/{{ _(account.quota) }} KiB</small></p>
+                        <p class="text-right"><small>{{ account.humanUsage }}/{{ account.humanQuota }}</small></p>
                     </td>
                     <td>
                         <i class="fa {% if account.imap %}fa-check-square-o text-success{% else %}fa-square-o text-danger{% endif %} fa-fw"></i> IMAP<br />

@@ -39,13 +39,13 @@
                     <td><a href="/domain/{{ domain.id }}/accounts" title="{{ _("Manage accounts") }}">{{ domain.name }}</a></td>
                     <td>{{ domain.prefix }}</td>
                     <td class="text-right">{% if domain.maxAccounts > 0 %}{{ domain.accounts }}/{{ _(domain.maxAccounts) }}{% else %}{{ _("not set") }}{% endif %}</td>
-                    <td class="text-right">{% if domain.quota > 0 %}{{ _(domain.quota) }} KiB{% else %}{{ _("not set") }}{% endif %}</td>
+                    <td class="text-right">{% if domain.quota > 0 %}{{ domain.humanQuota }}{% else %}{{ _("not set") }}{% endif %}</td>
                     {% if domain.domainQuota > 0 %}
                     <td class="text-right">
                         <div class="progress" title="{{ domain.domainQuotaUsagePercent|floatformat:2 }}%">
                             <div class="progress-bar bg-info pb-w-{{ domain.domainQuotaUsagePercentFlat }}" role="progressbar" aria-valuenow="{{ domain.domainQuotaUsed }}" aria-valuemin="0" aria-valuemax="{{ domain.domainQuota }}">{{ domain.domainQuotaUsagePercent|floatformat:2 }}%</div>
                         </div>
-                        <small>{{ _(domain.domainQuotaUsed) }}/{{ _(domain.domainQuota) }} KiB</small>
+                        <small>{{ _(domain.humanDomainQuotaUsed) }}/{{ _(domain.humanDomainQuota) }}</small>
                     </td>
                     {% else %}
                     <td class="text-right">{{ _("not set") }}</td>

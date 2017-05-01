@@ -61,7 +61,9 @@ public:
         addresses(other.addresses),
         forwards(other.forwards),
         quota(other.quota),
+        humanQuota(other.humanQuota),
         usage(other.usage),
+        humanUsage(other.humanUsage),
         created(other.created),
         updated(other.updated),
         validUntil(other.validUntil),
@@ -82,7 +84,9 @@ public:
     QStringList addresses;
     QStringList forwards;
     qint32 quota = 0;
+    QString humanQuota;
     qint32 usage = 0;
+    QString humanUsage;
     QDateTime created;
     QDateTime updated;
     QDateTime validUntil;

@@ -141,6 +141,17 @@ void Domain::setQuota(quint32 nQuota)
 }
 
 
+QString Domain::getHumanQuota() const
+{
+    return d->humanQuota;
+}
+
+
+void Domain::setHumanQuota(const QString &nHumanQuota)
+{
+    d->humanQuota = nHumanQuota;
+}
+
 
 quint32 Domain::getMaxAccounts() const
 {
@@ -166,6 +177,18 @@ void Domain::setDomainQuota(quint32 nDomainQuota)
 }
 
 
+QString Domain::getHumanDomainQuota() const
+{
+    return d->humanDomainQuota;
+}
+
+
+void Domain::setHumanDomainQuota(const QString &humanDomainQuota)
+{
+    d->humanDomainQuota = humanDomainQuota;
+}
+
+
 quint32 Domain::getDomainQuotaUsed() const
 {
     return d->domainQuotaUsed;
@@ -175,6 +198,18 @@ quint32 Domain::getDomainQuotaUsed() const
 void Domain::setDomainQuotaUsed(quint32 nDomainQuotaUsed)
 {
     d->domainQuotaUsed = nDomainQuotaUsed;
+}
+
+
+QString Domain::getHumanDomainQuotaUsed() const
+{
+    return d->humanDomainQuotaUsed;
+}
+
+
+void Domain::setHumanDomainQuotaUsed(const QString &humanDomainQuotaUsed)
+{
+    d->humanDomainQuotaUsed = humanDomainQuotaUsed;
 }
 
 
@@ -379,6 +414,10 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
         dom.setTransport(transport);
         dom.setCreated(Utils::toUserTZ(c, currentTimeUtc));
         dom.setUpdated(Utils::toUserTZ(c, currentTimeUtc));
+
+        dom.setHumanQuota(Utils::humanBinarySize(c, (quint64)dom.getQuota() * 1024));
+        dom.setHumanDomainQuota(Utils::humanBinarySize(c, (quint64)dom.getDomainQuota() * 1024));
+        dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, (quint64)dom.getDomainQuotaUsed() * 1024));
     } else {
         errorData->setSqlError(q.lastError());
     }
@@ -412,6 +451,10 @@ Domain Domain::get(Cutelyst::Context *c, quint32 domId, SkaffariError *errorData
         dom.setAccounts(q.value(9).value<quint32>());
         dom.setCreated(Utils::toUserTZ(c, q.value(10).toDateTime()));
         dom.setUpdated(Utils::toUserTZ(c, q.value(11).toDateTime()));
+
+        dom.setHumanQuota(Utils::humanBinarySize(c, (quint64)dom.getQuota() * 1024));
+        dom.setHumanDomainQuota(Utils::humanBinarySize(c, (quint64)dom.getDomainQuota() * 1024));
+        dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, (quint64)dom.getDomainQuotaUsed() * 1024));
 
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, name FROM folder WHERE domain_id = :domain_id"));
         q.bindValue(QStringLiteral(":domain_id"), domId);
@@ -472,20 +515,24 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
     if (Q_LIKELY(q.exec())) {
         lst.reserve(q.size());
         while (q.next()) {
-            lst.push_back(Domain(q.value(0).value<quint32>(),
-                                 QUrl::fromAce(q.value(1).toByteArray()),
-                                 q.value(2).toString(),
-                                 q.value(3).toString(),
-                                 q.value(4).value<quint32>(),
-                                 q.value(5).value<quint32>(),
-                                 q.value(6).value<quint32>(),
-                                 q.value(7).value<quint32>(),
-                                 q.value(8).toBool(),
-                                 q.value(9).toBool(),
-                                 QVector<Folder>(),
-                                 q.value(10).value<quint32>(),
-                                 Utils::toUserTZ(c, q.value(11).toDateTime()),
-                                 Utils::toUserTZ(c, q.value(12).toDateTime())));
+            Domain dom(q.value(0).value<quint32>(),
+                       QUrl::fromAce(q.value(1).toByteArray()),
+                       q.value(2).toString(),
+                       q.value(3).toString(),
+                       q.value(4).value<quint32>(),
+                       q.value(5).value<quint32>(),
+                       q.value(6).value<quint32>(),
+                       q.value(7).value<quint32>(),
+                       q.value(8).toBool(),
+                       q.value(9).toBool(),
+                       QVector<Folder>(),
+                       q.value(10).value<quint32>(),
+                       Utils::toUserTZ(c, q.value(11).toDateTime()),
+                       Utils::toUserTZ(c, q.value(12).toDateTime()));
+            dom.setHumanQuota(Utils::humanBinarySize(c, (quint64)dom.getQuota() * 1024));
+            dom.setHumanDomainQuota(Utils::humanBinarySize(c, (quint64)dom.getDomainQuota() * 1024));
+            dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, (quint64)dom.getDomainQuotaUsed() * 1024));
+            lst.push_back(dom);
         }
     } else {
         errorData->setSqlError(q.lastError());

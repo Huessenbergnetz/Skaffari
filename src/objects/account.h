@@ -70,7 +70,9 @@ public:
     QStringList getAddresses() const;
     QStringList getForwards() const;
 	qint32 getQuota() const;
+    QString getHumanQuota() const;
     qint32 getUsage() const;
+    QString getHumanUsage() const;
 	float getUsagePercent() const;
     bool isValid() const;
     QDateTime getCreated() const;
@@ -90,7 +92,9 @@ public:
     void setAddresses(const QStringList &nAddresses);
     void setForwards(const QStringList &nForwards);
     void setQuota(qint32 nQuota);
+    void setHumanQuota(const QString &humanQuota);
     void setUsage(qint32 nUsage);
+    void setHumanUsage(const QString &humanUsage);
     void setCreated(const QDateTime &created);
     void setUpdated(const QDateTime &updated);
     void setValidUntil(const QDateTime &validUntil);
@@ -142,8 +146,12 @@ if (property == QLatin1String("id")) {
     var.setValue(object.getForwards());
 } else if (property == QLatin1String("quota")) {
     var.setValue(object.getQuota());
+} else if (property == QLatin1String("humanQuota")) {
+    var.setValue(object.getHumanQuota());
 } else if (property == QLatin1String("usage")) {
     var.setValue(object.getUsage());
+} else if (property == QLatin1String("humanUsage")) {
+    var.setValue(object.getHumanUsage());
 } else if (property == QLatin1String("usagePercent")) {
     var.setValue(object.getUsagePercent());
 } else if (property == QLatin1String("usagePercentFlat")) {

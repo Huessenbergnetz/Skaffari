@@ -36,11 +36,12 @@
                 </div>
             </div>
             {% endif %}
-            
+
             <div class="form-group row">
                 <label for="quota" class="col-12 col-lg-4 col-form-label">{{ _("Quota") }}</label>
                 <div class="col-12 col-lg-8{% if validationErrors.quota.count %} has-warning{% endif %}">
                     <div class="input-group">
+                        <span class="input-group-addon" id="usage-addon">{{ account.humanUsage }} /</span>
                         <input type="number" id="quota" name="quota" class="form-control{% if validationErrors.localpart.count %} form-control-warning{% endif %}" value="{{ account.quota }}" placeholder="{{ _("Quota") }}" aria-describedby="quota-addon" min="0" max="{{ freequota }}">
                         <span class="input-group-addon" id="quota-addon">KiB</span>
                     </div>
