@@ -12,10 +12,10 @@ CREATE TABLE IF NOT EXISTS accountuser (
   quota int(10) unsigned NOT NULL DEFAULT 0,
   created_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   updated_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
-  valid_until datetime NOT NULL DEFAULT '2998-12-31 23:59:59'
-  UNIQUE KEY username (username)
+  valid_until datetime NOT NULL DEFAULT '2998-12-31 23:59:59',
+  UNIQUE KEY username (username),
   KEY idx_accountuser_domain_id (domain_id)
-) ENGINE = MyISAM;
+) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS adminuser (
@@ -26,16 +26,17 @@ CREATE TABLE IF NOT EXISTS adminuser (
   created_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   updated_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   UNIQUE KEY username (username)
-) ENGINE = MyISAM;
+) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS alias (
+  id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
   alias varchar(255) NOT NULL DEFAULT '',
   dest longtext,
   username varchar(50) NOT NULL DEFAULT '',
   status int(11) NOT NULL DEFAULT '1',
-  PRIMARY KEY (alias)
-) ENGINE = MyISAM;
+  UNIQUE KEY (alias)
+) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS domain (
@@ -54,7 +55,7 @@ CREATE TABLE IF NOT EXISTS domain (
   updated_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   UNIQUE KEY domain_name (domain_name),
   UNIQUE KEY prefix (prefix)
-) ENGINE = MyISAM;
+) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS folder (
@@ -63,13 +64,15 @@ CREATE TABLE IF NOT EXISTS folder (
   name varchar(255) NOT NULL,
   special_use text,
   KEY idx_folder_domain_id (domain_id)
-) ENGINE = MyISAM;
+) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS domainadmin (
   domain_id int(10) unsigned NOT NULL,
-  admin_id int(10) unsigned NOT NULL
-) ENGINE = MyISAM;
+  admin_id int(10) unsigned NOT NULL,
+  KEY domainadmin_domain_id_idx (domain_id),
+  KEY domainadmin_admin_id_idx (admin_id)
+) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS log (
@@ -82,7 +85,7 @@ CREATE TABLE IF NOT EXISTS log (
   pid varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (id),
   KEY idx_log_user (user)
-) ENGINE = MyISAM;
+) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS settings (
@@ -92,7 +95,7 @@ CREATE TABLE IF NOT EXISTS settings (
   warnlevel tinyint(2) unsigned NOT NULL DEFAULT 90,
   tz varchar(255) NOT NULL DEFAULT 'UTC',
   lang varchar(127) NOT NULL DEFAULT 'en'
-) ENGINE = MyISAM;
+) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS virtual (
@@ -101,13 +104,13 @@ CREATE TABLE IF NOT EXISTS virtual (
   username varchar(255) NOT NULL DEFAULT '',
   status int(11) NOT NULL DEFAULT 1,
   KEY alias (alias)
-) ENGINE = MyISAM;
+) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS systeminfo (
   name varchar(127) NOT NULL,
   val longtext NOT NULL
-) ENGINE = MyISAM;
+) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 INSERT INTO systeminfo (name, val) VALUES ('skaffari_db_version', '0.0.1');
