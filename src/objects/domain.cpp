@@ -19,7 +19,7 @@
 #include "domain_p.h"
 #include "skaffarierror.h"
 #include "account.h"
-#include "../utils/timeutils.h"
+#include "../utils/utils.h"
 #include <Cutelyst/ParamsMultiMap>
 #include <Cutelyst/Response>
 #include <QSqlQuery>
@@ -377,8 +377,8 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
         dom.setFreeAddressEnabled(freeAddress);
         dom.setFolders(foldersVect);
         dom.setTransport(transport);
-        dom.setCreated(TimeUtils::toUserTZ(c, currentTimeUtc));
-        dom.setUpdated(TimeUtils::toUserTZ(c, currentTimeUtc));
+        dom.setCreated(Utils::toUserTZ(c, currentTimeUtc));
+        dom.setUpdated(Utils::toUserTZ(c, currentTimeUtc));
     } else {
         errorData->setSqlError(q.lastError());
     }
@@ -410,8 +410,8 @@ Domain Domain::get(Cutelyst::Context *c, quint32 domId, SkaffariError *errorData
         dom.setFreeNamesEnabled(q.value(7).toBool());
         dom.setFreeAddressEnabled(q.value(8).toBool());
         dom.setAccounts(q.value(10).value<quint32>());
-        dom.setCreated(TimeUtils::toUserTZ(c, q.value(11).toDateTime()));
-        dom.setUpdated(TimeUtils::toUserTZ(c, q.value(12).toDateTime()));
+        dom.setCreated(Utils::toUserTZ(c, q.value(11).toDateTime()));
+        dom.setUpdated(Utils::toUserTZ(c, q.value(12).toDateTime()));
 
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, name FROM folder WHERE domain_id = :domain_id"));
         q.bindValue(QStringLiteral(":domain_id"), domId);
@@ -484,8 +484,8 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                                  q.value(9).toBool(),
                                  QVector<Folder>(),
                                  q.value(10).value<quint32>(),
-                                 TimeUtils::toUserTZ(c, q.value(11).toDateTime()),
-                                 TimeUtils::toUserTZ(c, q.value(12).toDateTime())));
+                                 Utils::toUserTZ(c, q.value(11).toDateTime()),
+                                 Utils::toUserTZ(c, q.value(12).toDateTime())));
         }
     } else {
         errorData->setSqlError(q.lastError());
@@ -583,7 +583,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         d->setFreeNamesEnabled(freeNames);
         d->setFreeAddressEnabled(freeAddress);
         d->setTransport(transport);
-        d->setUpdated(TimeUtils::toUserTZ(c, currentTimeUtc));
+        d->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
 
         ret = true;
 
@@ -600,7 +600,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         }
 
         d->setQuota(quota);
-        d->setUpdated(TimeUtils::toUserTZ(c, currentTimeUtc));
+        d->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
 
         ret = true;
     } else {

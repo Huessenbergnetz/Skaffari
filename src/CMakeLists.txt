@@ -25,8 +25,8 @@ set(skaffari_SRCS
     utils/language.cpp
     utils/language.h
     utils/language_p.h
-    utils/timeutils.cpp
-    utils/timeutils.h
+    utils/utils.cpp
+    utils/utils.h
     accounteditor.cpp
     accounteditor.h
     admineditor.cpp

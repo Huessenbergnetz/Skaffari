@@ -18,7 +18,7 @@
 
 #include "adminaccount_p.h"
 #include "skaffarierror.h"
-#include "../utils/timeutils.h"
+#include "../utils/utils.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <Cutelyst/Context>
@@ -256,7 +256,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMu
     }
 
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
-    const QDateTime userTime = TimeUtils::toUserTZ(c, currentTimeUtc);
+    const QDateTime userTime = Utils::toUserTZ(c, currentTimeUtc);
 
     aa.setId(id);
     aa.setUsername(username);
@@ -330,8 +330,8 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, quint32 i
     acc.setTemplate(q.value(4).toString());
     acc.setMaxDisplay(q.value(5).value<quint8>());
     acc.setWarnLevel(q.value(6).value<quint8>());
-    acc.setCreated(TimeUtils::toUserTZ(c, q.value(7).toDateTime()));
-    acc.setUpdated(TimeUtils::toUserTZ(c, q.value(8).toDateTime()));
+    acc.setCreated(Utils::toUserTZ(c, q.value(7).toDateTime()));
+    acc.setUpdated(Utils::toUserTZ(c, q.value(8).toDateTime()));
 
     if (acc.getType() != AdminAccountType::SuperUser) {
 
@@ -408,7 +408,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     }
 
     a->setType(type);
-    a->setUpdated(TimeUtils::toUserTZ(c, currentUtc));
+    a->setUpdated(Utils::toUserTZ(c, currentUtc));
 
     QStringList domains;
     if (a->getType() != AdminAccount::SuperUser) {
@@ -507,7 +507,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     a->setWarnLevel(warnlevel);
     a->setLang(lang);
     a->setTz(tz);
-    a->setUpdated(TimeUtils::toUserTZ(c, currentUtc));
+    a->setUpdated(Utils::toUserTZ(c, currentUtc));
 
     c->stash({
                  {QStringLiteral("userMaxDisplay"), maxdisplay},

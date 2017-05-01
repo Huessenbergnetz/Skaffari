@@ -19,7 +19,7 @@
 #include "account_p.h"
 #include "domain.h"
 #include "skaffarierror.h"
-#include "../utils/timeutils.h"
+#include "../utils/utils.h"
 #include "../imap/skaffariimap.h"
 #include "../../common/password.h"
 #include <Cutelyst/Context>
@@ -460,10 +460,10 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     a.setQuota(quota);
     a.setAddresses(QStringList(email));
     a.setQuota(p.value(QStringLiteral("quota")).toULong());
-    const QDateTime currentUserTime = TimeUtils::toUserTZ(c, currentUtc);
+    const QDateTime currentUserTime = Utils::toUserTZ(c, currentUtc);
     a.setCreated(currentUserTime);
     a.setUpdated(currentUserTime);
-    a.setValidUntil(TimeUtils::toUserTZ(c, validUntil));
+    a.setValidUntil(Utils::toUserTZ(c, validUntil));
 
     return a;
 }
@@ -645,9 +645,9 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
                               aliases,
                               q.value(6).value<quint32>(),
                               0,
-                              TimeUtils::toUserTZ(c, q.value(7).toDateTime()),
-                              TimeUtils::toUserTZ(c, q.value(8).toDateTime()),
-                              TimeUtils::toUserTZ(c, q.value(9).toDateTime()),
+                              Utils::toUserTZ(c, q.value(7).toDateTime()),
+                              Utils::toUserTZ(c, q.value(8).toDateTime()),
+                              Utils::toUserTZ(c, q.value(9).toDateTime()),
                               _keepLocal));
     }
 
@@ -683,9 +683,9 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
     a.setSieveEnabled(q.value(4).toBool());
     a.setSmtpauthEnabled(q.value(5).toBool());
     a.setQuota(q.value(6).value<quint32>());
-    a.setCreated(TimeUtils::toUserTZ(c, q.value(7).toDateTime()));
-    a.setUpdated(TimeUtils::toUserTZ(c, q.value(8).toDateTime()));
-    a.setValidUntil(TimeUtils::toUserTZ(c, q.value(9).toDateTime()));
+    a.setCreated(Utils::toUserTZ(c, q.value(7).toDateTime()));
+    a.setUpdated(Utils::toUserTZ(c, q.value(8).toDateTime()));
+    a.setValidUntil(Utils::toUserTZ(c, q.value(9).toDateTime()));
     a.setDomainId(d.id());
     a.setPrefix(d.getPrefix());
     a.setDomainName(d.getName());
@@ -802,9 +802,9 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const C
         qCDebug(SK_ACCOUNT) << q.lastError().text();
     }
 
-    a->setValidUntil(TimeUtils::toUserTZ(c, validUntil));
+    a->setValidUntil(Utils::toUserTZ(c, validUntil));
     a->setQuota(quota);
-    a->setUpdated(TimeUtils::toUserTZ(c, currentTimeUtc));
+    a->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
 
     ret = true;
 

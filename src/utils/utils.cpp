@@ -16,21 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TIMEUTILS_H
-#define TIMEUTILS_H
+#include "utils.h"
+#include <Cutelyst/Context>
+#include <Cutelyst/Plugins/Session/Session>
+#include <QTimeZone>
 
-#include <QDateTime>
 
-namespace Cutelyst {
-class Context;
+Utils::Utils()
+{
+
 }
 
-class TimeUtils
+
+
+QDateTime Utils::toUserTZ(Cutelyst::Context *c, const QDateTime &dt)
 {
-public:
-    TimeUtils();
+    QDateTime retVal;
 
-    static QDateTime toUserTZ(Cutelyst::Context *c, const QDateTime &dt);
-};
+    const QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), QStringLiteral("UTC")).toByteArray());
 
-#endif // TIMEUTILS_H
+    if (userTz != QTimeZone::utc()) {
+        QDateTime _dt = dt;
+        _dt.setTimeSpec(Qt::UTC);
+        retVal = _dt.toTimeZone(userTz);
+    } else {
+        retVal = dt;
+    }
+
+    return retVal;
+}
