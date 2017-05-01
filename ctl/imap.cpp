@@ -83,8 +83,7 @@ bool Imap::login()
 
         if (m_response.split(QChar(QChar::Space)).contains(QLatin1String("STARTTLS", 8))) {
 
-            static const QString startTLSCommand(QStringLiteral(". STARTTLS\n"));
-            this->write(startTLSCommand.toLatin1());
+            this->write(QStringLiteral(". STARTTLS\n").toLatin1());
 
             if (Q_UNLIKELY(!this->waitForReadyRead())) {
                 m_lastError = tr("Connection to IMAP server timed out while wating for response to STARTTLS.");

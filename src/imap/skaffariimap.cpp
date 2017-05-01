@@ -17,8 +17,14 @@
  */
 
 #include "skaffariimap.h"
+#include <unicode/ucnv_err.h>
+#include <unicode/uenum.h>
+#include <unicode/localpointer.h>
+#include <unicode/ucnv.h>
 
 Q_LOGGING_CATEGORY(SK_IMAP, "skaffari.imap")
+
+QStringList SkaffariIMAP::m_capabilities = QStringList();
 
 SkaffariIMAP::SkaffariIMAP(QObject *parent): QSslSocket(parent)
 {
@@ -26,7 +32,7 @@ SkaffariIMAP::SkaffariIMAP(QObject *parent): QSslSocket(parent)
 }
 
 
-SkaffariIMAP::SkaffariIMAP (const QString& user, const QString& password, const QString& host, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, EncryptionType conType, QObject* parent ) : QSslSocket(parent), m_user(user), m_password(password), m_host(host), m_port(port), m_protocol(protocol), m_encType(conType)
+SkaffariIMAP::SkaffariIMAP (const QString& user, const QString& password, const QString& host, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, EncryptionType conType, bool unixhierarchysep, QObject* parent ) : QSslSocket(parent), m_user(user), m_password(password), m_host(host), m_port(port), m_protocol(protocol), m_encType(conType), m_unixhierarchysep(unixhierarchysep)
 {
 
 }
@@ -41,173 +47,201 @@ SkaffariIMAP::~SkaffariIMAP()
 
 bool SkaffariIMAP::login()
 {
-	if (this->state() == QAbstractSocket::UnconnectedState) {
-		if (m_encType != IMAPS) {
-			this->connectToHost(m_host, m_port, ReadWrite, m_protocol);
-		} else {
-			this->connectToHostEncrypted(m_host, m_port, ReadWrite, m_protocol);
-		}
-	}
+    setNoError();
 
-	if (m_encType != IMAPS) {
-		if (!this->waitForConnected(15000)) {
-			return connectionTimeOut();
-		}
-	} else {
-		if (!this->waitForEncrypted(15000)) {
-			return connectionTimeOut();
-		}
-	}
+    if (m_loggedIn) {
+        return true;
+    }
 
-	if (!this->waitForReadyRead(5000)) {
-		return connectionTimeOut();
-	}
+    if (m_encType != IMAPS) {
+        this->connectToHost(m_host, m_port, ReadWrite, m_protocol);
+    } else {
+        this->connectToHostEncrypted(m_host, m_port, ReadWrite, m_protocol);
+    }
 
-	if (!checkResponse(this->readAll())) {
-		return false;
-	}
+    if (m_encType != IMAPS) {
+        if (Q_UNLIKELY(!this->waitForConnected())) {
+            return connectionTimeOut();
+        }
+    } else {
+        if (Q_UNLIKELY(!this->waitForEncrypted())) {
+            return connectionTimeOut();
+        }
+    }
 
-	if (m_encType == StartTLS) {
+    if (Q_UNLIKELY(!this->waitForReadyRead())) {
+        return connectionTimeOut();
+    }
 
-        if (m_response.split(QStringLiteral(" ")).contains(QLatin1String("STARTTLS", 8))) {
+    if (Q_UNLIKELY(!checkResponse(this->readAll()))) {
+        this->disconnectFromHost();
+        this->waitForDisconnected();
+        return false;
+    }
 
-            static const QString startTLSCommand(QStringLiteral(". STARTTLS\n"));
-			this->write(startTLSCommand.toLatin1());
+    if (m_encType == StartTLS) {
 
-			if (!this->waitForReadyRead(5000)) {
-				return connectionTimeOut();
-			}
+        if (m_response.split(QChar(QChar::Space)).contains(QLatin1String("STARTTLS", 8))) {
 
-			if (!checkResponse(this->readAll())) {
-				return false;
-			}
+            this->write(QStringLiteral(". STARTTLS\n").toLatin1());
 
-			this->startClientEncryption();
+            if (Q_UNLIKELY(!this->waitForReadyRead())) {
+                return connectionTimeOut();
+            }
 
-		} else {
-            qCWarning(SK_IMAP)<< "STARTTLS not supported, continuing unencrypted.";
-		}
-	}
+            if (Q_UNLIKELY(!checkResponse(this->readAll()))) {
+                this->disconnectFromHost();
+                this->waitForDisconnected();
+                return false;
+            }
 
-	// build login command
+            this->startClientEncryption();
+
+        } else {
+            m_imapError = SkaffariIMAPError(SkaffariIMAPError::EncryptionError, tr("STARTTLS is not supported."));
+            this->disconnectFromHost();
+            this->waitForDisconnected();
+            return false;
+        }
+    }
+
+    // build login command
     QString loginData(QStringLiteral(". LOGIN "));
-    loginData.append(m_user).append(QLatin1String(" ", 1)).append(m_password).append(QStringLiteral("\n"));
+    loginData.append(m_user).append(QChar(QChar::Space)).append(m_password).append(QChar(QChar::LineFeed));
 
-	this->write(loginData.toLatin1());
+    this->write(loginData.toLatin1());
 
-	if (!this->waitForReadyRead(5000)) {
-		return connectionTimeOut();
-	}
+    if (Q_UNLIKELY(!this->waitForReadyRead())) {
+        return connectionTimeOut();
+    }
 
-	if (!this->checkResponse(this->readAll())) {
-		return false;
-	}
+    if (Q_UNLIKELY(!this->checkResponse(this->readAll()))) {
+        this->disconnectFromHost();
+        this->waitForDisconnected();
+        return false;
+    }
 
-	return true;
+    if (SkaffariIMAP::m_capabilities.isEmpty()) {
+        const QRegularExpression capAfterLoginRegEx(QStringLiteral(".*\\[CAPABILITY (.*)\\]"));
+        const QRegularExpressionMatch match = capAfterLoginRegEx.match(m_response);
+        SkaffariIMAP::m_capabilities = match.captured(1).split(QChar(QChar::Space), QString::SkipEmptyParts);
+        if (SkaffariIMAP::m_capabilities.isEmpty()) {
+            SkaffariIMAP::m_capabilities = getCapabilities();
+            if (SkaffariIMAP::m_capabilities.isEmpty()) {
+                this->disconnectFromHost();
+                this->waitForDisconnected();
+                return false;
+            }
+        }
+    }
+
+    m_loggedIn = true;
+
+    return true;
 }
 
 
 bool SkaffariIMAP::logout()
 {
-	if (this->state() == UnconnectedState) {
-		return true;
-	}
+    setNoError();
 
-	if (this->state() == ClosingState) {
-		return true;
-	}
+    if (!m_loggedIn) {
+        return true;
+    }
 
-    static const QString logoutCommand(QStringLiteral(". LOGGOUT\n"));
-    this->write(logoutCommand.toLatin1());
+    if (this->state() == UnconnectedState) {
+        m_loggedIn = false;
+        return true;
+    }
 
-	if (this->waitForReadyRead(5000)) {
-		this->disconnect();
-		return true;
-	} else {
-        qCWarning(SK_IMAP) << "No response on logout.";
-		this->disconnect();
-		return false;
-	}
+    if (this->state() == ClosingState) {
+        m_loggedIn = false;
+        return true;
+    }
+
+    this->write(QStringLiteral(". LOGOUT\n").toLatin1());
+
+    this->waitForReadyRead();
+
+    if (Q_UNLIKELY(!this->checkResponse(this->readAll()))) {
+        this->disconnectFromHost();
+        if (Q_UNLIKELY(!this->waitForDisconnected())) {
+            m_loggedIn = false;
+            this->abort();
+        }
+        return false;
+    }
+
+    m_loggedIn = false;
+
+    this->disconnectFromHost();
+
+    if (Q_LIKELY(this->waitForDisconnected())) {
+        return true;
+    } else {
+        return connectionTimeOut();
+    }
 }
 
 
-bool SkaffariIMAP::capabilities()
+QStringList SkaffariIMAP::getCapabilities(bool forceReload)
 {
-    static const QString capabilitiesCommand(QStringLiteral(". CAPABILITY\n"));
+    if (SkaffariIMAP::m_capabilities.empty() || forceReload) {
 
-	this->write(capabilitiesCommand.toLatin1());
+        SkaffariIMAP::m_capabilities.clear();
 
-	if (!this->waitForReadyRead(5000)) {
-		return connectionTimeOut();
-	}
+        this->write(QStringLiteral(". CAPABILITY\n").toLatin1());
 
-	if (!this->checkResponse(this->readAll())) {
-		return false;
-	}
+        if (Q_UNLIKELY(!this->waitForReadyRead())) {
+            connectionTimeOut();
+            return SkaffariIMAP::m_capabilities;
+        }
 
-	m_capabilities.clear();
+        if (Q_UNLIKELY(!this->checkResponse(this->readAll()))) {
+            return SkaffariIMAP::m_capabilities;
+        }
 
-	m_response.remove(QRegularExpression(QStringLiteral("\\s*.* (OK|BAD|WARN) .*")));
+        const QRegularExpression regex(QStringLiteral("^\\* CAPABILITY (.*)\\r\\n"));
+        const QRegularExpressionMatch match = regex.match(m_response);
 
-    QStringList resp = m_response.trimmed().split(QChar(QChar::Space));
+        SkaffariIMAP::m_capabilities = match.captured(1).split(QChar(QChar::Space), QString::SkipEmptyParts);
 
-	if (!resp.isEmpty()) {
-		resp.removeFirst();
-		resp.removeFirst();
-		m_capabilities = resp;
-	} else {
-		m_imapError = SkaffariIMAPError(SkaffariIMAPError::EmptyResponse, tr("The IMAP response was empty or could not get extracted."));
-		return false;
-	}
+        if (Q_UNLIKELY(SkaffariIMAP::m_capabilities.empty())) {
+            m_imapError = SkaffariIMAPError(SkaffariIMAPError::Unknown, tr("Failed to request capabilities from the IMAP server."));
+        }
 
-	setNoError();
-	return true;
+    }
+
+    return SkaffariIMAP::m_capabilities;
 }
 
 
-QStringList SkaffariIMAP::getCapabilities()
+std::pair<quint32,quint32> SkaffariIMAP::getQuota(const QString &user)
 {
-	return m_capabilities;
-}
+    std::pair<quint32,quint32> quota(0, 0);
 
+    QString command(QStringLiteral(". GETQUOTA user"));
+    if (m_unixhierarchysep) {
+        command.append(QLatin1Char('/'));
+    } else {
+        command.append(QLatin1Char('.'));
+    }
+    command.append(user);
+    command.append(QChar(QChar::LineFeed));
 
+    this->write(command.toLatin1());
 
-QPair<quint32, quint32> SkaffariIMAP::getQuota(const QString& user)
-{
-    QPair<qint32,qint32> qp(0, 0);
+    if (Q_LIKELY(this->waitForReadyRead())) {
+        const QString response = QString::fromLatin1(this->readAll());
+        static QRegularExpression re(QStringLiteral("^\\* QUOTA \\S* \\(STORAGE (\\d+) (\\d+)"));
+        const QRegularExpressionMatch match = re.match(response);
+        if (match.hasMatch()) {
+            quota.first = static_cast<quint32>(match.captured(1).toULong());
+            quota.second = static_cast<quint32>(match.captured(2).toULong());
+        }
+    }
 
-    QString getQuotaCommand(QStringLiteral(". GETQUOTA user."));
-    getQuotaCommand.append(user);
-    getQuotaCommand.append(QChar(QChar::LineFeed));
-
-	this->write(getQuotaCommand.toLatin1());
-
-	if (this->waitForReadyRead(5000)) {
-        QString response = QString::fromLatin1(this->readAll());
-		QRegularExpression re(QStringLiteral("^\\* QUOTA \\S* \\(STORAGE (\\d+) (\\d+)"));
-		QRegularExpressionMatch match = re.match(response);
-		if (match.hasMatch()) {
-// 			qDebug() << "User:" << user << "Quota:" << match.captured(1).toInt() << "/" << match.captured(2).toInt();
-            qp.first = static_cast<quint32>(match.captured(1).toULong());
-            qp.second = static_cast<quint32>(match.captured(2).toULong());
-		} else {
-            qCWarning(SK_IMAP) << "No quota found for user" << user;
-			m_imapError = SkaffariIMAPError(SkaffariIMAPError::UndefinedResponse, tr("No quota found for user %1.").arg(user));
-		}
-	} else {
-        qCWarning(SK_IMAP) << "Connection to IMAP server timed out.";
-        m_imapError = SkaffariIMAPError(SkaffariIMAPError::ConnectionTimeout, tr("Could not request quota for user %1, connection to IMAP server timed out.").arg(user));
-	}
-
-    return qp;
-}
-
-
-
-
-QString SkaffariIMAP::errorText() const
-{
-	return m_errorText;
+    return quota;
 }
 
 
@@ -215,7 +249,7 @@ bool SkaffariIMAP::connectionTimeOut()
 {
     qCWarning(SK_IMAP) << "Connection to IMAP server timed out.";
 	m_imapError = SkaffariIMAPError(SkaffariIMAPError::ConnectionTimeout, tr("Connection to IMAP server timed out."));
-	this->disconnect();
+    this->abort();
 	return false;
 }
 
@@ -229,20 +263,22 @@ bool SkaffariIMAP::checkResponse(const QByteArray &resp, const QString &tag)
 		return false;
 	}
 
-	if (tag.isEmpty()) {
-		m_responseRegex.setPattern(QStringLiteral("\\s*.* (OK|BAD|WARN) "));
-	} else {
-        m_responseRegex.setPattern(QStringLiteral("\\s*%1 (OK|BAD|WARN) ").arg(tag));
-	}
+    QRegularExpression regex;
 
-	m_responseRegexMatch = m_responseRegex.match(m_response);
+    if (tag.isEmpty()) {
+        regex.setPattern(QStringLiteral("\\s*.* (OK|BAD|WARN|NO) (.*)"));
+    } else {
+        regex.setPattern(QStringLiteral("\\s*%1 (OK|BAD|WARN|NO) (.*)").arg(tag));
+    }
 
-	if (!m_responseRegexMatch.hasMatch()) {
-		m_imapError = SkaffariIMAPError(SkaffariIMAPError::UndefinedResponse, tr("The IMAP response is undefined."));
-		return false;
-	}
+    const QRegularExpressionMatch match = regex.match(m_response);
 
-	QString respType = m_responseRegexMatch.captured(1);
+    if (!match.hasMatch()) {
+        m_imapError = SkaffariIMAPError(SkaffariIMAPError::UndefinedResponse, tr("The IMAP response is undefined."));
+        return false;
+    }
+
+    const QString respType = match.captured(1);
 
     if (respType == QLatin1String("OK")) {
 		setNoError();
@@ -368,4 +404,11 @@ QString SkaffariIMAP::fromUTF7Imap(const QByteArray &ba)
     free(out);
 
     return str;
+}
+
+
+
+bool SkaffariIMAP::isLoggedIn() const
+{
+    return m_loggedIn;
 }

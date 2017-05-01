@@ -34,6 +34,7 @@ public:
 		UndefinedResponse,
 		EmptyResponse,
 		ConnectionTimeout,
+        EncryptionError,
 		Unknown
 	};
 

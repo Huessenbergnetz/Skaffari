@@ -25,11 +25,6 @@
 
 #include "skaffariimaperror.h"
 
-#include <unicode/ucnv_err.h>
-#include <unicode/uenum.h>
-#include <unicode/localpointer.h>
-#include <unicode/ucnv.h>
-
 #include <QLoggingCategory>
 
 Q_DECLARE_LOGGING_CATEGORY(SK_IMAP)
@@ -56,15 +51,15 @@ public:
 	};
 
     explicit SkaffariIMAP(QObject *parent = nullptr);
-    SkaffariIMAP(const QString &user, const QString &password, const QString &host = QStringLiteral("localhost"), quint16 port = 143, NetworkLayerProtocol protocol = QAbstractSocket::AnyIPProtocol, EncryptionType conType = StartTLS, QObject* parent = nullptr);
+    SkaffariIMAP(const QString &user, const QString &password, const QString &host = QStringLiteral("localhost"), quint16 port = 143, NetworkLayerProtocol protocol = QAbstractSocket::AnyIPProtocol, EncryptionType conType = StartTLS, bool unixhierarchysep = false, QObject* parent = nullptr);
     ~SkaffariIMAP();
 
 	bool login();
 	bool logout();
-	bool capabilities();
+    bool isLoggedIn() const;
 
-    QPair<quint32, quint32> getQuota(const QString &user);
-	QStringList getCapabilities();
+    QStringList getCapabilities(bool forceReload = false);
+    std::pair<quint32,quint32> getQuota(const QString &user);
 
 	QString errorText() const;
 	SkaffariIMAPError lastError() const;
@@ -87,13 +82,12 @@ private:
 	QString m_host;
     quint16 m_port = 143;
     NetworkLayerProtocol m_protocol = QAbstractSocket::AnyIPProtocol;
-	QString m_errorText;
-	QStringList m_capabilities;
     EncryptionType m_encType = StartTLS;
+    bool m_unixhierarchysep;
 	QString m_response;
-    QRegularExpression m_responseRegex = QRegularExpression(QStringLiteral("\\s*.* (OK|BAD|WARN) "));
-	QRegularExpressionMatch m_responseRegexMatch;
 	SkaffariIMAPError m_imapError;
+    bool m_loggedIn = false;
+    static QStringList m_capabilities;
 	void setNoError();
 
     Q_DISABLE_COPY(SkaffariIMAP)
