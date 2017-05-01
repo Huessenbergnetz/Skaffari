@@ -35,11 +35,6 @@ set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATADIR}/doc/skaffari" CACHE PATH "Dir
 # Enable C++11 features
 add_definitions(-std=c++11)
 
-#add_definitions("-DSKAFFARI_VERSION=\"${SKAFFARI_VERSION}\"")
-#add_definitions("-DSKAFFARI_L10NDIR=\"${CMAKE_INSTALL_LOCALEDIR}\"")
-#add_definitions("-DSKAFFARI_TMPLDIR=\"${TEMPLATES_INSTALL_DIR}\"")
-#add_definitions("-DSKAFFARI_CONFDIR=\"${CMAKE_INSTALL_SYSCONFDIR}\"")
-#add_definitions("-DSKAFFARI_SQLDIR=\"${SQL_INSTALL_DIR}\"")
 add_definitions("-Werror -Wall -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Wformat -Winit-self")
 
 add_definitions(
