@@ -21,6 +21,7 @@
 #include <unicode/uenum.h>
 #include <unicode/localpointer.h>
 #include <unicode/ucnv.h>
+#include <QVariantMap>
 
 Q_LOGGING_CATEGORY(SK_IMAP, "skaffari.imap")
 
@@ -35,6 +36,19 @@ SkaffariIMAP::SkaffariIMAP(QObject *parent): QSslSocket(parent)
 SkaffariIMAP::SkaffariIMAP (const QString& user, const QString& password, const QString& host, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, EncryptionType conType, bool unixhierarchysep, QObject* parent ) : QSslSocket(parent), m_user(user), m_password(password), m_host(host), m_port(port), m_protocol(protocol), m_encType(conType), m_unixhierarchysep(unixhierarchysep)
 {
 
+}
+
+
+SkaffariIMAP::SkaffariIMAP(const QVariantMap &imapConfig, QObject *parent) :
+    QSslSocket(parent)
+{
+    m_user = imapConfig.value(QStringLiteral("user")).toString();
+    m_password = imapConfig.value(QStringLiteral("password")).toString();
+    m_host = imapConfig.value(QStringLiteral("host")).toString();
+    m_port = imapConfig.value(QStringLiteral("port")).value<quint16>();
+    m_encType = static_cast<EncryptionType>(imapConfig.value(QStringLiteral("encryption")).value<quint8>());
+    m_protocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(imapConfig.value(QStringLiteral("protocol")).value<quint8>());
+    m_unixhierarchysep = (imapConfig.value(QStringLiteral("domainasprefix")).toBool() || imapConfig.value(QStringLiteral("fqun")).toBool());
 }
 
 
