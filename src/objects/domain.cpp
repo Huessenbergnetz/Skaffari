@@ -409,9 +409,9 @@ Domain Domain::get(Cutelyst::Context *c, quint32 domId, SkaffariError *errorData
         dom.setDomainQuotaUsed(q.value(6).value<quint32>());
         dom.setFreeNamesEnabled(q.value(7).toBool());
         dom.setFreeAddressEnabled(q.value(8).toBool());
-        dom.setAccounts(q.value(10).value<quint32>());
-        dom.setCreated(Utils::toUserTZ(c, q.value(11).toDateTime()));
-        dom.setUpdated(Utils::toUserTZ(c, q.value(12).toDateTime()));
+        dom.setAccounts(q.value(9).value<quint32>());
+        dom.setCreated(Utils::toUserTZ(c, q.value(10).toDateTime()));
+        dom.setUpdated(Utils::toUserTZ(c, q.value(11).toDateTime()));
 
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, name FROM folder WHERE domain_id = :domain_id"));
         q.bindValue(QStringLiteral(":domain_id"), domId);

@@ -26,7 +26,7 @@ Folder::Folder() :
 
 
 Folder::Folder(quint32 id, quint32 domainId, const QString &name) :
-    d(new FolderData(id, domainid, name))
+    d(new FolderData(id, domainId, name))
 {
 
 }

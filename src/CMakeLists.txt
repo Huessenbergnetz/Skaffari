@@ -22,6 +22,9 @@ set(skaffari_SRCS
     objects/skaffarierror.cpp
     objects/skaffarierror.h
     objects/skaffarierror_p.h
+    objects/folder.cpp
+    objects/folder.h
+    objects/folder_p.h
     utils/language.cpp
     utils/language.h
     utils/language_p.h
