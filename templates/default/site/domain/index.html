@@ -18,7 +18,7 @@
                     <th>{{ _("Actions") }}</th>
                     <th>{{ _("Domain name") }}</th>
                     <th>{{ _("Prefix") }}</th>
-                    <th class="text-right">{{ _("Accounts") }}</th>
+                    <th class="text-right">{{ _("Max. accounts") }}</th>
                     <th class="text-right">{{ _("Default quota") }}</th>
                     <th class="text-right">{{ _("Domain quota") }}</th>
                 </tr>
@@ -38,18 +38,18 @@
                     </td>
                     <td><a href="/domain/{{ domain.id }}/accounts" title="{{ _("Manage accounts") }}">{{ domain.name }}</a></td>
                     <td>{{ domain.prefix }}</td>
-                    <td class="text-right">{{ domain.accounts }}/{{ _(domain.maxAccounts) }}</td>
-                    <td class="text-right">{% ifequal domain.quota 0 %}{{ _("not set") }}{% else %}{{ _(domain.quota) }} KiB{% endifequal %}</td>
-                    {% ifequal domain.domainQuota 0 %}
-                    <td class="text-right">{{ _("not set") }}</td>
-                    {% else %}
+                    <td class="text-right">{% if domain.maxAccounts > 0 %}{{ domain.accounts }}/{{ _(domain.maxAccounts) }}{% else %}{{ _("not set") }}{% endif %}</td>
+                    <td class="text-right">{% if domain.quota > 0 %}{{ _(domain.quota) }} KiB{% else %}{{ _("not set") }}{% endif %}</td>
+                    {% if domain.domainQuota > 0 %}
                     <td class="text-right">
                         <div class="progress" title="{{ domain.domainQuotaUsagePercent|floatformat:2 }}%">
                             <div class="progress-bar bg-info pb-w-{{ domain.domainQuotaUsagePercentFlat }}" role="progressbar" aria-valuenow="{{ domain.domainQuotaUsed }}" aria-valuemin="0" aria-valuemax="{{ domain.domainQuota }}">{{ domain.domainQuotaUsagePercent|floatformat:2 }}%</div>
                         </div>
                         <small>{{ _(domain.domainQuotaUsed) }}/{{ _(domain.domainQuota) }} KiB</small>
                     </td>
-                    {% endifequal %}
+                    {% else %}
+                    <td class="text-right">{{ _("not set") }}</td>
+                    {% endif %}
                     {# <td class="text-right">{% ifequal domain.domainQuota 0 %}{{ _("not set") }}{% else %}{{ _(domain.domainQuotaUsed) }}/{{ _(domain.domainQuota) }} KiB{% endifequal %}</td> #}
                 </tr>
             {% endfor %}
