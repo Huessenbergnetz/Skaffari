@@ -326,9 +326,7 @@ void DomainEditor::add_account(Context* c)
                                                       engine->accountConfig(QStringLiteral("pwtype"), 1).value<quint8>(),
                                                       engine->accountConfig(QStringLiteral("pwmethod"), 2).value<quint8>(),
                                                       engine->accountConfig(QStringLiteral("pwrounds"), 10000).value<quint32>(),
-                                                      domainAsPrefix,
-                                                      fqun,
-                                                      static_cast<Account::CreateMailbox>(engine->imapConfig(QStringLiteral("createmailbox"), 0).value<quint8>()));
+                                                      engine->imapConfig());
                     if (account.isValid()) {
 
                         Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
