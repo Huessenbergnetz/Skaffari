@@ -36,19 +36,25 @@ mkdir $DIR
 
 mkdir ${DIR}/templates
 
+pushd templates
+cp CMakeLists.txt ${DIR}/templates
+
 for TMPL in default
 do
-    pushd templates/${TMPL}
+    pushd $TMPL
     npm update --dev
     ./gulp --production
     pushd static
     find $PWD -type f -name "*.css" -o -type f -name "*.js" | parallel compasset
     popd
     mkdir ${DIR}/templates/${TMPL}
+    cp CMakeLists.txt ${DIR}/templates/${TMPL}
     cp -r site ${DIR}/templates/${TMPL}
     cp -r static ${DIR}/templates/${TMPL}
     popd
 done
+
+popd
 
 for SRCDIR in common ctl sql src
 do
@@ -65,6 +71,7 @@ rm -f ${2}/${PRJNAME}-${1}.tar.xz
 rm -f ${2}/${PRJNAME}-${1}.tar.gz
 tar -cJf ${2}/${PRJNAME}-${1}.tar.xz ${PRJNAME}-${1}
 tar -czf ${2}/${PRJNAME}-${1}.tar.gz ${PRJNAME}-${1}
+rm -rf ${PRJNAME}-${1}
 popd
 
 exit 0
