@@ -1,15 +1,19 @@
-find_program(NPM_BIN NAMES npm)
+if (BUILD_TEMPLATES)
 
-message(STATUS "Installing required node.js dependencies for default template")
+    find_program(NPM_BIN NAMES npm)
 
-execute_process(COMMAND ${NPM_BIN} update --dev WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET)
+    message(STATUS "Installing required node.js dependencies for default template")
 
-message(STATUS "Installing required node.js dependencies for default template - done")
+    execute_process(COMMAND ${NPM_BIN} update --dev WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET)
 
-message(STATUS "Building assets for default template")
+    message(STATUS "Installing required node.js dependencies for default template - done")
 
-execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/node_modules/gulp/bin/gulp.js WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET)
+    message(STATUS "Building assets for default template")
 
-message(STATUS "Building assets for default template - done")
+    execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/node_modules/gulp/bin/gulp.js WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET)
+
+    message(STATUS "Building assets for default template - done")
+
+endif (BUILD_TEMPLATES)
 
 install(DIRECTORY site static DESTINATION ${TEMPLATES_INSTALL_DIR}/default)

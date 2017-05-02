@@ -32,7 +32,7 @@ set(TEMPLATES_INSTALL_DIR "${APPDIR}/templates" CACHE PATH "Directory to install
 set(CMAKE_INSTALL_SYSCONFDIR "/etc" CACHE PATH "Directory to install configuration files")
 set(SQL_INSTALL_DIR "${APPDIR}/sql" CACHE PATH "Directory to install SQL files")
 set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATADIR}/doc/skaffari" CACHE PATH "Directory to install documentation")
-set(BUILD_TEMPLATES ON CACHE BOOL "If enabled, template assests will be build")
+set(BUILD_TEMPLATES OFF CACHE BOOL "If enabled, template assests will be build")
 
 # Enable C++11 features
 add_definitions(-std=c++11)
@@ -60,6 +60,4 @@ include_directories(
 add_subdirectory(src)
 add_subdirectory(sql)
 add_subdirectory(ctl)
-if (BUILD_TEMPLATES)
-    add_subdirectory(templates)
-endif (BUILD_TEMPLATES)
+add_subdirectory(templates)
