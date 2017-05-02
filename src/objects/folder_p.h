@@ -25,7 +25,7 @@
 class FolderData : public QSharedData
 {
 public:
-    FolderData();
+    FolderData() {}
 
     FolderData(quint32 _id, quint32 _domainId, const QString &_name) :
         id(_id),
