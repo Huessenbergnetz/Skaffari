@@ -32,3 +32,5 @@ target_link_libraries(skaffarictl
     Cutelyst::Utils::Sql
     crypt
 )
+
+install(TARGETS skaffarictl DESTINATION ${CMAKE_INSTALL_BINDIR})
