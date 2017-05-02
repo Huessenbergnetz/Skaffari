@@ -1,1 +1,1 @@
-install(DIRECTORY default DESTINATION ${TEMPLATES_INSTALL_DIR})
+add_subdirectory(default)
