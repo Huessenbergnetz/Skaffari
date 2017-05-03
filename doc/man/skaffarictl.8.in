@@ -1,0 +1,101 @@
+.TH skaffarictl 8 "2017-05-03" "Skaffari @SKAFFARI_VERSION@"
+
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.nh
+.ad 1
+
+.SH "NAME"
+skaffarictl \- Skaffari setup and configuration tool
+
+.SH "SYNOPSIS"
+.HP \w'\fBskaffarictl\fR\ 'u
+\fBskaffarictl\fR [\fB\-t\fR] [\fB\-i\fR\fI skaffari-config-file\fR] [\fB\-\-setup\fR] [\fB\-\-import-web-cyradm\fI web-cyradm-config-file\fR] [\fB\-v\fR] [\fB-h\fR]
+
+.SH "DESCRIPTION"
+.PP
+skaffarictl
+is a setup and configuration tool for the Skaffari email account management web interface. See \fBskaffari(8)\fR for more information about Skaffari in general. It can be used to create a new and clean Skaffari setup including database schema installation as well as an importer for web-cyradm data (including configuration and database). Furthermore it provides a small function to test a Skaffari installation/configuration.
+
+.SH "OPTIONS"
+.PP
+\fB\-t, \-\-test\fR
+.RS 4
+Tests the configuration for the IMAP and database connection as well as the database schema. Uses the configuration file defined by \fI\-i\fR. Returns 0 on success.
+.RE
+.PP
+\fB\-i, \-\-ini \fR\fB\fIskaffari-config-file\fR\fR
+.RS 4
+Uses the file as skaffari configuration file (default: @CMAKE_INSTALL_SYSCONFDIR@/skaffari.ini)
+.RE
+.PP
+\fB\-\-setup\fR
+.RS 4
+Configures Skaffari. This will guide you through the setup process by asking for the configuration values. Will also install the database schema. Running this on an installed Skaffari instance will only ask you to change the configuration, but will not change the installed database. So, running it does not harm your Skaffari installation. Uses the configuration file defined by \fI\-i\fR.
+.RE
+.PP
+\fB\-\-import-web-cyradm \fR\fB\fIweb-cyradm-config-file\fR\fR
+.RS 4
+Imports configuration and database from a web-cyradm installation. Uses the configuration file defined by \fI\-i\fR to write the Skaffari configuration. This will also ask you for basic configuration settings. Importing a web-cyradm installation will delete the current Skaffari installation. (You will be asked before doing the last step.)
+.RE
+.PP
+\fB\-v, \-\-version\fR
+.RS 4
+Shows the Skaffari version.
+.RE
+.PP
+\fB\-h, \-\-help\fR
+.RS 4
+Shows usage information.
+.RE
+
+.SH "EXAMPLES"
+.PP
+\fBskaffarictl \-\-setup\fR
+.RS 4
+Starts the setup process and will write the configuration to the default file.
+.RE
+.PP
+\fBskaffarictl \-\-import-web-cyradm /srv/www/web-cyradm/config/conf.php\fR
+.RS 4
+Will read the web-cyradm configuration from the given file to import the configuration and database. Will write the Skaffari configuration to the default file.
+.RE
+.PP
+\fBskaffarictl \-t \-i /path/to/my/skaffari.ini\fR
+.RS 4
+Will test the Skaffari configuration defined by the given ini file. Returns 0 on success.
+.RE
+
+.SH "RETURN CODES"
+.PP
+\fB0\fR
+.RS 4
+success
+.RE
+\fB1\fR
+.RS 4
+input error
+.RE
+\fB2\fR
+.RS 4
+configuration error
+.RE
+\fB3\fR
+.RS 4
+database error
+.RE
+\fB4\fR
+.RS 4
+file system error
+.RE
+\fB5\fR
+.RS 4
+IMAP error
+.RE
+\fB99\fR
+.RS 4
+other error
+.RE
+
+.SH "SEE ALSO"
+skaffari(8), skaffari.ini(5)
