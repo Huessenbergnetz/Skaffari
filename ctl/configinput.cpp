@@ -59,7 +59,7 @@ QVariantHash ConfigInput::askDatabaseConfig(const QVariantHash &defaults) const
     conf.insert(QStringLiteral("user"), dbuser);
 
     const QString dbpass = readString(tr("DB Password"), defaults.value(QStringLiteral("pass")).toString(), QStringList({tr("The password of the database user defined in the previous step.")}));
-    conf.insert(QStringLiteral("pass"), dbpass);
+    conf.insert(QStringLiteral("password"), dbpass);
 
     return conf;
 }

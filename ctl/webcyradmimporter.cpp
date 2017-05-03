@@ -254,7 +254,7 @@ int WebCyradmImporter::exec() const
         wdbport = wdbconf.value(QStringLiteral("port")).value<quint16>();
         wdbname = wdbconf.value(QStringLiteral("name")).toString();
         wdbuser = wdbconf.value(QStringLiteral("user")).toString();
-        wdbpass = wdbconf.value(QStringLiteral("pass")).toString();
+        wdbpass = wdbconf.value(QStringLiteral("password")).toString();
         wdbaccess = wdb.open(wdbtype, wdbhost, wdbport, wdbname, wdbuser, wdbpass, QStringLiteral("webcyradmdb"));
     }
 
@@ -839,7 +839,7 @@ int WebCyradmImporter::exec() const
     settings.setValue(QStringLiteral("port"), sdbport);
     settings.setValue(QStringLiteral("name"), sdbname);
     settings.setValue(QStringLiteral("user"), sdbuser);
-    settings.setValue(QStringLiteral("pass"), sdbpass);
+    settings.setValue(QStringLiteral("password"), sdbpass);
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("IMAP"));
