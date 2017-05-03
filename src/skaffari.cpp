@@ -34,6 +34,7 @@
 #include <QSqlError>
 #include <QDir>
 #include <QMetaType>
+#include <QCoreApplication>
 
 #include "objects/domain.h"
 #include "objects/simpleadmin.h"
@@ -69,6 +70,8 @@ Skaffari::~Skaffari()
 
 bool Skaffari::init()
 {
+    QCoreApplication::setApplicationName(QStringLiteral("Skaffari"));
+
     qRegisterMetaType<Folder>();
     qRegisterMetaType<Domain>();
     qRegisterMetaType<SimpleAdmin>();
@@ -85,10 +88,8 @@ bool Skaffari::init()
     Grantlee::registerMetaType<Language>();
     Grantlee::registerMetaType<Account>();
 
-    QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR);
-    tmplBasePath.append(QLatin1Char('/')).append(config(QStringLiteral("template"), QStringLiteral("default")).toString());
-    QString sitePath = tmplBasePath;
-    sitePath.append(QLatin1Char('/')).append(QStringLiteral("site"));
+    QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + config(QStringLiteral("template"), QStringLiteral("default")).toString();
+    QString sitePath = tmplBasePath + QLatin1String("/site");
 
     auto view = new GrantleeView(this);
     view->setTemplateExtension(QStringLiteral(".html"));
@@ -107,8 +108,7 @@ bool Skaffari::init()
 
 
     auto staticSimple = new StaticSimple(this);
-    QString staticPath = tmplBasePath;
-    staticPath.append(QLatin1Char('/')).append(QStringLiteral("static"));
+    QString staticPath = tmplBasePath + QLatin1String("/static");
     staticSimple->setIncludePaths({staticPath});
 
 	new Session(this);
