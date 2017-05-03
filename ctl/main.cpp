@@ -42,10 +42,10 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
 
-    QCommandLineOption setup(QStringList({QStringLiteral("setup"), QStringLiteral("s")}), QCoreApplication::translate("main", "Create new Skaffari setup."));
+    QCommandLineOption setup(QStringLiteral("setup"), QCoreApplication::translate("main", "Create new Skaffari setup."));
     parser.addOption(setup);
 
-    QCommandLineOption import(QStringList({QStringLiteral("import"), QStringLiteral("i")}), QCoreApplication::translate("main", "Import web-cyradm configuration and database."), QStringLiteral("web-cyradm conf file"));
+    QCommandLineOption import(QStringLiteral("import-web-cyradm"), QCoreApplication::translate("main", "Import web-cyradm configuration and database."), QStringLiteral("web-cyradm conf file"));
     parser.addOption(import);
 
     QCommandLineOption test(QStringList({QStringLiteral("test"), QStringLiteral("t")}), QCoreApplication::translate("main", "Test the Skaffari settings."));
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 
     QString confFilePath = QStringLiteral(SKAFFARI_CONFDIR);
     confFilePath.append(QLatin1String("/skaffari.ini"));
-    QCommandLineOption iniPath(QStringLiteral("ini-path"), QCoreApplication::translate("main", "Path to the configuration file. Default: %1").arg(confFilePath), QStringLiteral("ini-file"), confFilePath);
+    QCommandLineOption iniPath(QStringList({QStringLiteral("ini"), QStringLiteral("i")}), QCoreApplication::translate("main", "Path to the configuration file. Default: %1").arg(confFilePath), QStringLiteral("ini-file"), confFilePath);
     parser.addOption(iniPath);
 
     parser.process(app);
