@@ -27,7 +27,7 @@ class Setup : public ConsoleOutput
 {
     Q_DECLARE_TR_FUNCTIONS(Setup)
 public:
-    Setup(const QString &confFile);
+    explicit Setup(const QString &confFile);
 
     int exec() const;
 
