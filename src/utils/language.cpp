@@ -17,6 +17,7 @@
  */
 
 #include "language_p.h"
+#include "../common/config.h"
 
 Language::Language() :
     d(new LanguageData)
@@ -68,7 +69,7 @@ QString Language::name() const
 
 QStringList Language::supportedLangsList()
 {
-    static QStringList list = {QStringLiteral("en")};
+    static QStringList list = SKAFFARI_SUPPORTED_LANGS;
 
     return list;
 }
