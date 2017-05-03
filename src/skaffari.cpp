@@ -71,6 +71,7 @@ Skaffari::~Skaffari()
 bool Skaffari::init()
 {
     QCoreApplication::setApplicationName(QStringLiteral("Skaffari"));
+    QCoreApplication::setApplicationVersion(QStringLiteral(SKAFFARI_VERSION));
 
     qRegisterMetaType<Folder>();
     qRegisterMetaType<Domain>();
