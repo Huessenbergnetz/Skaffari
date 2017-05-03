@@ -34,9 +34,9 @@ public:
     Q_INVOKABLE explicit Skaffari(QObject *parent = 0);
     ~Skaffari();
 
-    bool init();
+    bool init() override;
     
-    virtual bool postFork();
+    bool postFork() override;
 };
 
 #endif //SKAFFARI_H

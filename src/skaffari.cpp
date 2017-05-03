@@ -139,13 +139,21 @@ bool Skaffari::postFork()
     const QString dbname = dbconfig.value(QStringLiteral("name")).toString();
     const QString dbuser = dbconfig.value(QStringLiteral("user")).toString();
     const QString dbpass = dbconfig.value(QStringLiteral("password")).toString();
-    const QString dbhost = dbconfig.value(QStringLiteral("host")).toString();
-    const int dbport = dbconfig.value(QStringLiteral("port")).toInt();
+    const QString dbhost = dbconfig.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
+    const int dbport = dbconfig.value(QStringLiteral("port"), QStringLiteral("3306")).toInt();
 
     QSqlDatabase db;
     if (dbtype == QLatin1String("QMYSQL")) {
-        if (dbname.isEmpty() || dbuser.isEmpty() || dbpass.isEmpty()) {
-            qCCritical(SK_CORE) << "Database name, database user or database password can not be empty.";
+        if (dbname.isEmpty()) {
+            qCCritical(SK_CORE) << "No database name set!";
+            return false;
+        }
+        if (dbuser.isEmpty()) {
+            qCCritical(SK_CORE) << "No database user set!";
+            return false;
+        }
+        if (dbpass.isEmpty()) {
+            qCCritical(SK_CORE) << "No database password set!";
             return false;
         }
 
@@ -161,7 +169,7 @@ bool Skaffari::postFork()
             db.setPort(dbport);
         }
     } else {
-        qCCritical(SK_CORE) << "No supported databse type in configuration.";
+        qCCritical(SK_CORE) << dbtype << "is not a supported database type.";
         return false;
     }
 
