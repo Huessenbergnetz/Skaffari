@@ -20,6 +20,8 @@ set(skaffarictl_SRCS
     configinput.h
     ../common/password.cpp
     ../common/password.h
+    tester.cpp
+    tester.h
 )
 
 add_executable(skaffarictl ${skaffarictl_SRCS})
