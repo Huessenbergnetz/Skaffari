@@ -24,7 +24,7 @@
 #include <QSqlError>
 #include <QAbstractSocket>
 
-Q_LOGGING_CATEGORY(SK_ENGINE, "weihwazo.engine")
+Q_LOGGING_CATEGORY(SK_ENGINE, "skaffari.engine")
 
 SkaffariEngine::SkaffariEngine(QObject* parent) : QObject(parent)
 {
