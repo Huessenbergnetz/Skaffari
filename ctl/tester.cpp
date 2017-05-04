@@ -81,5 +81,7 @@ int Tester::exec() const
         return imapError(imap.lastError());
     }
 
+    imap.logout();
+
     return 0;
 }

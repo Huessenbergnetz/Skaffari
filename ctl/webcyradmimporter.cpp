@@ -271,7 +271,11 @@ int WebCyradmImporter::exec() const
     imap.setPassword(imappass);
     imap.setProtocol(static_cast<QAbstractSocket::NetworkLayerProtocol>(imapprotocol));
     imap.setEncryptionType(static_cast<Imap::EncryptionType>(imapencryption));
-    imap.setUnixHierarchySep(domainAsPrefix || fqun);
+    if (domainAsPrefix || fqun) {
+        imap.setHierarchySeparator(QLatin1Char('/'));
+    } else {
+        imap.setHierarchySeparator(QLatin1Char('.'));
+    }
     imapaccess = imap.login();
 
     while (!imapaccess) {
