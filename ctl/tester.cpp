@@ -74,9 +74,10 @@ int Tester::exec() const
     const quint16 imapport = conf.value(QStringLiteral("port"), 143).value<quint16>();
     const quint8 imapprotocol = conf.value(QStringLiteral("protocol"), 2).value<quint8>();
     const quint8 imapencryption = conf.value(QStringLiteral("encryption"), 1).value<quint8>();
+    const QString imappeername = conf.value(QStringLiteral("peername")).toString();
     conf.endGroup();
 
-    Imap imap(imapuser, imappass, imaphost, imapport, static_cast<QAbstractSocket::NetworkLayerProtocol>(imapprotocol), static_cast<Imap::EncryptionType>(imapencryption));
+    Imap imap(imapuser, imappass, imaphost, imapport, static_cast<QAbstractSocket::NetworkLayerProtocol>(imapprotocol), static_cast<Imap::EncryptionType>(imapencryption), QLatin1Char('.'), imappeername);
     if (!imap.login()) {
         return imapError(imap.lastError());
     }

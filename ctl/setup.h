@@ -21,9 +21,9 @@
 
 #include <QFileInfo>
 #include <QCoreApplication>
-#include "consoleoutput.h"
+#include "configinput.h"
 
-class Setup : public ConsoleOutput
+class Setup : public ConfigInput
 {
     Q_DECLARE_TR_FUNCTIONS(Setup)
 public:

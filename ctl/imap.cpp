@@ -17,6 +17,7 @@
  */
 
 #include "imap.h"
+#include <QSslError>
 
 QStringList Imap::m_capabilities = QStringList();
 
@@ -26,10 +27,10 @@ Imap::Imap(QObject *parent) : QSslSocket(parent)
 }
 
 
-Imap::Imap(const QString &user, const QString &password, const QString &host, quint16 port, NetworkLayerProtocol protocol, EncryptionType conType, QChar hierarchysep, QObject *parent) :
+Imap::Imap(const QString &user, const QString &password, const QString &host, quint16 port, NetworkLayerProtocol protocol, EncryptionType conType, QChar hierarchysep, const QString peerName, QObject *parent) :
     QSslSocket(parent), m_user(user), m_password(password), m_host(host), m_port(port), m_protocol(protocol), m_encType(conType), m_hierarchysep(hierarchysep)
 {
-
+    setPeerVerifyName(peerName);
 }
 
 
@@ -59,9 +60,16 @@ bool Imap::login()
         }
     } else {
         if (Q_UNLIKELY(!this->waitForEncrypted())) {
-            m_lastError = tr("Connection to IMAP server timed out while waiting for SSL handshake to complete.");
-            this->abort();
-            return false;
+            const QList<QSslError> ssles = sslErrors();
+            if (!ssles.empty()) {
+                m_lastError = tr("Failed to established encrypted connection to the IMAP server: %1").arg(ssles.first().errorString());
+                this->abort();
+                return false;
+            } else {
+                m_lastError = tr("Connection to IMAP server timed out while waiting for SSL handshake to complete.");
+                this->abort();
+                return false;
+            }
         }
     }
 
@@ -102,6 +110,14 @@ bool Imap::login()
 
             this->startClientEncryption();
 
+            this->waitForEncrypted();
+
+            if (mode() != QSslSocket::SslClientMode || !isEncrypted()) {
+                qDebug() << sslErrors();
+                this->abort();
+                return false;
+            }
+
         } else {
             m_lastError = tr("STARTTLS is not supported. Aborting.");
             this->disconnectFromHost();
@@ -110,11 +126,15 @@ bool Imap::login()
         }
     }
 
-    // build login command
     const QString tag2 = getTag();
     const QString loginCommand = tag2 + QLatin1String(" LOGIN ") + m_user + QChar(QChar::Space) + m_password + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
 
-    this->write(loginCommand.toLatin1());
+    if (Q_UNLIKELY(this->write(loginCommand.toLatin1()) < 0)) {
+        m_lastError = tr("Failed to send command to IMAP server: %1").arg(errorString());
+        this->disconnectFromHost();
+        this->waitForDisconnected();
+        return false;
+    }
 
     if (Q_UNLIKELY(!this->waitForReadyRead())) {
         m_lastError = tr("Connection to IMAP server timed out while waiting for response to login data.");

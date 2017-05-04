@@ -40,7 +40,7 @@ public:
     };
 
     explicit Imap(QObject *parent = nullptr);
-    Imap(const QString &user, const QString &password, const QString &host = QStringLiteral("localhost"), quint16 port = 143, NetworkLayerProtocol protocol = QAbstractSocket::AnyIPProtocol, EncryptionType conType = StartTLS, QChar hierarchysep = QLatin1Char('.'), QObject* parent = nullptr);
+    Imap(const QString &user, const QString &password, const QString &host = QStringLiteral("localhost"), quint16 port = 143, NetworkLayerProtocol protocol = QAbstractSocket::AnyIPProtocol, EncryptionType conType = StartTLS, QChar hierarchysep = QLatin1Char('.'), const QString peerName = QString(), QObject* parent = nullptr);
     ~Imap();
 
     bool login();

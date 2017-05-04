@@ -172,6 +172,7 @@ int WebCyradmImporter::exec() const
     QString imappass = getArrayEntry(imapArray, QStringLiteral("PASS"));
     quint8 imapprotocol = 2;
     quint8 imapencryption = 1;
+    QString imappeername;
 
     QString defaultLang = vars.value(QStringLiteral("DEFAULTLANG"));
     quint32 defaultQuota = vars.value(QStringLiteral("DEFAULT_QUOTA")).toLong();
@@ -287,14 +288,16 @@ int WebCyradmImporter::exec() const
                                                         {QStringLiteral("port"), imapport},
                                                         {QStringLiteral("user"), imapuser},
                                                         {QStringLiteral("protocol"), imapprotocol},
-                                                        {QStringLiteral("encryption"), imapencryption}
+                                                        {QStringLiteral("encryption"), imapencryption},
+                                                        {QStringLiteral("peername"), QStringLiteral("none")}
                                                     });
         imaphost = imapConf.value(QStringLiteral("host")).toString();
         imapport = imapConf.value(QStringLiteral("port")).value<quint16>();
         imapuser = imapConf.value(QStringLiteral("user")).toString();
-        imappass = imapConf.value(QStringLiteral("pass")).toString();
+        imappass = imapConf.value(QStringLiteral("password")).toString();
         imapencryption = imapConf.value(QStringLiteral("encryption")).value<quint8>();
         imapprotocol = imapConf.value(QStringLiteral("protocol")).value<quint8>();
+        imappeername = imapConf.value(QStringLiteral("peername")).toString();
 
         printStatus(tr("Establishing IMAP connection"));
         imap.setHost(imaphost);
@@ -303,6 +306,7 @@ int WebCyradmImporter::exec() const
         imap.setPassword(imappass);
         imap.setProtocol(static_cast<QAbstractSocket::NetworkLayerProtocol>(imapprotocol));
         imap.setEncryptionType(static_cast<Imap::EncryptionType>(imapencryption));
+        imap.setPeerVerifyName(imappeername);
         imapaccess = imap.login();
     }
 
@@ -856,6 +860,7 @@ int WebCyradmImporter::exec() const
     settings.setValue(QStringLiteral("fqun"), fqun);
     settings.setValue(QStringLiteral("domainasprefix"), domainAsPrefix);
     settings.setValue(QStringLiteral("createmailbox"), createmailbox);
+    settings.setValue(QStringLiteral("peername"), imappeername);
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("Defaults"));

@@ -367,6 +367,7 @@ int Setup::exec() const
     quint16 imapport = os.value(QStringLiteral("port"), 143).value<quint16>();
     quint8 imapprotocol = os.value(QStringLiteral("protocol"), 2).value<quint8>();
     quint8 imapencryption = os.value(QStringLiteral("encryption"), 1).value<quint8>();
+    QString imappeername = os.value(QStringLiteral("peername")).toString();
     os.endGroup();
 
     bool imapaccess = false;
@@ -379,7 +380,8 @@ int Setup::exec() const
                        {tr("Protocol"), Imap::networkProtocolToString(imapprotocol)},
                        {tr("Encryption"), Imap::encryptionTypeToString(imapencryption)},
                        {tr("User"), imapuser},
-                       {tr("Password"), QStringLiteral("********")}
+                       {tr("Password"), QStringLiteral("********")},
+                       {tr("Peer name"), imappeername}
                    }, tr("IMAP settings"));
 
         printStatus(tr("Establishing IMAP connection"));
@@ -389,6 +391,7 @@ int Setup::exec() const
         imap.setPassword(imappass);
         imap.setProtocol(static_cast<QAbstractSocket::NetworkLayerProtocol>(imapprotocol));
         imap.setEncryptionType(static_cast<Imap::EncryptionType>(imapencryption));
+        imap.setPeerVerifyName(imappeername);
         imapaccess = imap.login();
         if (Q_LIKELY(imapaccess)) {
             if (Q_UNLIKELY(!imap.logout())) {
@@ -412,30 +415,47 @@ int Setup::exec() const
         printDesc(tr("Connection to your IMAP server as admin is used to perform tasks like setting quotas and creating/deleting mailboxes and folders. The user account has to be defined as admin in the imapd.conf file in the admins: key."));
         printDesc(QString());
 
-        imaphost = readString(tr("IMAP Host"), imaphost, QStringList(tr("The host the IMAP server is running on.")));
-        imapport = readPort(tr("IMAP Port"), imapport, QStringList(tr("The port your IMAP server is listening on.")));
-        imapuser = readString(tr("IMAP User"), imapuser, QStringList(tr("The user name of the IMAP admin user.")));
-        imappass = readString(tr("IMAP Password"), QString(), QStringList(tr("Password for the IMAP admin user.")));
-        imapprotocol = readChar(tr("IMAP Protocol"),
-                                imapprotocol,
-                                QStringList({
-                                                tr("The network layer protocol to connect to the IMAP server."),
-                                                tr("Available protocols:"),
-                                                QStringLiteral("0: IPv4"),
-                                                QStringLiteral("1: IPv6"),
-                                                tr("2: Either IPv4 or IPv6")
-                                            }),
-                                QList<quint8>({0,1,2}));
-        imapencryption = readChar(tr("IMAP Encryption"),
-                                  imapencryption,
-                                  QStringList({
-                                                  tr("The method to encrypt the connection to the IMAP server."),
-                                                  tr("Available methods:"),
-                                                  tr("0: unsecured"),
-                                                  QStringLiteral("1: StartTLS"),
-                                                  QStringLiteral("2: IMAPS")
-                                              }),
-                                  QList<quint8>({0,1,2}));
+        const QVariantHash imapConf = askImapConfig({
+                                                        {QStringLiteral("host"), imaphost},
+                                                        {QStringLiteral("port"), imapport},
+                                                        {QStringLiteral("user"), imapuser},
+                                                        {QStringLiteral("protocol"), imapprotocol},
+                                                        {QStringLiteral("encryption"), imapencryption},
+                                                        {QStringLiteral("peername"), imappeername}
+                                                    });
+
+        imaphost = imapConf.value(QStringLiteral("host")).toString();
+        imapport = imapConf.value(QStringLiteral("port")).value<quint16>();
+        imapuser = imapConf.value(QStringLiteral("user")).toString();
+        imapprotocol = imapConf.value(QStringLiteral("protocol")).value<quint8>();
+        imappeername = imapConf.value(QStringLiteral("peername")).toString();
+        imapencryption = imapConf.value(QStringLiteral("encryption")).value<quint8>();
+        imappass = imapConf.value(QStringLiteral("password")).toString();
+
+//        imaphost = readString(tr("IMAP Host"), imaphost, QStringList(tr("The host the IMAP server is running on.")));
+//        imapport = readPort(tr("IMAP Port"), imapport, QStringList(tr("The port your IMAP server is listening on.")));
+//        imapuser = readString(tr("IMAP User"), imapuser, QStringList(tr("The user name of the IMAP admin user.")));
+//        imappass = readString(tr("IMAP Password"), QString(), QStringList(tr("Password for the IMAP admin user.")));
+//        imapprotocol = readChar(tr("IMAP Protocol"),
+//                                imapprotocol,
+//                                QStringList({
+//                                                tr("The network layer protocol to connect to the IMAP server."),
+//                                                tr("Available protocols:"),
+//                                                QStringLiteral("0: IPv4"),
+//                                                QStringLiteral("1: IPv6"),
+//                                                tr("2: Either IPv4 or IPv6")
+//                                            }),
+//                                QList<quint8>({0,1,2}));
+//        imapencryption = readChar(tr("IMAP Encryption"),
+//                                  imapencryption,
+//                                  QStringList({
+//                                                  tr("The method to encrypt the connection to the IMAP server."),
+//                                                  tr("Available methods:"),
+//                                                  tr("0: unsecured"),
+//                                                  QStringLiteral("1: StartTLS"),
+//                                                  QStringLiteral("2: IMAPS")
+//                                              }),
+//                                  QList<quint8>({0,1,2}));
 
         printStatus(tr("Establishing IMAP connection"));
         imap.setHost(imaphost);
@@ -444,6 +464,7 @@ int Setup::exec() const
         imap.setPassword(imappass);
         imap.setProtocol(static_cast<QAbstractSocket::NetworkLayerProtocol>(imapprotocol));
         imap.setEncryptionType(static_cast<Imap::EncryptionType>(imapencryption));
+        imap.setPeerVerifyName(imappeername);
         imapaccess = imap.login();
         if (Q_LIKELY(imapaccess)) {
             if (Q_UNLIKELY(!imap.logout())) {
@@ -463,6 +484,7 @@ int Setup::exec() const
         os.setValue(QStringLiteral("password"), imappass);
         os.setValue(QStringLiteral("protocol"), imapprotocol);
         os.setValue(QStringLiteral("encryption"), imapencryption);
+        os.setValue(QStringLiteral("peername"), imappeername);
         os.endGroup();
         os.sync();
 

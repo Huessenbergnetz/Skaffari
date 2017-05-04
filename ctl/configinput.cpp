@@ -58,7 +58,7 @@ QVariantHash ConfigInput::askDatabaseConfig(const QVariantHash &defaults) const
     const QString dbuser = readString(tr("DB User"), defaults.value(QStringLiteral("user"), QStringLiteral("mail")).toString(), QStringList({tr("The name of the database user that has read and write access to the database defined in the previous step.")}));
     conf.insert(QStringLiteral("user"), dbuser);
 
-    const QString dbpass = readString(tr("DB Password"), defaults.value(QStringLiteral("pass")).toString(), QStringList({tr("The password of the database user defined in the previous step.")}));
+    const QString dbpass = readString(tr("DB Password"), QString(), QStringList({tr("The password of the database user defined in the previous step.")}));
     conf.insert(QStringLiteral("password"), dbpass);
 
     return conf;
@@ -80,7 +80,7 @@ QVariantHash ConfigInput::askImapConfig(const QVariantHash &defaults) const
     conf.insert(QStringLiteral("user"), imapuser);
 
     const QString imappass = readString(tr("IMAP Password"), QString(), QStringList(tr("Password for the IMAP admin user.")));
-    conf.insert(QStringLiteral("pass"), imappass);
+    conf.insert(QStringLiteral("password"), imappass);
 
     const quint8 imapprotocol = readChar(tr("IMAP Protocol"),
                                          defaults.value(QStringLiteral("protocol"), 2).value<quint8>(),
@@ -105,6 +105,22 @@ QVariantHash ConfigInput::askImapConfig(const QVariantHash &defaults) const
                                                        }),
                                            QList<quint8>({0,1,2}));
     conf.insert(QStringLiteral("encryption"), imapencryption);
+
+    if (imapencryption > 0) {
+        const QString peerName = readString(tr("Peer name"),
+                                            defaults.value(QStringLiteral("peername"), QStringLiteral("none")).toString(),
+                                            QStringList({
+                                                            tr("If you use a different host name to connect to your IMAP server than the one used in the certificate of the IMAP server, you can define this different peer name here. This can for example be used to establish an encrypted connection to an IMAP server running on your local host."),
+                                                            QString(),
+                                                            tr("Enter the keyword \"none\" to disable the peer name.")
+                                                        })
+                                            );
+        if (peerName != QLatin1String("none")) {
+            conf.insert(QStringLiteral("peername"), peerName);
+        } else {
+            conf.insert(QStringLiteral("peername"), QString());
+        }
+    }
 
     return conf;
 }
