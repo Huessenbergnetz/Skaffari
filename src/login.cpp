@@ -58,7 +58,7 @@ void Login::index(Context *c)
                 c->res()->redirect(c->uriFor(QStringLiteral("/domain")));
                 return;
             } else {
-                qCWarning(SK_LOGIN) << "Bad username or password for user" << username << "from" << req->address().toString();
+                qCWarning(SK_LOGIN, "Bad username or password for user %s from IP %s", username.toUtf8().constData(), req->address().toString().toUtf8().constData());
                 c->setStash(QStringLiteral("error_msg"), c->translate("Login", "Arrrgh, bad username or password!"));
                 c->res()->setStatus(401);
             }
