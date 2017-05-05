@@ -26,6 +26,7 @@
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
+#include <Cutelyst/Engine>
 #include <QTimeZone>
 
 
@@ -49,7 +50,8 @@ void MyAccount::index(Context *c)
     AdminAccount aac = AdminAccount::get(c, &e, user.id().toULong());
     if (aac.isValid()) {
 
-        const quint8 pwminlength = engine->adminConfig(QStringLiteral("pwminlength"), 10).value<quint8>();
+        const QVariantMap adminsConf = c->engine()->config(QStringLiteral("Admins"));
+        const quint8 pwminlength = adminsConf.value(QStringLiteral("pwminlength"), 8).value<quint8>();
 
         auto req = c->req();
         if (req->isPost()) {
@@ -69,8 +71,8 @@ void MyAccount::index(Context *c)
                                          &aac,
                                          &user,
                                          req->parameters(),
-                                         static_cast<QCryptographicHash::Algorithm>(engine->adminConfig(QStringLiteral("pwmethod")).toInt()),
-                                         engine->adminConfig(QStringLiteral("pwrounds")).value<quint32>()
+                                         static_cast<QCryptographicHash::Algorithm>(adminsConf.value(QStringLiteral("pwmethod")).toInt()),
+                                         adminsConf.value(QStringLiteral("pwrounds")).value<quint32>()
                                          )) {
                     c->setStash(QStringLiteral("status_msg"), c->translate("MyAccount", "Your account has been updated."));
                 } else {

@@ -29,6 +29,7 @@
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
+#include <Cutelyst/Engine>
 
 using namespace Cutelyst;
 
@@ -45,7 +46,7 @@ void AccountEditor::base(Context* c, const QString &domainId, const QString& acc
     const quint32 domId = domainId.toULong();
     if (Domain::checkAccess(c, domId)) {
         Domain::toStash(c, domId);
-        Account::toStash(c, Domain::fromStash(c), accountId.toULong(), engine->imapConfig());
+        Account::toStash(c, Domain::fromStash(c), accountId.toULong(), c->engine()->config(QStringLiteral("IMAP")));
     }
 }
 
@@ -92,13 +93,14 @@ void AccountEditor::edit(Context* c)
 
                 if (enoughQuotaLeft) {
                     SkaffariError e(c);
+                    const QVariantMap accountsConf = c->engine()->config(QStringLiteral("Accounts"));
                     if (Account::update(c,
                                         &e,
                                         &a,
                                         p,
-                                        engine->accountConfig(QStringLiteral("pwtype"), 1).value<quint8>(),
-                                        engine->accountConfig(QStringLiteral("pwmethod"), 2).value<quint8>(),
-                                        engine->accountConfig(QStringLiteral("pwrounds"), 10000).value<quint32>())) {
+                                        accountsConf.value(QStringLiteral("pwtype"), 1).value<quint8>(),
+                                        accountsConf.value(QStringLiteral("pwmethod"), 2).value<quint8>(),
+                                        accountsConf.value(QStringLiteral("pwrounds"), 10000).value<quint32>())) {
 
                         Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
                         c->setStash(QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated account %1.").arg(a.getUsername()));

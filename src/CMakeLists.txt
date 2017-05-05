@@ -46,13 +46,8 @@ set(skaffari_SRCS
     myaccount.h
     root.cpp
     root.h
-    sengine.cpp
-    sengine.h
     skaffari.cpp
     skaffari.h
-    skaffariengine.cpp
-    skaffariengine.h
-    skaffariengine_p.h
     ../common/password.cpp
     ../common/password.h
 )

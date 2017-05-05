@@ -19,7 +19,6 @@
 #ifndef LOGIN_H
 #define LOGIN_H
 
-#include "sengine.h"
 #include <Cutelyst/Controller>
 #include <QLoggingCategory>
 
@@ -27,7 +26,7 @@ Q_DECLARE_LOGGING_CATEGORY(SK_LOGIN)
 
 using namespace Cutelyst;
 class SkaffariEngine;
-class Login : public Controller, public SEngine
+class Login : public Controller
 {
     Q_OBJECT
 public:

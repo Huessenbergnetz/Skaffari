@@ -19,12 +19,11 @@
 #ifndef MYACCOUNT_H
 #define MYACCOUNT_H
 
-#include "sengine.h"
 #include <Cutelyst/Controller>
 
 using namespace Cutelyst;
 class SkaffariEngine;
-class MyAccount : public Controller, public SEngine
+class MyAccount : public Controller
 {
     Q_OBJECT
     C_NAMESPACE("myaccount")

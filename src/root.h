@@ -21,11 +21,9 @@
 
 #include <Cutelyst/Controller>
 
-#include "sengine.h"
-
 using namespace Cutelyst;
 class SkaffariEngine;
-class Root : public Controller, public SEngine
+class Root : public Controller
 {
     Q_OBJECT
     C_NAMESPACE("")

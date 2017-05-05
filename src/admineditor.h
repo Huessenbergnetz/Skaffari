@@ -21,12 +21,10 @@
 
 #include <Cutelyst/Controller>
 
-#include "sengine.h"
-
 using namespace Cutelyst;
 class SkaffariEngine;
 
-class AdminEditor : public Controller, public SEngine
+class AdminEditor : public Controller
 {
     Q_OBJECT
     C_NAMESPACE("admin")

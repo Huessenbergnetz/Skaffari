@@ -23,6 +23,7 @@
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Session/Session>
+#include <Cutelyst/Engine>
 #include <QLocale>
 
 using namespace Cutelyst;
@@ -70,7 +71,7 @@ bool Root::Auto(Context* c)
             }
         }
         if (lang.isEmpty()) {
-            lang = engine->defaultValue(QStringLiteral("language"), QStringLiteral("en")).toString();
+            lang = c->engine()->config(QStringLiteral("Defaults")).value(QStringLiteral("language"), QStringLiteral("en")).toString();
         }
     }
 

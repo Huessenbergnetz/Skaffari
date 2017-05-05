@@ -29,6 +29,7 @@
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <Cutelyst/Plugins/Session/Session>
 #include <Cutelyst/Plugins/Utils/Pagination>
+#include <Cutelyst/Engine>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QRegularExpression>
@@ -152,7 +153,7 @@ void DomainEditor::accounts(Context* c)
         }
 
         SkaffariError e(c);
-        pag = Account::list(c, &e, dom, pag, engine->imapConfig(), sortBy, sortOrder);
+        pag = Account::list(c, &e, dom, pag, c->engine()->config(QStringLiteral("IMAP")), sortBy, sortOrder);
 
         c->stash({
                      {QStringLiteral("pagination"), pag},
@@ -168,10 +169,11 @@ void DomainEditor::create(Context* c)
 {
     if (Domain::checkAccess(c)) {
 
-        const quint32 defQuota = engine->defaultValue(QStringLiteral("quota"), 10000).value<quint32>();
-        const quint32 defDomainQuota = engine->defaultValue(QStringLiteral("domainquota"), 100000).value<quint32>();
-        const quint32 defMaxAccounts = engine->defaultValue(QStringLiteral("maxaccounts"), 1000).value<quint32>();
-        const bool domainAsPrefix = engine->imapConfig(QStringLiteral("domainasprefix"), false).toBool();
+        const QVariantMap defVals = c->engine()->config(QStringLiteral("Defaults"));
+        const quint32 defQuota = defVals.value(QStringLiteral("quota"), 10000).value<quint32>();
+        const quint32 defDomainQuota = defVals.value(QStringLiteral("domainquota"), 100000).value<quint32>();
+        const quint32 defMaxAccounts = defVals.value(QStringLiteral("maxaccounts"), 1000).value<quint32>();
+        const bool domainAsPrefix = c->engine()->config(QStringLiteral("IMAP")).value(QStringLiteral("domainasprefix"), false).toBool();
 
         auto r = c->req();
         if (r->isPost()) {
@@ -265,9 +267,12 @@ void DomainEditor::add_account(Context* c)
 
     if (Q_LIKELY((user.value(QStringLiteral("type")).value<qint16>() == 0) || user.value(QStringLiteral("domains")).value<QVariantList>().contains(dom.id()))) {
 
-        const bool domainAsPrefix = engine->imapConfig(QStringLiteral("domainasprefix"), false).toBool();
-        const bool fqun = engine->imapConfig(QStringLiteral("fqun"), false).toBool();
-        const quint8 minPasswordLength = engine->accountConfig(QStringLiteral("pwminlength"), 6).value<quint8>();
+        const QVariantMap imapConf = c->engine()->config(QStringLiteral("IMAP"));
+        const bool domainAsPrefix = imapConf.value(QStringLiteral("domainasprefix"), false).toBool();
+        const bool fqun = imapConf.value(QStringLiteral("fqun"), false).toBool();
+
+        const QVariantMap accountsConf = c->engine()->config(QStringLiteral("Accounts"));
+        const quint8 minPasswordLength = accountsConf.value(QStringLiteral("pwminlength"), 6).value<quint8>();
 
         const quint32 freeQuota = (dom.getDomainQuota() - dom.getDomainQuotaUsed());
 
@@ -323,10 +328,10 @@ void DomainEditor::add_account(Context* c)
                                                       &e,
                                                       req->parameters(),
                                                       dom,
-                                                      engine->accountConfig(QStringLiteral("pwtype"), 1).value<quint8>(),
-                                                      engine->accountConfig(QStringLiteral("pwmethod"), 2).value<quint8>(),
-                                                      engine->accountConfig(QStringLiteral("pwrounds"), 10000).value<quint32>(),
-                                                      engine->imapConfig());
+                                                      accountsConf.value(QStringLiteral("pwtype"), 1).value<quint8>(),
+                                                      accountsConf.value(QStringLiteral("pwmethod"), 2).value<quint8>(),
+                                                      accountsConf.value(QStringLiteral("pwrounds"), 10000).value<quint32>(),
+                                                      imapConf);
                     if (account.isValid()) {
 
                         Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));

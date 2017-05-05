@@ -25,6 +25,7 @@
 #include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result
 #include <Cutelyst/Plugins/Authentication/authentication.h>
+#include <Cutelyst/Engine>
 #include <QVector>
 #include <QVariant>
 
@@ -89,11 +90,12 @@ void AdminEditor::create(Context *c)
             ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
                 SkaffariError e(c);
+                const QVariantMap adminConf = c->engine()->config(QStringLiteral("Admins"));
                 AdminAccount::create(c,
                                      req->parameters(),
                                      &e,
-                                     static_cast<QCryptographicHash::Algorithm>(engine->adminConfig(QStringLiteral("pwmethod")).toInt()),
-                                     engine->adminConfig(QStringLiteral("pwrounds")).value<quint32>()
+                                     static_cast<QCryptographicHash::Algorithm>(adminConf.value(QStringLiteral("pwmethod")).toInt()),
+                                     adminConf.value(QStringLiteral("pwrounds")).value<quint32>()
                                      );
 
                 if (e.type() == SkaffariError::NoError) {
@@ -145,12 +147,13 @@ void AdminEditor::edit(Context *c)
                 auto aac = AdminAccount::fromStash(c);
 
                 SkaffariError e(c);
+                const QVariantMap adminsConf = c->engine()->config(QStringLiteral("Admins"));
                 AdminAccount::update(c,
                                      &e,
                                      &aac,
                                      req->parameters(),
-                                     static_cast<QCryptographicHash::Algorithm>(engine->adminConfig(QStringLiteral("pwmethod")).toInt()),
-                                     engine->adminConfig(QStringLiteral("pwrounds")).value<quint32>());
+                                     static_cast<QCryptographicHash::Algorithm>(adminsConf.value(QStringLiteral("pwmethod")).toInt()),
+                                     adminsConf.value(QStringLiteral("pwrounds")).value<quint32>());
 
                 if (e.type() == SkaffariError::NoError) {
                     c->setStash(QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated admin %1.").arg(aac.getUsername()));

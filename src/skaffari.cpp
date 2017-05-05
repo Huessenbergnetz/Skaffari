@@ -52,7 +52,6 @@
 #include "logout.h"
 #include "domaineditor.h"
 #include "accounteditor.h"
-#include "skaffariengine.h"
 #include "admineditor.h"
 #include "myaccount.h"
 
@@ -159,41 +158,43 @@ bool Skaffari::postFork()
         }
 
         db = QSqlDatabase::addDatabase(dbtype, Sql::databaseNameThread());
-        db.setDatabaseName(dbname);
-        db.setUserName(dbuser);
-        db.setPassword(dbpass);
+        if (Q_LIKELY(db.isValid())) {
+            db.setDatabaseName(dbname);
+            db.setUserName(dbuser);
+            db.setPassword(dbpass);
 
-        if (dbhost[0] == QLatin1Char('/')) {
-            db.setConnectOptions(QStringLiteral("UNIX_SOCKET=%1").arg(dbhost));
+            if (dbhost[0] == QLatin1Char('/')) {
+                db.setConnectOptions(QStringLiteral("UNIX_SOCKET=%1").arg(dbhost));
+            } else {
+                db.setHostName(dbhost);
+                db.setPort(dbport);
+            }
         } else {
-            db.setHostName(dbhost);
-            db.setPort(dbport);
+            qCCritical(SK_CORE) << "Failed to obtain database object.";
+            return false;
         }
     } else {
         qCCritical(SK_CORE) << dbtype << "is not a supported database type.";
         return false;
     }
 
-    if (!db.open()) {
+    if (Q_UNLIKELY(!db.open())) {
         qCCritical(SK_CORE) << "Failed to establish database connection:" << db.lastError().text();
         return false;
     }
 
-    auto engine = new SkaffariEngine(this);
+    const QVariantMap imapConf = this->engine()->config(QStringLiteral("IMAP"));
 
-    if (!engine->init(this->engine()->config(QStringLiteral("Admins")),
-                      this->engine()->config(QStringLiteral("Defaults")),
-                      this->engine()->config(QStringLiteral("Accounts")),
-                      this->engine()->config(QStringLiteral("IMAP")))) {
-		return false;
-	}
+    const QString imapuser = imapConf.value(QStringLiteral("user")).toString();
+    if (imapuser.isEmpty()) {
+        qCCritical(SK_CORE) << "No valid IMAP user defined.";
+        return false;
+    }
 
-    const QVector<Controller*> constControllers = controllers();
-    for (Controller *c : constControllers) {
-        auto sengine = dynamic_cast<SEngine*>(c);
-        if (sengine) {
-            sengine->engine = engine;
-        }
+    const QString imappass = imapConf.value(QStringLiteral("password")).toString();
+    if (imappass.isEmpty()) {
+        qCCritical(SK_CORE) << "No valid IMAP password defined.";
+        return false;
     }
 
     return true;
