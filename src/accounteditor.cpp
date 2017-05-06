@@ -23,6 +23,8 @@
 #include "objects/skaffarierror.h"
 #include "objects/simpledomain.h"
 
+#include "../common/config.h"
+
 #include <Cutelyst/Plugins/Session/Session>
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
 #include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
@@ -64,9 +66,12 @@ void AccountEditor::edit(Context* c)
 
         if (req->isPost()) {
 
+            const QVariantMap accountsConf = c->engine()->config(QStringLiteral("Accounts"));
+
             static Validator v({
                                    new ValidatorMin(QStringLiteral("quota"), QMetaType::UInt, 0),
                                    new ValidatorConfirmed(QStringLiteral("password")),
+                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, accountsConf.value(QStringLiteral("pwminlength"), SK_DEF_ACC_PWMINLENGTH).value<double>()),
                                    new ValidatorRequired(QStringLiteral("validUntil")),
                                    new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("yyyy-MM-dd HH:mm:ss"))
                                });
@@ -93,14 +98,13 @@ void AccountEditor::edit(Context* c)
 
                 if (enoughQuotaLeft) {
                     SkaffariError e(c);
-                    const QVariantMap accountsConf = c->engine()->config(QStringLiteral("Accounts"));
                     if (Account::update(c,
                                         &e,
                                         &a,
                                         p,
-                                        accountsConf.value(QStringLiteral("pwtype"), 1).value<quint8>(),
-                                        accountsConf.value(QStringLiteral("pwmethod"), 2).value<quint8>(),
-                                        accountsConf.value(QStringLiteral("pwrounds"), 10000).value<quint32>())) {
+                                        accountsConf.value(QStringLiteral("pwtype"), SK_DEF_ACC_PWTYPE).value<quint8>(),
+                                        accountsConf.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>(),
+                                        accountsConf.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>())) {
 
                         Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
                         c->setStash(QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated account %1.").arg(a.getUsername()));
@@ -140,9 +144,7 @@ void AccountEditor::remove(Context* c)
             }
         }
 
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("account/remove.html")}
-                 });
+        c->setStash(QStringLiteral("template"), QStringLiteral("account/remove.html"));
     }
 }
 
@@ -307,9 +309,7 @@ void AccountEditor::new_email(Context *c)
             c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
         }
 
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("account/new_email.html")}
-                 });
+        c->setStash(QStringLiteral("template"), QStringLiteral("account/new_email.html"));
     }
 }
 
@@ -336,8 +336,6 @@ void AccountEditor::forwards(Context *c)
             }
         }
 
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("account/forwards.html")}
-                 });
+        c->setStash(QStringLiteral("template"), QStringLiteral("account/forwards.html"));
     }
 }

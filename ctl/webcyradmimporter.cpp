@@ -170,8 +170,8 @@ int WebCyradmImporter::exec() const
     quint16 imapport = getArrayEntry(imapArray, QStringLiteral("PORT")).toShort();
     QString imapuser = getArrayEntry(imapArray, QStringLiteral("ADMIN"));
     QString imappass = getArrayEntry(imapArray, QStringLiteral("PASS"));
-    quint8 imapprotocol = 2;
-    quint8 imapencryption = 1;
+    quint8 imapprotocol = SK_DEF_IMAP_PROTOCOL;
+    quint8 imapencryption = SK_DEF_IMAP_ENCRYPTION;
     QString imappeername;
 
     QString defaultLang = vars.value(QStringLiteral("DEFAULTLANG"));
@@ -183,10 +183,10 @@ int WebCyradmImporter::exec() const
     QStringList supportedLangs(SKAFFARI_SUPPORTED_LANGS);
 
     const QString pwtype = vars.value(QStringLiteral("CRYPT"));
-    Password::Type accountsPwType = Password::Crypt;
-    Password::Method accountsPwMethod = Password::Default;
-    quint32 accountsPwRounds = 32000;
-    quint8 accountsPwMinLength = 6;
+    Password::Type accountsPwType = static_cast<Password::Type>(SK_DEF_ACC_PWTYPE);
+    Password::Method accountsPwMethod = static_cast<Password::Method>(SK_DEF_ADM_PWMETHOD);
+    quint32 accountsPwRounds = SK_DEF_ACC_PWROUNDS;
+    quint8 accountsPwMinLength = SK_DEF_ACC_PWMINLENGTH;
     QString accountsPwTypeString;
     if ((pwtype == QLatin1String("plain")) || (pwtype == QLatin1String("0"))) {
         accountsPwType = Password::PlainText;
@@ -367,7 +367,7 @@ int WebCyradmImporter::exec() const
                                   QString()
                               }));
         accountsPwMethod = static_cast<Password::Method>(readChar(tr("Encryption method"),
-                                                                0,
+                                                                SK_DEF_ACC_PWMETHOD,
                                                                 QStringList({
                                                                                 tr("The crypt(3) method supports different algorithms to derive a key from a password. To see which algorithms are supported on your system, use man crypt. Especially the bcrypt algorithm that uses Blowfish is not available on every system because it is not part of the default crypt(3) distribution. The not recommended hashing methods are provided for backwards compatibility and if you have to store passwords for use across different operating systems."),
                                                                                 QString(),
@@ -425,14 +425,14 @@ int WebCyradmImporter::exec() const
 
     if (!supportedLangs.contains(defaultLang)) {
         if (!supportedLangs.contains(defaultLang.left(2))) {
-            defaultLang = readString(tr("Default language"), QStringLiteral("en"), QStringList(tr("The default language used for newly created administrators and as fallback option.")), supportedLangs);
+            defaultLang = readString(tr("Default language"), QStringLiteral(SK_DEF_DEF_LANGUAGE), QStringList(tr("The default language used for newly created administrators and as fallback option.")), supportedLangs);
         } else {
             defaultLang = defaultLang.left(2);
         }
     }
 
     while (!QTimeZone::isTimeZoneIdAvailable(defaultTimezone.toUtf8())) {
-        defaultTimezone = readString(tr("Default timezone"), QStringLiteral("UTC"), QStringList(tr("Default timezone for newly created administrators and as fallback option. The timezone will be used to show localized date and time values. Please enter a valid IANA timezone ID.")));
+        defaultTimezone = readString(tr("Default timezone"), QStringLiteral(SK_DEF_DEF_TIMEZONE), QStringList(tr("Default timezone for newly created administrators and as fallback option. The timezone will be used to show localized date and time values. Please enter a valid IANA timezone ID.")));
     }
 
     printMessage(QString());

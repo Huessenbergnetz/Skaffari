@@ -18,6 +18,8 @@
 
 #include "login.h"
 
+#include "../common/config.h"
+
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/Authentication/authenticationuser.h>
 #include <Cutelyst/Plugins/Session/Session>
@@ -50,10 +52,10 @@ void Login::index(Context *c)
 
                 auto user = Authentication::user(c);
 
-                Session::setValue(c, QStringLiteral("maxdisplay"), user.value(QStringLiteral("maxdisplay"), 25));
-                Session::setValue(c, QStringLiteral("warnlevel"), user.value(QStringLiteral("warnlevel"), 90));
-                Session::setValue(c, QStringLiteral("lang"), user.value(QStringLiteral("lang"), QStringLiteral("en")));
-                Session::setValue(c, QStringLiteral("tz"), user.value(QStringLiteral("tz")).toByteArray());
+                Session::setValue(c, QStringLiteral("maxdisplay"), user.value(QStringLiteral("maxdisplay"), SK_DEF_DEF_MAXDISPLAY));
+                Session::setValue(c, QStringLiteral("warnlevel"), user.value(QStringLiteral("warnlevel"), SK_DEF_DEF_WARNLEVEL));
+                Session::setValue(c, QStringLiteral("lang"), user.value(QStringLiteral("lang"), QStringLiteral(SK_DEF_DEF_LANGUAGE)));
+                Session::setValue(c, QStringLiteral("tz"), user.value(QStringLiteral("tz"), QStringLiteral(SK_DEF_DEF_TIMEZONE)).toByteArray());
 
                 c->res()->redirect(c->uriFor(QStringLiteral("/domain")));
                 return;

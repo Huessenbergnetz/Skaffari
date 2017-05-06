@@ -77,7 +77,7 @@ int Setup::exec() const
     QSettings os(m_confFile.absoluteFilePath(), QSettings::IniFormat);
     os.beginGroup(QStringLiteral("Database"));
     QString dbhost = os.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
-    QString dbname = os.value(QStringLiteral("name"), QStringLiteral("maildb")).toString();
+    QString dbname = os.value(QStringLiteral("name"), QStringLiteral("skaffaridb")).toString();
     QString dbpass = os.value(QStringLiteral("password")).toString();
     QString dbtype = os.value(QStringLiteral("type"), QStringLiteral("QMYSQL")).toString();
     QString dbuser = os.value(QStringLiteral("user"), QStringLiteral("skaffari")).toString();
@@ -193,9 +193,9 @@ int Setup::exec() const
     const QStringList adminMinPwDesc({tr("Required minimum length for administrator passwords.")});
 
     os.beginGroup(QStringLiteral("Admins"));
-    QCryptographicHash::Algorithm adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(os.value(QStringLiteral("pwmethod"), 4).toInt());
-    quint32 adminPasswordRounds = os.value(QStringLiteral("pwrounds"), 32000).value<quint32>();
-    quint8 adminPasswordMinLength = os.value(QStringLiteral("pwminlength"), 8).value<quint8>();
+    QCryptographicHash::Algorithm adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(os.value(QStringLiteral("pwmethod"), SK_DEF_ADM_PWMETHOD).toInt());
+    quint32 adminPasswordRounds = os.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>();
+    quint8 adminPasswordMinLength = os.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>();
     os.endGroup();
 
     if (adminCount == 0) {
@@ -257,10 +257,10 @@ int Setup::exec() const
         printDesc(QString());
 
         os.beginGroup(QStringLiteral("Accounts"));
-        Password::Type accountsPwType = static_cast<Password::Type>(os.value(QStringLiteral("pwtype"), 1).value<quint8>());
-        Password::Method accountsPwMethod = static_cast<Password::Method>(os.value(QStringLiteral("pwmethod"), 0).value<quint8>());
-        quint32 accountsPwRounds = os.value(QStringLiteral("pwrounds"), 5000).value<quint32>();
-        quint8 accountsPwMinLength = os.value(QStringLiteral("pwminlength"), 8).value<quint8>();
+        Password::Type accountsPwType = static_cast<Password::Type>(os.value(QStringLiteral("pwtype"), SK_DEF_ACC_PWTYPE).value<quint8>());
+        Password::Method accountsPwMethod = static_cast<Password::Method>(os.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
+        quint32 accountsPwRounds = os.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>();
+        quint8 accountsPwMinLength = os.value(QStringLiteral("pwminlength"), SK_DEF_ACC_PWMINLENGTH).value<quint8>();
         os.endGroup();
 
         accountsPwType = static_cast<Password::Type>(readChar(tr("Encryption type"),
@@ -341,9 +341,9 @@ int Setup::exec() const
 
         printStatus(tr("Creating Cyrus admin user in database"));
         os.beginGroup(QStringLiteral("Accounts"));
-        Password::Type accountsPwType = static_cast<Password::Type>(os.value(QStringLiteral("pwtype"), 1).value<quint8>());
-        Password::Method accountsPwMethod = static_cast<Password::Method>(os.value(QStringLiteral("pwmethod"), 0).value<quint8>());
-        quint32 accountsPwRounds = os.value(QStringLiteral("pwrounds"), 5000).value<quint32>();
+        Password::Type accountsPwType = static_cast<Password::Type>(os.value(QStringLiteral("pwtype"), SK_DEF_ACC_PWTYPE).value<quint8>());
+        Password::Method accountsPwMethod = static_cast<Password::Method>(os.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
+        quint32 accountsPwRounds = os.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>();
         os.endGroup();
         QByteArray cyrusAdminPwEnc = cyrusAdminPw.encrypt(accountsPwType, accountsPwMethod, accountsPwRounds);
         if (cyrusAdminPwEnc.isEmpty()) {
@@ -365,8 +365,8 @@ int Setup::exec() const
     QString imappass = os.value(QStringLiteral("password")).toString();
     QString imaphost = os.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
     quint16 imapport = os.value(QStringLiteral("port"), 143).value<quint16>();
-    quint8 imapprotocol = os.value(QStringLiteral("protocol"), 2).value<quint8>();
-    quint8 imapencryption = os.value(QStringLiteral("encryption"), 1).value<quint8>();
+    quint8 imapprotocol = os.value(QStringLiteral("protocol"), SK_DEF_IMAP_PROTOCOL).value<quint8>();
+    quint8 imapencryption = os.value(QStringLiteral("encryption"), SK_DEF_IMAP_ENCRYPTION).value<quint8>();
     QString imappeername = os.value(QStringLiteral("peername")).toString();
     os.endGroup();
 
@@ -432,31 +432,6 @@ int Setup::exec() const
         imapencryption = imapConf.value(QStringLiteral("encryption")).value<quint8>();
         imappass = imapConf.value(QStringLiteral("password")).toString();
 
-//        imaphost = readString(tr("IMAP Host"), imaphost, QStringList(tr("The host the IMAP server is running on.")));
-//        imapport = readPort(tr("IMAP Port"), imapport, QStringList(tr("The port your IMAP server is listening on.")));
-//        imapuser = readString(tr("IMAP User"), imapuser, QStringList(tr("The user name of the IMAP admin user.")));
-//        imappass = readString(tr("IMAP Password"), QString(), QStringList(tr("Password for the IMAP admin user.")));
-//        imapprotocol = readChar(tr("IMAP Protocol"),
-//                                imapprotocol,
-//                                QStringList({
-//                                                tr("The network layer protocol to connect to the IMAP server."),
-//                                                tr("Available protocols:"),
-//                                                QStringLiteral("0: IPv4"),
-//                                                QStringLiteral("1: IPv6"),
-//                                                tr("2: Either IPv4 or IPv6")
-//                                            }),
-//                                QList<quint8>({0,1,2}));
-//        imapencryption = readChar(tr("IMAP Encryption"),
-//                                  imapencryption,
-//                                  QStringList({
-//                                                  tr("The method to encrypt the connection to the IMAP server."),
-//                                                  tr("Available methods:"),
-//                                                  tr("0: unsecured"),
-//                                                  QStringLiteral("1: StartTLS"),
-//                                                  QStringLiteral("2: IMAPS")
-//                                              }),
-//                                  QList<quint8>({0,1,2}));
-
         printStatus(tr("Establishing IMAP connection"));
         imap.setHost(imaphost);
         imap.setPort(imapport);
@@ -496,9 +471,9 @@ int Setup::exec() const
         printDesc(QString());
 
         os.beginGroup(QStringLiteral("IMAP"));
-        bool domainAsPrefix = os.value(QStringLiteral("domainasprefix"), false).toBool();
-        bool fqun = os.value(QStringLiteral("fqun"), false).toBool();
-        quint8 createmailbox = os.value(QStringLiteral("createmailbox"), 3).value<quint8>();
+        bool domainAsPrefix = os.value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool();
+        bool fqun = os.value(QStringLiteral("fqun"), SK_DEF_IMAP_FQUN).toBool();
+        quint8 createmailbox = os.value(QStringLiteral("createmailbox"), SK_DEF_IMAP_CREATEMAILBOX).value<quint8>();
         os.endGroup();
 
         domainAsPrefix = readBool(tr("Domain as prefix"),
@@ -525,7 +500,8 @@ int Setup::exec() const
                                                  tr("1: Login after creation - Skaffari relies on the IMAP server to create folders and quotas, but will perform a login after account creation to initiate the creation by the IMAP server"),
                                                  tr("2: Only set quota - Skaffari will login to the new account after creation to let the IMAP server create the mailbox and will then set the quota."),
                                                  tr("3: Create by Skaffari - Skaffari will create the new mailbox and the default folders and will set the account quota after adding a new account.")
-                                             }));
+                                             }),
+                                 QList<quint8>({0,1,2,3}));
 
         os.beginGroup(QStringLiteral("IMAP"));
         os.setValue(QStringLiteral("domainasprefix"), domainAsPrefix);
@@ -539,17 +515,17 @@ int Setup::exec() const
     if (!configExists || readBool(tr("Do you want to set the default values?"), false)) {
 
         os.beginGroup(QStringLiteral("Defaults"));
-        QString defaultLang = os.value(QStringLiteral("language"), QStringLiteral("en")).toString();
-        quint32 defaultQuota = os.value(QStringLiteral("quota"), 10000).value<quint32>();
-        quint32 defaultDomainQuota = os.value(QStringLiteral("domainquota"), 100000).value<quint32>();
-        quint32 defaultMaxAccounts = os.value(QStringLiteral("maxaccounts"), 1000).value<quint32>();
-        QString defaultTimezone = os.value(QStringLiteral("timezone"), QStringLiteral("UTC")).toString();
+        QString defaultLang = os.value(QStringLiteral("language"), QStringLiteral(SK_DEF_DEF_LANGUAGE)).toString();
+        quint32 defaultQuota = os.value(QStringLiteral("quota"), SK_DEF_DEF_QUOTA).value<quint32>();
+        quint32 defaultDomainQuota = os.value(QStringLiteral("domainquota"), SK_DEF_DEF_DOMAINQUOTA).value<quint32>();
+        quint32 defaultMaxAccounts = os.value(QStringLiteral("maxaccounts"), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
+        QString defaultTimezone = os.value(QStringLiteral("timezone"), QStringLiteral(SK_DEF_DEF_TIMEZONE)).toString();
         os.endGroup();
 
         defaultLang = readString(tr("Default language"), defaultLang, QStringList({tr("The default language will be used as fallback language if the user's language is not set or can not be determined."), tr("Currently supported languages: %1").arg(QStringList(SKAFFARI_SUPPORTED_LANGS).join(QChar(QChar::Space)))}), QStringList(SKAFFARI_SUPPORTED_LANGS));
-        defaultTimezone = readString(tr("Default timezone"), QStringLiteral("UTC"), QStringList(tr("Default timezone for newly created administrators and as fallback option. The timezone will be used to show localized date and time values. Please enter a valid IANA timezone ID.")));
+        defaultTimezone = readString(tr("Default timezone"), defaultTimezone, QStringList(tr("Default timezone for newly created administrators and as fallback option. The timezone will be used to show localized date and time values. Please enter a valid IANA timezone ID.")));
         while (!QTimeZone::isTimeZoneIdAvailable(defaultTimezone.toUtf8())) {
-            defaultTimezone = readString(tr("Default timezone"), QStringLiteral("UTC"), QStringList(tr("Default timezone for newly created administrators and as fallback option. The timezone will be used to show localized date and time values. Please enter a valid IANA timezone ID.")));
+            defaultTimezone = readString(tr("Default timezone"), QStringLiteral(SK_DEF_DEF_TIMEZONE), QStringList(tr("Default timezone for newly created administrators and as fallback option. The timezone will be used to show localized date and time values. Please enter a valid IANA timezone ID.")));
         }
         defaultQuota = readInt(tr("Default quota"), defaultQuota, QStringList(tr("The default quota in KiB for new accounts when creating a new domain. This can be changed when creating a new domain or editing an exisiting one.")));
         defaultDomainQuota = readInt(tr("Default domain quota"), defaultDomainQuota, QStringList(tr("The default domain quota in KiB when creating new domains. This can be changed when creating a new domain or editing an exisiting one.")));

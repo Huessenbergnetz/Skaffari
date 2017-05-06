@@ -17,6 +17,7 @@
  */
 
 #include "configinput.h"
+#include "../common/config.h"
 
 ConfigInput::ConfigInput()
 {
@@ -150,9 +151,9 @@ QVariantHash ConfigInput::askPbkdf2Config(const QVariantHash &defaults) const
                                      });
 
 
-    quint8 method = readChar(tr("PBKDF2 algorithm"), 4, pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10}));
-    quint32 rounds = readInt(tr("PBKDF2 iterations"), 32000, QStringList(tr("The iteration count is used to increase the cost for deriving the key from the password.")));
-    quint8 minLength = readChar(tr("Password minimum length"), 8, QStringList(tr("Required minimum length for administrator passwords.")));
+    quint8 method = readChar(tr("PBKDF2 algorithm"), defaults.value(QStringLiteral("method"), SK_DEF_ADM_PWMETHOD).value<quint8>(), pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10}));
+    quint32 rounds = readInt(tr("PBKDF2 iterations"), defaults.value(QStringLiteral("rounds"), SK_DEF_ADM_PWROUNDS).value<quint32>(), QStringList(tr("The iteration count is used to increase the cost for deriving the key from the password.")));
+    quint8 minLength = readChar(tr("Password minimum length"), defaults.value(QStringLiteral("minlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>(), QStringList(tr("Required minimum length for administrator passwords.")));
 
     conf.insert(QStringLiteral("method"), method);
     conf.insert(QStringLiteral("rounds"), rounds);

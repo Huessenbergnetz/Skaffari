@@ -20,6 +20,7 @@
 #include "objects/domain.h"
 #include "objects/account.h"
 #include "objects/skaffarierror.h"
+#include "../common/config.h"
 
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
 #include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
@@ -82,7 +83,7 @@ void DomainEditor::edit(Context *c)
             ValidatorResult vr;
             if (user.value(QStringLiteral("type")).value<qint16>() == 0) {
 
-                Validator v({
+                static Validator v({
                                 new ValidatorIn(QStringLiteral("transport"), QStringList({QStringLiteral("cyrus"), QStringLiteral("lmtp"), QStringLiteral("smtp"), QStringLiteral("uucp")})),
                                 new ValidatorInteger(QStringLiteral("maxAccounts")),
                                 new ValidatorMin(QStringLiteral("maxAccounts"), QMetaType::UInt, 0),
@@ -98,7 +99,7 @@ void DomainEditor::edit(Context *c)
 
             } else {
 
-                Validator v({
+                static Validator v({
                                 new ValidatorMin(QStringLiteral("quota"), QMetaType::UInt, 0)
                             });
 
@@ -170,10 +171,10 @@ void DomainEditor::create(Context* c)
     if (Domain::checkAccess(c)) {
 
         const QVariantMap defVals = c->engine()->config(QStringLiteral("Defaults"));
-        const quint32 defQuota = defVals.value(QStringLiteral("quota"), 10000).value<quint32>();
-        const quint32 defDomainQuota = defVals.value(QStringLiteral("domainquota"), 100000).value<quint32>();
-        const quint32 defMaxAccounts = defVals.value(QStringLiteral("maxaccounts"), 1000).value<quint32>();
-        const bool domainAsPrefix = c->engine()->config(QStringLiteral("IMAP")).value(QStringLiteral("domainasprefix"), false).toBool();
+        const quint32 defQuota = defVals.value(QStringLiteral("quota"), SK_DEF_DEF_QUOTA).value<quint32>();
+        const quint32 defDomainQuota = defVals.value(QStringLiteral("domainquota"), SK_DEF_DEF_DOMAINQUOTA).value<quint32>();
+        const quint32 defMaxAccounts = defVals.value(QStringLiteral("maxaccounts"), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
+        const bool domainAsPrefix = c->engine()->config(QStringLiteral("IMAP")).value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool();
 
         auto r = c->req();
         if (r->isPost()) {
@@ -193,7 +194,7 @@ void DomainEditor::create(Context* c)
                                    new ValidatorBoolean(QStringLiteral("freeAddress"))
                                });
 
-            ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
                 SkaffariError e(c);
                 auto dom = Domain::create(c, r->params(), &e, domainAsPrefix);
@@ -268,11 +269,11 @@ void DomainEditor::add_account(Context* c)
     if (Q_LIKELY((user.value(QStringLiteral("type")).value<qint16>() == 0) || user.value(QStringLiteral("domains")).value<QVariantList>().contains(dom.id()))) {
 
         const QVariantMap imapConf = c->engine()->config(QStringLiteral("IMAP"));
-        const bool domainAsPrefix = imapConf.value(QStringLiteral("domainasprefix"), false).toBool();
-        const bool fqun = imapConf.value(QStringLiteral("fqun"), false).toBool();
+        const bool domainAsPrefix = imapConf.value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool();
+        const bool fqun = imapConf.value(QStringLiteral("fqun"), SK_DEF_IMAP_FQUN).toBool();
 
         const QVariantMap accountsConf = c->engine()->config(QStringLiteral("Accounts"));
-        const quint8 minPasswordLength = accountsConf.value(QStringLiteral("pwminlength"), 6).value<quint8>();
+        const quint8 minPasswordLength = accountsConf.value(QStringLiteral("pwminlength"), SK_DEF_ACC_PWMINLENGTH).value<quint8>();
 
         const quint32 freeQuota = (dom.getDomainQuota() - dom.getDomainQuotaUsed());
 
@@ -303,7 +304,7 @@ void DomainEditor::add_account(Context* c)
                                    new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("yyyy-MM-dd HH:mm:ss"))
                                });
 
-            ValidatorResult vr = v.validate(c);
+            const ValidatorResult vr = v.validate(c);
             if (vr) {
 
                 // if this domain has a global quota limit, we have to calculate the
@@ -328,9 +329,9 @@ void DomainEditor::add_account(Context* c)
                                                       &e,
                                                       req->parameters(),
                                                       dom,
-                                                      accountsConf.value(QStringLiteral("pwtype"), 1).value<quint8>(),
-                                                      accountsConf.value(QStringLiteral("pwmethod"), 2).value<quint8>(),
-                                                      accountsConf.value(QStringLiteral("pwrounds"), 10000).value<quint32>(),
+                                                      accountsConf.value(QStringLiteral("pwtype"), SK_DEF_ACC_PWTYPE).value<quint8>(),
+                                                      accountsConf.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>(),
+                                                      accountsConf.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>(),
                                                       imapConf);
                     if (account.isValid()) {
 

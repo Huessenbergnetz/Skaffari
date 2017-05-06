@@ -26,4 +26,31 @@
 #define SKAFFARI_SQLDIR "@SQL_INSTALL_DIR@"
 #define SKAFFARI_SUPPORTED_LANGS {QStringLiteral("en"), QStringLiteral("de")}
 
+// default values for Accounts
+#define SK_DEF_ACC_PWTYPE 1
+#define SK_DEF_ACC_PWMETHOD 0
+#define SK_DEF_ACC_PWROUNDS 32000
+#define SK_DEF_ACC_PWMINLENGTH 8
+
+// default values for Admins
+#define SK_DEF_ADM_PWMETHOD 4
+#define SK_DEF_ADM_PWROUNDS 32000
+#define SK_DEF_ADM_PWMINLENGTH 8
+
+// default values for Defaults
+#define SK_DEF_DEF_DOMAINQUOTA 0
+#define SK_DEF_DEF_LANGUAGE "en"
+#define SK_DEF_DEF_MAXACCOUNTS 1000
+#define SK_DEF_DEF_QUOTA 102400
+#define SK_DEF_DEF_TIMEZONE "UTC"
+#define SK_DEF_DEF_WARNLEVEL 90
+#define SK_DEF_DEF_MAXDISPLAY 25
+
+// default values for IMAP
+#define SK_DEF_IMAP_CREATEMAILBOX 3
+#define SK_DEF_IMAP_DOMAINASPREFIX false
+#define SK_DEF_IMAP_FQUN false
+#define SK_DEF_IMAP_PROTOCOL 2
+#define SK_DEF_IMAP_ENCRYPTION 1
+
 #endif // CONFIG_H

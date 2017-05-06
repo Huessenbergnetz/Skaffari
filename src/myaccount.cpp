@@ -20,6 +20,7 @@
 #include "objects/adminaccount.h"
 #include "objects/skaffarierror.h"
 #include "utils/language.h"
+#include "../common/config.h"
 
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
 #include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
@@ -51,7 +52,7 @@ void MyAccount::index(Context *c)
     if (aac.isValid()) {
 
         const QVariantMap adminsConf = c->engine()->config(QStringLiteral("Admins"));
-        const quint8 pwminlength = adminsConf.value(QStringLiteral("pwminlength"), 8).value<quint8>();
+        static const quint8 pwminlength = adminsConf.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>();
 
         auto req = c->req();
         if (req->isPost()) {
@@ -66,13 +67,15 @@ void MyAccount::index(Context *c)
             ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
                 SkaffariError e(c);
+                static const QCryptographicHash::Algorithm pwmethod = static_cast<QCryptographicHash::Algorithm>(adminsConf.value(QStringLiteral("pwmethod"), SK_DEF_ADM_PWMETHOD).toInt());
+                static const quint32 pwrounds = adminsConf.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>();
                 if (AdminAccount::update(c,
                                          &e,
                                          &aac,
                                          &user,
                                          req->parameters(),
-                                         static_cast<QCryptographicHash::Algorithm>(adminsConf.value(QStringLiteral("pwmethod")).toInt()),
-                                         adminsConf.value(QStringLiteral("pwrounds")).value<quint32>()
+                                         pwmethod,
+                                         pwrounds
                                          )) {
                     c->setStash(QStringLiteral("status_msg"), c->translate("MyAccount", "Your account has been updated."));
                 } else {
