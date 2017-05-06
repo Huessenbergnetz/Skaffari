@@ -14,14 +14,14 @@ skaffarictl \- Skaffari setup and configuration tool
 
 .SH "DESCRIPTION"
 .PP
-skaffarictl
-is a setup and configuration tool for the Skaffari email account management web interface. See \fBskaffari(8)\fR for more information about Skaffari in general. It can be used to create a new and clean Skaffari setup including database schema installation as well as an importer for web-cyradm data (including configuration and database). Furthermore it provides a small function to test a Skaffari installation/configuration.
+\fBskaffarictl\fR
+is a setup and configuration tool for the Skaffari email account management web interface. See \fBskaffari(8)\fR for more information about Skaffari in general. It can be used to create a new and clean Skaffari setup including database schema installation or to import data (configuration and database) from a web-cyradm installation. Furthermore it provides a small function to test a Skaffari installation/configuration.
 
 .SH "OPTIONS"
 .PP
 \fB\-t, \-\-test\fR
 .RS 4
-Tests the configuration for the IMAP and database connection as well as the database schema. Uses the configuration file defined by \fI\-i\fR. Returns 0 on success.
+Tests the configuration for the IMAP and database connection as well as the database schema. Uses the configuration file defined by \fB\-i\fR. Returns 0 on success.
 .RE
 .PP
 \fB\-i, \-\-ini \fR\fB\fIskaffari-config-file\fR\fR
@@ -31,12 +31,12 @@ Uses the file as skaffari configuration file (default: @CMAKE_INSTALL_SYSCONFDIR
 .PP
 \fB\-\-setup\fR
 .RS 4
-Configures Skaffari. This will guide you through the setup process by asking for the configuration values. Will also install the database schema. Running this on an installed Skaffari instance will only ask you to change the configuration, but will not change the installed database. So, running it does not harm your Skaffari installation. Uses the configuration file defined by \fI\-i\fR.
+Configures Skaffari. This will guide you through the setup process by asking for the configuration values. Will also install the database schema. Running this on an installed Skaffari instance will only ask you to change the configuration, but will not change the installed database. So, running it does not harm your Skaffari installation. Uses the configuration file defined by \fB\-i\fR.
 .RE
 .PP
-\fB\-\-import-web-cyradm \fR\fB\fIweb-cyradm-config-file\fR\fR
+\fB\-\-import-web-cyradm\fR \fB\fIweb-cyradm-config-file\fR\fR
 .RS 4
-Imports configuration and database from a web-cyradm installation. Uses the configuration file defined by \fI\-i\fR to write the Skaffari configuration. This will also ask you for basic configuration settings. Importing a web-cyradm installation will delete the current Skaffari installation. (You will be asked before doing the last step.)
+Imports configuration and database from a web-cyradm installation. Uses the configuration file defined by \fB\-i\fR to write the Skaffari configuration. This will also ask you for basic configuration settings. Importing a web-cyradm installation will delete the current Skaffari installation. (You will be asked before doing the last step.)
 .RE
 .PP
 \fB\-v, \-\-version\fR
