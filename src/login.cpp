@@ -46,7 +46,7 @@ void Login::index(Context *c)
 
         if(!username.isEmpty() && !password.isEmpty()) {
             if (Authentication::authenticate(c, req->bodyParams())) {
-                qCInfo(SK_LOGIN) << "User" << "successfully logged in";
+                qCInfo(SK_LOGIN, "User %s successfully logged in.", username.toUtf8().constData());
 
                 auto user = Authentication::user(c);
 
@@ -60,7 +60,7 @@ void Login::index(Context *c)
             } else {
                 qCWarning(SK_LOGIN, "Bad username or password for user %s from IP %s", username.toUtf8().constData(), req->address().toString().toUtf8().constData());
                 c->setStash(QStringLiteral("error_msg"), c->translate("Login", "Arrrgh, bad username or password!"));
-                c->res()->setStatus(401);
+                c->res()->setStatus(Response::Forbidden);
             }
         }
     }
