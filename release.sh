@@ -74,4 +74,7 @@ tar -czf ${2}/${PRJNAME}-${1}.tar.gz ${PRJNAME}-${1}
 rm -rf ${PRJNAME}-${1}
 popd
 
+gpg --armor --detach-sign ${2}/${PRJNAME}-${1}.tar.xz
+gpg --armor --detach-sign ${2}/${PRJNAME}-${1}.tar.gz
+
 exit 0
