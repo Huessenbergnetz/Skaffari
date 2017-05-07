@@ -230,11 +230,11 @@ public:
 	 */
     bool isValid() const;
 
-    static AdminAccount create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *error, QCryptographicHash::Algorithm algorithm, quint32 iterations);
+    static AdminAccount create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *error);
     static QVector<AdminAccount> list(Cutelyst::Context *c, SkaffariError *error);
     static AdminAccount get(Cutelyst::Context *c, SkaffariError *e, quint32 id);
-    static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, const Cutelyst::ParamsMultiMap &params, QCryptographicHash::Algorithm algorithm, quint32 iterations);
-    static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p, QCryptographicHash::Algorithm algorithm, quint32 iterations);
+    static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, const Cutelyst::ParamsMultiMap &params);
+    static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p);
     static bool remove(Cutelyst::Context *c, SkaffariError *e, const AdminAccount &a);
     static void toStash(Cutelyst::Context *c, quint32 adminId);
     static AdminAccount fromStash(Cutelyst::Context *c);

@@ -20,13 +20,12 @@
 #include "objects/adminaccount.h"
 #include "objects/skaffarierror.h"
 #include "objects/simpledomain.h"
-#include "../common/config.h"
+#include "utils/skaffariconfig.h"
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
 #include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result
 #include <Cutelyst/Plugins/Authentication/authentication.h>
-#include <Cutelyst/Engine>
 #include <QVector>
 #include <QVariant>
 
@@ -80,25 +79,18 @@ void AdminEditor::create(Context *c)
         auto req = c->req();
         if (req->isPost()) {
 
-            const QVariantMap adminConf = c->engine()->config(QStringLiteral("Admins"));
-
             static Validator v({
                                    new ValidatorRequired(QStringLiteral("username")),
-                                   new ValidatorAlphaNum(QStringLiteral("username")),
-                                   new ValidatorBetween(QStringLiteral("username"), QMetaType::QString, adminConf.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<double>(), 255),
+                                   new ValidatorAlphaDash(QStringLiteral("username")),
                                    new ValidatorRequired(QStringLiteral("password")),
+                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),
                                    new ValidatorConfirmed(QStringLiteral("password"))
                                });
 
             ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
                 SkaffariError e(c);
-                AdminAccount::create(c,
-                                     req->parameters(),
-                                     &e,
-                                     static_cast<QCryptographicHash::Algorithm>(adminConf.value(QStringLiteral("pwmethod"), SK_DEF_ADM_PWMETHOD).toInt()),
-                                     adminConf.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>()
-                                     );
+                AdminAccount::create(c, req->parameters(), &e);
 
                 if (e.type() == SkaffariError::NoError) {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/admin/index"),
@@ -138,11 +130,9 @@ void AdminEditor::edit(Context *c)
         auto req = c->req();
         if (req->isPost()) {
 
-            const QVariantMap adminsConf = c->engine()->config(QStringLiteral("Admins"));
-
             static Validator v({
                                    new ValidatorConfirmed(QStringLiteral("password")),
-                                   new ValidatorBetween(QStringLiteral("username"), QMetaType::QString, adminsConf.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<double>(), 255),
+                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength())
                                });
 
             ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
@@ -155,9 +145,7 @@ void AdminEditor::edit(Context *c)
                 AdminAccount::update(c,
                                      &e,
                                      &aac,
-                                     req->parameters(),
-                                     static_cast<QCryptographicHash::Algorithm>(adminsConf.value(QStringLiteral("pwmethod"), SK_DEF_ADM_PWMETHOD).toInt()),
-                                     adminsConf.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>());
+                                     req->parameters());
 
                 if (e.type() == SkaffariError::NoError) {
                     c->setStash(QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated admin %1.").arg(aac.getUsername()));

@@ -22,8 +22,7 @@
 #include "objects/domain.h"
 #include "objects/skaffarierror.h"
 #include "objects/simpledomain.h"
-
-#include "../common/config.h"
+#include "utils/skaffariconfig.h"
 
 #include <Cutelyst/Plugins/Session/Session>
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
@@ -31,7 +30,6 @@
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
-#include <Cutelyst/Engine>
 
 using namespace Cutelyst;
 
@@ -48,7 +46,7 @@ void AccountEditor::base(Context* c, const QString &domainId, const QString& acc
     const quint32 domId = domainId.toULong();
     if (Domain::checkAccess(c, domId)) {
         Domain::toStash(c, domId);
-        Account::toStash(c, Domain::fromStash(c), accountId.toULong(), c->engine()->config(QStringLiteral("IMAP")));
+        Account::toStash(c, Domain::fromStash(c), accountId.toULong());
     }
 }
 
@@ -66,12 +64,10 @@ void AccountEditor::edit(Context* c)
 
         if (req->isPost()) {
 
-            const QVariantMap accountsConf = c->engine()->config(QStringLiteral("Accounts"));
-
             static Validator v({
                                    new ValidatorMin(QStringLiteral("quota"), QMetaType::UInt, 0),
                                    new ValidatorConfirmed(QStringLiteral("password")),
-                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, accountsConf.value(QStringLiteral("pwminlength"), SK_DEF_ACC_PWMINLENGTH).value<double>()),
+                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::accPwMinlength()),
                                    new ValidatorRequired(QStringLiteral("validUntil")),
                                    new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("yyyy-MM-dd HH:mm:ss"))
                                });
@@ -101,10 +97,7 @@ void AccountEditor::edit(Context* c)
                     if (Account::update(c,
                                         &e,
                                         &a,
-                                        p,
-                                        accountsConf.value(QStringLiteral("pwtype"), SK_DEF_ACC_PWTYPE).value<quint8>(),
-                                        accountsConf.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>(),
-                                        accountsConf.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>())) {
+                                        p)) {
 
                         Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
                         c->setStash(QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated account %1.").arg(a.getUsername()));
@@ -212,7 +205,8 @@ void AccountEditor::email(Context *c, const QString &address)
                 } else {
                     SkaffariError e(c);
                     if (Account::updateEmail(c, &e, &a, d, p, address)) {
-                        c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"), QStringList({QString::number(d.id()), QString::number(a.getId())}), QStringList(), StatusMessage::statusQuery(c, c->translate("AccountEditor", "Successfully updated email address %1 to %2.").arg(address, p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"))))));
+                        const ParamsMultiMap successQueryParams = StatusMessage::statusQuery(c, c->translate("AccountEditor", "Successfully updated email address %1 to %2.").arg(address, p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"))));
+                        c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"), QStringList({QString::number(d.id()), QString::number(a.getId())}), QStringList(), successQueryParams));
                         return;
                     } else {
                         c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -235,7 +229,10 @@ void AccountEditor::remove_email(Context *c, const QString &address)
     if (Domain::accessGranted(c)) {
         auto a = Account::fromStash(c);
         if (a.getAddresses().size() <= 1) {
-            c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"), QStringList({QString::number(a.getDomainId()), QString::number(a.getId())}), QStringList(), StatusMessage::errorQuery(c, c->translate("AccountEditor", "You can not remove the last email address for this account. Remove the entire account instead."))));
+            c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"),
+                                               QStringList({QString::number(a.getDomainId()), QString::number(a.getId())}),
+                                               QStringList(),
+                                               StatusMessage::errorQuery(c, c->translate("AccountEditor", "You can not remove the last email address for this account. Remove the entire account instead."))));
             return;
         }
 
@@ -255,7 +252,10 @@ void AccountEditor::remove_email(Context *c, const QString &address)
             } else {
                 SkaffariError e(c);
                 if (Account::removeEmail(c, &e, &a, address)) {
-                     c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"), QStringList({QString::number(a.getDomainId()), QString::number(a.getId())}), QStringList(), StatusMessage::statusQuery(c, c->translate("AccountEditor", "Successfully removed email address %1 from account %2.").arg(address, a.getUsername()))));
+                     c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"),
+                                                        QStringList({QString::number(a.getDomainId()), QString::number(a.getId())}),
+                                                        QStringList(),
+                                                        StatusMessage::statusQuery(c, c->translate("AccountEditor", "Successfully removed email address %1 from account %2.").arg(address, a.getUsername()))));
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
                 }
@@ -292,7 +292,11 @@ void AccountEditor::new_email(Context *c)
                 } else {
                     SkaffariError e(c);
                     if (Account::addEmail(c, &e, &a, d, p)) {
-                        c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"), QStringList({QString::number(d.id()), QString::number(a.getId())}), QStringList(), StatusMessage::statusQuery(c, c->translate("AccountEditor", "Successfully added email address %1 to account %2.").arg(p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"), a.getUsername())))));
+                        const QString newEmailAddress = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"));
+                        c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"),
+                                                           QStringList({QString::number(d.id()), QString::number(a.getId())}),
+                                                           QStringList(),
+                                                           StatusMessage::statusQuery(c, c->translate("AccountEditor", "Successfully added email address %1 to account %2.").arg(newEmailAddress, a.getUsername()))));
                         return;
                     } else {
                         c->setStash(QStringLiteral("error_msg"), e.errorText());

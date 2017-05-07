@@ -115,7 +115,7 @@ public:
     bool isValid() const;
     bool hasAccess(Cutelyst::Context *c) const;
 
-    static Domain create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *errorData, bool domainAsPrefix);
+    static Domain create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *errorData);
     static Domain get(Cutelyst::Context *c, quint32 domId, SkaffariError *errorData);
     static std::vector<Domain> list(Cutelyst::Context *c, SkaffariError *errorData, const Cutelyst::AuthenticationUser &user);
 

@@ -100,14 +100,14 @@ public:
     void setValidUntil(const QDateTime &validUntil);
     void setKeepLocal(bool nKeepLocal);
 
-    static Account create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p, const Domain &d, quint8 pwType, quint8 pwMethod, quint32 pwRounds, const QVariantMap imapConfig);
+    static Account create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p, const Domain &d);
     static bool remove(Cutelyst::Context *c, SkaffariError *e, const QString &username, Domain *domain);
     static bool remove(Cutelyst::Context *c, SkaffariError *e, Domain *d);
-    static Cutelyst::Pagination list(Cutelyst::Context *c, SkaffariError *e, const Domain &d, const Cutelyst::Pagination &p, const QVariantMap &imapConfig, const QString &sortBy = QStringLiteral("username"), const QString &sortOrder = QStringLiteral("ASC"), const QString &searchRole = QStringLiteral("username"), const QString &searchString = QString());
-    static Account get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, quint32 id, const QVariantMap &imapConfig);
-    static void toStash(Cutelyst::Context *c, const Domain &d, quint32 accountId, const QVariantMap &imapConfig);
+    static Cutelyst::Pagination list(Cutelyst::Context *c, SkaffariError *e, const Domain &d, const Cutelyst::Pagination &p, const QString &sortBy = QStringLiteral("username"), const QString &sortOrder = QStringLiteral("ASC"), const QString &searchRole = QStringLiteral("username"), const QString &searchString = QString());
+    static Account get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, quint32 id);
+    static void toStash(Cutelyst::Context *c, const Domain &d, quint32 accountId);
     static Account fromStash(Cutelyst::Context *c);
-    static bool update(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p, quint8 pwType, quint8 pwMethod, quint32 pwRounds);
+    static bool update(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p);
     static bool updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const Domain &d, const Cutelyst::ParamsMultiMap &p, const QString &oldAddress);
     static bool addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const Domain &d, const Cutelyst::ParamsMultiMap &p);
     static bool removeEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &address);

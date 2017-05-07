@@ -19,12 +19,11 @@
 #include "root.h"
 #include "objects/domain.h"
 #include "utils/language.h"
-#include "../common/config.h"
+#include "utils/skaffariconfig.h"
 
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Session/Session>
-#include <Cutelyst/Engine>
 #include <QLocale>
 
 using namespace Cutelyst;
@@ -72,7 +71,7 @@ bool Root::Auto(Context* c)
             }
         }
         if (lang.isEmpty()) {
-            lang = c->engine()->config(QStringLiteral("Defaults")).value(QStringLiteral("language"), QStringLiteral(SK_DEF_DEF_LANGUAGE)).toString();
+            lang = SkaffariConfig::defLanguage();
         }
     }
 
@@ -94,8 +93,8 @@ bool Root::Auto(Context* c)
                  {QStringLiteral("userId"), QVariant::fromValue<quint32>(user.id().toULong())},
                  {QStringLiteral("userType"), user.value(QStringLiteral("type"))},
                  {QStringLiteral("userName"), user.value(QStringLiteral("username"))},
-                 {QStringLiteral("userMaxDisplay"), Session::value(c, QStringLiteral("maxdisplay"), SK_DEF_DEF_MAXDISPLAY).value<quint8>()},
-                 {QStringLiteral("userWarnLevel"), Session::value(c, QStringLiteral("warnlevel"), SK_DEF_DEF_WARNLEVEL).value<quint8>()}
+                 {QStringLiteral("userMaxDisplay"), Session::value(c, QStringLiteral("maxdisplay"), SkaffariConfig::defMaxdisplay()).value<quint8>()},
+                 {QStringLiteral("userWarnLevel"), Session::value(c, QStringLiteral("warnlevel"), SkaffariConfig::defWarnlevel()).value<quint8>()}
              });
 
     return true;

@@ -19,6 +19,7 @@
 #include "adminaccount_p.h"
 #include "skaffarierror.h"
 #include "../utils/utils.h"
+#include "../utils/skaffariconfig.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <Cutelyst/Context>
@@ -206,7 +207,7 @@ void AdminAccount::setTemplate(const QString &tmpl)
     d->tmpl = tmpl;
 }
 
-AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *error, QCryptographicHash::Algorithm algorithm, quint32 iterations)
+AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *error)
 {
     AdminAccount aa;
 
@@ -230,7 +231,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMu
         return aa;
     }
 
-    const QByteArray password = Cutelyst::CredentialPassword::createPassword(params.value(QStringLiteral("password")).toUtf8(), algorithm, iterations, 24, 27);
+    const QByteArray password = Cutelyst::CredentialPassword::createPassword(params.value(QStringLiteral("password")).toUtf8(), SkaffariConfig::admPwMethod(), SkaffariConfig::admPwRounds(), 24, 27);
     const qint16 type = params.value(QStringLiteral("type")).toShort();
 
     const quint32 id = AdminAccount::setAdminAccount(c, error, params.value(QStringLiteral("username")), password, type);
@@ -356,7 +357,7 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, quint32 i
 
 
 
-bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, const Cutelyst::ParamsMultiMap &params, QCryptographicHash::Algorithm algorithm, quint32 iterations)
+bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, const Cutelyst::ParamsMultiMap &params)
 {
     bool ret = false;
 
@@ -391,7 +392,10 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
 
     if (!password.isEmpty()) {
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE adminuser SET type = :type, password = :password, updated_at = :updated_at WHERE id = :id"));
-        q.bindValue(QStringLiteral(":password"), Cutelyst::CredentialPassword::createPassword(params.value(QStringLiteral("password")).toUtf8(), algorithm, iterations, 24, 27));
+        q.bindValue(QStringLiteral(":password"), Cutelyst::CredentialPassword::createPassword(params.value(QStringLiteral("password")).toUtf8(),
+                                                                                              SkaffariConfig::admPwMethod(),
+                                                                                              SkaffariConfig::admPwRounds(),
+                                                                                              24, 27));
     } else {
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE adminuser SET type = :type, updated_at = :updated_at WHERE id = :id"));
     }
@@ -446,7 +450,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
 }
 
 
-bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p, QCryptographicHash::Algorithm algorithm, quint32 iterations)
+bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p)
 {
     bool ret = false;
 
@@ -463,7 +467,11 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
 
     if (!password.isEmpty()) {
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE adminuser SET password = :password, updated_at = :updated_at WHERE id = :id"));
-        q.bindValue(QStringLiteral(":password"), Cutelyst::CredentialPassword::createPassword(p.value(QStringLiteral("password")).toUtf8(), algorithm, iterations, 24, 27));
+        q.bindValue(QStringLiteral(":password"), Cutelyst::CredentialPassword::createPassword(p.value(QStringLiteral("password")).toUtf8(),
+                                                                                              SkaffariConfig::admPwMethod(),
+                                                                                              SkaffariConfig::admPwRounds(),
+                                                                                              24,
+                                                                                              27));
     } else {
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE adminuser SET updated_at = :updated_at WHERE id = :id"));
     }

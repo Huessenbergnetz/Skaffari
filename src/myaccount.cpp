@@ -20,14 +20,13 @@
 #include "objects/adminaccount.h"
 #include "objects/skaffarierror.h"
 #include "utils/language.h"
-#include "../common/config.h"
+#include "utils/skaffariconfig.h"
 
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
 #include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
-#include <Cutelyst/Engine>
 #include <QTimeZone>
 
 
@@ -51,14 +50,11 @@ void MyAccount::index(Context *c)
     AdminAccount aac = AdminAccount::get(c, &e, user.id().toULong());
     if (aac.isValid()) {
 
-        const QVariantMap adminsConf = c->engine()->config(QStringLiteral("Admins"));
-        static const quint8 pwminlength = adminsConf.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>();
-
         auto req = c->req();
         if (req->isPost()) {
             static Validator v({
                             new ValidatorConfirmed(QStringLiteral("password")),
-                            new ValidatorMin(QStringLiteral("password"), QMetaType::QString, pwminlength),
+                            new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),
                             new ValidatorBetween(QStringLiteral("maxdisplay"), QMetaType::UInt, 0, 255),
                             new ValidatorBetween(QStringLiteral("warnlevel"), QMetaType::UInt, 0, 100),
                             new ValidatorIn(QStringLiteral("lang"), Language::supportedLangsList())
@@ -67,16 +63,7 @@ void MyAccount::index(Context *c)
             ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
                 SkaffariError e(c);
-                static const QCryptographicHash::Algorithm pwmethod = static_cast<QCryptographicHash::Algorithm>(adminsConf.value(QStringLiteral("pwmethod"), SK_DEF_ADM_PWMETHOD).toInt());
-                static const quint32 pwrounds = adminsConf.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>();
-                if (AdminAccount::update(c,
-                                         &e,
-                                         &aac,
-                                         &user,
-                                         req->parameters(),
-                                         pwmethod,
-                                         pwrounds
-                                         )) {
+                if (AdminAccount::update(c, &e, &aac, &user, req->parameters())) {
                     c->setStash(QStringLiteral("status_msg"), c->translate("MyAccount", "Your account has been updated."));
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());

@@ -20,7 +20,7 @@
 #include "objects/domain.h"
 #include "objects/account.h"
 #include "objects/skaffarierror.h"
-#include "../common/config.h"
+#include "utils/skaffariconfig.h"
 
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
 #include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
@@ -30,7 +30,6 @@
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <Cutelyst/Plugins/Session/Session>
 #include <Cutelyst/Plugins/Utils/Pagination>
-#include <Cutelyst/Engine>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QRegularExpression>
@@ -140,7 +139,9 @@ void DomainEditor::accounts(Context* c)
 
         ParamsMultiMap p = c->req()->parameters();
 
-        Pagination pag(dom.getAccounts(), p.value(QStringLiteral("accountsPerPage"), Session::value(c, QStringLiteral("maxdisplay"), 25).toString()).toInt(), p.value(QStringLiteral("currentPage"), QStringLiteral("1")).toInt());
+        Pagination pag(dom.getAccounts(),
+                       p.value(QStringLiteral("accountsPerPage"), Session::value(c, QStringLiteral("maxdisplay"), 25).toString()).toInt(),
+                       p.value(QStringLiteral("currentPage"), QStringLiteral("1")).toInt());
 
         QString sortBy = p.value(QStringLiteral("sortBy"), QStringLiteral("username"));
         static QStringList sortByCols({QStringLiteral("username"), QStringLiteral("created_at"), QStringLiteral("updated_at"), QStringLiteral("valid_until")});
@@ -154,7 +155,7 @@ void DomainEditor::accounts(Context* c)
         }
 
         SkaffariError e(c);
-        pag = Account::list(c, &e, dom, pag, c->engine()->config(QStringLiteral("IMAP")), sortBy, sortOrder);
+        pag = Account::list(c, &e, dom, pag, sortBy, sortOrder);
 
         c->stash({
                      {QStringLiteral("pagination"), pag},
@@ -169,12 +170,6 @@ void DomainEditor::accounts(Context* c)
 void DomainEditor::create(Context* c)
 {
     if (Domain::checkAccess(c)) {
-
-        const QVariantMap defVals = c->engine()->config(QStringLiteral("Defaults"));
-        const quint32 defQuota = defVals.value(QStringLiteral("quota"), SK_DEF_DEF_QUOTA).value<quint32>();
-        const quint32 defDomainQuota = defVals.value(QStringLiteral("domainquota"), SK_DEF_DEF_DOMAINQUOTA).value<quint32>();
-        const quint32 defMaxAccounts = defVals.value(QStringLiteral("maxaccounts"), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
-        const bool domainAsPrefix = c->engine()->config(QStringLiteral("IMAP")).value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool();
 
         auto r = c->req();
         if (r->isPost()) {
@@ -197,7 +192,7 @@ void DomainEditor::create(Context* c)
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
                 SkaffariError e(c);
-                auto dom = Domain::create(c, r->params(), &e, domainAsPrefix);
+                auto dom = Domain::create(c, r->params(), &e);
                 if (dom.isValid()) {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/domain/edit"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, c->translate("DomainEditor", "Successfully created new domain %1").arg(dom.getName()))));
                 } else {
@@ -207,11 +202,11 @@ void DomainEditor::create(Context* c)
         }
 
         c->stash({
-                     {QStringLiteral("defQuota"), defQuota},
-                     {QStringLiteral("defDomainQuota"), defDomainQuota},
-                     {QStringLiteral("defMaxAccounts"), defMaxAccounts},
+                     {QStringLiteral("defQuota"), SkaffariConfig::defQuota()},
+                     {QStringLiteral("defDomainQuota"), SkaffariConfig::defDomainquota()},
+                     {QStringLiteral("defMaxAccounts"), SkaffariConfig::defMaxaccounts()},
                      {QStringLiteral("template"), QStringLiteral("domain/create.html")},
-                     {QStringLiteral("domainAsPrefix"), domainAsPrefix},
+                     {QStringLiteral("domainAsPrefix"), SkaffariConfig::imapDomainasprefix()},
                      {QStringLiteral("edit"), false},
                      {QStringLiteral("site_title"), c->translate("DomainEditor", "Create domain")}
                 });
@@ -268,13 +263,6 @@ void DomainEditor::add_account(Context* c)
 
     if (Q_LIKELY((user.value(QStringLiteral("type")).value<qint16>() == 0) || user.value(QStringLiteral("domains")).value<QVariantList>().contains(dom.id()))) {
 
-        const QVariantMap imapConf = c->engine()->config(QStringLiteral("IMAP"));
-        const bool domainAsPrefix = imapConf.value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool();
-        const bool fqun = imapConf.value(QStringLiteral("fqun"), SK_DEF_IMAP_FQUN).toBool();
-
-        const QVariantMap accountsConf = c->engine()->config(QStringLiteral("Accounts"));
-        const quint8 minPasswordLength = accountsConf.value(QStringLiteral("pwminlength"), SK_DEF_ACC_PWMINLENGTH).value<quint8>();
-
         const quint32 freeQuota = (dom.getDomainQuota() - dom.getDomainQuotaUsed());
 
         auto req = c->req();
@@ -299,7 +287,7 @@ void DomainEditor::add_account(Context* c)
                                    new ValidatorRequired(QStringLiteral("localpart")),
                                    new ValidatorRegularExpression(QStringLiteral("localpart"), QRegularExpression(QStringLiteral("[^@]"))),
                                    new ValidatorRequired(QStringLiteral("password")),
-                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, minPasswordLength),
+                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::accPwMinlength()),
                                    new ValidatorConfirmed(QStringLiteral("password")),
                                    new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("yyyy-MM-dd HH:mm:ss"))
                                });
@@ -328,11 +316,7 @@ void DomainEditor::add_account(Context* c)
                     Account account = Account::create(c,
                                                       &e,
                                                       req->parameters(),
-                                                      dom,
-                                                      accountsConf.value(QStringLiteral("pwtype"), SK_DEF_ACC_PWTYPE).value<quint8>(),
-                                                      accountsConf.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>(),
-                                                      accountsConf.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>(),
-                                                      imapConf);
+                                                      dom);
                     if (account.isValid()) {
 
                         Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
@@ -362,7 +346,7 @@ void DomainEditor::add_account(Context* c)
             // (if they are not used by someone else and the domain has free names enabled),
             // or they are automatically generated from the domain prefix and an autoincrementing
             // number (this will also be generated as proposal for free usable names)
-            if (!domainAsPrefix) {
+            if (!SkaffariConfig::imapDomainasprefix()) {
 
                 if (dom.isFreeNamesEnabled()) {
                     // if the domain allows free names, we only generate a proposal starting with 0000
@@ -427,9 +411,9 @@ void DomainEditor::add_account(Context* c)
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("domain/add_account.html")},
                      {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Add account")},
-                     {QStringLiteral("domainasprefix"), domainAsPrefix},
-                     {QStringLiteral("fqun"), fqun},
-                     {QStringLiteral("minpasswordlength"), minPasswordLength},
+                     {QStringLiteral("domainasprefix"), SkaffariConfig::imapDomainasprefix()},
+                     {QStringLiteral("fqun"), SkaffariConfig::imapFqun()},
+                     {QStringLiteral("minpasswordlength"), SkaffariConfig::accPwMinlength()},
                      {QStringLiteral("freequota"), freeQuota}
                  });
     }

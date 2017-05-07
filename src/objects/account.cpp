@@ -22,6 +22,7 @@
 #include "../utils/utils.h"
 #include "../imap/skaffariimap.h"
 #include "../../common/password.h"
+#include "../utils/skaffariconfig.h"
 #include <Cutelyst/Context>
 #include <Cutelyst/Response>
 #include <Cutelyst/Plugins/Utils/Sql>
@@ -321,7 +322,7 @@ void Account::setKeepLocal(bool nKeepLocal)
 }
 
 
-Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p, const Domain &d, quint8 pwType, quint8 pwMethod, quint32 pwRounds, const QVariantMap imapConfig)
+Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p, const Domain &d)
 {
     Account a;
 
@@ -329,13 +330,8 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     Q_ASSERT_X(e, "create account", "invalid error object");
     Q_ASSERT_X(!p.empty(), "create account", "empty parameters");
     Q_ASSERT_X(d.isValid(), "create account", "invalid domain object");
-    Q_ASSERT_X(!imapConfig.empty(), "create account", "invalid imap configuration");
 
-    bool domainAsPrefix = imapConfig.value(QStringLiteral("domainasprefix")).toBool();
-    bool fqun = imapConfig.value(QStringLiteral("fqun")).toBool();
-    Account::CreateMailbox createMailbox = static_cast<Account::CreateMailbox>(imapConfig.value(QStringLiteral("createmailbox")).value<quint8>());
-
-    const QString username = domainAsPrefix ? p.value(QStringLiteral("localpart")) + (fqun ? QLatin1Char('@') : QLatin1Char('.')) + d.getName() : p.value(QStringLiteral("username"));
+    const QString username = SkaffariConfig::imapDomainasprefix() ? p.value(QStringLiteral("localpart")) + (SkaffariConfig::imapFqun() ? QLatin1Char('@') : QLatin1Char('.')) + d.getName() : p.value(QStringLiteral("username"));
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id FROM accountuser WHERE username = :username"));
     q.bindValue(QStringLiteral(":username"), username);
@@ -369,7 +365,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
 
     const QString password = p.value(QStringLiteral("password"));
     Password pw(password);
-    const QByteArray encpw = pw.encrypt(static_cast<Password::Type>(pwType), static_cast<Password::Method>(pwMethod), pwRounds);
+    const QByteArray encpw = pw.encrypt(SkaffariConfig::accPwType(), SkaffariConfig::accPwMethod(), SkaffariConfig::accPwRounds());
 
     if (Q_UNLIKELY(encpw.isEmpty())) {
         e->setErrorText(c->translate("Account", "Failed to encrypt user password. Please check your encryption settings."));
@@ -432,17 +428,16 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     }
 
     bool mailboxCreated = true;
+    Account::CreateMailbox createMailbox = SkaffariConfig::imapCreatemailbox();
 
     if (createMailbox != DoNotCreate) {
 
-        SkaffariIMAP imap(username,
-                          password,
-                          imapConfig.value(QStringLiteral("host")).toString(),
-                          imapConfig.value(QStringLiteral("port")).value<quint16>(),
-                          static_cast<QAbstractSocket::NetworkLayerProtocol>(imapConfig.value(QStringLiteral("protocol")).toInt()),
-                          static_cast<SkaffariIMAP::EncryptionType>(imapConfig.value(QStringLiteral("encryption")).value<quint8>()));
+        SkaffariIMAP imap;
 
         if (createMailbox == LoginAfterCreation) {
+
+            imap.setUser(username);
+            imap.setPassword(password);
 
             mailboxCreated = imap.login();
             if (!mailboxCreated) {
@@ -603,7 +598,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, Domain *d)
 
 
 
-Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const Domain &d, const Cutelyst::Pagination &p, const QVariantMap &imapConfig, const QString &sortBy, const QString &sortOrder, const QString &searchRole, const QString &searchString)
+Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const Domain &d, const Cutelyst::Pagination &p, const QString &sortBy, const QString &sortOrder, const QString &searchRole, const QString &searchString)
 {
     Cutelyst::Pagination pag;
     std::vector<Account> lst;
@@ -628,8 +623,10 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
 
     pag = Cutelyst::Pagination(q.size(), p.limit(), p.currentPage(), p.pages().size());
 
-    SkaffariIMAP imap(imapConfig);
-    imap.login();
+    SkaffariIMAP imap;
+    if (!imap.login()) {
+        qCWarning(SK_ACCOUNT) << "Failed to login to IMAP server. Omitting quota query.";
+    }
 
     while (q.next()) {
         const QString username = q.value(1).toString();
@@ -682,8 +679,6 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
             std::pair<quint32,quint32> quota = imap.getQuota(a.getUsername());
             a.setUsage(quota.first);
             a.setQuota(quota.second);
-        } else {
-            qCWarning(SK_ACCOUNT) << "Failed to login to IMAP server. Omitting quota query.";
         }
 
         a.setHumanQuota(Utils::humanBinarySize(c, (quint64)a.getQuota() * 1024));
@@ -700,7 +695,7 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
 }
 
 
-Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, quint32 id, const QVariantMap &imapConfig)
+Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, quint32 id)
 {
     Account a;
 
@@ -762,7 +757,7 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
 
     a.setForwards(aliases);
 
-    SkaffariIMAP imap(imapConfig);
+    SkaffariIMAP imap;
     if (imap.login()) {
         std::pair<quint32,quint32> quota = imap.getQuota(a.getUsername());
         a.setUsage(quota.first);
@@ -777,12 +772,12 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
 }
 
 
-void Account::toStash(Cutelyst::Context *c, const Domain &d, quint32 accountId, const QVariantMap &imapConfig)
+void Account::toStash(Cutelyst::Context *c, const Domain &d, quint32 accountId)
 {
     Q_ASSERT_X(c, "account to stash", "invalid context object");
 
     SkaffariError e(c);
-    Account a = Account::get(c, &e, d, accountId, imapConfig);
+    Account a = Account::get(c, &e, d, accountId);
     if (Q_LIKELY(a.isValid())) {
         c->stash({
                      {QStringLiteral("account"), QVariant::fromValue<Account>(a)},
@@ -808,7 +803,7 @@ Account Account::fromStash(Cutelyst::Context *c)
 
 
 
-bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p, quint8 pwType, quint8 pwMethod, quint32 pwRounds)
+bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p)
 {
     bool ret = false;
 
@@ -832,7 +827,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const C
     QSqlQuery q;
     if (!password.isEmpty()) {
         Password pw(password);
-        const QByteArray encPw = pw.encrypt(static_cast<Password::Type>(pwType), static_cast<Password::Method>(pwMethod), pwRounds);
+        const QByteArray encPw = pw.encrypt(SkaffariConfig::accPwType(), SkaffariConfig::accPwMethod(), SkaffariConfig::accPwRounds());
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET password = :password, quota = :quota, valid_until = :validUntil, updated_at = :updated_at WHERE id = :id"));
         q.bindValue(QStringLiteral(":password"), encPw);
     } else {

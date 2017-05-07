@@ -20,6 +20,7 @@
 #include "skaffarierror.h"
 #include "account.h"
 #include "../utils/utils.h"
+#include "../utils/skaffariconfig.h"
 #include <Cutelyst/ParamsMultiMap>
 #include <Cutelyst/Response>
 #include <QSqlQuery>
@@ -335,14 +336,14 @@ bool Domain::hasAccess(Cutelyst::Context *c) const
 }
 
 
-Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *errorData, bool domainAsPrefix)
+Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *errorData)
 {
     Domain dom;
 
     Q_ASSERT_X(errorData, "create new domain", "invalid errorData object");
 
     const QString domainName = params.value(QStringLiteral("domainName")).trimmed().toLower();
-    const QString prefix = !domainAsPrefix ? params.value(QStringLiteral("prefix")).trimmed().toLower() : domainName;
+    const QString prefix = !SkaffariConfig::imapDomainasprefix() ? params.value(QStringLiteral("prefix")).trimmed().toLower() : domainName;
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_name FROM domain WHERE prefix = :prefix"));
     q.bindValue(QStringLiteral(":prefix"), prefix);
