@@ -55,6 +55,7 @@ public:
     static quint16 imapPort();
     static QString imapUser();
     static QString imapPassword();
+    static QString imapPeername();
     static QAbstractSocket::NetworkLayerProtocol imapProtocol();
     static SkaffariIMAP::EncryptionType imapEncryption();
     static Account::CreateMailbox imapCreatemailbox();
@@ -83,6 +84,7 @@ private:
     static quint16 m_imapPort;
     static QString m_imapUser;
     static QString m_imapPassword;
+    static QString m_imapPeername;
     static QAbstractSocket::NetworkLayerProtocol m_imapProtocol;
     static SkaffariIMAP::EncryptionType m_imapEncryption;
     static Account::CreateMailbox m_imapCreatemailbox;

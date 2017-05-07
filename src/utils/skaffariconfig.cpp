@@ -39,6 +39,7 @@ quint8 SkaffariConfig::m_defWarnlevel = SK_DEF_DEF_WARNLEVEL;
 QString SkaffariConfig::m_imapHost;
 QString SkaffariConfig::m_imapUser;
 QString SkaffariConfig::m_imapPassword;
+QString SkaffariConfig::m_imapPeername;
 quint16 SkaffariConfig::m_imapPort = 143;
 QAbstractSocket::NetworkLayerProtocol SkaffariConfig::m_imapProtocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(SK_DEF_IMAP_PROTOCOL);
 SkaffariIMAP::EncryptionType SkaffariConfig::m_imapEncryption = static_cast<SkaffariIMAP::EncryptionType>(SK_DEF_IMAP_ENCRYPTION);
@@ -73,6 +74,7 @@ void SkaffariConfig::load(const QVariantMap &accounts, const QVariantMap &admins
     SkaffariConfig::m_imapHost = imap.value(QStringLiteral("host")).toString();
     SkaffariConfig::m_imapUser = imap.value(QStringLiteral("user")).toString();
     SkaffariConfig::m_imapPassword = imap.value(QStringLiteral("password")).toString();
+    SkaffariConfig::m_imapPeername = imap.value(QStringLiteral("peername")).toString();
     SkaffariConfig::m_imapPort = imap.value(QStringLiteral("port"), 143).value<quint16>();
     SkaffariConfig::m_imapProtocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(imap.value(QStringLiteral("protocol"), SK_DEF_IMAP_PROTOCOL).value<quint8>());
     SkaffariConfig::m_imapEncryption = static_cast<SkaffariIMAP::EncryptionType>(imap.value(QStringLiteral("encryption"), SK_DEF_IMAP_ENCRYPTION).value<quint8>());
@@ -102,6 +104,7 @@ QString SkaffariConfig::imapHost() { return SkaffariConfig::m_imapHost; }
 quint16 SkaffariConfig::imapPort() { return SkaffariConfig::m_imapPort; }
 QString SkaffariConfig::imapUser() { return SkaffariConfig::m_imapUser; }
 QString SkaffariConfig::imapPassword() { return SkaffariConfig::m_imapPassword; }
+QString SkaffariConfig::imapPeername() { return SkaffariConfig::m_imapPeername; }
 QAbstractSocket::NetworkLayerProtocol SkaffariConfig::imapProtocol() { return SkaffariConfig::m_imapProtocol; }
 SkaffariIMAP::EncryptionType SkaffariConfig::imapEncryption() { return SkaffariConfig::m_imapEncryption; }
 Account::CreateMailbox SkaffariConfig::imapCreatemailbox() { return SkaffariConfig::m_imapCreatemailbox; }
