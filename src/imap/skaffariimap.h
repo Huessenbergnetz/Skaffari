@@ -51,8 +51,6 @@ public:
 	};
 
     explicit SkaffariIMAP(QObject *parent = nullptr);
-    SkaffariIMAP(const QString &user, const QString &password, const QString &host = QStringLiteral("localhost"), quint16 port = 143, NetworkLayerProtocol protocol = QAbstractSocket::AnyIPProtocol, EncryptionType conType = StartTLS, bool unixhierarchysep = false, QObject* parent = nullptr);
-    SkaffariIMAP(const QVariantMap &imapConfig, QObject *parent = nullptr);
     ~SkaffariIMAP();
 
 	bool login();
@@ -84,7 +82,7 @@ private:
     quint16 m_port = 143;
     NetworkLayerProtocol m_protocol = QAbstractSocket::AnyIPProtocol;
     EncryptionType m_encType = StartTLS;
-    bool m_unixhierarchysep;
+    QChar m_hierarchysep = QLatin1Char('.');
 	QString m_response;
 	SkaffariIMAPError m_imapError;
     bool m_loggedIn = false;
