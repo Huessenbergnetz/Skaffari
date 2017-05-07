@@ -33,6 +33,8 @@ quint32 SkaffariConfig::m_defQuota = SK_DEF_DEF_QUOTA;
 quint32 SkaffariConfig::m_defMaxaccounts = SK_DEF_DEF_MAXACCOUNTS;
 QString SkaffariConfig::m_defLanguage = QLatin1String(SK_DEF_DEF_LANGUAGE);
 QString SkaffariConfig::m_defTimezone = QLatin1String(SK_DEF_DEF_TIMEZONE);
+quint8 SkaffariConfig::m_defMaxdisplay = SK_DEF_DEF_MAXDISPLAY;
+quint8 SkaffariConfig::m_defWarnlevel = SK_DEF_DEF_WARNLEVEL;
 
 QString SkaffariConfig::m_imapHost;
 QString SkaffariConfig::m_imapUser;
@@ -65,6 +67,8 @@ void SkaffariConfig::load(const QVariantMap &accounts, const QVariantMap &admins
     SkaffariConfig::m_defMaxaccounts = defaults.value(QStringLiteral("maxaccounts"), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
     SkaffariConfig::m_defLanguage = defaults.value(QStringLiteral("language"), QLatin1String(SK_DEF_DEF_LANGUAGE)).toString();
     SkaffariConfig::m_defTimezone = defaults.value(QStringLiteral("timezone"), QLatin1String(SK_DEF_DEF_TIMEZONE)).toString();
+    SkaffariConfig::m_defMaxdisplay = defaults.value(QStringLiteral("maxdisplay"), SK_DEF_DEF_MAXDISPLAY).value<quint8>();
+    SkaffariConfig::m_defWarnlevel = defaults.value(QStringLiteral("warnlevel"), SK_DEF_DEF_WARNLEVEL).value<quint8>();
 
     SkaffariConfig::m_imapHost = imap.value(QStringLiteral("host")).toString();
     SkaffariConfig::m_imapUser = imap.value(QStringLiteral("user")).toString();
@@ -91,6 +95,8 @@ quint32 SkaffariConfig::defQuota() { return SkaffariConfig::m_defQuota; }
 quint32 SkaffariConfig::defMaxaccounts() { return SkaffariConfig::m_defMaxaccounts; }
 QString SkaffariConfig::defLanguage() { return SkaffariConfig::m_defLanguage; }
 QString SkaffariConfig::defTimezone() { return SkaffariConfig::m_defTimezone; }
+quint8 SkaffariConfig::defMaxdisplay() { return SkaffariConfig::m_defMaxdisplay; }
+quint8 SkaffariConfig::defWarnlevel() { return SkaffariConfig::m_defWarnlevel; }
 
 QString SkaffariConfig::imapHost() { return SkaffariConfig::m_imapHost; }
 quint16 SkaffariConfig::imapPort() { return SkaffariConfig::m_imapPort; }

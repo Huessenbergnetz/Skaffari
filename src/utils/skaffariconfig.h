@@ -48,6 +48,8 @@ public:
     static quint32 defMaxaccounts();
     static QString defLanguage();
     static QString defTimezone();
+    static quint8 defMaxdisplay();
+    static quint8 defWarnlevel();
 
     static QString imapHost();
     static quint16 imapPort();
@@ -74,6 +76,8 @@ private:
     static quint32 m_defMaxaccounts;
     static QString m_defLanguage;
     static QString m_defTimezone;
+    static quint8 m_defMaxdisplay;
+    static quint8 m_defWarnlevel;
 
     static QString m_imapHost;
     static quint16 m_imapPort;
