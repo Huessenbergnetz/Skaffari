@@ -37,6 +37,10 @@ public:
     bool init() override;
     
     bool postFork() override;
+
+private:
+    bool initDb() const;
+    static bool isInitialized;
 };
 
 #endif //SKAFFARI_H

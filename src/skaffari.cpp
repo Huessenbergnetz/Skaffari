@@ -44,6 +44,7 @@
 #include "objects/folder.h"
 
 #include "utils/language.h"
+#include "utils/skaffariconfig.h"
 
 #include "../common/config.h"
 #include "root.h"
@@ -58,6 +59,8 @@
 Q_LOGGING_CATEGORY(SK_CORE, "skaffari.core")
 
 using namespace Cutelyst;
+
+bool Skaffari::isInitialized = false;
 
 Skaffari::Skaffari(QObject *parent) : Application(parent)
 {
@@ -88,7 +91,31 @@ bool Skaffari::init()
     Grantlee::registerMetaType<Language>();
     Grantlee::registerMetaType<Account>();
 
-    QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + config(QStringLiteral("template"), QStringLiteral("default")).toString();
+    if (!isInitialized) {
+        qCDebug(SK_CORE) << "Initializing configuration.";
+        SkaffariConfig::load(engine()->config(QStringLiteral("Accounts")),
+                             engine()->config(QStringLiteral("Admins")),
+                             engine()->config(QStringLiteral("Defaults")),
+                             engine()->config(QStringLiteral("IMAP")));
+
+        if (SkaffariConfig::imapUser().isEmpty()) {
+            qCCritical(SK_CORE) << "No valid IMAP user defined.";
+            return false;
+        }
+
+        if (SkaffariConfig::imapPassword().isEmpty()) {
+            qCCritical(SK_CORE) << "No valid IMAP password defined.";
+            return false;
+        }
+
+        if (!initDb()) {
+            return false;
+        }
+
+        isInitialized = true;
+    }
+
+    const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + config(QStringLiteral("template"), QStringLiteral("default")).toString();
     QString sitePath = tmplBasePath + QLatin1String("/site");
 
     auto view = new GrantleeView(this);
@@ -134,6 +161,14 @@ bool Skaffari::init()
 
 bool Skaffari::postFork()
 {
+
+    initDb();
+
+    return true;
+}
+
+bool Skaffari::initDb() const
+{
     const QVariantMap dbconfig = this->engine()->config(QStringLiteral("Database"));
     const QString dbtype = dbconfig.value(QStringLiteral("type")).toString();
     const QString dbname = dbconfig.value(QStringLiteral("name")).toString();
@@ -142,7 +177,9 @@ bool Skaffari::postFork()
     const QString dbhost = dbconfig.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
     const int dbport = dbconfig.value(QStringLiteral("port"), QStringLiteral("3306")).toInt();
 
+    qCDebug(SK_CORE) << "Establishing database connection";
     QSqlDatabase db;
+    const QString dbConName = Sql::databaseNameThread(QStringLiteral("skaffari"));
     if (dbtype == QLatin1String("QMYSQL")) {
         if (dbname.isEmpty()) {
             qCCritical(SK_CORE) << "No database name set!";
@@ -157,7 +194,7 @@ bool Skaffari::postFork()
             return false;
         }
 
-        db = QSqlDatabase::addDatabase(dbtype, Sql::databaseNameThread());
+        db = QSqlDatabase::addDatabase(dbtype, dbConName);
         if (Q_LIKELY(db.isValid())) {
             db.setDatabaseName(dbname);
             db.setUserName(dbuser);
@@ -180,20 +217,6 @@ bool Skaffari::postFork()
 
     if (Q_UNLIKELY(!db.open())) {
         qCCritical(SK_CORE) << "Failed to establish database connection:" << db.lastError().text();
-        return false;
-    }
-
-    const QVariantMap imapConf = this->engine()->config(QStringLiteral("IMAP"));
-
-    const QString imapuser = imapConf.value(QStringLiteral("user")).toString();
-    if (imapuser.isEmpty()) {
-        qCCritical(SK_CORE) << "No valid IMAP user defined.";
-        return false;
-    }
-
-    const QString imappass = imapConf.value(QStringLiteral("password")).toString();
-    if (imappass.isEmpty()) {
-        qCCritical(SK_CORE) << "No valid IMAP password defined.";
         return false;
     }
 
