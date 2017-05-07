@@ -30,6 +30,8 @@ set(skaffari_SRCS
     utils/language_p.h
     utils/utils.cpp
     utils/utils.h
+    utils/skaffariconfig.cpp
+    utils/skaffariconfig.h
     accounteditor.cpp
     accounteditor.h
     admineditor.cpp
