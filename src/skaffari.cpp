@@ -170,7 +170,7 @@ bool Skaffari::postFork()
 
 bool Skaffari::initDb() const
 {
-    const QVariantMap dbconfig = this->engine()->config(QStringLiteral("Database"));
+    const QVariantMap dbconfig = engine()->config(QStringLiteral("Database"));
     const QString dbtype = dbconfig.value(QStringLiteral("type")).toString();
     const QString dbname = dbconfig.value(QStringLiteral("name")).toString();
     const QString dbuser = dbconfig.value(QStringLiteral("user")).toString();
@@ -180,7 +180,7 @@ bool Skaffari::initDb() const
 
     qCDebug(SK_CORE) << "Establishing database connection";
     QSqlDatabase db;
-    const QString dbConName = Sql::databaseNameThread(QStringLiteral("skaffari"));
+    const QString dbConName = Sql::databaseNameThread();
     if (dbtype == QLatin1String("QMYSQL")) {
         if (dbname.isEmpty()) {
             qCCritical(SK_CORE) << "No database name set!";
