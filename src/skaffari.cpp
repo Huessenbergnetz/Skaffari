@@ -108,6 +108,7 @@ bool Skaffari::init()
             return false;
         }
 
+        // initialize DB one time to prevent https://bugreports.qt.io/browse/QTBUG-54872
         if (!initDb()) {
             return false;
         }
