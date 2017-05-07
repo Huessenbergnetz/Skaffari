@@ -40,6 +40,8 @@ SkaffariIMAP::SkaffariIMAP(QObject *parent) :
     if (SkaffariConfig::imapDomainasprefix() || SkaffariConfig::imapFqun()) {
         m_hierarchysep = QLatin1Char('/');
     }
+
+    setPeerVerifyName(SkaffariConfig::imapPeername());
 }
 
 
