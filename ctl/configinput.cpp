@@ -53,10 +53,10 @@ QVariantHash ConfigInput::askDatabaseConfig(const QVariantHash &defaults) const
         conf.insert(QStringLiteral("port"), 3306);
     }
 
-    const QString dbname = readString(tr("DB Name"), defaults.value(QStringLiteral("name"), QStringLiteral("maildb")).toString(), QStringList({tr("The name of the database.")}));
+    const QString dbname = readString(tr("DB Name"), defaults.value(QStringLiteral("name")).toString(), QStringList({tr("The name of the database.")}));
     conf.insert(QStringLiteral("name"), dbname);
 
-    const QString dbuser = readString(tr("DB User"), defaults.value(QStringLiteral("user"), QStringLiteral("mail")).toString(), QStringList({tr("The name of the database user that has read and write access to the database defined in the previous step.")}));
+    const QString dbuser = readString(tr("DB User"), defaults.value(QStringLiteral("user")).toString(), QStringList({tr("The name of the database user that has read and write access to the database defined in the previous step.")}));
     conf.insert(QStringLiteral("user"), dbuser);
 
     const QString dbpass = readString(tr("DB Password"), QString(), QStringList({tr("The password of the database user defined in the previous step.")}));

@@ -77,10 +77,10 @@ int Setup::exec() const
     QSettings os(m_confFile.absoluteFilePath(), QSettings::IniFormat);
     os.beginGroup(QStringLiteral("Database"));
     QString dbhost = os.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
-    QString dbname = os.value(QStringLiteral("name"), QStringLiteral("skaffaridb")).toString();
+    QString dbname = os.value(QStringLiteral("name")).toString();
     QString dbpass = os.value(QStringLiteral("password")).toString();
     QString dbtype = os.value(QStringLiteral("type"), QStringLiteral("QMYSQL")).toString();
-    QString dbuser = os.value(QStringLiteral("user"), QStringLiteral("skaffari")).toString();
+    QString dbuser = os.value(QStringLiteral("user")).toString();
     quint16 dbport = os.value(QStringLiteral("port"), 3306).value<quint16>();
     os.endGroup();
 
@@ -498,8 +498,8 @@ int Setup::exec() const
                                                  tr("Available behavior:"),
                                                  tr("0: Skaffari does nothing - all will be created by the IMAP server on first login or first incoming email"),
                                                  tr("1: Login after creation - Skaffari relies on the IMAP server to create folders and quotas, but will perform a login after account creation to initiate the creation by the IMAP server"),
-                                                 tr("2: Only set quota - Skaffari will login to the new account after creation to let the IMAP server create the mailbox and will then set the quota."),
-                                                 tr("3: Create by Skaffari - Skaffari will create the new mailbox and the default folders and will set the account quota after adding a new account.")
+                                                 tr("2: Only set quota - Skaffari will login to the new account after creation to let the IMAP server create the mailbox and will then set the quota"),
+                                                 tr("3: Create by Skaffari - Skaffari will create the new mailbox and the default folders and will set the account quota after adding a new account")
                                              }),
                                  QList<quint8>({0,1,2,3}));
 
