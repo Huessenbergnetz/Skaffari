@@ -1,4 +1,4 @@
-configure_file(skaffarictl.8.in ${CMAKE_BINARY_DIR}/doc/man/skaffarictl.8)
+configure_file(skaffaricmd.8.in ${CMAKE_BINARY_DIR}/doc/man/skaffaricmd.8)
 configure_file(skaffari.ini.5.in ${CMAKE_BINARY_DIR}/doc/man/skaffari.ini.5)
 
 find_program(GZIP_BIN NAMES gzip)

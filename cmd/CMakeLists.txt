@@ -3,8 +3,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 ) 
 
-#file(GLOB_RECURSE skaffarictl_SRCS *.cpp *.h)
-set(skaffarictl_SRCS
+#file(GLOB_RECURSE skaffaricmd_SRCS *.cpp *.h)
+set(skaffaricmd_SRCS
     main.cpp
     consoleoutput.cpp
     consoleoutput.h
@@ -24,9 +24,9 @@ set(skaffarictl_SRCS
     tester.h
 )
 
-add_executable(skaffarictl ${skaffarictl_SRCS})
+add_executable(skaffaricmd ${skaffaricmd_SRCS})
 
-target_link_libraries(skaffarictl
+target_link_libraries(skaffaricmd
     Qt5::Core
     Qt5::Sql
     Qt5::Network
@@ -35,4 +35,4 @@ target_link_libraries(skaffarictl
     crypt
 )
 
-install(TARGETS skaffarictl DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS skaffaricmd DESTINATION ${CMAKE_INSTALL_BINDIR})

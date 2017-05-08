@@ -221,6 +221,8 @@ Default domain quota in KiB for new domains. This value can freely be changed by
 = @DEFVAL_DEF_LANGUAGE@
 .RS 4
 Default language as fallback. Administrators can change their language in the settings.
+
+Currently supported languages: de, en
 .RE
 
 .B maxaccounts

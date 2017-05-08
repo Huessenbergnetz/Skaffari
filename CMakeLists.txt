@@ -69,7 +69,7 @@ set(DEFVAL_IMAP_PROTOCOL 2 CACHE INTERNAL "Default protocol for the IMAP connect
 set(DEFVAL_IMAP_ENCRYPTION 1 CACHE INTERNAL "Encryption layer for the IMAP connection")
 set(DEFVAL_IMAP_CREATEMAILBOX 3 CACHE INTERNAL "Strategy to create new mailboxes on the IMAP server")
 set(DEFVAL_IMAP_DOMAINASPREFIX false CACHE INTERNAL "Default value for domain as prefix")
-set(DEFVAL_IMAP_DEFVAL_IMAP_FQUN false CACHE INTERNAL "Default value for fqun")
+set(DEFVAL_IMAP_FQUN false CACHE INTERNAL "Default value for fqun")
 
 
 configure_file(common/config.h.in ${CMAKE_BINARY_DIR}/common/config.h)
@@ -82,6 +82,6 @@ include_directories(
 
 add_subdirectory(src)
 add_subdirectory(sql)
-add_subdirectory(ctl)
+add_subdirectory(cmd)
 add_subdirectory(templates)
 add_subdirectory(doc)

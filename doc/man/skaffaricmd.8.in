@@ -1,4 +1,4 @@
-.TH skaffarictl 8 "2017-05-03" "Skaffari @SKAFFARI_VERSION@"
+.TH skaffaricmd 8 "2017-05-03" "Skaffari @SKAFFARI_VERSION@"
 
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
@@ -6,15 +6,15 @@
 .ad 1
 
 .SH "NAME"
-skaffarictl \- Skaffari setup and configuration tool
+skaffaricmd \- Skaffari setup and configuration tool
 
 .SH "SYNOPSIS"
-.HP \w'\fBskaffarictl\fR\ 'u
-\fBskaffarictl\fR [\fB\-t\fR] [\fB\-i\fR\fI skaffari-config-file\fR] [\fB\-\-setup\fR] [\fB\-\-import-web-cyradm\fI web-cyradm-config-file\fR] [\fB\-v\fR] [\fB-h\fR]
+.HP \w'\fBskaffaricmd\fR\ 'u
+\fBskaffaricmd\fR [\fB\-t\fR] [\fB\-i\fR\fI skaffari-config-file\fR] [\fB\-\-setup\fR] [\fB\-\-import-web-cyradm\fI web-cyradm-config-file\fR] [\fB\-v\fR] [\fB-h\fR]
 
 .SH "DESCRIPTION"
 .PP
-\fBskaffarictl\fR
+\fBskaffaricmd\fR
 is a setup and configuration tool for the Skaffari email account management web interface. See \fBskaffari(8)\fR for more information about Skaffari in general. It can be used to create a new and clean Skaffari setup including database schema installation or to import data (configuration and database) from a web-cyradm installation. Furthermore it provides a small function to test a Skaffari installation/configuration.
 
 .SH "OPTIONS"
@@ -51,17 +51,17 @@ Shows usage information.
 
 .SH "EXAMPLES"
 .PP
-\fBskaffarictl \-\-setup\fR
+\fBskaffaricmd \-\-setup\fR
 .RS 4
 Starts the setup process and will write the configuration to the default file.
 .RE
 .PP
-\fBskaffarictl \-\-import-web-cyradm /srv/www/web-cyradm/config/conf.php\fR
+\fBskaffaricmd \-\-import-web-cyradm /srv/www/web-cyradm/config/conf.php\fR
 .RS 4
 Will read the web-cyradm configuration from the given file to import the configuration and database. Will write the Skaffari configuration to the default file.
 .RE
 .PP
-\fBskaffarictl \-t \-i /path/to/my/skaffari.ini\fR
+\fBskaffaricmd \-t \-i /path/to/my/skaffari.ini\fR
 .RS 4
 Will test the Skaffari configuration defined by the given ini file. Returns 0 on success.
 .RE
