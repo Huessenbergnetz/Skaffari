@@ -193,7 +193,7 @@ int Setup::exec() const
     const QStringList adminMinPwDesc({tr("Required minimum length for administrator passwords.")});
 
     os.beginGroup(QStringLiteral("Admins"));
-    QCryptographicHash::Algorithm adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(os.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM).toInt());
+    QCryptographicHash::Algorithm adminPasswordAlgorithm = static_cast<QCryptographicHash::Algorithm>(os.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM).toInt());
     quint32 adminPasswordRounds = os.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>();
     quint8 adminPasswordMinLength = os.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>();
     os.endGroup();
@@ -205,7 +205,7 @@ int Setup::exec() const
         printDesc(pbkdf2Desc);
         printMessage(QString());
 
-        adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(readChar(tr("PBKDF2 algorithm"), static_cast<quint8>(adminPasswordMethod), pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10})));
+        adminPasswordAlgorithm = static_cast<QCryptographicHash::Algorithm>(readChar(tr("PBKDF2 algorithm"), static_cast<quint8>(adminPasswordAlgorithm), pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10})));
         adminPasswordRounds = readInt(tr("PBKDF2 iterations"), adminPasswordRounds, pbkdf2IterDesc);
         adminPasswordMinLength = readChar(tr("Password minimum length"), adminPasswordMinLength, adminMinPwDesc);
 
@@ -216,7 +216,7 @@ int Setup::exec() const
         const QString adminUser = readString(tr("User name"), QStringLiteral("admin"));
         const QString adminPass = readString(tr("Password"), QString());
 
-        const QByteArray pw = Cutelyst::CredentialPassword::createPassword(adminPass.toUtf8(), adminPasswordMethod, adminPasswordRounds, 24, 27);
+        const QByteArray pw = Cutelyst::CredentialPassword::createPassword(adminPass.toUtf8(), adminPasswordAlgorithm, adminPasswordRounds, 24, 27);
 
         printStatus(tr("Creating new admin account in database"));
         if (!db.setAdmin(adminUser, pw)) {
@@ -227,7 +227,7 @@ int Setup::exec() const
         printDone();
 
         os.beginGroup(QStringLiteral("Admins"));
-        os.setValue(QStringLiteral("pwalgorithm"), static_cast<int>(adminPasswordMethod));
+        os.setValue(QStringLiteral("pwalgorithm"), static_cast<int>(adminPasswordAlgorithm));
         os.setValue(QStringLiteral("pwrounds"), adminPasswordRounds);
         os.setValue(QStringLiteral("pwminlength"), adminPasswordMinLength);
         os.endGroup();
@@ -238,12 +238,12 @@ int Setup::exec() const
         printDesc(pbkdf2Desc);
         printMessage(QString());
 
-        adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(readChar(tr("PBKDF2 algorithm"), static_cast<quint8>(adminPasswordMethod), pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10})));
+        adminPasswordAlgorithm = static_cast<QCryptographicHash::Algorithm>(readChar(tr("PBKDF2 algorithm"), static_cast<quint8>(adminPasswordAlgorithm), pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10})));
         adminPasswordRounds = readInt(tr("PBKDF2 iterations"), adminPasswordRounds, pbkdf2IterDesc);
         adminPasswordMinLength = readChar(tr("Password minimum length"), adminPasswordMinLength, adminMinPwDesc);
 
         os.beginGroup(QStringLiteral("Admins"));
-        os.setValue(QStringLiteral("pwalgorithm"), static_cast<int>(adminPasswordMethod));
+        os.setValue(QStringLiteral("pwalgorithm"), static_cast<int>(adminPasswordAlgorithm));
         os.setValue(QStringLiteral("pwrounds"), adminPasswordRounds);
         os.setValue(QStringLiteral("pwminlength"), adminPasswordMinLength);
         os.endGroup();

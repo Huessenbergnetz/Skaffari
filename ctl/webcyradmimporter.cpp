@@ -354,7 +354,7 @@ int WebCyradmImporter::exec() const
                           }));
 
     const QVariantHash adminPwConf = askPbkdf2Config();
-    const QCryptographicHash::Algorithm adminPwMethod = static_cast<QCryptographicHash::Algorithm>(adminPwConf.value(QStringLiteral("method")).value<quint8>());
+    const QCryptographicHash::Algorithm adminPwAlgorithm = static_cast<QCryptographicHash::Algorithm>(adminPwConf.value(QStringLiteral("method")).value<quint8>());
     const quint32 adminPwRounds = adminPwConf.value(QStringLiteral("rounds")).value<quint32>();
     const quint8 adminPwMinLength = adminPwConf.value(QStringLiteral("minlength")).value<quint8>();
 
@@ -808,7 +808,7 @@ int WebCyradmImporter::exec() const
     auto adminIt = adminNameIds.constBegin();
     while (adminIt != adminNameIds.constEnd()) {
         const QString pw = readString(tr("Password for %1").arg(adminIt.key()), QString());
-        const QByteArray pwEnc = Cutelyst::CredentialPassword::createPassword(pw.toUtf8(), adminPwMethod, adminPwRounds, 24, 27);
+        const QByteArray pwEnc = Cutelyst::CredentialPassword::createPassword(pw.toUtf8(), adminPwAlgorithm, adminPwRounds, 24, 27);
         printStatus(tr("Setting password for administrator %1").arg(adminIt.key()));
         if (sq.prepare(QStringLiteral("UPDATE adminuser SET password = ? WHERE id = ?"))) {
             sq.addBindValue(pwEnc);
@@ -836,7 +836,7 @@ int WebCyradmImporter::exec() const
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("Admins"));
-    settings.setValue(QStringLiteral("pwalgorithm"), static_cast<quint8>(adminPwMethod));
+    settings.setValue(QStringLiteral("pwalgorithm"), static_cast<quint8>(adminPwAlgorithm));
     settings.setValue(QStringLiteral("pwrounds"), adminPwRounds);
     settings.setValue(QStringLiteral("pwminlength"), adminPwMinLength);
     settings.endGroup();
