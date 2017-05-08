@@ -202,7 +202,7 @@ bool Imap::logout()
 
     this->waitForReadyRead();
 
-    if (Q_UNLIKELY(!this->checkResponse(this->readAll()))) {
+    if (Q_UNLIKELY(!this->checkResponse(this->readAll(), tag))) {
         this->disconnectFromHost();
         m_lastError = tr("Failed to successfully log out from IMAP server.");
         if (Q_UNLIKELY(!this->waitForDisconnected())) {
