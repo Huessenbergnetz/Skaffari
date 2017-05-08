@@ -1,4 +1,4 @@
-.TH skaffaricmd 8 "2017-05-03" "Skaffari @SKAFFARI_VERSION@"
+.TH skaffaricmd 8 "2017-05-08" "Skaffari @SKAFFARI_VERSION@"
 
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
@@ -97,5 +97,8 @@ IMAP error
 other error
 .RE
 
+.SH "FILES"
+.B @CMAKE_INSTALL_SYSCONFDIR@/skaffari.ini
+
 .SH "SEE ALSO"
-skaffari(8), skaffari.ini(5)
+.BR "skaffari(8)", " skaffari.ini(5)"
