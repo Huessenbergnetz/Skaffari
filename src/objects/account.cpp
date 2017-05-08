@@ -365,7 +365,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
 
     const QString password = p.value(QStringLiteral("password"));
     Password pw(password);
-    const QByteArray encpw = pw.encrypt(SkaffariConfig::accPwType(), SkaffariConfig::accPwMethod(), SkaffariConfig::accPwRounds());
+    const QByteArray encpw = pw.encrypt(SkaffariConfig::accPwMethod(), SkaffariConfig::accPwAlgorithm(), SkaffariConfig::accPwRounds());
 
     if (Q_UNLIKELY(encpw.isEmpty())) {
         e->setErrorText(c->translate("Account", "Failed to encrypt user password. Please check your encryption settings."));
@@ -827,7 +827,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const C
     QSqlQuery q;
     if (!password.isEmpty()) {
         Password pw(password);
-        const QByteArray encPw = pw.encrypt(SkaffariConfig::accPwType(), SkaffariConfig::accPwMethod(), SkaffariConfig::accPwRounds());
+        const QByteArray encPw = pw.encrypt(SkaffariConfig::accPwMethod(), SkaffariConfig::accPwAlgorithm(), SkaffariConfig::accPwRounds());
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET password = :password, quota = :quota, valid_until = :validUntil, updated_at = :updated_at WHERE id = :id"));
         q.bindValue(QStringLiteral(":password"), encPw);
     } else {

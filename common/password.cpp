@@ -33,27 +33,27 @@ Password::Password(const QString &pw) :
 }
 
 
-QByteArray Password::encrypt(Type type, Method method, quint32 rounds)
+QByteArray Password::encrypt(Method method, Algorithm algo, quint32 rounds)
 {
     QByteArray pw;
 
-    if (type == PlainText) {
+    if (method == PlainText) {
 
         pw = m_password.toUtf8();
         qCWarning(SK_PASSWORD) << "Do not used unencrypted passwords!";
 
-    } else if (type == Crypt) {
+    } else if (method == Crypt) {
 
         QByteArray settings;
         uint pwSize = 0;
 
-        if (method == CryptDES) {
+        if (algo == CryptDES) {
 
             settings = Password::requestSalt(2, QByteArrayLiteral("./0123456789ABCDEFGHIJKLMNJOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
             pwSize = 13;
             qCWarning(SK_PASSWORD) << "Do not use weak hashing/encryption methods for passwords!";
 
-        } else if (method == CryptMD5) {
+        } else if (algo == CryptMD5) {
 
             settings = QByteArrayLiteral("$1$");
             settings.append(Password::requestSalt(8));
@@ -61,9 +61,9 @@ QByteArray Password::encrypt(Type type, Method method, quint32 rounds)
             pwSize = (settings.size() + 22);
             qCWarning(SK_PASSWORD) << "Do not use weak hashing/encryption methods for passwords!";
 
-        } else if ((method == CryptSHA256) || (method == CryptSHA512) || (method == Default)) {
+        } else if ((algo == CryptSHA256) || (algo == CryptSHA512) || (algo == Default)) {
 
-            if (method == CryptSHA512) {
+            if (algo == CryptSHA512) {
                 settings = QByteArrayLiteral("$6$rounds=");
             } else {
                 settings = QByteArrayLiteral("$5$rounds=");
@@ -80,13 +80,13 @@ QByteArray Password::encrypt(Type type, Method method, quint32 rounds)
             settings.append(Password::requestSalt(16, QByteArrayLiteral("./0123456789ABCDEFGHIJKLMNJOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")));
             settings.append(QByteArrayLiteral("$"));
 
-            if (method == CryptSHA512) {
+            if (algo == CryptSHA512) {
                 pwSize = (settings.size() + 86);
             } else {
                 pwSize = (settings.size() + 43);
             }
 
-        } else if (method == CryptBcrypt) {
+        } else if (algo == CryptBcrypt) {
 
             pwSize = 60;
             settings = QByteArrayLiteral("$2y$");
@@ -113,10 +113,10 @@ QByteArray Password::encrypt(Type type, Method method, quint32 rounds)
 
         pw = QByteArray(crypt(m_password.toUtf8().constData(), settings.constData()), pwSize);
 
-    } else if (type == MySQL) {
+    } else if (method == MySQL) {
 
         QSqlQuery q;
-        if (method == MySQLOld) {
+        if (algo == MySQLOld) {
             q = CPreparedSqlQueryThread(QStringLiteral("SELECT OLD_PASSWORD(:pw)"));
         } else {
             q = CPreparedSqlQueryThread(QStringLiteral("SELECT PASSWORD(:pw)"));
@@ -129,12 +129,12 @@ QByteArray Password::encrypt(Type type, Method method, quint32 rounds)
         }
         qCWarning(SK_PASSWORD) << "Do not use weak hashing/encryption methods for passwords!";
 
-    } else if (type == MD5) {
+    } else if (method == MD5) {
 
         pw = QCryptographicHash::hash(m_password.toUtf8(), QCryptographicHash::Md5).toHex();
         qCWarning(SK_PASSWORD) << "Do not use weak hashing/encryption methods for passwords!";
 
-    } else if (type == SHA1) {
+    } else if (method == SHA1) {
 
         pw = QCryptographicHash::hash(m_password.toUtf8(), QCryptographicHash::Sha1).toHex();
         qCWarning(SK_PASSWORD) << "Do not use weak hashing/encryption methods for passwords!";

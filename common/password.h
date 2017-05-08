@@ -27,7 +27,7 @@ Q_DECLARE_LOGGING_CATEGORY(SK_PASSWORD)
 class Password
 {
 public:
-    enum Type : quint8 {
+    enum Method : quint8 {
         PlainText       = 0,
         Crypt           = 1,
         MySQL           = 2,
@@ -35,7 +35,7 @@ public:
         SHA1            = 4
     };
 
-    enum Method : quint8 {
+    enum Algorithm : quint8 {
         Default         = 0,
         CryptDES        = 1,
         CryptMD5        = 2,
@@ -48,7 +48,7 @@ public:
 
     explicit Password(const QString &pw);
 
-    QByteArray encrypt(Type type, Method method = Default, quint32 rounds = 0);
+    QByteArray encrypt(Method type, Algorithm method = Default, quint32 rounds = 0);
     bool check(const QByteArray &savedPw);
 
 private:

@@ -193,7 +193,7 @@ int Setup::exec() const
     const QStringList adminMinPwDesc({tr("Required minimum length for administrator passwords.")});
 
     os.beginGroup(QStringLiteral("Admins"));
-    QCryptographicHash::Algorithm adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(os.value(QStringLiteral("pwmethod"), SK_DEF_ADM_PWMETHOD).toInt());
+    QCryptographicHash::Algorithm adminPasswordMethod = static_cast<QCryptographicHash::Algorithm>(os.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM).toInt());
     quint32 adminPasswordRounds = os.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>();
     quint8 adminPasswordMinLength = os.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>();
     os.endGroup();
@@ -227,7 +227,7 @@ int Setup::exec() const
         printDone();
 
         os.beginGroup(QStringLiteral("Admins"));
-        os.setValue(QStringLiteral("pwmethod"), static_cast<int>(adminPasswordMethod));
+        os.setValue(QStringLiteral("pwalgorithm"), static_cast<int>(adminPasswordMethod));
         os.setValue(QStringLiteral("pwrounds"), adminPasswordRounds);
         os.setValue(QStringLiteral("pwminlength"), adminPasswordMinLength);
         os.endGroup();
@@ -243,7 +243,7 @@ int Setup::exec() const
         adminPasswordMinLength = readChar(tr("Password minimum length"), adminPasswordMinLength, adminMinPwDesc);
 
         os.beginGroup(QStringLiteral("Admins"));
-        os.setValue(QStringLiteral("pwmethod"), static_cast<int>(adminPasswordMethod));
+        os.setValue(QStringLiteral("pwalgorithm"), static_cast<int>(adminPasswordMethod));
         os.setValue(QStringLiteral("pwrounds"), adminPasswordRounds);
         os.setValue(QStringLiteral("pwminlength"), adminPasswordMinLength);
         os.endGroup();
@@ -257,14 +257,14 @@ int Setup::exec() const
         printDesc(QString());
 
         os.beginGroup(QStringLiteral("Accounts"));
-        Password::Type accountsPwType = static_cast<Password::Type>(os.value(QStringLiteral("pwtype"), SK_DEF_ACC_PWTYPE).value<quint8>());
         Password::Method accountsPwMethod = static_cast<Password::Method>(os.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
+        Password::Algorithm accountsPwAlgo = static_cast<Password::Algorithm>(os.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>());
         quint32 accountsPwRounds = os.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>();
         quint8 accountsPwMinLength = os.value(QStringLiteral("pwminlength"), SK_DEF_ACC_PWMINLENGTH).value<quint8>();
         os.endGroup();
 
-        accountsPwType = static_cast<Password::Type>(readChar(tr("Encryption type"),
-                                                              static_cast<quint8>(accountsPwType),
+        accountsPwMethod = static_cast<Password::Method>(readChar(tr("Encryption type"),
+                                                              static_cast<quint8>(accountsPwMethod),
                                                               QStringList({
                                                                               tr("The basic method to encrypt the user's password. Some methods support further settings that will be defined in the next steps. If it is possible to use for you, the recommended type is to use the crypt(3) function, because it supports modern hashing algorithms together with salts and an extensible storage format. The other encryption methods are there for backwards compatibility."),
                                                                               tr("Supported methods:"),
@@ -275,9 +275,9 @@ int Setup::exec() const
                                                                               tr("4: plain hex SHA1 - not recommended")
                                                                           }),
                                                               QList<quint8>({0,1,2,3,4})));
-        if (accountsPwType == Password::Crypt) {
-            accountsPwMethod = static_cast<Password::Method>(readChar(tr("Encryption method"),
-                                                                      static_cast<quint8>(accountsPwMethod),
+        if (accountsPwMethod == Password::Crypt) {
+            accountsPwAlgo = static_cast<Password::Algorithm>(readChar(tr("Encryption method"),
+                                                                      static_cast<quint8>(accountsPwAlgo),
                                                                       QStringList({
                                                                                       tr("The crypt(3) method supports different algorithms to derive a key from a password. To see which algorithms are supported on your system, use man crypt. Especially the bcrypt algorithm that uses Blowfish is not available on every system because it is not part of the default crypt(3) distribution. The not recommended hashing methods are provided for backwards compatibility and if you have to store passwords for use across different operating systems."),
                                                                                       QString(),
@@ -290,9 +290,9 @@ int Setup::exec() const
                                                                                       tr("5: OpenBSD-style Blowfish-based (bcrypt) - not supported everywhere")
                                                                                   }),
                                                                       QList<quint8>({0,1,2,3,4,5})));
-        } else if (accountsPwType == Password::MySQL) {
-            accountsPwMethod = static_cast<Password::Method>(readChar(tr("Encryption method"),
-                                                                      accountsPwMethod,
+        } else if (accountsPwMethod == Password::MySQL) {
+            accountsPwAlgo = static_cast<Password::Algorithm>(readChar(tr("Encryption method"),
+                                                                      accountsPwAlgo,
                                                                       QStringList({
                                                                                       tr("MySQL supports two different password hashing methods, a new one and an old one. If possible, you should use the new method. The old method is provided for backwards compatibility."),
                                                                                       QString(),
@@ -304,10 +304,10 @@ int Setup::exec() const
                                                                       QList<quint8>({0,6,7})));
         }
 
-        if (accountsPwType == Password::Crypt) {
-            if ((accountsPwMethod == Password::CryptSHA256) || (accountsPwMethod == Password::CryptSHA512) || (accountsPwMethod == Password::CryptBcrypt)) {
-                QStringList accountsPwRoundsDesc = (accountsPwMethod == Password::CryptBcrypt) ? QStringList(tr("Crypt(3) with bcrypt supports an iteration count to increase the time cost for creating the derived key. The iteration count passed to the crypt function is the base-2 logarithm of the actual iteration count. Supported values are between 4 and 31.")) : QStringList(tr("Crypt(3) with SHA-256 and SHA-512 supports an iteration count from 1000 to 999999999. The iterations are used to increase the time cost for creating the derived key."));
-                if ((accountsPwMethod == Password::CryptBcrypt) && (accountsPwRounds > 31)) {
+        if (accountsPwMethod == Password::Crypt) {
+            if ((accountsPwAlgo == Password::CryptSHA256) || (accountsPwAlgo == Password::CryptSHA512) || (accountsPwAlgo == Password::CryptBcrypt)) {
+                QStringList accountsPwRoundsDesc = (accountsPwAlgo == Password::CryptBcrypt) ? QStringList(tr("Crypt(3) with bcrypt supports an iteration count to increase the time cost for creating the derived key. The iteration count passed to the crypt function is the base-2 logarithm of the actual iteration count. Supported values are between 4 and 31.")) : QStringList(tr("Crypt(3) with SHA-256 and SHA-512 supports an iteration count from 1000 to 999999999. The iterations are used to increase the time cost for creating the derived key."));
+                if ((accountsPwAlgo == Password::CryptBcrypt) && (accountsPwRounds > 31)) {
                     accountsPwRounds = 12;
                 }
 
@@ -318,8 +318,8 @@ int Setup::exec() const
         accountsPwMinLength = readChar(tr("Password minimum length"), accountsPwMinLength, QStringList(tr("The required minimum length for user account passwords created or changed via Skaffari.")));
 
         os.beginGroup(QStringLiteral("Accounts"));
-        os.setValue(QStringLiteral("pwtype"), static_cast<quint8>(accountsPwType));
         os.setValue(QStringLiteral("pwmethod"), static_cast<quint8>(accountsPwMethod));
+        os.setValue(QStringLiteral("pwalgorithm"), static_cast<quint8>(accountsPwAlgo));
         os.setValue(QStringLiteral("pwrounds"), accountsPwRounds);
         os.setValue(QStringLiteral("pwminlength"), accountsPwMinLength);
         os.endGroup();
@@ -341,11 +341,11 @@ int Setup::exec() const
 
         printStatus(tr("Creating Cyrus admin user in database"));
         os.beginGroup(QStringLiteral("Accounts"));
-        Password::Type accountsPwType = static_cast<Password::Type>(os.value(QStringLiteral("pwtype"), SK_DEF_ACC_PWTYPE).value<quint8>());
         Password::Method accountsPwMethod = static_cast<Password::Method>(os.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
+        Password::Algorithm accountsPwAlgo = static_cast<Password::Algorithm>(os.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>());
         quint32 accountsPwRounds = os.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>();
         os.endGroup();
-        QByteArray cyrusAdminPwEnc = cyrusAdminPw.encrypt(accountsPwType, accountsPwMethod, accountsPwRounds);
+        QByteArray cyrusAdminPwEnc = cyrusAdminPw.encrypt(accountsPwMethod, accountsPwAlgo, accountsPwRounds);
         if (cyrusAdminPwEnc.isEmpty()) {
             printFailed();
             return configError(tr("Failed to encrypt Cyrus admin password."));

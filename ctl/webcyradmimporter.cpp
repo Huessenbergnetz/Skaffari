@@ -183,23 +183,23 @@ int WebCyradmImporter::exec() const
     QStringList supportedLangs(SKAFFARI_SUPPORTED_LANGS);
 
     const QString pwtype = vars.value(QStringLiteral("CRYPT"));
-    Password::Type accountsPwType = static_cast<Password::Type>(SK_DEF_ACC_PWTYPE);
-    Password::Method accountsPwMethod = static_cast<Password::Method>(SK_DEF_ADM_PWMETHOD);
+    Password::Method accountsPwMethod = static_cast<Password::Method>(SK_DEF_ACC_PWMETHOD);
+    Password::Algorithm accountsPwAlgo = static_cast<Password::Algorithm>(SK_DEF_ADM_PWALGORITHM);
     quint32 accountsPwRounds = SK_DEF_ACC_PWROUNDS;
     quint8 accountsPwMinLength = SK_DEF_ACC_PWMINLENGTH;
-    QString accountsPwTypeString;
+    QString accountsPwMethodString;
     if ((pwtype == QLatin1String("plain")) || (pwtype == QLatin1String("0"))) {
-        accountsPwType = Password::PlainText;
-        accountsPwTypeString = tr("Plain text");
+        accountsPwMethod = Password::PlainText;
+        accountsPwMethodString = tr("Plain text");
     } else if ((pwtype == QLatin1String("crypt")) || (pwtype == QLatin1String("1"))) {
-        accountsPwType = Password::Crypt;
-        accountsPwTypeString = QStringLiteral("crypt(3)");
+        accountsPwMethod = Password::Crypt;
+        accountsPwMethodString = QStringLiteral("crypt(3)");
     } else if ((pwtype == QLatin1String("mysql")) || (pwtype == QLatin1String("2"))) {
-        accountsPwType = Password::MySQL;
-        accountsPwTypeString = QStringLiteral("MySQL");
+        accountsPwMethod = Password::MySQL;
+        accountsPwMethodString = QStringLiteral("MySQL");
     } else if ((pwtype == QLatin1String("md5")) || (pwtype == QLatin1String("3"))) {
-        accountsPwType = Password::MD5;
-        accountsPwTypeString = QStringLiteral("MD5");
+        accountsPwMethod = Password::MD5;
+        accountsPwMethodString = QStringLiteral("MD5");
     } else {
         return configError(tr("Can not determine password encryption method."));
     }
@@ -228,7 +228,7 @@ int WebCyradmImporter::exec() const
                    {tr("Default language"), defaultLang},
                    {tr("Default domain quota"), QString::number(defaultDomainQuota) + QLatin1String("KiB")},
                    {tr("Default account quota"), QString::number(defaultQuota) + QLatin1String("KiB")},
-                   {tr("Accounts password encryption"), accountsPwTypeString}
+                   {tr("Accounts password encryption"), accountsPwMethodString}
                }, tr("Imported web-cyradm settings"));
 
     bool wdbaccess = false;
@@ -359,15 +359,15 @@ int WebCyradmImporter::exec() const
     const quint8 adminPwMinLength = adminPwConf.value(QStringLiteral("minlength")).value<quint8>();
 
 
-    if (accountsPwType == Password::Crypt) {
+    if (accountsPwMethod == Password::Crypt) {
         printMessage(QString());
         printDesc(QStringList({
                                   tr("You are using the crypt(3) function to encrypt user account passwords for that web-cyradm does not offer further options, but Skaffari does."),
                                   tr("crypt(3) uses a storage format string that allows changing the algorithm used to derive the key."),
                                   QString()
                               }));
-        accountsPwMethod = static_cast<Password::Method>(readChar(tr("Encryption method"),
-                                                                SK_DEF_ACC_PWMETHOD,
+        accountsPwAlgo = static_cast<Password::Algorithm>(readChar(tr("Encryption method"),
+                                                                SK_DEF_ACC_PWALGORITHM,
                                                                 QStringList({
                                                                                 tr("The crypt(3) method supports different algorithms to derive a key from a password. To see which algorithms are supported on your system, use man crypt. Especially the bcrypt algorithm that uses Blowfish is not available on every system because it is not part of the default crypt(3) distribution. The not recommended hashing methods are provided for backwards compatibility and if you have to store passwords for use across different operating systems."),
                                                                                 QString(),
@@ -381,22 +381,22 @@ int WebCyradmImporter::exec() const
                                                                             }),
                                                                 QList<quint8>({0,1,2,3,4,5})));
 
-        const QStringList accountsPwRoundsDesc = (accountsPwMethod == Password::CryptBcrypt) ? QStringList(tr("Crypt(3) with bcrypt supports an iteration count to increase the time cost for creating the derived key. The iteration count passed to the crypt function is the base-2 logarithm of the actual iteration count. Supported values are between 4 and 31.")) : QStringList(tr("Crypt(3) with SHA-256 and SHA-512 supports an iteration count from 1000 to 999999999. The iterations are used to increase the time cost for creating the derived key."));
-        if ((accountsPwMethod == Password::CryptBcrypt) && (accountsPwRounds > 31)) {
+        const QStringList accountsPwRoundsDesc = (accountsPwAlgo == Password::CryptBcrypt) ? QStringList(tr("Crypt(3) with bcrypt supports an iteration count to increase the time cost for creating the derived key. The iteration count passed to the crypt function is the base-2 logarithm of the actual iteration count. Supported values are between 4 and 31.")) : QStringList(tr("Crypt(3) with SHA-256 and SHA-512 supports an iteration count from 1000 to 999999999. The iterations are used to increase the time cost for creating the derived key."));
+        if ((accountsPwAlgo == Password::CryptBcrypt) && (accountsPwRounds > 31)) {
             accountsPwRounds = 12;
         }
 
         accountsPwRounds = readInt(tr("Encryption rounds"), accountsPwRounds, accountsPwRoundsDesc);
 
 
-    } else if (accountsPwType == Password::MySQL) {
+    } else if (accountsPwMethod == Password::MySQL) {
         printMessage(QString());
         printDesc(QStringList({
                                   tr("You are using the MySQL password function to encrypt user account passwords for that web-cyradm does not offer furter options, but Skaffari does."),
                                   QString()
                               }));
-        accountsPwMethod = static_cast<Password::Method>(readChar(tr("Encryption method"),
-                                                                  accountsPwMethod,
+        accountsPwAlgo = static_cast<Password::Algorithm>(readChar(tr("Encryption method"),
+                                                                  accountsPwAlgo,
                                                                   QStringList({
                                                                                   tr("MySQL supports two different password hashing methods, a new one and an old one. If possible, you should use the new method. The old method is provided for backwards compatibility."),
                                                                                   QString(),
@@ -829,14 +829,14 @@ int WebCyradmImporter::exec() const
     QSettings settings(m_iniFile.absoluteFilePath(), QSettings::IniFormat);
 
     settings.beginGroup(QStringLiteral("Accounts"));
-    settings.setValue(QStringLiteral("pwtype"), static_cast<quint8>(accountsPwType));
     settings.setValue(QStringLiteral("pwmethod"), static_cast<quint8>(accountsPwMethod));
+    settings.setValue(QStringLiteral("pwalgorithm"), static_cast<quint8>(accountsPwAlgo));
     settings.setValue(QStringLiteral("pwrounds"), accountsPwRounds);
     settings.setValue(QStringLiteral("pwminlength"), accountsPwMinLength);
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("Admins"));
-    settings.setValue(QStringLiteral("pwmethod"), static_cast<quint8>(adminPwMethod));
+    settings.setValue(QStringLiteral("pwalgorithm"), static_cast<quint8>(adminPwMethod));
     settings.setValue(QStringLiteral("pwrounds"), adminPwRounds);
     settings.setValue(QStringLiteral("pwminlength"), adminPwMinLength);
     settings.endGroup();

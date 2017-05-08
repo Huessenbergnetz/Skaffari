@@ -27,13 +27,13 @@
 #define SKAFFARI_SUPPORTED_LANGS {QStringLiteral("en"), QStringLiteral("de")}
 
 // default values for Accounts
-#define SK_DEF_ACC_PWTYPE 1
-#define SK_DEF_ACC_PWMETHOD 0
+#define SK_DEF_ACC_PWMETHOD 1
+#define SK_DEF_ACC_PWALGORITHM 0
 #define SK_DEF_ACC_PWROUNDS 32000
 #define SK_DEF_ACC_PWMINLENGTH 8
 
 // default values for Admins
-#define SK_DEF_ADM_PWMETHOD 4
+#define SK_DEF_ADM_PWALGORITHM 4
 #define SK_DEF_ADM_PWROUNDS 32000
 #define SK_DEF_ADM_PWMINLENGTH 8
 

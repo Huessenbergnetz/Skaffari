@@ -231,7 +231,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMu
         return aa;
     }
 
-    const QByteArray password = Cutelyst::CredentialPassword::createPassword(params.value(QStringLiteral("password")).toUtf8(), SkaffariConfig::admPwMethod(), SkaffariConfig::admPwRounds(), 24, 27);
+    const QByteArray password = Cutelyst::CredentialPassword::createPassword(params.value(QStringLiteral("password")).toUtf8(), SkaffariConfig::admPwAlgorithm(), SkaffariConfig::admPwRounds(), 24, 27);
     const qint16 type = params.value(QStringLiteral("type")).toShort();
 
     const quint32 id = AdminAccount::setAdminAccount(c, error, params.value(QStringLiteral("username")), password, type);
@@ -393,7 +393,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     if (!password.isEmpty()) {
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE adminuser SET type = :type, password = :password, updated_at = :updated_at WHERE id = :id"));
         q.bindValue(QStringLiteral(":password"), Cutelyst::CredentialPassword::createPassword(params.value(QStringLiteral("password")).toUtf8(),
-                                                                                              SkaffariConfig::admPwMethod(),
+                                                                                              SkaffariConfig::admPwAlgorithm(),
                                                                                               SkaffariConfig::admPwRounds(),
                                                                                               24, 27));
     } else {
@@ -468,7 +468,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     if (!password.isEmpty()) {
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE adminuser SET password = :password, updated_at = :updated_at WHERE id = :id"));
         q.bindValue(QStringLiteral(":password"), Cutelyst::CredentialPassword::createPassword(p.value(QStringLiteral("password")).toUtf8(),
-                                                                                              SkaffariConfig::admPwMethod(),
+                                                                                              SkaffariConfig::admPwAlgorithm(),
                                                                                               SkaffariConfig::admPwRounds(),
                                                                                               24,
                                                                                               27));

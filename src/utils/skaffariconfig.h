@@ -34,12 +34,12 @@ public:
 
     static bool isInitialized();
 
-    static Password::Type accPwType();
     static Password::Method accPwMethod();
+    static Password::Algorithm accPwAlgorithm();
     static quint32 accPwRounds();
     static quint8 accPwMinlength();
 
-    static QCryptographicHash::Algorithm admPwMethod();
+    static QCryptographicHash::Algorithm admPwAlgorithm();
     static quint32 admPwRounds();
     static quint8 admPwMinlength();
 
@@ -63,12 +63,12 @@ public:
     static bool imapFqun();
 
 private:
-    static Password::Type m_accPwType;
     static Password::Method m_accPwMethod;
+    static Password::Algorithm m_accPwAlgorithm;
     static quint32 m_accPwRounds;
     static quint8 m_accPwMinlength;
 
-    static QCryptographicHash::Algorithm m_admPwMethod;
+    static QCryptographicHash::Algorithm m_admPwAlgorithm;
     static quint32 m_admPwRounds;
     static quint8 m_admPwMinlength;
 
