@@ -22,6 +22,7 @@
 #include <QString>
 #include <QSharedDataPointer>
 
+class QSslError;
 class SkaffariIMAPErrorData;
 
 class SkaffariIMAPError
@@ -35,10 +36,13 @@ public:
 		EmptyResponse,
 		ConnectionTimeout,
         EncryptionError,
+        SocketError,
+        ResponseError,
 		Unknown
 	};
 
     explicit SkaffariIMAPError(ErrorType type = NoError, const QString errorText = QString());
+    SkaffariIMAPError(const QSslError &sslError);
 	SkaffariIMAPError(const SkaffariIMAPError &other);
     SkaffariIMAPError& operator=(const SkaffariIMAPError &other);
 	bool operator==(const SkaffariIMAPError &other);

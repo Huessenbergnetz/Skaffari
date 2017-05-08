@@ -21,6 +21,7 @@
 
 #include "skaffariimaperror.h"
 #include <QSharedData>
+#include <QSslError>
 
 class SkaffariIMAPErrorData : public QSharedData
 {
@@ -28,6 +29,11 @@ public:
     SkaffariIMAPErrorData(SkaffariIMAPError::ErrorType _errorType, const QString &_errorText) :
         errorType(_errorType),
         errorText(_errorText)
+    {}
+
+    SkaffariIMAPErrorData(const QSslError &sslError) :
+        errorType(SkaffariIMAPError::EncryptionError),
+        errorText(sslError.errorString())
     {}
 
     SkaffariIMAPErrorData(const SkaffariIMAPErrorData &other) :

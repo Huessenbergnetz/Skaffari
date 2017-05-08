@@ -432,7 +432,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
 
     if (createMailbox != DoNotCreate) {
 
-        SkaffariIMAP imap;
+        SkaffariIMAP imap(c);
 
         if (createMailbox == LoginAfterCreation) {
 
@@ -623,7 +623,7 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
 
     pag = Cutelyst::Pagination(q.size(), p.limit(), p.currentPage(), p.pages().size());
 
-    SkaffariIMAP imap;
+    SkaffariIMAP imap(c);
     if (!imap.login()) {
         qCWarning(SK_ACCOUNT) << "Failed to login to IMAP server. Omitting quota query.";
     }
@@ -757,7 +757,7 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
 
     a.setForwards(aliases);
 
-    SkaffariIMAP imap;
+    SkaffariIMAP imap(c);
     if (imap.login()) {
         std::pair<quint32,quint32> quota = imap.getQuota(a.getUsername());
         a.setUsage(quota.first);

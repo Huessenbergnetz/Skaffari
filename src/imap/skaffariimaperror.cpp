@@ -18,13 +18,18 @@
 
 #include "skaffariimaperror_p.h"
 
-
 SkaffariIMAPError::SkaffariIMAPError(SkaffariIMAPError::ErrorType type, const QString errorText) :
     d(new SkaffariIMAPErrorData(type, errorText))
 {
 
 }
 
+
+SkaffariIMAPError::SkaffariIMAPError(const QSslError &sslError) :
+    d(new SkaffariIMAPErrorData(sslError))
+{
+
+}
 
 
 

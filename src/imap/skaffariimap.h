@@ -20,14 +20,15 @@
 #define SKAFFARIIMAP_H
 
 #include <QSslSocket>
-#include <QRegularExpression>
-#include <QRegularExpressionMatch>
+#include <QLoggingCategory>
 
 #include "skaffariimaperror.h"
 
-#include <QLoggingCategory>
-
 Q_DECLARE_LOGGING_CATEGORY(SK_IMAP)
+
+namespace Cutelyst {
+class Context;
+}
 
 class SkaffariIMAP : public QSslSocket
 {
@@ -50,7 +51,7 @@ public:
 		Undefined	= 3
 	};
 
-    explicit SkaffariIMAP(QObject *parent = nullptr);
+    explicit SkaffariIMAP(Cutelyst::Context *context, QObject *parent = nullptr);
     ~SkaffariIMAP();
 
 	bool login();
@@ -75,7 +76,10 @@ public:
 
 private:
 	bool connectionTimeOut();
-    bool checkResponse(const QByteArray &resp, const QString &tag = QString());
+    bool checkResponse(const QByteArray &data, const QString &tag = QString(), QVector<QByteArray> *response = nullptr);
+    QString getTag();
+    void setNoError();
+
 	QString m_user;
 	QString m_password;
 	QString m_host;
@@ -83,11 +87,11 @@ private:
     NetworkLayerProtocol m_protocol = QAbstractSocket::AnyIPProtocol;
     EncryptionType m_encType = StartTLS;
     QChar m_hierarchysep = QLatin1Char('.');
-	QString m_response;
+    Cutelyst::Context *m_c;
 	SkaffariIMAPError m_imapError;
     bool m_loggedIn = false;
     static QStringList m_capabilities;
-	void setNoError();
+    quint32 m_tagSequence = 0;
 
     Q_DISABLE_COPY(SkaffariIMAP)
 };
