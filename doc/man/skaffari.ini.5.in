@@ -1,0 +1,371 @@
+.TH skaffari.ini 5 "2017-05-08" "Skaffari @SKAFFARI_VERSION@"
+
+.SH "NAME"
+skaffari.ini - Skaffari configuration file
+
+.SH "DESCRIPTION"
+.B @CMAKE_INSTALL_SYSCONFDIR@/skaffari.ini
+is the main configuration file for the Skaffari email account management web interface
+.B skaffari(8).
+You can manipulate its content either by hand with your favorite text editor or by using 
+.B skaffaricmd(8).
+Whatever way you prefer to change the Skaffari configuration, it will not be applied automatically - you have to restart a running Skaffari instance to apply the changes.
+
+.B @CMAKE_INSTALL_SYSCONFDIR@/skaffari.ini
+uses the INI file format to define the sections and entries. See 
+.UR https://en.wikipedia.org/wiki/INI_file
+.UE
+to learn more about the INI file format. Data is stored as
+.I key=value
+pairs in
+.I [sections]
+as in the following example. Key and section names are case sensitive.
+
+.RS 4
+[section]
+.RE
+.RS 4
+key1=Stringvalue
+.RE
+.RS 4
+key2=42
+.RE
+.RS 4
+key3=true
+.RE
+
+As this file contains information about user access to your database and IMAP server, it should only be readable by the user that executes Skaffari.
+
+.SH "FIELD DESCRIPTIONS"
+Below you find the different configuration sections and entries used by Skaffari in 
+.B @CMAKE_INSTALL_SYSCONFDIR@/skaffari.ini.
+Every entry shows the key name and the option's default value. Some options have no default value, these are listed with ``<no default>''. Some options default to the empty string, these are listed with ``<none>''.
+
+.B [Accounts]
+This section contains configuration options for user account creation.
+
+.RS 4
+.B pwmethod
+= @DEFVAL_ACC_PWMETHOD@
+.RS 4
+The basic method to encrypt the user's password. Some methods support further settings that are defined in 
+.B pwmethod.
+If it is possible to use for you, the recommended type is to use the crypt(3) function, because it supports modern hashing algorithms together with salts and an extensible storage format. The other encryption methods are there for backwards compatibility.
+
+Supported methods:
+.IP 0
+no encryption - highly discouraged
+.IP 1
+crypt(3) function - recommended
+.IP 2
+MySQL password function
+.IP 3
+plain hex MD5 - not recommended
+.IP 4
+plain hex SHA1 - not recommended
+.RE
+
+.B pwalgorithm
+= @DEFVAL_ACC_PWALGORITHM@
+.RS 4
+The MySQL and crypt(3) password encryption methods support different algorithms to derive a key from a password string.
+To see which algorithms are supported by crypt(3) on your system, use man crypt. Especially the bcrypt algorithm that uses Blowfish
+is not available on every system because it is not part of the default crypt(3) distribution. The not recommended hashing
+methods are provided for backwards compatibility and if you have to store passwords for use across different operating systems.
+
+Supported algorithms:
+.IP 0
+Default - points to SHA-256 with crypt(3) and to the new method if MySQL
+.IP 1
+Traditional DES-based - not recommended (crypt(3) only)
+.IP 2
+FreeBSD-style MD5-based - not recommended (crypt(3) only)
+.IP 3
+SHA-256 based - (crpyt(3) only)
+.IP 4
+SHA-512 based - (crypt(3) only)
+.IP 5
+OpenBSD-style Blowfish-based (bcrypt) - not supported everywhere (crypt(3) only)
+.IP 6
+MySQL new - (MySQL only)
+.IP 7
+MySQL old - not recommended (MySQL only)
+.RE
+
+.B pwrounds
+= @DEFVAL_ACC_PWROUNDS@
+.RS 4
+If you are using the crypt(3) to create passwords together with the SHA-256, SHA-512 or bcrypt algorithm, you can specify an iteration count to increase the cost for deriving the key from the password. This hardens the password against brute force attacks.
+
+For
+.I SHA-256
+and
+.I SHA-512
+you can choose values from 1000 to 999999999 - the default is @DEFVAL_ACC_PWROUNDS@. The iteration count passed to the crypt(3) function when using
+.I bcrypt
+is the base-2 logarithm of the acutal iteration count. Supported values for bcrypt are between 4 and 32, the default is 12.
+.RE
+
+.B pwminlength
+= @DEFVAL_ACC_PWMINLENGTH@
+.RS 4
+The required minimum length for user account passwords created or changed via Skaffari.
+.RE
+.RE
+
+.B [Admins]
+This section contains configuration options for administrator account creation.
+
+.RS 4
+.B pwalgorithm
+= @DEFVAL_ADM_PWALGORITHM@
+.RS 4
+Skaffari uses PBKDF2 to secure the administrator passwords. PBKDF2 can use different hashing algorithms and iteration counts to produce a derived key and to increase the cost for the derivation. To better secure your administartor passwords you should use values that lead to a time consumption of around 0.5s on your system for creating the derived key. This might be a good compromise between security and user experience. To test different settings with the PBKDF2 implementation of Cutelyst/Skaffari you can use
+.UR https://github.com/Buschtrommel/pbkdf2test
+.UE .
+See
+.UR https://en.wikipedia.org/wiki/PBKDF2
+.UE
+to learn more about PBKDF2.
+
+The PBKDF2 implementation of Cutelyst/Skaffari supports the following hashing algorithms:
+.IP 3
+SHA-224
+.IP 4
+SHA-256
+.IP 5
+SHA-384
+.IP 6
+SHA-512
+.IP 7
+SHA3-224
+.IP 8
+SHA3-256
+.IP 9
+SHA3-384
+.IP 10
+SHA3-512
+.RE
+
+.B pwrounds
+= @DEFVAL_ADM_PWROUNDS@
+.RS 4
+The iteration count used by the PBKDF2 implementation to increase the cost for the key derivation.
+.RE
+
+.B pwminlength
+= @DEFVAL_ADM_PWMINLENGTH@
+.RS 4
+The required minimum length for adiminstrator account passwords.
+.RE
+.RE
+
+.B [Database]
+This section contains configuration options to connect to the SQL database.
+
+.RS 4
+.B type
+= QMYSQL
+.RS 4
+The type of database you are using, identified by the Qt driver name. See
+.UR http://doc.qt.io/qt-5/sql-driver.html
+.UE
+for a list of drivers supported by Qt.
+
+Crrently supported by Skaffari:
+.I QMYSQL
+.RE
+
+.B host
+= localhost
+.RS 4
+The host your database server is running on. By default this is the local host. You can use localhost, a remote host identified by hostname or IP address or an absolute path to a local socket file.
+.RE
+
+.B port
+= 3306
+.RS 4
+The port your database server is listening on. (If not connected via unix socket file.)
+.RE
+
+.B name
+= <none>
+.RS 4
+The name of the database.
+.RE
+
+.B user
+= <none>
+.RS 4
+The name of the database user that has read and write access to the database.
+.RE
+
+.B password
+= <none>
+.RS 4
+The password of the database user.
+.RE
+.RE
+
+.B [Defaults]
+This section contains configuration options that set default values for Skaffari.
+
+.RS 4
+.B domainquota
+= @DEFVAL_DEF_DOMAINQUOTA@
+.RS 4
+Default domain quota in KiB for new domains. This value can freely be changed by super administrators when creating new or editing existing domains. The default value is only there for comfort purposes.
+.RE
+
+.B language
+= @DEFVAL_DEF_LANGUAGE@
+.RS 4
+Default language as fallback. Administrators can change their language in the settings.
+.RE
+
+.B maxaccounts
+= @DEFVAL_DEF_MAXACCOUNTS@
+.RS 4
+Default maximum accounts for new domains. This value can freely be changed by super administrators when creating new or editing existing domains. The default value is only there for comfort purposes.
+.RE
+
+.B maxdisplay
+= @DEFVAL_DEF_MAXDISPLAY@
+.RS 4
+Default value for the number of list entries in lists like domain or accounts. This value can freely be changed by administrators in their settings. The default value is only there for comfort purposes.
+.RE
+
+.B quota
+= @DEFVAL_DEF_QUOTA@
+.RS 4
+Default quota in KiB for new accounts. This value can freely be changed by administrators when creating new or editing existing accounts. The default value is only there for comfort purposes.
+.RE
+
+.B timezonte
+= @DEFVAL_DEF_TIMEZONE@
+.RS 4
+Default timezone as fallback. The timezone setting is used to display localized dates and times. It can be changed by administrators in their settings.
+.RE
+
+.B warnlevel
+= @DEFVAL_DEF_WARNLEVEL@
+.RS 4
+Default warnlevel in percent to highlight accounts reaching their quoa limit. This value can freely be changed by administrators in their settings. The default value is only there for comfort purposes.
+.RE
+.RE
+
+.B [IMAP]
+This section contains configuration options for the IMAP connection and account creation.
+
+.RS 4
+.B host
+= localhost
+.RS 4
+The host the IMAP server is running on.
+.RE
+
+.B port
+= 143
+.RS 4
+The port the IMAP server is listening on.
+.RE
+
+.B user
+= <none>
+.RS 4
+The user name of the IAMP admin user. This user has to be defined as administrator in the configuration of your IMAP server. For Cyrus-IMAP this one of the users defined in the
+.I admins:
+key in the
+.B imapd.conf(5)
+configuration file.
+.RE
+
+.B password
+= <none>
+.RS 4
+Password for the IMAP server administrator.
+.RE
+
+.B protocol
+= @DEFVAL_IMAP_PROTOCOL@
+.RS 4
+The network layer protocol to connect to the IMAP server.
+
+Available protocols:
+.IP 0
+IPv4
+.IP 1
+IPv6
+.IP 2
+Either IPv4 or IPv6
+.RE
+
+.B encryption
+= @DEFVAL_IMAP_ENCRYPTION@
+.RS 4
+The method to encrypt the connection to the IMAP server.
+
+Available methods:
+.IP 0
+unsecured
+.IP 1
+STARTTLS
+.IP 2
+IMAPS
+.RE
+
+.B peername
+= <none>
+.RS 4
+If you use a different host name to connect to your IMAP server than the one used in the certificate of the IMAP server, you can define this different peer name here. This can for example be used to establish an encrypted connection to an IMAP server running on your local host.
+.RE
+
+.B createmailbox
+= @DEFVAL_IMAP_CREATEMAILBOX@
+.RS 4
+Skaffari can create the mailboxes and all default folders on the IMAP server after creating a new user account. Alternatively the IMAP server can create default folders and account quotas on the first user login or first incoming email for the new account (has to be configured in your imapd.conf file). Skaffari is more flexible on creating different default folders for different domains.
+
+Available behavior:
+.IP 0
+Skaffari does nothing - all will be created by the IMAP server on first login or first incoming email
+.IP 1
+Login after creation - Skaffari relies on the IMAP server to create folders and quotas, but will perform a login after account creation to initiate the creation by the IMAP server
+.IP 2
+Only set quota - Skaffari will login to the new account after creation to let the IMAP server create the mailbox and will then set the quota
+.IP 3
+Create by Skaffari - Skaffari will create the new mailbox and the default folders and will set the account quota after adding a new account
+.RE
+
+.B domainasprefix
+= @DEFVAL_IMAP_DOMAINASPREFIX@
+.RS 4
+If you want to use email addresses with dots in them such as john.doe@example.com you can activate this option.
+
+NOTE: you have to set the following line in your Cyrus-IMAP
+.B imapd.conf(5)
+file:
+.P
+.I unixhierarchysep:
+yes
+.RE
+
+.B fqun
+= @DEFVAL_IMAP_FQUN@
+.RS 4
+If you wish to use user names like email addresses you can activate this option.
+.P
+NOTE: you also have to add this lines to your Cyrus-IMAP
+.B imapd.conf(5)
+file:
+.P
+.I unixhierarchysep:
+yes
+.P
+.I virtdomains:
+yes
+.RE
+.RE
+
+.SH "SEE ALSO"
+.BR "skaffari(8)", " skaffaricmd(8)"
+
