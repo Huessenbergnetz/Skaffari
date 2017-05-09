@@ -234,7 +234,7 @@ int WebCyradmImporter::exec() const
     bool wdbaccess = false;
     Database wdb;
     printStatus(tr("Establishing connection to web-cyradm database"));
-    wdbaccess = wdb.open(wdbtype, wdbhost, wdbport, wdbname, wdbuser, wdbpass);
+    wdbaccess = wdb.open(wdbtype, wdbhost, wdbport, wdbname, wdbuser, wdbpass, QStringLiteral("webcyradmdb"));
 
     while (!wdbaccess) {
         printFailed();
@@ -338,7 +338,7 @@ int WebCyradmImporter::exec() const
         sdbport = dbconf.value(QStringLiteral("port")).value<quint16>();
         sdbname = dbconf.value(QStringLiteral("name")).toString();
         sdbuser = dbconf.value(QStringLiteral("user")).toString();
-        sdbpass = dbconf.value(QStringLiteral("passwod")).toString();
+        sdbpass = dbconf.value(QStringLiteral("password")).toString();
         sdbaccess = sdb.open(sdbtype, sdbhost, sdbport, sdbname, sdbuser, sdbpass, QStringLiteral("skaffaridb"));
         if (sdbaccess) {
             printDone();;
