@@ -338,7 +338,7 @@ int WebCyradmImporter::exec() const
         sdbport = dbconf.value(QStringLiteral("port")).value<quint16>();
         sdbname = dbconf.value(QStringLiteral("name")).toString();
         sdbuser = dbconf.value(QStringLiteral("user")).toString();
-        sdbpass = dbconf.value(QStringLiteral("pass")).toString();
+        sdbpass = dbconf.value(QStringLiteral("passwod")).toString();
         sdbaccess = sdb.open(sdbtype, sdbhost, sdbport, sdbname, sdbuser, sdbpass, QStringLiteral("skaffaridb"));
         if (sdbaccess) {
             printDone();;
