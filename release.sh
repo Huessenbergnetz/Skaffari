@@ -56,7 +56,7 @@ done
 
 popd
 
-for SRCDIR in common ctl sql src doc
+for SRCDIR in common cmd sql src doc
 do
     cp -r $SRCDIR $DIR
 done
