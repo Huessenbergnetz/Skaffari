@@ -331,7 +331,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     Q_ASSERT_X(!p.empty(), "create account", "empty parameters");
     Q_ASSERT_X(d.isValid(), "create account", "invalid domain object");
 
-    const QString username = SkaffariConfig::imapDomainasprefix() ? p.value(QStringLiteral("localpart")) + (SkaffariConfig::imapFqun() ? QLatin1Char('@') : QLatin1Char('.')) + d.getName() : p.value(QStringLiteral("username"));
+    const QString username = SkaffariConfig::imapDomainasprefix() ? p.value(QStringLiteral("localpart")).trimmed() + (SkaffariConfig::imapFqun() ? QLatin1Char('@') : QLatin1Char('.')) + d.getName() : p.value(QStringLiteral("username")).trimmed();
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id FROM accountuser WHERE username = :username"));
     q.bindValue(QStringLiteral(":username"), username);
@@ -442,6 +442,38 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
             mailboxCreated = imap.login();
             if (!mailboxCreated) {
                 e->setImapError(imap.lastError(), c->translate("Account", "Failed to login to IMAP server to let the server automatically create the mailbox and folders."));
+            }
+            imap.logout();
+
+        } else if (createMailbox == OnlySetQuota) {
+
+            imap.setUser(username);
+            imap.setPassword(password);
+
+            mailboxCreated = imap.login();
+            if (!mailboxCreated) {
+                e->setImapError(imap.lastError(), c->translate("Account", "Failed to login to IMAP server to let the server automatically create the mailbox and folders."));
+            }
+
+            imap.logout();
+
+            if (mailboxCreated) {
+                imap.setUser(SkaffariConfig::imapUser());
+                imap.setPassword(SkaffariConfig::imapPassword());
+
+                if (Q_LIKELY(imap.login())) {
+
+                    if (Q_UNLIKELY(!imap.setQuota(username, quota))) {
+                        e->setImapError(imap.lastError(), c->translate("Account", "Failed to set quota for new account."));
+                        mailboxCreated = false;
+                    }
+
+                    imap.logout();
+
+                } else {
+                    e->setImapError(imap.lastError(), c->translate("Account", "Failed to login to IMAP server to set quota."));
+                    mailboxCreated = false;
+                }
             }
 
         } else if (createMailbox == CreateBySkaffari) {
@@ -812,10 +844,35 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const C
     Q_ASSERT_X(a, "update account", "invalid account object");
 
     const QString password = p.value(QStringLiteral("password"));
+    QByteArray encPw;
+    if (!password.isEmpty()) {
+        Password pw(password);
+        encPw = pw.encrypt(SkaffariConfig::accPwMethod(), SkaffariConfig::accPwAlgorithm(), SkaffariConfig::accPwRounds());
+        if (Q_UNLIKELY(encPw.isEmpty())) {
+            e->setErrorType(SkaffariError::ApplicationError);
+            e->setErrorText(c->translate("Account", "Failed to encrypt password."));
+            qCWarning(SK_ACCOUNT) << "Failed to encrypt password with method" << SkaffariConfig::accPwMethod() << ", algorithm" << SkaffariConfig::accPwAlgorithm() << "and" << SkaffariConfig::accPwRounds() << "rounds";
+            return ret;
+        }
+    }
+
     const quint32 quota = p.value(QStringLiteral("quota")).toULong();
 
+    if (quota != (quint32)a->getQuota()) {
+        SkaffariIMAP imap(c);
+        if (Q_LIKELY(imap.login())) {
+            if (Q_UNLIKELY(!imap.setQuota(a->getUsername(), quota))) {
+                e->setImapError(imap.lastError(), c->translate("Account", "Failed to change user account quota."));
+                return ret;
+            }
+        } else {
+            e->setImapError(imap.lastError(), c->translate("Account", "Failed to change user account quota."));
+            return ret;
+        }
+    }
+
     QDateTime validUntil = QDateTime::fromString(p.value(QStringLiteral("validUntil"), QStringLiteral("2998-12-31 23:59:59")), QStringLiteral("yyyy-MM-dd HH:mm:ss"));
-    QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), QStringLiteral("UTC")).toByteArray());
+    QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), SkaffariConfig::defTimezone()).toByteArray());
     if (userTz == QTimeZone::utc()) {
         validUntil.setTimeSpec(Qt::UTC);
     } else {
@@ -826,8 +883,6 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const C
 
     QSqlQuery q;
     if (!password.isEmpty()) {
-        Password pw(password);
-        const QByteArray encPw = pw.encrypt(SkaffariConfig::accPwMethod(), SkaffariConfig::accPwAlgorithm(), SkaffariConfig::accPwRounds());
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET password = :password, quota = :quota, valid_until = :validUntil, updated_at = :updated_at WHERE id = :id"));
         q.bindValue(QStringLiteral(":password"), encPw);
     } else {
