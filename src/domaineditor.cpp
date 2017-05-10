@@ -271,6 +271,8 @@ void DomainEditor::add_account(Context* c)
 
             const ParamsMultiMap p = req->bodyParameters();
 
+            qCDebug(SK_ACCOUNT) << "Start creating a new account";
+
             c->stash({
                          {QStringLiteral("imap"), p.contains(QStringLiteral("imap"))},
                          {QStringLiteral("pop"), p.contains(QStringLiteral("pop"))},
@@ -283,7 +285,7 @@ void DomainEditor::add_account(Context* c)
 
             static Validator v({
                                    new ValidatorRequired(QStringLiteral("username")),
-                                   new ValidatorAlphaNum(QStringLiteral("username")),
+                                   new ValidatorAlphaDash(QStringLiteral("username")),
                                    new ValidatorRequired(QStringLiteral("localpart")),
                                    new ValidatorRegularExpression(QStringLiteral("localpart"), QRegularExpression(QStringLiteral("[^@]"))),
                                    new ValidatorRequired(QStringLiteral("password")),
@@ -292,7 +294,7 @@ void DomainEditor::add_account(Context* c)
                                    new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("yyyy-MM-dd HH:mm:ss"))
                                });
 
-            const ValidatorResult vr = v.validate(c);
+            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
 
                 // if this domain has a global quota limit, we have to calculate the
@@ -324,10 +326,13 @@ void DomainEditor::add_account(Context* c)
                         return;
 
                     } else {
+                        qCDebug(SK_ACCOUNT) << e.errorText();
                         c->setStash(QStringLiteral("error_msg"), e.errorText());
                     }
                 }
 
+            } else {
+                qCDebug(SK_ACCOUNT) << "Failed to create account. Invalid input data:" << vr.errorStrings();
             }
 
         } else {

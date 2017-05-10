@@ -20,6 +20,9 @@
 #define DOMAINEDITOR_H
 
 #include <Cutelyst/Controller>
+#include <QLoggingCategory>
+
+Q_DECLARE_LOGGING_CATEGORY(SK_ACCOUNT)
 
 using namespace Cutelyst;
 class SkaffariEngine;
