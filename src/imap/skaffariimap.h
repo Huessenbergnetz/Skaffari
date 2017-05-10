@@ -60,6 +60,7 @@ public:
 
     QStringList getCapabilities(bool forceReload = false);
     std::pair<quint32,quint32> getQuota(const QString &user);
+    bool setQuota(const QString &user, quint32 quota);
 
 	QString errorText() const;
 	SkaffariIMAPError lastError() const;

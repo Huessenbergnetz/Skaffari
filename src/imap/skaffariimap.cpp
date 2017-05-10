@@ -336,6 +336,30 @@ std::pair<quint32,quint32> SkaffariIMAP::getQuota(const QString &user)
 }
 
 
+bool SkaffariIMAP::setQuota(const QString &user, quint32 quota)
+{
+    setNoError();
+
+    const QString tag = getTag();
+    const QString command = tag + QLatin1String(" SETQUOTA user") + m_hierarchysep + user + QLatin1String(" (STORAGE ") + QString::number(quota) + QLatin1String(")\r\n");
+
+    qCDebug(SK_IMAP) << "Sending command:" << command;
+
+    if (Q_UNLIKELY(this->write(command.toLatin1()) < 0)) {
+        m_imapError = SkaffariIMAPError(SkaffariIMAPError::SocketError, m_c->translate("SkaffariIMAP", "Failed to send command to IMAP server: %1").arg(errorString()));
+        return false;
+    }
+
+    if (Q_LIKELY(this->waitForReadyRead())) {
+
+        return this->checkResponse(this->readAll(), tag);
+
+    } else {
+        return connectionTimeOut();
+    }
+}
+
+
 bool SkaffariIMAP::connectionTimeOut()
 {
     qCWarning(SK_IMAP) << "Connection to IMAP server timed out.";
@@ -409,13 +433,10 @@ bool SkaffariIMAP::checkResponse(const QByteArray &data, const QString &tag, QVe
 }
 
 
-
-
 void SkaffariIMAP::setUser ( const QString& user )
 {
 	m_user = user;
 }
-
 
 
 void SkaffariIMAP::setPassword ( const QString& password )
