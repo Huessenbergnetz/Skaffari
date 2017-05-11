@@ -38,7 +38,7 @@
                     </td>
                     <td><a href="/domain/{{ domain.id }}/accounts" title="{{ _("Manage accounts") }}">{{ domain.name }}</a></td>
                     <td>{{ domain.prefix }}</td>
-                    <td class="text-right">{% if domain.maxAccounts > 0 %}{{ domain.accounts }}/{{ _(domain.maxAccounts) }}{% else %}{{ _("not set") }}{% endif %}</td>
+                    <td class="text-right">{% if domain.maxAccounts > 0 %}{{ domain.accounts }}/{{ _(domain.maxAccounts) }}{% else %}{{ _("unlimited") }}{% endif %}</td>
                     <td class="text-right">{% if domain.quota > 0 %}{{ domain.humanQuota }}{% else %}{{ _("not set") }}{% endif %}</td>
                     {% if domain.domainQuota > 0 %}
                     <td class="text-right">
@@ -48,7 +48,7 @@
                         <small>{{ _(domain.humanDomainQuotaUsed) }}/{{ _(domain.humanDomainQuota) }}</small>
                     </td>
                     {% else %}
-                    <td class="text-right">{{ _("not set") }}</td>
+                    <td class="text-right">{{ _("unlimited") }}</td>
                     {% endif %}
                     {# <td class="text-right">{% ifequal domain.domainQuota 0 %}{{ _("not set") }}{% else %}{{ _(domain.domainQuotaUsed) }}/{{ _(domain.domainQuota) }} KiB{% endifequal %}</td> #}
                 </tr>
