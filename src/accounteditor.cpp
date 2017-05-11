@@ -101,6 +101,7 @@ void AccountEditor::edit(Context* c)
 
                         Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
                         c->setStash(QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated account %1.").arg(a.getUsername()));
+                        c->setStash(QStringLiteral("account"), QVariant::fromValue<Account>(a));
                     } else {
                         c->setStash(QStringLiteral("error_msg"), e.errorText());
                     }
