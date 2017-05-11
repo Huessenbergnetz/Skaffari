@@ -508,9 +508,9 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
     QSqlQuery q;
 
     if (user.value(QStringLiteral("type")).value<qint16>() == 0) {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at FROM domain dom"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at FROM domain dom ORDER BY dom.domain_name ASC"));
     } else {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id;"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY dom.domain_name ASC"));
         q.bindValue(QStringLiteral(":admin_id"), QVariant::fromValue<quint32>(user.id().toULong()));
     }
 
