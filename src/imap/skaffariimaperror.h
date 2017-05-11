@@ -38,6 +38,7 @@ public:
         EncryptionError,
         SocketError,
         ResponseError,
+        InternalError,
 		Unknown
 	};
 
