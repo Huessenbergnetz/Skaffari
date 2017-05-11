@@ -29,6 +29,7 @@
 Q_LOGGING_CATEGORY(SK_IMAP, "skaffari.imap")
 
 QStringList SkaffariIMAP::m_capabilities = QStringList();
+const QString SkaffariIMAP::m_allAcl = QStringLiteral("lrswipkxtecda");
 
 SkaffariIMAP::SkaffariIMAP(Cutelyst::Context *context, QObject *parent) :
     QSslSocket(parent),
@@ -65,18 +66,18 @@ bool SkaffariIMAP::login()
     }
 
     if (m_encType != IMAPS) {
-        this->connectToHost(m_host, m_port, ReadWrite, m_protocol);
+        connectToHost(m_host, m_port, ReadWrite, m_protocol);
     } else {
-        this->connectToHostEncrypted(m_host, m_port, ReadWrite, m_protocol);
+        connectToHostEncrypted(m_host, m_port, ReadWrite, m_protocol);
     }
 
     if (m_encType != IMAPS) {
-        if (Q_UNLIKELY(!this->waitForConnected())) {
+        if (Q_UNLIKELY(!waitForConnected())) {
             abort();
             return connectionTimeOut();
         }
     } else {
-        if (Q_UNLIKELY(!this->waitForEncrypted())) {
+        if (Q_UNLIKELY(!waitForEncrypted())) {
             const QList<QSslError> sslErrs = sslErrors();
             if (!sslErrs.empty()) {
                 m_imapError = SkaffariIMAPError(sslErrs.first());
@@ -89,15 +90,15 @@ bool SkaffariIMAP::login()
         }
     }
 
-    if (Q_UNLIKELY(!this->waitForReadyRead())) {
+    if (Q_UNLIKELY(!waitForReadyRead())) {
         abort();
         return connectionTimeOut();
     }
 
     QVector<QByteArray> response;
-    if (Q_UNLIKELY(!checkResponse(this->readAll(), QLatin1String("*"), &response))) {
-        this->disconnectFromHost();
-        this->waitForDisconnected();
+    if (Q_UNLIKELY(!checkResponse(readAll(), QLatin1String("*"), &response))) {
+        disconnectFromHost();
+        waitForDisconnected();
         return false;
     }
 
@@ -109,22 +110,22 @@ bool SkaffariIMAP::login()
 
             const QString tag = getTag();
             const QString command = tag + QLatin1String(" STARTTLS\r\n");
-            this->write(command.toLatin1());
+            write(command.toLatin1());
 
-            if (Q_UNLIKELY(!this->waitForReadyRead())) {
+            if (Q_UNLIKELY(!waitForReadyRead())) {
                 abort();
                 return connectionTimeOut();
             }
 
-            if (Q_UNLIKELY(!checkResponse(this->readAll(), tag))) {
-                this->disconnectFromHost();
-                this->waitForDisconnected();
+            if (Q_UNLIKELY(!checkResponse(readAll(), tag))) {
+                disconnectFromHost();
+                waitForDisconnected();
                 return false;
             }
 
-            this->startClientEncryption();
+            startClientEncryption();
 
-            this->waitForEncrypted();
+            waitForEncrypted();
 
             if ((mode() != QSslSocket::SslClientMode || !isEncrypted())) {
                 QString sslErrorString;
@@ -138,32 +139,34 @@ bool SkaffariIMAP::login()
 
         } else {
             m_imapError = SkaffariIMAPError(SkaffariIMAPError::EncryptionError, m_c->translate("SkaffariIMAP", "STARTTLS is not supported."));
-            this->disconnectFromHost();
-            this->waitForDisconnected();
+            disconnectFromHost();
+            waitForDisconnected();
             return false;
         }
     }
 
     const QString tag2 = getTag();
-    const QString loginCommand = tag2 + QLatin1String(" LOGIN ") + m_user + QChar(QChar::Space) + m_password + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+    const QString loginCommand = tag2 + QLatin1String(" LOGIN \"") + m_user + QLatin1String("\" \"") + m_password + QLatin1String("\"\r\n");
 
-    if (Q_UNLIKELY(this->write(loginCommand.toLatin1()) < 0)) {
+    if (Q_UNLIKELY(write(loginCommand.toLatin1()) < 0)) {
         m_imapError = SkaffariIMAPError(SkaffariIMAPError::SocketError, m_c->translate("SkaffariIMAP", "Failed to send command to IMAP server: %1").arg(errorString()));
-        this->disconnectFromHost();
-        this->waitForDisconnected();
+        disconnectFromHost();
+        waitForDisconnected();
         return false;
     }
 
-    if (Q_UNLIKELY(!this->waitForReadyRead())) {
+    if (Q_UNLIKELY(!waitForReadyRead())) {
         abort();
         return connectionTimeOut();
     }
 
-    if (Q_UNLIKELY(!this->checkResponse(this->readAll(), tag2, &response))) {
-        this->disconnectFromHost();
-        this->waitForDisconnected();
+    if (Q_UNLIKELY(!checkResponse(readAll(), tag2, &response))) {
+        disconnectFromHost();
+        waitForDisconnected();
         return false;
     }
+
+    m_loggedIn = true;
 
     if (SkaffariIMAP::m_capabilities.isEmpty()) {
         if (response.size() == 1) {
@@ -182,15 +185,12 @@ bool SkaffariIMAP::login()
             if (SkaffariIMAP::m_capabilities.isEmpty()) {
                 SkaffariIMAP::m_capabilities = getCapabilities();
                 if (SkaffariIMAP::m_capabilities.isEmpty()) {
-                    this->disconnectFromHost();
-                    this->waitForDisconnected();
+                    logout();
                     return false;
                 }
             }
         }
     }
-
-    m_loggedIn = true;
 
     return true;
 }
@@ -204,12 +204,12 @@ bool SkaffariIMAP::logout()
         return true;
     }
 
-    if (this->state() == UnconnectedState) {
+    if (state() == UnconnectedState) {
         m_loggedIn = false;
         return true;
     }
 
-    if (this->state() == ClosingState) {
+    if (state() == ClosingState) {
         m_loggedIn = false;
         return true;
     }
@@ -217,23 +217,23 @@ bool SkaffariIMAP::logout()
     const QString tag = getTag();
     const QString command = tag + QLatin1String(" LOGOUT\r\n");
 
-    if (Q_UNLIKELY(this->write(command.toLatin1()) < 0)) {
+    if (Q_UNLIKELY(write(command.toLatin1()) < 0)) {
         m_imapError = SkaffariIMAPError(SkaffariIMAPError::SocketError, m_c->translate("SkaffariIMAP", "Failed to send command to IMAP server: %1").arg(errorString()));
-        this->disconnectFromHost();
-        this->waitForDisconnected(3000);
+        disconnectFromHost();
+        waitForDisconnected(3000);
         m_loggedIn = false;
         m_tagSequence = 0;
         return false;
     }
 
-    this->waitForReadyRead();
+    waitForReadyRead();
 
-    if (Q_UNLIKELY(!this->checkResponse(this->readAll(), tag))) {
-        this->disconnectFromHost();
-        if (Q_UNLIKELY(!this->waitForDisconnected())) {
+    if (Q_UNLIKELY(!checkResponse(readAll(), tag))) {
+        disconnectFromHost();
+        if (Q_UNLIKELY(!waitForDisconnected())) {
             m_loggedIn = false;
             m_tagSequence = 0;
-            this->abort();
+            abort();
         }
         return false;
     }
@@ -241,9 +241,9 @@ bool SkaffariIMAP::logout()
     m_loggedIn = false;
     m_tagSequence = 0;
 
-    this->disconnectFromHost();
+    disconnectFromHost();
 
-    if (Q_LIKELY(this->waitForDisconnected())) {
+    if (Q_LIKELY(waitForDisconnected())) {
         return true;
     } else {
         return connectionTimeOut();
@@ -263,15 +263,17 @@ QStringList SkaffariIMAP::getCapabilities(bool forceReload)
 
         const QString command = tag + QLatin1String(" CAPABILITY\r\n");
 
-        this->write(command.toLatin1());
+        if (Q_UNLIKELY(!sendCommand(command))) {
+            return SkaffariIMAP::m_capabilities;
+        }
 
-        if (Q_UNLIKELY(!this->waitForReadyRead())) {
+        if (Q_UNLIKELY(!waitForReadyRead())) {
             connectionTimeOut();
             return SkaffariIMAP::m_capabilities;
         }
 
         QVector<QByteArray> response;
-        if (Q_UNLIKELY(!this->checkResponse(this->readAll(), tag, &response))) {
+        if (Q_UNLIKELY(!checkResponse(readAll(), tag, &response))) {
             return SkaffariIMAP::m_capabilities;
         }
 
@@ -303,13 +305,13 @@ std::pair<quint32,quint32> SkaffariIMAP::getQuota(const QString &user)
     setNoError();
 
     const QString tag = getTag();
-    const QString command = tag + QLatin1String(" GETQUOTA user") + m_hierarchysep + user + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+    const QString command = tag + QLatin1String(" GETQUOTA \"user") + m_hierarchysep + user + QLatin1Char('"') + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
 
-    this->write(command.toLatin1());
+    write(command.toLatin1());
 
-    if (Q_LIKELY(this->waitForReadyRead())) {
+    if (Q_LIKELY(waitForReadyRead())) {
         QVector<QByteArray> response;
-        if (Q_LIKELY(checkResponse(this->readAll(), tag, &response))) {
+        if (Q_LIKELY(checkResponse(readAll(), tag, &response))) {
             if (Q_UNLIKELY(response.empty())) {
                 m_imapError = SkaffariIMAPError(SkaffariIMAPError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request quota."));
                 return quota;
@@ -341,22 +343,144 @@ bool SkaffariIMAP::setQuota(const QString &user, quint32 quota)
     setNoError();
 
     const QString tag = getTag();
-    const QString command = tag + QLatin1String(" SETQUOTA user") + m_hierarchysep + user + QLatin1String(" (STORAGE ") + QString::number(quota) + QLatin1String(")\r\n");
+    const QString command = tag + QLatin1String(" SETQUOTA \"user") + m_hierarchysep + user + QLatin1String("\" (STORAGE ") + QString::number(quota) + QLatin1String(")\r\n");
 
-    qCDebug(SK_IMAP) << "Sending command:" << command;
-
-    if (Q_UNLIKELY(this->write(command.toLatin1()) < 0)) {
-        m_imapError = SkaffariIMAPError(SkaffariIMAPError::SocketError, m_c->translate("SkaffariIMAP", "Failed to send command to IMAP server: %1").arg(errorString()));
+    if (Q_UNLIKELY(!sendCommand(command))) {
         return false;
     }
 
-    if (Q_LIKELY(this->waitForReadyRead())) {
-
-        return this->checkResponse(this->readAll(), tag);
-
-    } else {
+    if (Q_UNLIKELY(!waitForReadyRead())) {
         return connectionTimeOut();
     }
+
+    return checkResponse(readAll(), tag);
+}
+
+
+bool SkaffariIMAP::createMailbox(const QString &user)
+{
+    Q_ASSERT_X(!user.isEmpty(), "create mailbox", "empty username");
+
+    setNoError();
+
+    const QString tag = getTag();
+    const QString command = tag + QLatin1String(" CREATE \"user") + m_hierarchysep + user + QLatin1String("\"\r\n");
+
+    if (Q_UNLIKELY(!sendCommand(command))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForReadyRead())) {
+        return connectionTimeOut();
+    }
+
+    return checkResponse(readAll(), tag);
+}
+
+
+bool SkaffariIMAP::deleteMailbox(const QString &user)
+{
+    Q_ASSERT_X(!user.isEmpty(), "delete mailbox", "empty username");
+
+    setNoError();
+
+    const QString tag = getTag();
+    const QString command = tag + QLatin1String(" DELETE \"user") + m_hierarchysep + user + QLatin1String("\"\r\n");
+
+    if (Q_UNLIKELY(!sendCommand(command))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForReadyRead())) {
+        return false;
+    }
+
+    return checkResponse(readAll(), tag);
+}
+
+
+bool SkaffariIMAP::createFolder(const QString &folder)
+{
+    Q_ASSERT_X(!folder.isEmpty(), "create folder", "empty folder name");
+
+    setNoError();
+
+    const QString _folder = toUTF7Imap(folder.trimmed());
+
+    if (Q_UNLIKELY(_folder.isEmpty())) {
+        m_imapError = SkaffariIMAPError(SkaffariIMAPError::InternalError, m_c->translate("SkaffariIMAP", "Failed to convert folder name into UTF-7-IMAP."));
+        return false;
+    }
+
+    const QString tag1 = getTag();
+    const QString command1 = tag1 + QLatin1String(" CREATE \"INBOX") + m_hierarchysep + _folder + QLatin1String("\"\r\n");
+
+    if (Q_UNLIKELY(!sendCommand(command1))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForReadyRead())) {
+        return connectionTimeOut();
+    }
+
+    if (Q_UNLIKELY(!checkResponse(readAll(), tag1))) {
+        return false;
+    }
+
+    const QString tag2 = getTag();
+    const QString command2 = tag2 + QLatin1String(" SUBSCRIBE \"INBOX") + m_hierarchysep + _folder + QLatin1String("\"\r\n");
+
+    if (Q_UNLIKELY(!sendCommand(command2))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForReadyRead())) {
+        return connectionTimeOut();
+    }
+
+    return checkResponse(readAll(), tag2);
+}
+
+
+bool SkaffariIMAP::setAcl(const QString &mailbox, const QString &user, const QString &acl)
+{
+    setNoError();
+    QString _acl;
+    if (acl.isEmpty()) {
+        _acl = m_allAcl;
+    }
+
+    const QString tag = getTag();
+    const QString command = tag + QLatin1String(" SETACL \"user") + m_hierarchysep + mailbox + QLatin1String("\" \"") + user + QLatin1String("\" ") + _acl + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+
+    if (Q_UNLIKELY(!sendCommand(command))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForReadyRead())) {
+        return connectionTimeOut();
+    }
+
+    return checkResponse(readAll(), tag);
+}
+
+
+bool SkaffariIMAP::deleteAcl(const QString &mailbox, const QString &user)
+{
+    setNoError();
+
+    const QString tag = getTag();
+    const QString command = tag + QLatin1String(" DELETEACL \"user") + m_hierarchysep + mailbox + QLatin1String("\" \"") + user + QLatin1String("\"\r\n");
+
+    if (Q_UNLIKELY(!sendCommand(command))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForReadyRead())) {
+        return false;
+    }
+
+    return checkResponse(readAll(), tag);
 }
 
 
@@ -364,7 +488,7 @@ bool SkaffariIMAP::connectionTimeOut()
 {
     qCWarning(SK_IMAP) << "Connection to IMAP server timed out.";
     m_imapError = SkaffariIMAPError(SkaffariIMAPError::ConnectionTimeout, m_c->translate("SkaffariIMAP", "Connection to IMAP server timed out."));
-    this->abort();
+    abort();
 	return false;
 }
 
@@ -485,12 +609,13 @@ SkaffariIMAPError SkaffariIMAP::lastError() const
 
 
 
-QByteArray SkaffariIMAP::toUTF7Imap(const QString &str)
+QString SkaffariIMAP::toUTF7Imap(const QString &str)
 {
+    QString utf7Imap;
     QByteArray ba;
 
     if (str.isEmpty()) {
-        return ba;
+        return utf7Imap;
     }
 
     UErrorCode uec = U_ZERO_ERROR;
@@ -510,7 +635,9 @@ QByteArray SkaffariIMAP::toUTF7Imap(const QString &str)
 
     free(out);
 
-    return ba;
+    utf7Imap = QString::fromLatin1(ba);
+
+    return utf7Imap;
 }
 
 
@@ -551,4 +678,17 @@ bool SkaffariIMAP::isLoggedIn() const
 QString SkaffariIMAP::getTag()
 {
     return QStringLiteral("a%1").arg(++m_tagSequence, 6, 10, QLatin1Char('0'));
+}
+
+
+bool SkaffariIMAP::sendCommand(const QString &command)
+{
+    qCDebug(SK_IMAP) << "Sending command:" << command;
+
+    if (Q_UNLIKELY(write(command.toLatin1()) < 0)) {
+        m_imapError = SkaffariIMAPError(SkaffariIMAPError::SocketError, m_c->translate("SkaffariIMAP", "Failed to send command to IMAP server: %1").arg(errorString()));
+        return false;
+    }
+
+    return true;
 }

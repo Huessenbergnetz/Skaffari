@@ -61,6 +61,11 @@ public:
     QStringList getCapabilities(bool forceReload = false);
     std::pair<quint32,quint32> getQuota(const QString &user);
     bool setQuota(const QString &user, quint32 quota);
+    bool createMailbox(const QString &user);
+    bool deleteMailbox(const QString &user);
+    bool createFolder(const QString &folder);
+    bool setAcl(const QString &mailbox, const QString &user, const QString &acl = QString());
+    bool deleteAcl(const QString &mailbox, const QString &user);
 
 	QString errorText() const;
 	SkaffariIMAPError lastError() const;
@@ -72,7 +77,7 @@ public:
 	void setProtocol(NetworkLayerProtocol protocol);
 	void setEncryptionType(EncryptionType encType);
 
-    static QByteArray toUTF7Imap(const QString &str);
+    static QString toUTF7Imap(const QString &str);
     static QString fromUTF7Imap(const QByteArray &ba);
 
 private:
@@ -80,6 +85,7 @@ private:
     bool checkResponse(const QByteArray &data, const QString &tag = QString(), QVector<QByteArray> *response = nullptr);
     QString getTag();
     void setNoError();
+    bool sendCommand(const QString &command);
 
 	QString m_user;
 	QString m_password;
@@ -93,6 +99,7 @@ private:
     bool m_loggedIn = false;
     static QStringList m_capabilities;
     quint32 m_tagSequence = 0;
+    static const QString m_allAcl;
 
     Q_DISABLE_COPY(SkaffariIMAP)
 };
