@@ -464,6 +464,7 @@ Domain Domain::get(Cutelyst::Context *c, quint32 domId, SkaffariError *errorData
             while (q.next()) {
                 folders.append(Folder(q.value(0).value<quint32>(), domId, q.value(1).toString()));
             }
+            dom.setFolders(folders);
         } else {
             qCCritical(SK_DOMAIN) << "Failed to query default folders for domain" << dom.getName() << "fom database:" << q.lastError().text();
         }
@@ -488,6 +489,7 @@ Domain Domain::get(Cutelyst::Context *c, quint32 domId, SkaffariError *errorData
             errorData->setErrorType(SkaffariError::InputError);
             errorData->setErrorText(c->translate("Domain", "There is no domain with database ID %1.").arg(domId));
         }
+        dom.setAdmins(admins);
     } else {
         errorData->setSqlError(q.lastError());
     }
