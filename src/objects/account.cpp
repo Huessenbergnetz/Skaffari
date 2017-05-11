@@ -478,8 +478,64 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
 
         } else if (createMailbox == CreateBySkaffari) {
 
-        }
+            if (Q_LIKELY(imap.login())) {
 
+                if (Q_LIKELY(imap.createMailbox(username))) {
+
+                    // at this point, the mailbox has been created on the IMAP server
+                    // all following actions can fail - if they do, it is not nice,
+                    // but base functionality is given, so we only log errors
+                    mailboxCreated = true;
+
+                    if(Q_LIKELY(imap.setAcl(username, SkaffariConfig::imapUser()))) {
+
+                        if (Q_UNLIKELY(!imap.setQuota(username, quota))) {
+                            qCWarning(SK_ACCOUNT) << "Failed to set IMAP quota for new mailbox" << username;
+                        }
+
+                        if (Q_UNLIKELY(!imap.deleteAcl(username, SkaffariConfig::imapUser()))) {
+                            qCWarning(SK_ACCOUNT) << "Failed to revoke ACLs for IMAP admin on new mailbox" << username;
+                        }
+
+                    } else {
+                        qCWarning(SK_ACCOUNT) << "Failed to set ACL for IMAP admin on new mailbox" << username;
+                    }
+
+                    imap.logout();
+
+                    if (!d.getFolders().empty()) {
+
+                        imap.setUser(username);
+                        imap.setPassword(password);
+
+                        if (Q_LIKELY(imap.login())) {
+
+                            const QVector<Folder> folders = d.getFolders();
+
+                            for (const Folder &folder : folders) {
+                                if (Q_UNLIKELY(!imap.createFolder(folder.getName()))) {
+                                    qCWarning(SK_ACCOUNT) << "Failed to create default folder" << folder.getName() << "for new IMAP account" << username;
+                                }
+                            }
+
+                            imap.logout();
+
+                        } else {
+                            qCWarning(SK_ACCOUNT) << "Failed to login into new IMAP account" << username << "to create default folders.";
+                        }
+                    }
+
+                } else {
+                    e->setImapError(imap.lastError(), c->translate("Account", "Failed to create new IMAP mailbox."));
+                    imap.logout();
+                    mailboxCreated = false;
+                }
+
+            } else {
+                e->setImapError(imap.lastError(), c->translate("Account", "Failed to login to IMAP server to create new mailbox."));
+                mailboxCreated = false;
+            }
+        }
     }
 
     if (!mailboxCreated) {
@@ -530,6 +586,24 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
     Q_ASSERT_X(c, "remove account", "invalid context object");
     Q_ASSERT_X(e, "remove account", "invalid error object");
 
+    SkaffariIMAP imap(c);
+    if (Q_UNLIKELY(!imap.login())) {
+        e->setImapError(imap.lastError(), c->translate("Account", "Failed to login to IMAP server to delete account %1.").arg(username));
+        return ret;
+    }
+
+    if (Q_UNLIKELY(!imap.setAcl(username, SkaffariConfig::imapUser()))) {
+        e->setImapError(imap.lastError(), c->translate("Account", "Failed to set ACL for IMAP admin to delete account %1.").arg(username));
+    }
+
+    if (Q_UNLIKELY(!imap.deleteMailbox(username))) {
+        e->setImapError(imap.lastError(), c->translate("Account", "Failed to delete account %1 from IMAP server.").arg(username));
+        imap.logout();
+        return ret;
+    }
+
+    imap.logout();
+
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT quota FROM accountuser WHERE username = :username"));
     q.bindValue(QStringLiteral(":username"), username);
 
@@ -538,7 +612,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM alias WHERE username = :username"));
     q.bindValue(QStringLiteral(":username"), username);
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to remove account's alias addresses from the database."));
         return ret;
     }
@@ -546,7 +620,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE username = :username"));
     q.bindValue(QStringLiteral(":username"), username);
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to remove account's addresses from the database."));
         return ret;
     }
@@ -554,7 +628,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :username AND username = ''"));
     q.bindValue(QStringLiteral(":username"), username);
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to remove account's forward addresses from the database"));
         return ret;
     }
@@ -562,7 +636,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE username = :username"));
     q.bindValue(QStringLiteral(":username"), username);
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to remove account from the database."));
         return ret;
     }
@@ -570,7 +644,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM log WHERE user = :username"));
     q.bindValue(QStringLiteral(":username"), username);
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to delete log entries for this user from the database."));
         return ret;
     }
@@ -579,7 +653,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
     q.bindValue(QStringLiteral(":quota"), quota);
     q.bindValue(QStringLiteral(":id"), domain->id());
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to update count of domain accounts and used quota in database."));
     }
 
@@ -602,7 +676,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, Domain *d)
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM accountuser WHERE domain_id = :domain_id"));
     q.bindValue(QStringLiteral(":domain_id"), d->id());
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to query the user accounts that belong to this domain."));
         return ret;
     }
