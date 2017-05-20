@@ -202,8 +202,9 @@ bool Skaffari::initDb() const
             db.setPassword(dbpass);
 
             if (dbhost[0] == QLatin1Char('/')) {
-                db.setConnectOptions(QStringLiteral("UNIX_SOCKET=%1").arg(dbhost));
+                db.setConnectOptions(QStringLiteral("UNIX_SOCKET=%1;MYSQL_OPT_RECONNECT=1").arg(dbhost));
             } else {
+                db.setConnectOptions(QStringLiteral("MYSQL_OPT_RECONNECT=1"));
                 db.setHostName(dbhost);
                 db.setPort(dbport);
             }
