@@ -34,6 +34,8 @@
 
 Q_LOGGING_CATEGORY(SK_DOMAIN, "skaffari.domain")
 
+#define DOMAIN_STASH_KEY "domain"
+
 Domain::Domain() : d(new DomainData)
 {
 
@@ -483,14 +485,13 @@ Domain Domain::get(Cutelyst::Context *c, quint32 domId, SkaffariError *errorData
 
     if (Q_LIKELY(q.exec())) {
         QVector<SimpleAdmin> admins;
-        if (q.next()) {
+        while (q.next()) {
             admins.append(SimpleAdmin(q.value(0).value<quint32>(), q.value(1).toString()));
-        } else {
-            errorData->setErrorType(SkaffariError::InputError);
-            errorData->setErrorText(c->translate("Domain", "There is no domain with database ID %1.").arg(domId));
         }
         dom.setAdmins(admins);
     } else {
+        qCCritical(SK_DOMAIN) << "Failed to query domain administrators from database.";
+        qCDebug(SK_DOMAIN) << q.lastError().text();
         errorData->setSqlError(q.lastError());
     }
 
@@ -732,7 +733,7 @@ void Domain::toStash(Cutelyst::Context *c, quint32 domainId)
     Domain d = Domain::get(c, domainId, &e);
     if (Q_LIKELY(d.isValid())) {
         c->stash({
-                     {QStringLiteral("domain"), QVariant::fromValue<Domain>(d)},
+                     {QStringLiteral(DOMAIN_STASH_KEY), QVariant::fromValue<Domain>(d)},
                      {QStringLiteral("site_title"), d.getName()}
                  });
     } else {
@@ -750,7 +751,7 @@ Domain Domain::fromStash(Cutelyst::Context *c)
 {
     Domain d;
 
-    d = c->stash(QStringLiteral("domain")).value<Domain>();
+    d = c->stash(QStringLiteral(DOMAIN_STASH_KEY)).value<Domain>();
 
     return d;
 }
@@ -763,8 +764,10 @@ bool Domain::checkAccess(Cutelyst::Context *c, quint32 domainId)
     Cutelyst::AuthenticationUser user = Cutelyst::Authentication::user(c);
 
     if (user.value(QStringLiteral("type")).value<qint16>() == 0) {
+        // this is a super administrator, access granted for all domains
         allowed = true;
     } else if (domainId > 0) {
+        // this is a domain administrator, access granted only for connected domains
         allowed = (user.value(QStringLiteral("domains")).value<QVariantList>().contains(domainId));
     }
 
