@@ -37,6 +37,8 @@
 
 Q_LOGGING_CATEGORY(SK_ACCOUNT, "skaffari.account")
 
+#define ACCOUNT_STASH_KEY "account"
+
 Account::Account() :
     d(new AccountData)
 {
@@ -332,8 +334,12 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     Q_ASSERT_X(!p.empty(), "create account", "empty parameters");
     Q_ASSERT_X(d.isValid(), "create account", "invalid domain object");
 
+    // if domain as prefix is enabled, the username will be the local part of the email address
+    // if additionally fqun is enabled, it will a fully qualified user name (email address like user@example.com
+    // if both are disabled, the username will be the entered username
     const QString username = SkaffariConfig::imapDomainasprefix() ? p.value(QStringLiteral("localpart")).trimmed() + (SkaffariConfig::imapFqun() ? QLatin1Char('@') : QLatin1Char('.')) + d.getName() : p.value(QStringLiteral("username")).trimmed();
 
+    // start checking if the username is already in use
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id FROM accountuser WHERE username = :username"));
     q.bindValue(QStringLiteral(":username"), username);
 
@@ -347,9 +353,12 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         e->setErrorText(c->translate("Account", "Username %1 is already in use.").arg(username));
         return a;
     }
+    // end checking if the username is already in use
 
+    // construct the email address from local part and domain name
     const QString email = p.value(QStringLiteral("localpart")) + QLatin1Char('@') + d.getName();
 
+    // start checking if the email address is already in use
     q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :email"));
     q.bindValue(QStringLiteral(":email"), email);
 
@@ -363,7 +372,9 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         e->setErrorType(SkaffariError::InputError);
         return a;
     }
+    // end checking if the email address is already in use
 
+    // start encrypting the password
     const QString password = p.value(QStringLiteral("password"));
     Password pw(password);
     const QByteArray encpw = pw.encrypt(SkaffariConfig::accPwMethod(), SkaffariConfig::accPwAlgorithm(), SkaffariConfig::accPwRounds());
@@ -373,6 +384,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         e->setErrorType(SkaffariError::ConfigError);
         return a;
     }
+    // end encrypting the password
 
     bool imap = p.contains(QStringLiteral("imap"));
     bool pop = p.contains(QStringLiteral("pop"));
@@ -381,6 +393,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     const quint32 quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULong();
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
 
+    // start converting the entered valid until time into UTC
     QDateTime validUntil = QDateTime::fromString(p.value(QStringLiteral("validUntil"), QStringLiteral("2998-12-31 23:59:59")), QStringLiteral("yyyy-MM-dd HH:mm:ss"));
     QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), QStringLiteral("UTC")).toByteArray());
     if (userTz == QTimeZone::utc()) {
@@ -389,6 +402,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         validUntil.setTimeZone(userTz);
         validUntil = validUntil.toUTC();
     }
+    // end converting the entered valid until time into UTC
 
     q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, prefix, domain_name, imap, pop, sieve, smtpauth, quota, created_at, updated_at, valid_until) "
                                          "VALUES (:domain_id, :username, :password, :prefix, :domain_name, :imap, :pop, :sieve, :smtpauth, :quota, :created_at, :updated_at, :valid_until)"));
@@ -428,6 +442,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         return a;
     }
 
+    // start creating the mailbox on the IMAP server, according to the skaffari settings
     bool mailboxCreated = true;
     Account::CreateMailbox createMailbox = SkaffariConfig::imapCreatemailbox();
 
@@ -538,7 +553,9 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
             }
         }
     }
+    // end creating the mailbox on the IMAP server, according to the skaffari settings
 
+    // revert our changes to the database if mailbox creation failed
     if (!mailboxCreated) {
         q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
         q.bindValue(QStringLiteral(":id"), id);
@@ -901,7 +918,7 @@ void Account::toStash(Cutelyst::Context *c, const Domain &d, quint32 accountId)
     Account a = Account::get(c, &e, d, accountId);
     if (Q_LIKELY(a.isValid())) {
         c->stash({
-                     {QStringLiteral("account"), QVariant::fromValue<Account>(a)},
+                     {QStringLiteral(ACCOUNT_STASH_KEY), QVariant::fromValue<Account>(a)},
                      {QStringLiteral("site_subtitle"), a.getUsername()}
                  });
     } else {
@@ -918,7 +935,7 @@ void Account::toStash(Cutelyst::Context *c, const Domain &d, quint32 accountId)
 Account Account::fromStash(Cutelyst::Context *c)
 {
     Account a;
-    a = c->stash(QStringLiteral("account")).value<Account>();
+    a = c->stash(QStringLiteral(ACCOUNT_STASH_KEY)).value<Account>();
     return a;
 }
 
