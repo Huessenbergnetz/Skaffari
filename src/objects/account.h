@@ -113,6 +113,9 @@ public:
     static bool removeEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &address);
     static bool updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p);
 
+    static QString addressFromACE(const QString &address);
+    static QString addressToACE(const QString &address);
+
 protected:
     QSharedDataPointer<AccountData> d;
 };
