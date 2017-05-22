@@ -8,32 +8,32 @@
         <form method="post">
     
             <div class="form-group row">
-                <label for="domainName" class="col-12 col-lg-4 col-form-label">{{ _("Domain name") }}</label>
+                <label for="domainName" class="col-12 col-lg-4 col-form-label">{{ help.domainName.title }}</label>
                 <div class="col-12 col-lg-8{% if validationErrors.domainName.count %} has-warning{% endif %}">
-                    <input type="text" id="domainName" name="domainName" class="form-control{% if validationErrors.domainName.count %} form-control-warning{% endif %}" value="{{ domain.name|default_if_none:domainName }}" placeholder="{{ _("Domain name") }}" pattern="^\S*\.\S{2,}$" required>
+                    <input type="text" id="domainName" name="domainName" class="form-control{% if validationErrors.domainName.count %} form-control-warning{% endif %}" value="{{ domain.name|default_if_none:domainName }}" placeholder="example.com" pattern="^\S*\.\S{2,}$" required>
                     {% if validationErrors.domainName.count %}<div class="form-control-feedback"><small>{{ validationErrors.domainName.0 }}</small></div>{% endif %}
                 </div>
             </div>
             
             {% if not domainAsPrefix %}            
             <div class="form-group row">
-                <label for="prefix" class="col-12 col-lg-4 col-form-label">{{ _("Prefix") }}</label>
+                <label for="prefix" class="col-12 col-lg-4 col-form-label">{{ help.prefix.title }}</label>
                 <div class="col-12 col-lg-8">
-                    <input type="text" id="prefix" name="prefix" class="form-control" value="{{ domain.prefix|default_if_none:prefix }}" placeholder="{{ _("Prefix") }}" required>
+                    <input type="text" id="prefix" name="prefix" class="form-control" value="{{ domain.prefix|default_if_none:prefix }}" placeholder="{{ help.prefix.title }}" required>
                 </div>
             </div>
             <input type="hidden" name="domainAsPrefix" value="false">
             {% endif %}
             
             <div class="form-group row">
-                <label for="maxAccounts" class="col-12 col-lg-4 col-form-label">{{ _("Maximum accounts") }}</label>
+                <label for="maxAccounts" class="col-12 col-lg-4 col-form-label">{{ help.maxAccounts.title }}</label>
                 <div class="col-12 col-lg-8">
                     <input type="number" id="maxAccounts" name="maxAccounts" class="form-control" value="{{ domain.maxAccounts|default:defMaxAccounts}}" min="0" required>
                 </div>
             </div>
             
             <div class="form-group row">
-                <label for="domainQuota" class="col-12 col-lg-4 col-form-label">{{ _("Domain quota") }}</label>
+                <label for="domainQuota" class="col-12 col-lg-4 col-form-label">{{ help.domainQuota.title }}</label>
                 <div class="col-12 col-lg-8">
                     <div class="input-group">
                         <input type="number" id="domainQuota" name="domainQuota" class="form-control" value="{{ domain.domainQuota|default:defDomainQuota }}" min="0" aria-describedby="domainQuotaKiB" required>
@@ -43,7 +43,7 @@
             </div>
             
             <div class="form-group row">
-                <label for="quota" class="col-12 col-lg-4 col-form-label">{{ _("Default quota") }}</label>
+                <label for="quota" class="col-12 col-lg-4 col-form-label">{{ help.quota.title }}</label>
                 <div class="col-12 col-lg-8">
                     <div class="input-group">
                         <input type="number" id="quota" name="quota" class="form-control" value="{{ domain.quota|default:defQuota}}" min="0" max="domain.domainQuota|default:defDomainQuota" aria-describedby="quotaKiB" required>
@@ -53,14 +53,14 @@
             </div>
             
             <div class="form-group row">
-                <label for="folders" class="col-12 col-lg-4 col-form-label">{{ _("Standard folders") }}</label>
+                <label for="folders" class="col-12 col-lg-4 col-form-label">{{ help.folders.title }}</label>
                 <div class="col-12 col-lg-8">
-                    <input type="text" id="folders" name="folders" class="form-control" value="{{ domain.folders|join:"," }}" placeholder="{{ _("Standard folders") }}">
+                    <input type="text" id="folders" name="folders" class="form-control" value="{{ domain.folders|join:"," }}" placeholder="{{ _("e.g. Trash,Spam,Drafts,Sent Messages") }}">
                 </div>
             </div>
             
             <div class="form-group row">
-                <label for="transport" class="col-12 col-lg-4 col-form-label">{{ _("Transport") }}</label>
+                <label for="transport" class="col-12 col-lg-4 col-form-label">{{ help.transport.title }}</label>
                 <div class="col-12 col-lg-8">
                     <select class="form-control" id="transport" name="transport">
                         <option value="cyrus"{% ifequal transport "cyrus" %} selected{% endifequal %}>Cyrus</option>
@@ -72,7 +72,7 @@
             </div>
             
             <div class="form-group row">
-                <label for="freeNames" class="col-6 col-lg-4">{{ _("Allow free names") }}</label>
+                <label for="freeNames" class="col-6 col-lg-4">{{ help.freeNames.title }}</label>
                 <div class="col">
                     <div class="form-check">
                         <input type="checkbox" id="freeNames" name="freeNames" value="1"{% if domain.freeNames %} checked{% endif %}>
@@ -81,7 +81,7 @@
             </div>
             
             <div class="form-group row">
-                <label for="freeAddress" class="col-6 col-lg-4">{{ _("Allow free addresses") }}</label>
+                <label for="freeAddress" class="col-6 col-lg-4">{{ help.freeAddress.title }}</label>
                 <div class="col">
                     <div class="form-check">
                         <input type="checkbox" id="freeAddress" name="freeAddress" value="1"{% if domain.freeAddress %} checked{% endif %}>
@@ -105,10 +105,24 @@
         <div class="card">
             <div class="card-block">
                 <h4 class="card-title"><i class="fa fa-life-ring"></i> {{ _("Help") }}</h4>
-                <h6 class="card-subtitle text-muted">{{ _("Domain name") }}</h6>
-                <p class="card-text mb-2">{{ _("The name of the domain you want to manage emails for, like <em>example.com</em>.")|safe }}</p>
-                <h6 class="card-subtitle text-muted">{{ _("Prefix") }}</h6>
-                <p class="card-text mb-2">{{ _("The prefix might be used for automatically generated user names, especially if free names are not allowed for this domain.") }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.domainName.title }}</h6>
+                <p class="card-text mb-2">{{ help.domainName.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.prefix.title }}</h6>
+                <p class="card-text mb-2">{{ help.prefix.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.maxAccounts.title }}</h6>
+                <p class="card-text mb-2">{{ help.maxAccounts.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.domainQuota.title }}</h6>
+                <p class="card-text mb-2">{{ help.domainQuota.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.quota.title }}</h6>
+                <p class="card-text mb-2">{{ help.quota.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.folders.title }}</h6>
+                <p class="card-text mb-2">{{ help.folders.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.transport.title }}</h6>
+                <p class="card-text mb-2">{{ help.transport.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.freeNames.title }}</h6>
+                <p class="card-text mb-2">{{ help.freeNames.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.freeAddress.title }}</h6>
+                <p class="card-text mb-2">{{ help.freeAddress.text }}</p>
             </div>
         </div>
     

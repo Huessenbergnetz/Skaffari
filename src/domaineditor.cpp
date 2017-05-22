@@ -20,6 +20,7 @@
 #include "objects/domain.h"
 #include "objects/account.h"
 #include "objects/skaffarierror.h"
+#include "objects/helpentry.h"
 #include "utils/skaffariconfig.h"
 
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
@@ -33,6 +34,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QRegularExpression>
+#include <QHash>
 
 using namespace Cutelyst;
 
@@ -118,12 +120,30 @@ void DomainEditor::edit(Context *c)
             }
         }
 
-
+        QHash<QString,HelpEntry> help;
+        help.insert(QStringLiteral("prefix"), HelpEntry(c->translate("DomainEditor", "Prefix"), c->translate("DomainEditor", "The prefix might be used for automatically generated user names, especially if free names are not allowed for this domain.")));
+        help.insert(QStringLiteral("created"), HelpEntry(c->translate("DomainEditor", "Created"), c->translate("DomainEditor", "Date and time this domain has been created in Skaffari.")));
+        help.insert(QStringLiteral("updated"), HelpEntry(c->translate("DomainEditor", "Updated"), c->translate("DomainEditor", "Date and time this domain has been updated in Skafari.")));
+        if (c->stash(QStringLiteral("userType")).value<qint16>() == 0) {
+            // current user is a super administrator
+            help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Maximum accounts"), c->translate("DomainEditor", "The maximum accounts value limits the amount of accounts that can be created for this domain. Set it to 0 to disable the limit.")));
+            help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set, every account must have a quota defined. Set it to 0 to disable the domain quota.")));
+        } else {
+            // current user is a domain administrator
+            help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "Shows the current amount of accounts created in this domain and the maximum number of accounts that can be created for this domain.")));
+            help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set (not unlimited), every account must have a quota defined.")));
+        }
+        help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Default quota"), c->translate("DomainEditor", "Default quota for new accounts for this domain. This value can be changed individually for every account.")));
+        help.insert(QStringLiteral("folders"), HelpEntry(c->translate("DomainEditor", "Standard folders"), c->translate("DomainEditor", "Comma separated list of folders that will be automatically created when creating a new account for this domain. You can safely insert localized folder names in UTF-8 encoding. They will be internally converted into UTF-7-IMAP encoding.")));
+        help.insert(QStringLiteral("transport"), HelpEntry(c->translate("DomainEditor", "Transport"), c->translate("DomainEditor", "The transport mechanism for received emails for this domain. Defaults to Cyrus.")));
+        help.insert(QStringLiteral("freeNames"), HelpEntry(c->translate("DomainEditor", "Allow free names"), c->translate("DomainEditor", "If enabled, account user names for this domain can be freely selected (if not in use already).")));
+        help.insert(QStringLiteral("freeAddress"), HelpEntry(c->translate("DomainEditor", "Allow free addresses"), c->translate("DomainEditor", "If enabled, user accounts in this domain can have email addresses for all domains managed by Skaffari. If disabled, only email addresses for this domain can be added to user accounts in this domain.")));
 
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("domain/edit.html")},
                      {QStringLiteral("edit"), true},
-                     {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Edit")}
+                     {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Edit")},
+                     {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)}
                  });
     }
 }
@@ -201,6 +221,17 @@ void DomainEditor::create(Context* c)
             }
         }
 
+        QHash<QString,HelpEntry> help;
+        help.insert(QStringLiteral("domainName"), HelpEntry(c->translate("DomainEditor", "Domain name"), c->translate("DomainEditor", "The name of the domain you want to manage emails for, like example.com. You can safely insert international domain names in UTF-8 encoding, it will be converted internally into ASCII compatible encoding.")));
+        help.insert(QStringLiteral("prefix"), HelpEntry(c->translate("DomainEditor", "Prefix"), c->translate("DomainEditor", "The prefix might be used for automatically generated user names, especially if free names are not allowed for this domain.")));
+        help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Maximum accounts"), c->translate("DomainEditor", "The maximum accounts value limits the amount of accounts that can be created for this domain. Set it to 0 to disable the limit.")));
+        help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set, every account must have a quota defined. Set it to 0 to disable the domain quota.")));
+        help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Default quota"), c->translate("DomainEditor", "Default quota for new accounts for this domain. This value can be changed individually for every account.")));
+        help.insert(QStringLiteral("folders"), HelpEntry(c->translate("DomainEditor", "Standard folders"), c->translate("DomainEditor", "Comma separated list of folders that will be automatically created when creating a new account for this domain. You can safely insert localized folder names in UTF-8 encoding. They will be internally converted into UTF-7-IMAP encoding.")));
+        help.insert(QStringLiteral("transport"), HelpEntry(c->translate("DomainEditor", "Transport"), c->translate("DomainEditor", "The transport mechanism for received emails for this domain. Defaults to Cyrus.")));
+        help.insert(QStringLiteral("freeNames"), HelpEntry(c->translate("DomainEditor", "Allow free names"), c->translate("DomainEditor", "If enabled, account user names for this domain can be freely selected (if not in use already).")));
+        help.insert(QStringLiteral("freeAddress"), HelpEntry(c->translate("DomainEditor", "Allow free addresses"), c->translate("DomainEditor", "If enabled, user accounts in this domain can have email addresses for all domains managed by Skaffari. If disabled, only email addresses for this domain can be added to user accounts in this domain.")));
+
         c->stash({
                      {QStringLiteral("defQuota"), SkaffariConfig::defQuota()},
                      {QStringLiteral("defDomainQuota"), SkaffariConfig::defDomainquota()},
@@ -208,7 +239,8 @@ void DomainEditor::create(Context* c)
                      {QStringLiteral("template"), QStringLiteral("domain/create.html")},
                      {QStringLiteral("domainAsPrefix"), SkaffariConfig::imapDomainasprefix()},
                      {QStringLiteral("edit"), false},
-                     {QStringLiteral("site_title"), c->translate("DomainEditor", "Create domain")}
+                     {QStringLiteral("site_title"), c->translate("DomainEditor", "Create domain")},
+                     {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)}
                 });
     }
 }
