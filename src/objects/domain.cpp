@@ -31,6 +31,8 @@
 #include <Cutelyst/Plugins/Authentication/authenticationuser.h>
 #include <Cutelyst/Plugins/Session/Session>
 #include <QUrl>
+#include <algorithm>
+#include <vector>
 
 Q_LOGGING_CATEGORY(SK_DOMAIN, "skaffari.domain")
 
@@ -540,6 +542,11 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
         }
     } else {
         errorData->setSqlError(q.lastError());
+    }
+
+    if (lst.size() > 1) {
+        DomainNameCollator dnc(c->locale());
+        std::sort(lst.begin(), lst.end(), dnc);
     }
 
     return lst;
