@@ -21,6 +21,17 @@
 
 #include "simpledomain.h"
 #include <QSharedData>
+#include <QCollator>
+
+class SimpleDomainNameCollator : public QCollator
+{
+public:
+    SimpleDomainNameCollator(const QLocale &locale) :
+        QCollator(locale)
+    {}
+
+    bool operator() (const SimpleDomain &left, const SimpleDomain &right) { return (compare(left.name(), right.name()) < 0); }
+};
 
 class SimpleDomainData : public QSharedData
 {

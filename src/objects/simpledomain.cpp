@@ -22,6 +22,7 @@
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QUrl>
 
 SimpleDomain::SimpleDomain() : d(new SimpleDomainData)
 {
@@ -89,7 +90,12 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
     }
 
     while (q.next()) {
-        lst.push_back(SimpleDomain(q.value(0).value<quint32>(), q.value(1).toString()));
+        lst.push_back(SimpleDomain(q.value(0).value<quint32>(), QUrl::fromAce(q.value(1).toByteArray())));
+    }
+
+    if (lst.size() > 1) {
+        SimpleDomainNameCollator sdnc(c->locale());
+        std::sort(lst.begin(), lst.end(), sdnc);
     }
 
     return lst;
