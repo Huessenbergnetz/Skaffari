@@ -16,43 +16,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIMPLEDOMAIN_P_H
-#define SIMPLEDOMAIN_P_H
+#include "helpentry_p.h"
 
-#include "simpledomain.h"
-#include <QSharedData>
-#include <QCollator>
-
-class SimpleDomainNameCollator : public QCollator
+HelpEntry::HelpEntry() :
+    d(new HelpEntryData)
 {
-public:
-    SimpleDomainNameCollator(const QLocale &locale) :
-        QCollator(locale)
-    {}
 
-    bool operator() (const SimpleDomain &left, const SimpleDomain &right) { return (compare(left.name(), right.name()) < 0); }
-};
+}
 
-class SimpleDomainData : public QSharedData
+HelpEntry::HelpEntry(const QString &title, const QString &text) :
+    d(new HelpEntryData(title, text))
 {
-public:
-    SimpleDomainData() {}
 
-    SimpleDomainData(quint32 _id, const QString &_name) :
-        id(_id),
-        name(_name)
-    {}
+}
 
-    SimpleDomainData(const SimpleDomainData &other) :
-        QSharedData(other),
-        id(other.id),
-        name(other.name)
-    {}
+HelpEntry::HelpEntry(const HelpEntry &other) :
+    d(other.d)
+{
 
-    ~SimpleDomainData() {}
+}
 
-    quint32 id = 0;
-    QString name;
-};
+HelpEntry& HelpEntry::operator =(const HelpEntry &other)
+{
+    d = other.d;
+    return *this;
+}
 
-#endif // SIMPLEDOMAIN_P_H
+HelpEntry::~HelpEntry()
+{
+
+}
+
+QString HelpEntry::getTitle() const
+{
+    return d->title;
+}
+
+QString HelpEntry::getText() const
+{
+    return d->text;
+}

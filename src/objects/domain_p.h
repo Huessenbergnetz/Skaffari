@@ -21,6 +21,17 @@
 
 #include "domain.h"
 #include <QSharedData>
+#include <QCollator>
+
+class DomainNameCollator : public QCollator
+{
+public:
+    DomainNameCollator(const QLocale &locale) :
+        QCollator(locale)
+    {}
+
+    bool operator() (const Domain &left, const Domain &right) { return (compare(left.getName(), right.getName()) < 0); }
+};
 
 class DomainData : public QSharedData
 {

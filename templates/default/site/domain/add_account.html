@@ -9,11 +9,11 @@
             <div class="form-group row">
                 <label class="col-12 col-lg-4 col-form-label">{{ _("Accounts") }}</label>
                 <div class="col-12 col-lg-8">
-                    <p class="form-control-static">{{ _(domain.accounts) }}/{{ _(domain.maxAccounts) }}</p>
+                    <p class="form-control-static">{{ _(domain.accounts) }}{% if domain.maxAccounts > 0 %}/{{ _(domain.maxAccounts) }}{% endif %}</p>
                 </div>
             </div>
             
-            {% if domain.domainQuota %}
+            {% if domain.domainQuota > 0 %}
             <div class="form-group row">
                 <label class="col-12 col-lg-4 col-form-label">{{ _("Domain quota") }}</label>
                 <div class="col-12 col-lg-8">

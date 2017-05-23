@@ -8,29 +8,29 @@
         <form method="post">
               
             <div class="form-group row">
-                <label class="col-12 col-lg-4 col-form-label">{{ _("Prefix") }}</label>
+                <label class="col-12 col-lg-4 col-form-label">{{ help.prefix.title }}</label>
                 <div class="col-12 col-lg-8">
                     <p class="form-control-static">{{ domain.prefix }}</p>
                 </div>
             </div>
             
             <div class="form-group row">
-                <label class="col-12 col-lg-4 col-form-label">{{ _("Created") }}</label>
+                <label class="col-12 col-lg-4 col-form-label">{{ help.created.title }}</label>
                 <div class="col-12 col-lg-8">
                     <p class="form-control-static">{{ _(domain.created) }}</p>
                 </div>
             </div>
             
             <div class="form-group row">
-                <label class="col-12 col-lg-4 col-form-label">{{ _("Updated") }}</label>
+                <label class="col-12 col-lg-4 col-form-label">{{ help.updated.title }}</label>
                 <div class="col-12 col-lg-8">
                     <p class="form-control-static">{{ _(domain.updated) }}</p>
                 </div>
             </div>
             
             <div class="form-group row">
+                <label for="maxAccounts" class="col-12 col-lg-4 col-form-label">{{ help.maxAccounts.title }}</label>
                 {% ifequal userType 0 %}
-                <label for="maxAccounts" class="col-12 col-lg-4 col-form-label">{{ _("Maximum accounts") }}</label>
                 <div class="col-12 col-lg-8">
                     <div class="input-group">
                         <span class="input-group-addon">{{ domain.accounts }} /</span>
@@ -38,7 +38,6 @@
                     </div>
                 </div>
                 {% else %}
-                <label for="maxAccounts" class="col-12 col-lg-4 col-form-label">{{ _("Accounts") }}</label>
                 <div class="col-12 col-lg-8">
                     <p class="form-control-static">{{ domain.accounts }}/{% if domain.maxAccounts > 0 %}{{ domain.maxAccounts }}{% else %}{{ _("unlimited") }}{% endif %}</p>
                 </div>
@@ -46,21 +45,21 @@
             </div>
             
             <div class="form-group row">
-                <label for="domainQuota" class="col-12 col-lg-4 col-form-label">{{ _("Domain quota") }}</label>
+                <label for="domainQuota" class="col-12 col-lg-4 col-form-label">{{ help.domainQuota.title }}</label>
                 <div class="col-12 col-lg-8">
                     {% ifequal userType 0 %}
                     <div class="input-group">
-                        <input type="number" id="domainQuota" name="domainQuota" class="form-control" value="{{ domain.domainQuota|default:defDomainQuota }}" min="0" aria-describedby="domainQuotaKiB" required{% if userType != 0 %} disabled{% endif %}>
+                        <input type="number" id="domainQuota" name="domainQuota" class="form-control" value="{{ domain.domainQuota|default:defDomainQuota }}" min="0" aria-describedby="domainQuotaKiB" required>
                         <span class="input-group-addon" id="domainQuotaKiB">KiB</span>
                     </div>
                     {% else %}
-                    <p class="form-control-static">{{ _(domain.domainQuota) }} KiB</p>
+                    <p class="form-control-static">{% if domain.domainQuota > 0 %}{{ _(domain.domainQuota) }} KiB{% else %}{{ _("unlimited") }}{% endif %}</p>
                     {% endifequal %}
                 </div>
             </div>
             
             <div class="form-group row">
-                <label for="quota" class="col-12 col-lg-4 col-form-label">{{ _("Default quota") }}</label>
+                <label for="quota" class="col-12 col-lg-4 col-form-label">{{ help.quota.title }}</label>
                 <div class="col-12 col-lg-8">
                     <div class="input-group">
                         <input type="number" id="quota" name="quota" class="form-control" value="{{ domain.quota|default:defQuota}}" min="0"{% if userType != 0 %} max="domain.domainQuota|default:defDomainQuota" {% endif %}aria-describedby="quotaKiB" required>
@@ -70,15 +69,15 @@
             </div>
             
             <div class="form-group row">
-                <label for="folders" class="col-12 col-lg-4 col-form-label">{{ _("Default folders") }}</label>
+                <label for="folders" class="col-12 col-lg-4 col-form-label">{{ help.folders.title }}</label>
                 <div class="col-12 col-lg-8">
-                    <input type="text" id="folders" name="folders" class="form-control" value="{% for folder in domain.folders %}{{ folder.name }}{% if not forloop.last %},{% endif %}{% endfor %}" placeholder="{{ _("Default folders") }}">
+                    <input type="text" id="folders" name="folders" class="form-control" value="{% for folder in domain.folders %}{{ folder.name }}{% if not forloop.last %},{% endif %}{% endfor %}" placeholder="{{ _("e.g. Trash,Spam,Drafts,Sent Messages") }}">
                 </div>
             </div>
             
-            {% ifequal userType 0 %}           
+            {% ifequal userType 0 %}
             <div class="form-group row">
-                <label for="freeNames" class="col-6 col-lg-4">{{ _("Allow free names") }}</label>
+                <label for="freeNames" class="col-6 col-lg-4">{{ help.freeNames.title }}</label>
                 <div class="col">
                     <div class="form-check">
                         <input type="checkbox" id="freeNames" name="freeNames" value="1"{% if domain.freeNames %} checked{% endif %}>
@@ -87,7 +86,7 @@
             </div>
             
             <div class="form-group row">
-                <label for="freeAddress" class="col-6 col-lg-4">{{ _("Allow free addresses") }}</label>
+                <label for="freeAddress" class="col-6 col-lg-4">{{ help.freeAddress.title }}</label>
                 <div class="col">
                     <div class="form-check">
                         <input type="checkbox" id="freeAddress" name="freeAddress" value="1"{% if domain.freeAddress %} checked{% endif %}>
@@ -98,14 +97,14 @@
             {% else %}
             
             <div class="form-group row">
-                <label class="col-6 col-lg-4 col-form-label">{{ _("Free names allowed") }}</label>
+                <label class="col-6 col-lg-4 col-form-label">{{ help.freeNames.title }}</label>
                 <div class="col">
                     <i class="fa fa-{% if domain.freeNames %}check{% else %}times{% endif %}"></i>
                 </div>
             </div>
             
             <div class="form-group row">
-                <label class="col-6 col-lg-4 col-form-label">{{ _("Free addresses allowed") }}</label>
+                <label class="col-6 col-lg-4 col-form-label">{{ help.freeAddress.title }}</label>
                 <div class="col">
                     <i class="fa fa-{% if domain.freeAddress %}check{% else %}times{% endif %}"></i>
                 </div>
@@ -129,7 +128,24 @@
         <div class="card">
             <div class="card-header"><i class="fa fa-life-ring"></i> {{ _("Help") }}</div>
             <div class="card-block">
-                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur. Donec ut libero sed arcu vehicula ultricies a non tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ut gravida lorem. Ut turpis felis, pulvinar a semper sed, adipiscing id dolor. Pellentesque auctor nisi id magna consequat sagittis. Curabitur dapibus enim sit amet elit pharetra tincidunt feugiat nisl imperdiet. Ut convallis libero in urna ultrices accumsan. Donec sed odio eros. Donec viverra mi quis quam pulvinar at malesuada arcu rhoncus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. In rutrum accumsan ultricies. Mauris vitae nisi at sem facilisis semper ac in est.</p>
+                <h6 class="card-subtitle text-muted">{{ help.prefix.title }}</h6>
+                <p class="card-text mb-2">{{ help.prefix.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.created.title }}</h6>
+                <p class="card-text mb-2">{{ help.created.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.updated.title }}</h6>
+                <p class="card-text mb-2">{{ help.updated.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.maxAccounts.title }}</h6>
+                <p class="card-text mb-2">{{ help.maxAccounts.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.domainQuota.title }}</h6>
+                <p class="card-text mb-2">{{ help.domainQuota.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.quota.title }}</h6>
+                <p class="card-text mb-2">{{ help.quota.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.folders.title }}</h6>
+                <p class="card-text mb-2">{{ help.folders.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.freeNames.title }}</h6>
+                <p class="card-text mb-2">{{ help.freeNames.text }}</p>
+                <h6 class="card-subtitle text-muted">{{ help.freeAddress.title }}</h6>
+                <p class="card-text mb-2">{{ help.freeAddress.text }}</p>
             </div>
         </div>
     

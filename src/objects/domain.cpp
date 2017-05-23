@@ -31,8 +31,12 @@
 #include <Cutelyst/Plugins/Authentication/authenticationuser.h>
 #include <Cutelyst/Plugins/Session/Session>
 #include <QUrl>
+#include <algorithm>
+#include <vector>
 
 Q_LOGGING_CATEGORY(SK_DOMAIN, "skaffari.domain")
+
+#define DOMAIN_STASH_KEY "domain"
 
 Domain::Domain() : d(new DomainData)
 {
@@ -350,13 +354,30 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
 
     if (Q_UNLIKELY(!q.exec())) {
         errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to check if prefix is alredy in use."));
+        qCCritical(SK_DOMAIN, "Failed to check if prefix %s for new domain %s is already in use: %s", qUtf8Printable(prefix), qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
         return dom;
     }
 
     if (Q_UNLIKELY(q.next())) {
         errorData->setErrorType(SkaffariError::InputError);
         errorData->setErrorText(c->translate("Domain", "The prefix “%1” is already in use by another domain.").arg(prefix));
+        qCWarning(SK_DOMAIN, "Failed to create domain %s: prefix %s is already in use by %s", qUtf8Printable(domainName), qUtf8Printable(prefix), qUtf8Printable(q.value(0).toString()));
         return dom;
+    }
+
+    q = CPreparedSqlQueryThread(QStringLiteral("SELECT id FROM domain WHERE domain_name = :domain_name"));
+    q.bindValue(QStringLiteral(":domain_name"), QUrl::toAce(domainName));
+
+    if (Q_UNLIKELY(!q.exec())) {
+        errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to check if domain name is already in use."));
+        qCCritical(SK_DOMAIN, "Failed to check if new domain %s already exists in database: %s", qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
+        return dom;
+    }
+
+    if (Q_UNLIKELY(q.next())) {
+        errorData->setErrorType(SkaffariError::InputError);
+        errorData->setErrorText(c->translate("Domain", "The domain name “%1” is already in use.").arg(domainName));
+        qCWarning(SK_DOMAIN, "Failed to create domain %s: name is already in use by domain ID %u", domainName.toUtf8().constData(), q.value(0).value<quint32>());
     }
 
     const quint32 maxAccounts = params.value(QStringLiteral("maxAccounts")).toULong();
@@ -393,6 +414,7 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
                 foldersVect.append(Folder(folderId, domainId, folder));
             } else {
                 errorData->setSqlError(q.lastError());
+                qCCritical(SK_DOMAIN, "Failed to create folder %s for new domain %s in database: %s", qUtf8Printable(folder), qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
                 q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
                 q.bindValue(QStringLiteral(":domain_id"), domainId);
                 q.exec();
@@ -421,6 +443,11 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
         dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, (quint64)dom.getDomainQuotaUsed() * 1024));
     } else {
         errorData->setSqlError(q.lastError());
+        qCCritical(SK_DOMAIN, "Failed to insert new domain %s into database: %s", qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
+    }
+
+    if (dom.isValid()) {
+        qCInfo(SK_DOMAIN, "%s created domain %s (ID: %u)", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(domainName), dom.id());
     }
 
     return dom;
@@ -472,26 +499,28 @@ Domain Domain::get(Cutelyst::Context *c, quint32 domId, SkaffariError *errorData
     } else {
         if (q.lastError().type() != QSqlError::NoError) {
             errorData->setSqlError(q.lastError());
+            qCCritical(SK_DOMAIN, "Failed to query database for domain with ID %u: %s", domId, qUtf8Printable(q.lastError().text()));
         } else {
             errorData->setErrorType(SkaffariError::ApplicationError);
             errorData->setErrorText(c->translate("Domain", "The domain with ID %1 could not be found in the database.").arg(domId));
+            qCWarning(SK_DOMAIN, "Domain ID %u not found in database.", domId);
         }
     }
 
-    q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username FROM domainadmin da JOIN adminuser a ON a.id = da.admin_id WHERE da.domain_id = :domain_id"));
-    q.bindValue(QStringLiteral(":domain_id"), dom.id());
+    if (dom.isValid()) {
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username FROM domainadmin da JOIN adminuser a ON a.id = da.admin_id WHERE da.domain_id = :domain_id"));
+        q.bindValue(QStringLiteral(":domain_id"), dom.id());
 
-    if (Q_LIKELY(q.exec())) {
-        QVector<SimpleAdmin> admins;
-        if (q.next()) {
-            admins.append(SimpleAdmin(q.value(0).value<quint32>(), q.value(1).toString()));
+        if (Q_LIKELY(q.exec())) {
+            QVector<SimpleAdmin> admins;
+            while (q.next()) {
+                admins.append(SimpleAdmin(q.value(0).value<quint32>(), q.value(1).toString()));
+            }
+            dom.setAdmins(admins);
         } else {
-            errorData->setErrorType(SkaffariError::InputError);
-            errorData->setErrorText(c->translate("Domain", "There is no domain with database ID %1.").arg(domId));
+            qCCritical(SK_DOMAIN, "Failed to query domain administrators for domain %s from database: %s", qUtf8Printable(dom.getName()), qUtf8Printable(q.lastError().text()));
+            errorData->setSqlError(q.lastError());
         }
-        dom.setAdmins(admins);
-    } else {
-        errorData->setSqlError(q.lastError());
     }
 
     return dom;
@@ -539,6 +568,12 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
         }
     } else {
         errorData->setSqlError(q.lastError());
+        qCCritical(SK_DOMAIN) << "Failed to query domain list from database:" << q.lastError().text();
+    }
+
+    if (lst.size() > 1) {
+        DomainNameCollator dnc(c->locale());
+        std::sort(lst.begin(), lst.end(), dnc);
     }
 
     return lst;
@@ -554,6 +589,7 @@ bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error)
     Q_ASSERT_X(domain, "remove domain", "invalid domain");
 
     if (!Account::remove(c, error, domain)) {
+        qCCritical(SK_DOMAIN, "Failed to remove domain %s", domain->getName().toUtf8().constData());
         return ret;
     }
 
@@ -562,6 +598,7 @@ bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error)
 
     if (Q_UNLIKELY(!q.exec())) {
         error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain to admin connections from database."));
+        qCCritical(SK_DOMAIN, "Failed to remove domain to admin connections for domain %s from database: %s. Abort removing domain.", qUtf8Printable(domain->getName()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -570,6 +607,7 @@ bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error)
 
     if (Q_UNLIKELY(!q.exec())) {
         error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain default folders from database."));
+        qCCritical(SK_DOMAIN, "Failed to remove default folders for domain %s from database: %s. Abort removing domain.", domain->getName().toUtf8().constData(), q.lastError().text().toUtf8().constData());
         return ret;
     }
 
@@ -578,10 +616,13 @@ bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error)
 
     if (!q.exec()) {
         error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain %1 from database.").arg(domain->getName()));
+        qCCritical(SK_DOMAIN, "Failed to remove domain %s from database: %s", domain->getName().toUtf8().constData(), q.lastError().text().toUtf8().constData());
         return ret;
     }
 
     ret = true;
+
+    qCInfo(SK_DOMAIN, "%s removed domain %s (ID: %u)", c->stash(QStringLiteral("userName")).toString().toUtf8().constData(), domain->getName().toUtf8().constData(), domain->id());
 
     return ret;
 }
@@ -624,6 +665,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
 
         if (!q.exec()) {
             e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain %1 in database.").arg(d->getName()));
+            qCCritical(SK_DOMAIN, "Failed to update domain %s in database: %s", d->getName().toUtf8().constData(), q.lastError().text().toUtf8().constData());
             return ret;
         }
 
@@ -646,6 +688,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
 
         if (!q.exec()) {
             e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain %1 in database.").arg(d->getName()));
+            qCCritical(SK_DOMAIN, "Failed to update domain %s in database: %s", d->getName().toUtf8().constData(), q.lastError().text().toUtf8().constData());
             return ret;
         }
 
@@ -656,6 +699,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
     } else {
         e->setErrorType(SkaffariError::AutorizationError);
         e->setErrorText(c->translate("Domain", "You are not authorized to update this domain."));
+        qCWarning(SK_DOMAIN, "Access denied: %s tried to update domain %s (ID: %u)", c->stash(QStringLiteral("userName")).toString().toUtf8().constData(), d->getName().toUtf8().constData(), d->id());
         return ret;
     }
 
@@ -720,6 +764,10 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         d->setFolders(foldersVect);
     }
 
+    if (ret) {
+        qCInfo(SK_DOMAIN) << c->stash(QStringLiteral("userName")).toString() << "updated domain" << d->getName();
+    }
+
     return ret;
 }
 
@@ -732,7 +780,7 @@ void Domain::toStash(Cutelyst::Context *c, quint32 domainId)
     Domain d = Domain::get(c, domainId, &e);
     if (Q_LIKELY(d.isValid())) {
         c->stash({
-                     {QStringLiteral("domain"), QVariant::fromValue<Domain>(d)},
+                     {QStringLiteral(DOMAIN_STASH_KEY), QVariant::fromValue<Domain>(d)},
                      {QStringLiteral("site_title"), d.getName()}
                  });
     } else {
@@ -750,7 +798,7 @@ Domain Domain::fromStash(Cutelyst::Context *c)
 {
     Domain d;
 
-    d = c->stash(QStringLiteral("domain")).value<Domain>();
+    d = c->stash(QStringLiteral(DOMAIN_STASH_KEY)).value<Domain>();
 
     return d;
 }
@@ -763,8 +811,10 @@ bool Domain::checkAccess(Cutelyst::Context *c, quint32 domainId)
     Cutelyst::AuthenticationUser user = Cutelyst::Authentication::user(c);
 
     if (user.value(QStringLiteral("type")).value<qint16>() == 0) {
+        // this is a super administrator, access granted for all domains
         allowed = true;
     } else if (domainId > 0) {
+        // this is a domain administrator, access granted only for connected domains
         allowed = (user.value(QStringLiteral("domains")).value<QVariantList>().contains(domainId));
     }
 
@@ -774,6 +824,7 @@ bool Domain::checkAccess(Cutelyst::Context *c, quint32 domainId)
                      {QStringLiteral("site_title"), c->translate("Domain", "Access denied")}
                  });
         c->res()->setStatus(403);
+        qCWarning(SK_DOMAIN, "Access denied: %s tried to access domain with ID: %u)", c->stash(QStringLiteral("userName")).toString().toUtf8().constData(), domainId);
     }
 
     return allowed;

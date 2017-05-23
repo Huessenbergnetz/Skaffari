@@ -25,6 +25,9 @@ set(skaffari_SRCS
     objects/folder.cpp
     objects/folder.h
     objects/folder_p.h
+    objects/helpentry.cpp
+    objects/helpentry.h
+    objects/helpentry_p.h
     utils/language.cpp
     utils/language.h
     utils/language_p.h

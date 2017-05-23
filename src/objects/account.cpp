@@ -33,8 +33,11 @@
 #include <QSqlDatabase>
 #include <QRegularExpression>
 #include <QUrl>
+#include <QStringList>
 
 Q_LOGGING_CATEGORY(SK_ACCOUNT, "skaffari.account")
+
+#define ACCOUNT_STASH_KEY "account"
 
 Account::Account() :
     d(new AccountData)
@@ -331,8 +334,12 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     Q_ASSERT_X(!p.empty(), "create account", "empty parameters");
     Q_ASSERT_X(d.isValid(), "create account", "invalid domain object");
 
+    // if domain as prefix is enabled, the username will be the local part of the email address
+    // if additionally fqun is enabled, it will a fully qualified user name (email address like user@example.com
+    // if both are disabled, the username will be the entered username
     const QString username = SkaffariConfig::imapDomainasprefix() ? p.value(QStringLiteral("localpart")).trimmed() + (SkaffariConfig::imapFqun() ? QLatin1Char('@') : QLatin1Char('.')) + d.getName() : p.value(QStringLiteral("username")).trimmed();
 
+    // start checking if the username is already in use
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id FROM accountuser WHERE username = :username"));
     q.bindValue(QStringLiteral(":username"), username);
 
@@ -346,9 +353,12 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         e->setErrorText(c->translate("Account", "Username %1 is already in use.").arg(username));
         return a;
     }
+    // end checking if the username is already in use
 
+    // construct the email address from local part and domain name
     const QString email = p.value(QStringLiteral("localpart")) + QLatin1Char('@') + d.getName();
 
+    // start checking if the email address is already in use
     q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :email"));
     q.bindValue(QStringLiteral(":email"), email);
 
@@ -362,7 +372,9 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         e->setErrorType(SkaffariError::InputError);
         return a;
     }
+    // end checking if the email address is already in use
 
+    // start encrypting the password
     const QString password = p.value(QStringLiteral("password"));
     Password pw(password);
     const QByteArray encpw = pw.encrypt(SkaffariConfig::accPwMethod(), SkaffariConfig::accPwAlgorithm(), SkaffariConfig::accPwRounds());
@@ -372,6 +384,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         e->setErrorType(SkaffariError::ConfigError);
         return a;
     }
+    // end encrypting the password
 
     bool imap = p.contains(QStringLiteral("imap"));
     bool pop = p.contains(QStringLiteral("pop"));
@@ -380,6 +393,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     const quint32 quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULong();
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
 
+    // start converting the entered valid until time into UTC
     QDateTime validUntil = QDateTime::fromString(p.value(QStringLiteral("validUntil"), QStringLiteral("2998-12-31 23:59:59")), QStringLiteral("yyyy-MM-dd HH:mm:ss"));
     QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), QStringLiteral("UTC")).toByteArray());
     if (userTz == QTimeZone::utc()) {
@@ -388,6 +402,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         validUntil.setTimeZone(userTz);
         validUntil = validUntil.toUTC();
     }
+    // end converting the entered valid until time into UTC
 
     q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, prefix, domain_name, imap, pop, sieve, smtpauth, quota, created_at, updated_at, valid_until) "
                                          "VALUES (:domain_id, :username, :password, :prefix, :domain_name, :imap, :pop, :sieve, :smtpauth, :quota, :created_at, :updated_at, :valid_until)"));
@@ -414,7 +429,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     const quint32 id = q.lastInsertId().value<quint32>();
 
     q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
-    q.bindValue(QStringLiteral(":alias"), email);
+    q.bindValue(QStringLiteral(":alias"), addressToACE(email));
     q.bindValue(QStringLiteral(":dest"), username);
     q.bindValue(QStringLiteral(":username"), username);
     q.bindValue(QStringLiteral(":status"), 1);
@@ -427,6 +442,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         return a;
     }
 
+    // start creating the mailbox on the IMAP server, according to the skaffari settings
     bool mailboxCreated = true;
     Account::CreateMailbox createMailbox = SkaffariConfig::imapCreatemailbox();
 
@@ -537,7 +553,9 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
             }
         }
     }
+    // end creating the mailbox on the IMAP server, according to the skaffari settings
 
+    // revert our changes to the database if mailbox creation failed
     if (!mailboxCreated) {
         q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
         q.bindValue(QStringLiteral(":id"), id);
@@ -746,12 +764,16 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
         q2.exec();
         QStringList emailAddresses;
         while (q2.next()) {
-            emailAddresses << q2.value(0).toString();
+            emailAddresses << addressFromACE(q2.value(0).toString());
+        }
+        if (emailAddresses.size() > 1) {
+            emailAddresses.sort();
         }
 
         q2 = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
         q2.bindValue(QStringLiteral(":username"), username);
         q2.exec();
+
         QStringList aliases;
         bool _keepLocal = false;
         while (q2.next()) {
@@ -765,6 +787,9 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
                     }
                 }
             }
+        }
+        if (aliases.size() > 1) {
+            aliases.sort();
         }
 
         Account a(q.value(0).value<quint32>(),
@@ -843,7 +868,11 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
     q.exec();
     QStringList emailAddresses;
     while (q.next()) {
-        emailAddresses << q.value(0).toString();
+        emailAddresses << addressFromACE(q.value(0).toString());
+    }
+
+    if (emailAddresses.size() > 1) {
+        emailAddresses.sort();
     }
 
     a.setAddresses(emailAddresses);
@@ -863,6 +892,9 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
                 }
             }
         }
+    }
+    if (aliases.size() > 1) {
+        aliases.sort();
     }
 
     a.setForwards(aliases);
@@ -890,7 +922,7 @@ void Account::toStash(Cutelyst::Context *c, const Domain &d, quint32 accountId)
     Account a = Account::get(c, &e, d, accountId);
     if (Q_LIKELY(a.isValid())) {
         c->stash({
-                     {QStringLiteral("account"), QVariant::fromValue<Account>(a)},
+                     {QStringLiteral(ACCOUNT_STASH_KEY), QVariant::fromValue<Account>(a)},
                      {QStringLiteral("site_subtitle"), a.getUsername()}
                  });
     } else {
@@ -907,7 +939,7 @@ void Account::toStash(Cutelyst::Context *c, const Domain &d, quint32 accountId)
 Account Account::fromStash(Cutelyst::Context *c)
 {
     Account a;
-    a = c->stash(QStringLiteral("account")).value<Account>();
+    a = c->stash(QStringLiteral(ACCOUNT_STASH_KEY)).value<Account>();
     return a;
 }
 
@@ -1035,8 +1067,8 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
         }
 
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET alias = :aliasnew WHERE alias = :aliasold AND username = :username"));
-        q.bindValue(QStringLiteral(":aliasnew"), address);
-        q.bindValue(QStringLiteral(":aliasold"), oldAddress);
+        q.bindValue(QStringLiteral(":aliasnew"), addressToACE(address));
+        q.bindValue(QStringLiteral(":aliasold"), addressToACE(oldAddress));
         q.bindValue(QStringLiteral(":username"), a->getUsername());
 
         if (Q_UNLIKELY(!q.exec())) {
@@ -1047,6 +1079,9 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
         QStringList addresses = a->getAddresses();
         addresses.removeOne(oldAddress);
         addresses.append(address);
+        if (addresses.size() > 1) {
+            addresses.sort();
+        }
         a->setAddresses(addresses);
     }
 
@@ -1095,7 +1130,7 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
-    q.bindValue(QStringLiteral(":alias"), address);
+    q.bindValue(QStringLiteral(":alias"), addressToACE(address));
     q.bindValue(QStringLiteral(":dest"), a->getUsername());
     q.bindValue(QStringLiteral(":username"), a->getUsername());
     q.bindValue(QStringLiteral(":status"), 1);
@@ -1107,6 +1142,9 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const
 
     QStringList addresses = a->getAddresses();
     addresses.append(address);
+    if (address.size() > 1) {
+        addresses.sort();
+    }
     a->setAddresses(addresses);
 
     qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "added email address" << address << "to account" << a->getUsername();
@@ -1126,7 +1164,7 @@ bool Account::removeEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
     Q_ASSERT_X(a, "update email", "invalid account object");
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :address"));
-    q.bindValue(QStringLiteral(":address"), address);
+    q.bindValue(QStringLiteral(":address"), addressToACE(address));
 
     if (!q.exec()) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to remove email address %1 from account %2.").arg(address, a->getUsername()));
@@ -1233,6 +1271,10 @@ bool Account::updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a,
             checkedForwards.removeLast();
         }
 
+        if (checkedForwards.size() > 1) {
+            checkedForwards.sort();
+        }
+
         a->setForwards(checkedForwards);
         a->setKeepLocal(_keepLocal);
 
@@ -1248,3 +1290,29 @@ bool Account::updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a,
     return ret;
 }
 
+
+
+QString Account::addressFromACE(const QString &address)
+{
+    QString addressUtf8;
+
+    const int atIdx = address.lastIndexOf(QLatin1Char('@'));
+    const QStringRef addressDomainPart = address.midRef(atIdx + 1);
+    const QStringRef addressLocalPart = address.leftRef(atIdx);
+    addressUtf8 = addressLocalPart + QLatin1Char('@') + QUrl::fromAce(addressDomainPart.toLatin1());
+
+    return addressUtf8;
+}
+
+
+QString Account::addressToACE(const QString &address)
+{
+    QString addressACE;
+
+    const int atIdx = address.lastIndexOf(QLatin1Char('@'));
+    const QStringRef addressDomainPart = address.midRef(atIdx + 1);
+    const QStringRef addressLocalPart = address.leftRef(atIdx);
+    addressACE = addressLocalPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(addressDomainPart.toString()));
+
+    return addressACE;
+}

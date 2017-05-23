@@ -16,43 +16,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIMPLEDOMAIN_P_H
-#define SIMPLEDOMAIN_P_H
+#ifndef HELPENTRY_H
+#define HELPENTRY_H
 
-#include "simpledomain.h"
-#include <QSharedData>
-#include <QCollator>
+#include <QSharedDataPointer>
+#include <grantlee5/grantlee/metatype.h>
 
-class SimpleDomainNameCollator : public QCollator
+class HelpEntryData;
+
+class HelpEntry
 {
 public:
-    SimpleDomainNameCollator(const QLocale &locale) :
-        QCollator(locale)
-    {}
+    HelpEntry();
+    HelpEntry(const QString &title, const QString &text);
+    HelpEntry(const HelpEntry &other);
+    HelpEntry& operator=(const HelpEntry &other);
+    ~HelpEntry();
 
-    bool operator() (const SimpleDomain &left, const SimpleDomain &right) { return (compare(left.name(), right.name()) < 0); }
+    QString getTitle() const;
+    QString getText() const;
+
+protected:
+    QSharedDataPointer<HelpEntryData> d;
 };
 
-class SimpleDomainData : public QSharedData
-{
-public:
-    SimpleDomainData() {}
+Q_DECLARE_METATYPE(HelpEntry)
+Q_DECLARE_TYPEINFO(HelpEntry, Q_MOVABLE_TYPE);
 
-    SimpleDomainData(quint32 _id, const QString &_name) :
-        id(_id),
-        name(_name)
-    {}
+GRANTLEE_BEGIN_LOOKUP(HelpEntry)
+QVariant var;
+if (property == QLatin1String("title")) {
+    var.setValue(object.getTitle());
+} else if (property == QLatin1String("text")) {
+    var.setValue(object.getText());
+}
+return var;
+GRANTLEE_END_LOOKUP
 
-    SimpleDomainData(const SimpleDomainData &other) :
-        QSharedData(other),
-        id(other.id),
-        name(other.name)
-    {}
-
-    ~SimpleDomainData() {}
-
-    quint32 id = 0;
-    QString name;
-};
-
-#endif // SIMPLEDOMAIN_P_H
+#endif // HELPENTRY_H

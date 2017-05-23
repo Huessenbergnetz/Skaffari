@@ -74,6 +74,14 @@ public:
      */
     QString name() const;
 
+    /*!
+     * \brief Returns a list of domains for the admin defined by \a adminId.
+     * \param c         Pointer to the current context, used for localization.
+     * \param e         Pointer to an object taking occuring errors.
+     * \param userType  The type of the admin user to determine domain access.
+     * \param adminId   The database ID of the admin user to determine domain access.
+     * \return          List of simple domain objects.
+     */
     static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, quint16 userType, quint32 adminId);
 
 private:

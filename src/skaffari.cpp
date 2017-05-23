@@ -42,6 +42,7 @@
 #include "objects/adminaccount.h"
 #include "objects/account.h"
 #include "objects/folder.h"
+#include "objects/helpentry.h"
 
 #include "utils/language.h"
 #include "utils/skaffariconfig.h"
@@ -82,6 +83,7 @@ bool Skaffari::init()
     qRegisterMetaType<AdminAccount>();
     qRegisterMetaType<Language>();
     qRegisterMetaType<Account>();
+    qRegisterMetaType<HelpEntry>();
 
     Grantlee::registerMetaType<Folder>();
     Grantlee::registerMetaType<Domain>();
@@ -90,6 +92,7 @@ bool Skaffari::init()
     Grantlee::registerMetaType<AdminAccount>();
     Grantlee::registerMetaType<Language>();
     Grantlee::registerMetaType<Account>();
+    Grantlee::registerMetaType<HelpEntry>();
 
     if (!isInitialized) {
         qCDebug(SK_CORE) << "Initializing configuration.";
@@ -202,8 +205,9 @@ bool Skaffari::initDb() const
             db.setPassword(dbpass);
 
             if (dbhost[0] == QLatin1Char('/')) {
-                db.setConnectOptions(QStringLiteral("UNIX_SOCKET=%1").arg(dbhost));
+                db.setConnectOptions(QStringLiteral("UNIX_SOCKET=%1;MYSQL_OPT_RECONNECT=1;CLIENT_INTERACTIVE=1").arg(dbhost));
             } else {
+                db.setConnectOptions(QStringLiteral("MYSQL_OPT_RECONNECT=1;CLIENT_INTERACTIVE=1"));
                 db.setHostName(dbhost);
                 db.setPort(dbport);
             }

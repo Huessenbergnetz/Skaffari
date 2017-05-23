@@ -16,43 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIMPLEDOMAIN_P_H
-#define SIMPLEDOMAIN_P_H
+#ifndef HELPENTRY_P_H
+#define HELPENTRY_P_H
 
-#include "simpledomain.h"
+#include "helpentry.h"
 #include <QSharedData>
-#include <QCollator>
 
-class SimpleDomainNameCollator : public QCollator
+class HelpEntryData : public QSharedData
 {
 public:
-    SimpleDomainNameCollator(const QLocale &locale) :
-        QCollator(locale)
+    HelpEntryData() {}
+
+    HelpEntryData(const QString &_title, const QString &_text) :
+        title(_title),
+        text(_text)
     {}
 
-    bool operator() (const SimpleDomain &left, const SimpleDomain &right) { return (compare(left.name(), right.name()) < 0); }
-};
-
-class SimpleDomainData : public QSharedData
-{
-public:
-    SimpleDomainData() {}
-
-    SimpleDomainData(quint32 _id, const QString &_name) :
-        id(_id),
-        name(_name)
-    {}
-
-    SimpleDomainData(const SimpleDomainData &other) :
+    HelpEntryData(const HelpEntryData &other) :
         QSharedData(other),
-        id(other.id),
-        name(other.name)
+        title(other.title),
+        text(other.text)
     {}
 
-    ~SimpleDomainData() {}
+    ~HelpEntryData() {}
 
-    quint32 id = 0;
-    QString name;
+    QString title;
+    QString text;
 };
 
-#endif // SIMPLEDOMAIN_P_H
+#endif // HELPENTRY_P_H
