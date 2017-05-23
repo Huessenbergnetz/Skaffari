@@ -574,6 +574,8 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     a.setHumanQuota(Utils::humanBinarySize(c, (quint64)a.getQuota() * 1024));
     a.setHumanUsage(Utils::humanBinarySize(c, (quint64)a.getUsage() * 1024));
 
+    qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "created a new account" << username << "for domain" << d.getName();
+
     return a;
 }
 
@@ -659,6 +661,8 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
 
     domain->setAccounts(domain->getAccounts() - 1);
     domain->setDomainQuotaUsed(domain->getDomainQuotaUsed() - quota);
+
+    qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "removed account" << username << "from domain" << domain->getName();
 
     ret = true;
 
@@ -983,6 +987,8 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const C
     a->setQuota(quota);
     a->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
 
+    qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "updated account" << a->getUsername() << "for domain" << a->getDomainName();
+
     ret = true;
 
     return ret;
@@ -1044,6 +1050,8 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
         a->setAddresses(addresses);
     }
 
+    qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "updated email address" << oldAddress << "of account" << a->getUsername();
+
     ret = true;
 
     return ret;
@@ -1101,6 +1109,8 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const
     addresses.append(address);
     a->setAddresses(addresses);
 
+    qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "added email address" << address << "to account" << a->getUsername();
+
     ret = true;
 
     return ret;
@@ -1126,6 +1136,8 @@ bool Account::removeEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
     QStringList addresses = a->getAddresses();
     addresses.removeOne(address);
     a->setAddresses(addresses);
+
+    qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "removed email address" << address << "from account" << a->getUsername();
 
     ret = true;
 
@@ -1228,6 +1240,8 @@ bool Account::updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a,
         a->setForwards(QStringList());
         a->setKeepLocal(false);
     }
+
+    qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "updated the forwards for account" << a->getUsername();
 
     ret = true;
 
