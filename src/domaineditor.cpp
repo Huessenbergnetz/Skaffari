@@ -22,6 +22,7 @@
 #include "objects/skaffarierror.h"
 #include "objects/helpentry.h"
 #include "utils/skaffariconfig.h"
+#include "utils/utils.h"
 
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
 #include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
@@ -57,6 +58,10 @@ void DomainEditor::index(Context *c)
                  {QStringLiteral("template"), QStringLiteral("domain/index.html")},
                  {QStringLiteral("site_title"), c->translate("DomainEditor", "Domains")}
              });
+
+    if (e.type() != SkaffariError::NoError) {
+        c->setStash(QStringLiteral("error_msg"), e.errorText());
+    }
 }
 
 
@@ -445,13 +450,36 @@ void DomainEditor::add_account(Context* c)
             c->setStash(QStringLiteral("username"), username);
         }
 
+        QHash<QString,HelpEntry> help;
+        help.insert(QStringLiteral("accounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "Number of accounts that are currently part of this domain. If there is a maximum account limit defined, it will be shown, too.")));
+        if (dom.getDomainQuota() > 0) {
+            help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "Used and total amount of storage quota for this domain.")));
+            help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1.").arg(Utils::humanBinarySize(c, freeQuota))));
+        } else {
+            help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it.")));
+        }
+        if (!SkaffariConfig::imapDomainasprefix()) {
+            if (dom.isFreeNamesEnabled()) {
+                help.insert(QStringLiteral("username"), HelpEntry(c->translate("DomainEditor", "User name"), c->translate("DomainEditor", "You can freely select a username, as long as it is not in use by another account. The user name has not to be the same as the local part of the email address.")));
+            } else {
+                help.insert(QStringLiteral("username"), HelpEntry(c->translate("DomainEditor", "User name"), c->translate("DomainEditor", "You can not define your own username but have to use the system generated user name.")));
+            }
+        } else {
+            if (SkaffariConfig::imapFqun()) {
+                help.insert(QStringLiteral("username"), HelpEntry(c->translate("DomainEditor", "User name"), c->translate("DomainEditor", "The email address you define here will be the user name for this account.")));
+            } else {
+                help.insert(QStringLiteral("username"), HelpEntry(c->translate("DomainEditor", "User name"), c->translate("DomainEditor", "The email address you define here will be the user name for this account, but with the @ sign substituted by a dot.")));
+            }
+        }
+
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("domain/add_account.html")},
                      {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Add account")},
                      {QStringLiteral("domainasprefix"), SkaffariConfig::imapDomainasprefix()},
                      {QStringLiteral("fqun"), SkaffariConfig::imapFqun()},
                      {QStringLiteral("minpasswordlength"), SkaffariConfig::accPwMinlength()},
-                     {QStringLiteral("freequota"), freeQuota}
+                     {QStringLiteral("freequota"), freeQuota},
+                     {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)}
                  });
     }
 }
