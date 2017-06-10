@@ -18,7 +18,7 @@
                     <th>{{ _("Actions") }}</th>
                     <th>{{ _("Domain name") }}</th>
                     <th>{{ _("Prefix") }}</th>
-                    <th class="text-right">{{ _("Max. accounts") }}</th>
+                    <th class="text-right">{{ _("Accounts") }}</th>
                     <th class="text-right">{{ _("Default quota") }}</th>
                     <th class="text-right">{{ _("Domain quota") }}</th>
                 </tr>
@@ -38,7 +38,7 @@
                     </td>
                     <td><a href="/domain/{{ domain.id }}/accounts" title="{{ _("Manage accounts") }}">{{ domain.name }}</a></td>
                     <td>{{ domain.prefix }}</td>
-                    <td class="text-right">{% if domain.maxAccounts > 0 %}{{ domain.accounts }}/{{ _(domain.maxAccounts) }}{% else %}{{ _("unlimited") }}{% endif %}</td>
+                    <td class="text-right">{% if domain.maxAccounts > 0 %}{{ _(domain.accounts) }}/{{ _(domain.maxAccounts) }}{% else %}{{ _(domain.accounts) }}{% endif %}</td>
                     <td class="text-right">{% if domain.quota > 0 %}{{ domain.humanQuota }}{% else %}{{ _("not set") }}{% endif %}</td>
                     {% if domain.domainQuota > 0 %}
                     <td class="text-right">
