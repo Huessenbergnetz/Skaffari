@@ -456,6 +456,7 @@ void DomainEditor::add_account(Context* c)
             help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "Used and total amount of storage quota for this domain.")));
             help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1.").arg(Utils::humanBinarySize(c, freeQuota))));
         } else {
+            help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "This domain has no overall quota limit, so the value shows the sum of the quota limit of all accounts in this domain.")));
             help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it.")));
         }
         if (!SkaffariConfig::imapDomainasprefix()) {
@@ -466,11 +467,24 @@ void DomainEditor::add_account(Context* c)
             }
         } else {
             if (SkaffariConfig::imapFqun()) {
-                help.insert(QStringLiteral("username"), HelpEntry(c->translate("DomainEditor", "User name"), c->translate("DomainEditor", "The email address you define here will be the user name for this account.")));
+                help.insert(QStringLiteral("username"), HelpEntry(c->translate("DomainEditor", "User name"), c->translate("DomainEditor", "The email address defined here will be the user name for this account.")));
             } else {
-                help.insert(QStringLiteral("username"), HelpEntry(c->translate("DomainEditor", "User name"), c->translate("DomainEditor", "The email address you define here will be the user name for this account, but with the @ sign substituted by a dot.")));
+                help.insert(QStringLiteral("username"), HelpEntry(c->translate("DomainEditor", "User name"), c->translate("DomainEditor", "The email address defined here will be the user name for this account, but with the @ sign substituted by a dot.")));
             }
         }
+        help.insert(QStringLiteral("localpart"), HelpEntry(c->translate("DomainEditor", "Email address"), c->translate("DomainEditor", "Enter the local part of the main email address for this account. You can add more alias addresses to this account later on.")));
+        if (dom.getDomainQuota() > 0) {
+            help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You have to set a quota limit for this account that is greater than zero and smaller or equal to %1.").arg(Utils::humanBinarySize(c, freeQuota))));
+        } else {
+            help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You can set a quota limit for this account or disable it by setting a quota of 0.")));
+        }
+        help.insert(QStringLiteral("password"), HelpEntry(c->translate("DomainEditor", "Password"), c->translate("DomainEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
+        help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("DomainEditor", "Password confirmation"), c->translate("DomainEditor", "Confirm your entered password.")));
+        help.insert(QStringLiteral("validUntil"), HelpEntry(c->translate("DomainEditor", "Valid until"), c->translate("DomainEditor", "You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future.")));
+        help.insert(QStringLiteral("imap"), HelpEntry(c->translate("DomainEditor", "IMAP Access"), c->translate("DomainEditor", "If enabled, the user of this account can access the mailbox through the IMAP protocol.")));
+        help.insert(QStringLiteral("pop"), HelpEntry(c->translate("DomainEditor", "POP3 Access"), c->translate("DomainEditor", "If enabled, the user of this account can access the mailbox through the POP3 protocol.")));
+        help.insert(QStringLiteral("sieve"), HelpEntry(c->translate("DomainEditor", "Sieve Access"), c->translate("DomainEditor", "If enabled, the user of this account can manage the Sieve scripts on the server.")));
+        help.insert(QStringLiteral("smtpauth"), HelpEntry(c->translate("DomainEditor", "SMTP Access"), c->translate("DomainEditor", "If enabled, the user of this account can send emails via this server through the SMTP protocol.")));
 
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("domain/add_account.html")},
