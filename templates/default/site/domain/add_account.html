@@ -2,140 +2,115 @@
     <div class="col"><h2><i class="fa fa-user-plus"></i> {{ _("Create new account") }} <small class="text-muted">{{ domain.name }}</small></h2></div>
 </div>
 
-<div class="row mt-1">
-    <section class="col-12 col-sm-12 col-md-6">
-        <form method="post">
-        
-            <div class="form-group row">
-                <label class="col-12 col-lg-4 col-form-label">{{ _("Accounts") }}</label>
-                <div class="col-12 col-lg-8">
-                    <p class="form-control-static">{{ _(domain.accounts) }}{% if domain.maxAccounts > 0 %}/{{ _(domain.maxAccounts) }}{% endif %}</p>
-                </div>
-            </div>
-            
-            {% if domain.domainQuota > 0 %}
-            <div class="form-group row">
-                <label class="col-12 col-lg-4 col-form-label">{{ _("Domain quota") }}</label>
-                <div class="col-12 col-lg-8">
-                    <p class="form-control-static">{{ _(domain.domainQuotaUsed) }}/{{ _(domain.domainQuota) }} KiB</p>
-                </div>
-            </div>
-            {% endif %}
-        
-            {% if not domainasprefix %}
-            <div class="form-group row">
-                <label for="username" class="col-12 col-lg-4 col-form-label">{{ _("Account name") }}</label>
-                <div class="col-12 col-lg-8{% if validationErrors.username.count %} has-warning{% endif %}">
-                    {% if domain.freeNames %}
-                    <input type="text" id="username" name="username" class="form-control{% if validationErrors.username.count %} form-control-warning{% endif %}" value="{{ username }}" placeholder="{{ _("Account name") }}" required>
-                    {% else %}
-                    <p class="form-control-static">{{ username }}</p>
-                    {% endif %}
-                    {% if validationErrors.username.count %}<div class="form-control-feedback"><small>{{ validationErrors.username.0 }}</small></div>{% endif %}
-                </div>
-            </div>
-            {% endif %}
-            
-            {% if domainasprefix or not domain.freeNames %}
-            <input type="hidden" name="username" value="{{ username }}">
-            {% endif %}
-        
-            <div class="form-group row">
-                <label for="localpart" class="col-12 col-lg-4 col-form-label">{{ _("Email address") }}</label>
-                <div class="col-12 col-lg-8{% if validationErrors.localpart.count %} has-warning{% endif %}">
-                    <div class="input-group">
-                        <input type="text" id="localpart" name="localpart" class="form-control{% if validationErrors.localpart.count %} form-control-warning{% endif %}" value="{{ localpart }}" placeholder="{{ _("Local part") }}" aria-describedby="email-addon" required>
-                        <span class="input-group-addon" id="email-addon">@{{ domain.name }}</span>
-                    </div>
-                    {% if validationErrors.localpart.count %}<div class="form-control-feedback"><small>{{ validationErrors.localpart.0 }}</small></div>{% endif %}
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="quota" class="col-12 col-lg-4 col-form-label">{{ _("Quota") }}</label>
-                <div class="col-12 col-lg-8{% if validationErrors.quota.count %} has-warning{% endif %}">
-                    <div class="input-group">
-                        <input type="number" id="quota" name="quota" class="form-control{% if validationErrors.localpart.count %} form-control-warning{% endif %}" value="{{ quota|default:domain.quota }}" placeholder="{{ _("Quota") }}" aria-describedby="quota-addon" min="0" max="{{ freequota }}">
-                        <span class="input-group-addon" id="quota-addon">KiB</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="password" class="col-12 col-lg-4 col-form-label">{{ _("Password") }}</label>
-                <div class="col-12 col-lg-8{% if validationErrors.password.count %} has-warning{% endif %}">
-                    <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ _("Password") }}" required>
-                    {% if validationErrors.password.count %}<div class="form-control-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="password_confirmation" class="col-12 col-lg-4 col-form-label">{{ _("Password confirmation") }}</label>
-                <div class="col-12 col-lg-8{% if validationErrors.password.count %} has-warning{% endif %}">
-                    <input type="password" id="password_confirmation" name="password_confirmation" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ _("Password confirmation") }}" required>
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="validUntil" class="col-12 col-lg-4 col-form-label">{{ _("Valid until") }}</label>
-                <div class="col-12 col-lg-8{% if validationErrors.validUntil.count %} has-warning{% endif %}">
-                    <input type="text" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD HH:mm:ss") }}" value="{{ validUntil|default:"2998-12-31 23:59:59" }}" required>
-                    {% if validationErrors.validUntil.count %}<div class="form-control-feedback"><small>{{ validationErrors.validUntil.0 }}</small></div>{% endif %}
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="imap" class="col-6 col-lg-4">{{ _("IMAP Access") }}</label>
-                <div class="col">
-                    <div class="form-check">
-                        <input type="checkbox" id="imap" name="imap" value="1"{% if imap %} checked{% endif %}>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="pop" class="col-6 col-lg-4">{{ _("POP3 Access") }}</label>
-                <div class="col">
-                    <div class="form-check">
-                        <input type="checkbox" id="pop" name="pop" value="1"{% if pop %} checked{% endif %}>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="sieve" class="col-6 col-lg-4">{{ _("Sieve Access") }}</label>
-                <div class="col">
-                    <div class="form-check">
-                        <input type="checkbox" id="sieve" name="sieve" value="1"{% if sieve %} checked{% endif %}>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="smtpauth" class="col-6 col-lg-4">{{ _("SMTP Access") }}</label>
-                <div class="col">
-                    <div class="form-check">
-                        <input type="checkbox" id="smtpauth" name="smtpauth" value="1"{% if smtpauth %} checked{% endif %}>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <div class="col">
-                    <a href="/domain/{{ domain.id }}/accounts" class="btn btn-outline-warning">{{ _("Cancel") }}</a>
-                    <button type="submit" class="btn btn-outline-primary">{{ _("Create") }}</button>
-                </div>
-            </div>
-        
-        </form>
-    </section>
-
-    <section class="col-12 col-sm-12 col-md-6">
-        <div class="card">
-            <div class="card-header"><i class="fa fa-life-ring"></i> {{ _("Help") }}</div>
-            <div class="card-block">
-                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur. Donec ut libero sed arcu vehicula ultricies a non tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ut gravida lorem. Ut turpis felis, pulvinar a semper sed, adipiscing id dolor. Pellentesque auctor nisi id magna consequat sagittis. Curabitur dapibus enim sit amet elit pharetra tincidunt feugiat nisl imperdiet. Ut convallis libero in urna ultrices accumsan. Donec sed odio eros. Donec viverra mi quis quam pulvinar at malesuada arcu rhoncus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. In rutrum accumsan ultricies. Mauris vitae nisi at sem facilisis semper ac in est.</p>
-            </div>
+<form method="post">
+    <div class="row mt-1">
+    
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="form-control-label" for="accounts">{{ help.accounts.title }}</label>
+            <p class="form-control-static" id="accounts" aria-describedby="accountsDesc">{{ _(domain.accounts) }}{% if domain.maxAccounts > 0 %}/{{ _(domain.maxAccounts) }}{% endif %}</p>
+            <small id="accountsDesc" class="form-text text-muted">{{ help.accounts.text }}</small>
         </div>
-    </section>
-</div>
+        
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="form-control-label" for="domainQuota">{{ help.domainQuota.title }}</label>
+            <p class="form-control-static" id="domainQuota" aria-describedby="domainQuotaDesc">{{ domain.humanDomainQuotaUsed }}{% if domain.domainQuota > 0 %}/{{ domain.humanDomainQuota }}{% endif %}</p>
+            <small id="domainQuotaDesc" class="form-text text-muted">{{ help.domainQuota.text }}</small>
+        </div>
+        
+        {% if not domainasprefix %}
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.username.count %} has-warning{% endif %}">
+            <label class="form-control-label" for="username">{{ help.username.title }}</label>
+            {% if domain.freeNames %}
+            <input type="text" id="username" name="username" class="form-control{% if validationErrors.username.count %} form-control-warning{% endif %}" value="{{ username }}" placeholder="{{ help.username.title }}" aria-describedby="usernameDesc" required>
+            {% else %}
+            <p class="form-control-static" id="username" aria-describedby="usernameDesc">{{ username }}</p>
+            {% endif %}
+            {% if validationErrors.username.count %}<div class="form-control-feedback"><small>{{ validationErrors.username.0 }}</small></div>{% endif %}
+            <small id="usernameDesc" class="form-text text-muted">{{ help.username.text }}</small>
+        </div>
+        {% endif %}
+        
+        {% if domainasprefix or not domain.freeNames %}
+        <input type="hidden" name="username" value="{{ username }}">
+        {% endif %}
+        
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.localpart.count %} has-warning{% endif %}">
+            <label class="form-control-label" for="localpart">{{ help.localpart.title }}</label>
+            <div class="input-group">
+                <input type="text" id="localpart" name="localpart" class="form-control{% if validationErrors.localpart.count %} form-control-warning{% endif %}" value="{{ localpart }}" placeholder="{{ _("Local part") }}" aria-describedby="localpartDesc" required>
+                <span class="input-group-addon">@{{ domain.name }}</span>
+            </div>
+            {% if validationErrors.localpart.count %}<div class="form-control-feedback"><small>{{ validationErrors.localpart.0 }}</small></div>{% endif %}
+            <small id="localpartDesc" class="form-text text-muted">{{ help.localpart.text }}</small>
+        </div>
+        
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.quota.count %} has-warning{% endif %}">
+            <label for="quota" class="form-control-label">{{ help.quota.title }}</label>
+            <div class="input-group">
+                <input type="number" id="quota" name="quota" class="form-control{% if validationErrors.quota.count %} form-control-warning{% endif %}" value="{{ quota|default:domain.quota }}" placeholder="{{ help.quota.title }}" aria-describedby="quotaDesc" min="0" max="{{ freequota }}">
+                <span class="input-group-addon" id="quota-addon" title="{{ _("1 Kibibyte (KiB) = 1024 byte") }}">KiB</span>
+            </div>
+            {% if validationErrors.quota.count %}<div class="form-control-feedback"><small>{{ validationErrors.quota.0 }}</small></div>{% endif %}
+            <small id="quotaDesc" class="form-text text-muted">{{ help.quota.text }}</small>
+        </div>
+        
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.password.count %} has-warning{% endif %}">
+            <label class="form-control-label" for="password">{{ help.password.title }}</label>
+            <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ help.password.title }}" aria-describedby="passwordDesc" required>
+            {% if validationErrors.password.count %}<div class="form-control-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
+            <small id="passwordDesc" class="form-text text-muted">{{ help.password.text }}</small>
+        </div>
+        
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="form-control-label" for="password_confirmation">{{ help.password_confirmation.title }}</label>
+            <input type="password" id="password_confirmation" name="password_confirmation" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ help.password_confirmation.title }}" aria-describedby="passwordConfirmationDesc" required>
+            <small id="passwordConfirmationDesc" class="form-text text-muted">{{ help.password_confirmation.text }}</small>
+        </div>
+        
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.validUntil.count %} has-warning{% endif %}">
+            <label class="form-control-label" for="validUntil">{{ help.validUntil.title }}</label>
+            <input type="text" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD HH:mm:ss") }}" value="{{ validUntil|default:"2998-12-31 23:59:59" }}" aria-describedby="validUntilDesc" required>
+            {% if validationErrors.validUntil.count %}<div class="form-control-feedback"><small>{{ validationErrors.validUntil.0 }}</small></div>{% endif %}
+            <small id="validUntilDesc" class="form-text text-muted">{{ help.validUntil.text }}</small>
+        </div>
+        
+        <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" id="imap" name="imap" value="1" aria-describedby="imapDesc"{% if imap %} checked{% endif %}>
+                {{ help.imap.title }}
+            </label>
+            <small id="imapDesc" class="form-text text-muted">{{ help.imap.text }}</small>
+        </div>
+        
+        <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" id="pop" name="pop" value="1" aria-describedby="popDesc"{% if pop %} checked{% endif %}>
+                {{ help.pop.title }}
+            </label>
+            <small id="popDesc" class="form-text text-muted">{{ help.pop.text }}</small>
+        </div>
+        
+        <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" id="sieve" name="sieve" value="1" aria-describedby="sieveDesc"{% if sieve %} checked{% endif %}>
+                {{ help.sieve.title }}
+            </label>
+            <small id="sieveDesc" class="form-text text-muted">{{ help.sieve.text }}</small>
+        </div>
+        
+        <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" id="smtpauth" name="smtpauth" value="1" aria-describedby="smtpauthDesc"{% if smtpauth %} checked{% endif %}>
+                {{ help.smtpauth.title }}
+            </label>
+            <small id="smtpauthDesc" class="form-text text-muted">{{ help.smtpauth.text }}</small>
+        </div>
+        
+    </div>
+    
+    <div class="mt-1">
+        <a href="/domain/{{ domain.id }}/accounts" class="btn btn-outline-warning float-left" role="button"><i class="fa fa-times"></i> {{ _("Cancel") }}</a>
+        <button type="submit" class="btn btn-outline-primary float-right"><i class="fa fa-save"></i> {{ _("Create") }}</button>
+        <div class="clearfix"></div>
+    </div>
+</form>
