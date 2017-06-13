@@ -614,6 +614,8 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
     }
 
     if (Q_UNLIKELY(!imap.setAcl(username, SkaffariConfig::imapUser()))) {
+        // if Skaffari is responsible for mailbox creation, direct or indirect,
+        // remove will fail if we can not delete the mailbox on the IMAP server
         if (SkaffariConfig::imapCreatemailbox() > DoNotCreate) {
             e->setImapError(imap.lastError(), c->translate("Account", "Failed to set ACL for IMAP admin to delete account %1.").arg(username));
             qCCritical(SK_ACCOUNT, "Failed to set ACL for IMAP admin to delete account %s: %s", qUtf8Printable(username), qUtf8Printable(imap.lastError().errorText()));
@@ -623,6 +625,8 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
     }
 
     if (Q_UNLIKELY(!imap.deleteMailbox(username))) {
+        // if Skaffari is responsible for mailbox creation, direct or indirect,
+        // remove will fail if we can not delete the mailbox on the IMAP server
         if (SkaffariConfig::imapCreatemailbox() > DoNotCreate) {
             e->setImapError(imap.lastError(), c->translate("Account", "Failed to delete account %1 from IMAP server.").arg(username));
             qCCritical(SK_ACCOUNT, "Failed to delete account %s from IMAP server: %s", qUtf8Printable(username), qUtf8Printable(imap.lastError().errorText()));
