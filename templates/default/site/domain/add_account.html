@@ -16,6 +16,9 @@
             <p class="form-control-static" id="domainQuota" aria-describedby="domainQuotaDesc">{{ domain.humanDomainQuotaUsed }}{% if domain.domainQuota > 0 %}/{{ domain.humanDomainQuota }}{% endif %}</p>
             <small id="domainQuotaDesc" class="form-text text-muted">{{ help.domainQuota.text }}</small>
         </div>
+    
+    </div>
+    <div class="row">
         
         {% if not domainasprefix %}
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.username.count %} has-warning{% endif %}">
@@ -73,6 +76,9 @@
             {% if validationErrors.validUntil.count %}<div class="form-control-feedback"><small>{{ validationErrors.validUntil.0 }}</small></div>{% endif %}
             <small id="validUntilDesc" class="form-text text-muted">{{ help.validUntil.text }}</small>
         </div>
+        
+    </div>
+    <div class="row">
         
         <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
             <label class="form-check-label">
