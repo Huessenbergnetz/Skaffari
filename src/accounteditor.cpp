@@ -22,7 +22,9 @@
 #include "objects/domain.h"
 #include "objects/skaffarierror.h"
 #include "objects/simpledomain.h"
+#include "objects/helpentry.h"
 #include "utils/skaffariconfig.h"
+#include "utils/utils.h"
 
 #include <Cutelyst/Plugins/Session/Session>
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
@@ -58,7 +60,7 @@ void AccountEditor::edit(Context* c)
         Account a = Account::fromStash(c);
         Domain dom = Domain::fromStash(c);
 
-        const quint32 freeQuota = (dom.getDomainQuota() - dom.getDomainQuotaUsed());
+        const quint32 freeQuota = (dom.getDomainQuota() - dom.getDomainQuotaUsed() + a.getQuota());
 
         auto req = c->req();
 
@@ -87,7 +89,7 @@ void AccountEditor::edit(Context* c)
                         enoughQuotaLeft = false;
 
                         c->setStash(QStringLiteral("error_msg"),
-                                    c->translate("DomainEditor", "There is not enough free quota on this domain. Please lower the quota for the account to a maximum of %1 KiB.").arg(freeQuota));
+                                    c->translate("AccountEditor", "There is not enough free quota on this domain. Please lower the quota for the account to a maximum of %1 KiB.").arg(freeQuota));
                     }
 
                 }
@@ -100,7 +102,7 @@ void AccountEditor::edit(Context* c)
                                         p)) {
 
                         Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
-                        c->setStash(QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated account %1.").arg(a.getUsername()));
+                        c->setStash(QStringLiteral("status_msg"), c->translate("AccountEditor", "Successfully updated account %1.").arg(a.getUsername()));
                         c->setStash(QStringLiteral("account"), QVariant::fromValue<Account>(a));
                     } else {
                         c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -109,9 +111,28 @@ void AccountEditor::edit(Context* c)
             }
         }
 
+        QHash<QString,HelpEntry> help;
+        help.insert(QStringLiteral("created"), HelpEntry(c->translate("AccountEditor", "Created"), c->translate("AcountEditor", "Date and time this account has been created.")));
+        help.insert(QStringLiteral("updated"), HelpEntry(c->translate("AccountEditor", "Updated"), c->translate("AccountEditor", "Daten and tme this account has been updated the last time.")));
+        help.insert(QStringLiteral("quota"), HelpEntry(c->translate("AccountEditor", "Quota"), c->translate("AccountEditor", "")));
+        if (dom.getDomainQuota() > 0) {
+            help.insert(QStringLiteral("quota"), HelpEntry(c->translate("AccountEditor", "Quota"), c->translate("AccountEditor", "You have to set a storage quota for this account that does not exceed %1.").arg(Utils::humanBinarySize(c, static_cast<quint64>(freeQuota) * Q_UINT64_C(1024)))));
+        } else {
+            help.insert(QStringLiteral("quota"), HelpEntry(c->translate("AccountEditor", "Quota"), c->translate("AccountEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it.")));
+        }
+        help.insert(QStringLiteral("password"), HelpEntry(c->translate("AccountEditor", "Password"), c->translate("AccountEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
+        help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AccountEditor", "Password confirmation"), c->translate("AccountEditor", "Confirm your entered password.")));
+        help.insert(QStringLiteral("validUntil"), HelpEntry(c->translate("AccountEditor", "Valid until"), c->translate("AccountEditor", "You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future.")));
+        help.insert(QStringLiteral("imap"), HelpEntry(c->translate("AccountEditor", "IMAP Access"), c->translate("AccountEditor", "If enabled, the user of this account can access the mailbox through the IMAP protocol.")));
+        help.insert(QStringLiteral("pop"), HelpEntry(c->translate("AccountEditor", "POP3 Access"), c->translate("AccountEditor", "If enabled, the user of this account can access the mailbox through the POP3 protocol.")));
+        help.insert(QStringLiteral("sieve"), HelpEntry(c->translate("AccountEditor", "Sieve Access"), c->translate("AccountEditor", "If enabled, the user of this account can manage the Sieve scripts on the server.")));
+        help.insert(QStringLiteral("smtpauth"), HelpEntry(c->translate("AccountEditor", "SMTP Access"), c->translate("AccountEditor", "If enabled, the user of this account can send emails via this server through the SMTP protocol.")));
+
+
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("account/edit.html")},
-                     {QStringLiteral("edit"), true}
+                     {QStringLiteral("edit"), true},
+                     {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)}
                  });
     }
 }
@@ -131,7 +152,7 @@ void AccountEditor::remove(Context* c)
                 if (Account::remove(c, &e, a.getUsername(), &dom)) {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, c->translate("AccountEditor", "Successfully removed account of user %1.").arg(a.getUsername()))));
                 } else {
-                    c->setStash(QStringLiteral("error_msg"), c->translate("AccountEditor", "Failed to remove account from database."));
+                    c->setStash(QStringLiteral("error_msg"), c->translate("AccountEditor", "Failed to remove account. %1").arg(e.errorText()));
                 }
             } else {
                 c->setStash(QStringLiteral("error_msg"), c->translate("AccountEditor", "The entered user name does not match the user name of the account you want to delete."));
