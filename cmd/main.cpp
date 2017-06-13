@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
     app.setOrganizationName(QStringLiteral("Buschtrommel"));
     app.setOrganizationDomain(QStringLiteral("buschmann23.de"));
-    app.setApplicationName(QStringLiteral("skaffarictl"));
+    app.setApplicationName(QStringLiteral("skaffaricmd"));
     app.setApplicationVersion(QStringLiteral(SKAFFARI_VERSION));
 
     QCommandLineParser parser;
