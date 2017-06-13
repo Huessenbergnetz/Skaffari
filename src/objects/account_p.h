@@ -27,7 +27,7 @@ class AccountData: public QSharedData
 public:
     AccountData() {}
 
-    AccountData(quint32 _id, quint32 _domainId, const QString &_username, const QString &_prefix, const QString &_domainName, bool _imap, bool _pop, bool _sieve, bool _smptauth, const QStringList &_addresses, const QStringList _forwards, qint32 _quota, qint32 _usage, const QDateTime &_created, const QDateTime &_updated, const QDateTime &_validUntil, bool _keepLocal) :
+    AccountData(quint32 _id, quint32 _domainId, const QString &_username, const QString &_prefix, const QString &_domainName, bool _imap, bool _pop, bool _sieve, bool _smptauth, const QStringList &_addresses, const QStringList _forwards, quint32 _quota, quint32 _usage, const QDateTime &_created, const QDateTime &_updated, const QDateTime &_validUntil, bool _keepLocal) :
         id(_id),
         domainId(_domainId),
         username(_username),
@@ -83,9 +83,9 @@ public:
     bool smtpauth = false;
     QStringList addresses;
     QStringList forwards;
-    qint32 quota = 0;
+    quint32 quota = 0;
     QString humanQuota;
-    qint32 usage = 0;
+    quint32 usage = 0;
     QString humanUsage;
     QDateTime created;
     QDateTime updated;

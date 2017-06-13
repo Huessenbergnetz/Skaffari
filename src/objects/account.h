@@ -72,7 +72,7 @@ public:
      * \param validUntil    Date and time until this account is valid
      * \param keepLocal     \c true if fowarded emails should be kept local too
      */
-    Account(quint32 id, quint32 domainId, const QString &username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, qint32 quota, qint32 usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, bool keepLocal);
+    Account(quint32 id, quint32 domainId, const QString &username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quint32 quota, quint32 usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, bool keepLocal);
 
     /*!
      * \brief Creates a copy of \a other.
@@ -194,7 +194,7 @@ public:
      *
      * \sa getHumanQuota(), setQuota()
      */
-	qint32 getQuota() const;
+    quint32 getQuota() const;
     /*!
      * \brief Returns a better human readable string of the quota defined for this account.
      *
@@ -210,7 +210,7 @@ public:
      *
      * \sa getHumanUsage(), setUsage()
      */
-    qint32 getUsage() const;
+    quint32 getUsage() const;
     /*!
      * \brief Returns a better human redable string of the quota used by this account.
      *
@@ -329,7 +329,7 @@ public:
      * \brief Sets the quota in KiB that is defined for this account.
      * \sa getQuota()
      */
-    void setQuota(qint32 nQuota);
+    void setQuota(quint32 nQuota);
     /*!
      * \brief Sets the human readable string of quota defined for this account.
      * \sa getHumanQuota(), Utils::humanBinarySize()
@@ -339,7 +339,7 @@ public:
      * \brief Sets the amount of quota used by this account in KiB.
      * \sa getUsage()
      */
-    void setUsage(qint32 nUsage);
+    void setUsage(quint32 nUsage);
     /*!
      * \brief Sets the human readale string of quota used by this account.
      * \sa getHumanUsage(), Utils::humanBinarySize()
