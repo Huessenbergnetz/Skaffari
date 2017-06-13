@@ -339,12 +339,21 @@ void DomainEditor::add_account(Context* c)
                 bool enoughQuotaLeft = true;
                 if (dom.getDomainQuota() > 0) {
 
-                    if (freeQuota < p.value(QStringLiteral("quota")).toULong()) {
+                    const quint32 accQuota = p.value(QStringLiteral("quota")).toULong();
+                    if (freeQuota < accQuota) {
 
                         enoughQuotaLeft = false;
 
                         c->setStash(QStringLiteral("error_msg"),
                                     c->translate("DomainEditor", "There is not enough free quota on this domain. Please lower the quota for the new account to a maximum of %1 KiB.").arg(freeQuota));
+                    }
+
+                    if ((dom.getDomainQuota() > 0) && (accQuota <= 0)) {
+
+                        enoughQuotaLeft = false;
+
+                        c->setStash(QStringLiteral("error_msg"),
+                                    c->translate("DomainEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(dom.getHumanDomainQuota()));
                     }
 
                 }
@@ -454,7 +463,7 @@ void DomainEditor::add_account(Context* c)
         help.insert(QStringLiteral("accounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "Number of accounts that are currently part of this domain. If there is a maximum account limit defined, it will be shown, too.")));
         if (dom.getDomainQuota() > 0) {
             help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "Used and total amount of storage quota for this domain.")));
-            help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1.").arg(Utils::humanBinarySize(c, freeQuota))));
+            help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1.").arg(Utils::humanBinarySize(c, static_cast<quint64>(freeQuota) * Q_UINT64_C(1024)))));
         } else {
             help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "This domain has no overall quota limit, so the value shows the sum of the quota limit of all accounts in this domain.")));
             help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it.")));
@@ -473,11 +482,6 @@ void DomainEditor::add_account(Context* c)
             }
         }
         help.insert(QStringLiteral("localpart"), HelpEntry(c->translate("DomainEditor", "Email address"), c->translate("DomainEditor", "Enter the local part of the main email address for this account. You can add more alias addresses to this account later on.")));
-        if (dom.getDomainQuota() > 0) {
-            help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You have to set a quota limit for this account that is greater than zero and smaller or equal to %1.").arg(Utils::humanBinarySize(c, freeQuota))));
-        } else {
-            help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You can set a quota limit for this account or disable it by setting a quota of 0.")));
-        }
         help.insert(QStringLiteral("password"), HelpEntry(c->translate("DomainEditor", "Password"), c->translate("DomainEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
         help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("DomainEditor", "Password confirmation"), c->translate("DomainEditor", "Confirm your entered password.")));
         help.insert(QStringLiteral("validUntil"), HelpEntry(c->translate("DomainEditor", "Valid until"), c->translate("DomainEditor", "You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future.")));
