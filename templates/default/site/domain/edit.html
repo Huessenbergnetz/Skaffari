@@ -42,7 +42,7 @@
             {% ifequal userType 0 %}
             <div class="input-group">
                 <input type="number" id="domainQuota" name="domainQuota" class="form-control{% if validationErrors.domainQuota.count %} form-control-warning{% endif %}" value="{{ domain.domainQuota|default:defDomainQuota }}" min="0" aria-describedby="domainQuotaDesc" required>
-                <span class="input-group-addon" id="domainQuotaKiB">KiB</span>
+                <span class="input-group-addon" id="domainQuotaKiB" title="{{ _("1 Kibibyte (KiB) = 1024 byte") }}">KiB</span>
             </div>
             {% if validationErrors.domainQuota.count %}<div class="form-control-feedback"><small>{{ validationErrors.domainQuota.0 }}</small></div>{% endif %}
             {% else %}
@@ -55,7 +55,7 @@
             <label class="form-control-label" for="quota">{{ help.quota.title }}</label>
             <div class="input-group">
                 <input type="number" id="quota" name="quota" class="form-control{% if validationErrors.quota.count %} form-control-warning{% endif %}" value="{{ domain.quota|default:defQuota}}" min="0"{% if userType != 0 %} max="domain.domainQuota|default:defDomainQuota" {% endif %} aria-describedby="quotaDesc" required>
-                <span class="input-group-addon" id="quotaKiB">KiB</span>
+                <span class="input-group-addon" id="quotaKiB" title="{{ _("1 Kibibyte (KiB) = 1024 byte") }}">KiB</span>
             </div>
             {% if validationErrors.quota.count %}<div class="form-control-feedback"><small>{{ validationErrors.quota.0 }}</small></div>{% endif %}
             <small id="quotaDesc" class="form-text text-muted">{{ help.quota.text }}</small>
