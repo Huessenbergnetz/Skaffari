@@ -8,7 +8,7 @@ then
     exit 1;
 fi
 
-if [ ! $2 ]
+if [ ! "$2" ]
 then
     echo "Missing output directory";
     exit 2;
@@ -67,14 +67,14 @@ do
 done
 
 pushd /tmp
-rm -f ${2}/${PRJNAME}-${1}.tar.xz
-rm -f ${2}/${PRJNAME}-${1}.tar.gz
-tar -cJf ${2}/${PRJNAME}-${1}.tar.xz ${PRJNAME}-${1}
-tar -czf ${2}/${PRJNAME}-${1}.tar.gz ${PRJNAME}-${1}
+rm -f "${2}/${PRJNAME}-${1}.tar.xz"
+rm -f "${2}/${PRJNAME}-${1}.tar.gz"
+tar -cJf "${2}/${PRJNAME}-${1}.tar.xz" ${PRJNAME}-${1}
+tar -czf "${2}/${PRJNAME}-${1}.tar.gz" ${PRJNAME}-${1}
 rm -rf ${PRJNAME}-${1}
 popd
 
-gpg --armor --detach-sign ${2}/${PRJNAME}-${1}.tar.xz
-gpg --armor --detach-sign ${2}/${PRJNAME}-${1}.tar.gz
+gpg --armor --detach-sign --yes --default-key 3A70A936614C3258 "${2}/${PRJNAME}-${1}.tar.xz"
+gpg --armor --detach-sign --yes --default-key 3A70A936614C3258 "${2}/${PRJNAME}-${1}.tar.gz"
 
 exit 0
