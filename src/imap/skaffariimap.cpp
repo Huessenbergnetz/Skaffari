@@ -313,7 +313,8 @@ std::pair<quint32,quint32> SkaffariIMAP::getQuota(const QString &user)
         QVector<QByteArray> response;
         if (Q_LIKELY(checkResponse(readAll(), tag, &response))) {
             if (Q_UNLIKELY(response.empty())) {
-                m_imapError = SkaffariIMAPError(SkaffariIMAPError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request quota."));
+                qCCritical(SK_IMAP, "Failed to request storage quota for user %s.", user.toUtf8().constData());
+                m_imapError = SkaffariIMAPError(SkaffariIMAPError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request storage quota."));
                 return quota;
             }
             const QByteArray respLine = response.first();
@@ -330,8 +331,14 @@ std::pair<quint32,quint32> SkaffariIMAP::getQuota(const QString &user)
                     endQuota = respLine.indexOf(')', startQuota);
                 }
                 quota.second = respLine.mid(startQuota, endQuota - startQuota).toULong();
+            } else {
+                qCWarning(SK_IMAP, "Can not extract storage quota values for user %s from IMAP server response.", user.toUtf8().constData());
             }
+        } else {
+            qCCritical(SK_IMAP, "Failed to get quota for user %s.", user.toUtf8().constData());
         }
+    } else {
+        connectionTimeOut();
     }
 
     return quota;
@@ -340,25 +347,36 @@ std::pair<quint32,quint32> SkaffariIMAP::getQuota(const QString &user)
 
 bool SkaffariIMAP::setQuota(const QString &user, quint32 quota)
 {
+    bool ok = false;
+
     setNoError();
 
     const QString tag = getTag();
     const QString command = tag + QLatin1String(" SETQUOTA \"user") + m_hierarchysep + user + QLatin1String("\" (STORAGE ") + QString::number(quota) + QLatin1String(")\r\n");
 
     if (Q_UNLIKELY(!sendCommand(command))) {
-        return false;
+        return ok;
     }
 
     if (Q_UNLIKELY(!waitForReadyRead())) {
-        return connectionTimeOut();
+        ok = connectionTimeOut();
+        return ok;
     }
 
-    return checkResponse(readAll(), tag);
+    ok = checkResponse(readAll(), tag);
+
+    if (Q_UNLIKELY(!ok)) {
+        qCCritical(SK_IMAP, "Failed to set quota value of %i for user %s.", quota, qUtf8Printable(user));
+    }
+
+    return ok;
 }
 
 
 bool SkaffariIMAP::createMailbox(const QString &user)
 {
+    bool ok = false;
+
     Q_ASSERT_X(!user.isEmpty(), "create mailbox", "empty username");
 
     setNoError();
@@ -367,14 +385,20 @@ bool SkaffariIMAP::createMailbox(const QString &user)
     const QString command = tag + QLatin1String(" CREATE \"user") + m_hierarchysep + user + QLatin1String("\"\r\n");
 
     if (Q_UNLIKELY(!sendCommand(command))) {
-        return false;
+        return ok;
     }
 
     if (Q_UNLIKELY(!waitForReadyRead())) {
-        return connectionTimeOut();
+        ok = connectionTimeOut();
+        return ok;
     }
 
-    return checkResponse(readAll(), tag);
+    ok = checkResponse(readAll(), tag);
+    if (Q_UNLIKELY(!ok)) {
+        qCCritical(SK_IMAP, "Failed to create mailbox for user %s.", user.toUtf8().constData());
+    }
+
+    return ok;
 }
 
 
@@ -469,6 +493,9 @@ bool SkaffariIMAP::deleteAcl(const QString &mailbox, const QString &user)
 {
     setNoError();
 
+    Q_ASSERT_X(!mailbox.isEmpty(), "delete acl", "empty mailbox name");
+    Q_ASSERT_X(!user.isEmpty(), "delete acl", "empty user name");
+
     const QString tag = getTag();
     const QString command = tag + QLatin1String(" DELETEACL \"user") + m_hierarchysep + mailbox + QLatin1String("\" \"") + user + QLatin1String("\"\r\n");
 
@@ -481,6 +508,42 @@ bool SkaffariIMAP::deleteAcl(const QString &mailbox, const QString &user)
     }
 
     return checkResponse(readAll(), tag);
+}
+
+
+QStringList SkaffariIMAP::getMailboxes()
+{
+    QStringList list;
+
+    setNoError();
+
+    const QString tag = getTag();
+    const QString command = tag + QLatin1String(" LIST \"user.\" %\r\n");
+
+    if (Q_UNLIKELY(!sendCommand(command))) {
+        return list;
+    }
+
+    if (Q_UNLIKELY(!waitForReadyRead())) {
+        return list;
+    }
+
+    QVector<QByteArray> respLines;
+    if (Q_UNLIKELY(!checkResponse(readAll(), tag, &respLines))) {
+        return list;
+    }
+
+    QVector<QByteArray>::const_iterator i;
+    for (i = respLines.cbegin(); i != respLines.cend(); ++i) {
+        const QByteArray line = *i;
+        const int idx = line.lastIndexOf(QByteArrayLiteral("user."));
+        if (idx > -1) {
+            const QByteArray mbox = line.mid(idx + 5);
+            list.append(QString::fromLatin1(mbox));
+        }
+    }
+
+    return list;
 }
 
 
@@ -498,12 +561,14 @@ bool SkaffariIMAP::checkResponse(const QByteArray &data, const QString &tag, QVe
     bool ret = false;
 
     if (Q_UNLIKELY(data.isEmpty())) {
+        qCWarning(SK_IMAP) << "The IMAP response is undefined.";
         m_imapError = SkaffariIMAPError(SkaffariIMAPError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined."));
         return ret;
     }
 
     const QList<QByteArray> lines = data.split('\n');
     if (Q_UNLIKELY(lines.isEmpty())) {
+        qCWarning(SK_IMAP) << "The IMAP response is undefined.";
         m_imapError = SkaffariIMAPError(SkaffariIMAPError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined."));
         return ret;
     }
@@ -547,10 +612,13 @@ bool SkaffariIMAP::checkResponse(const QByteArray &data, const QString &tag, QVe
         }
     } else if (status.startsWith(QByteArrayLiteral("BAD"))) {
         m_imapError = SkaffariIMAPError(SkaffariIMAPError::BadResponse, m_c->translate("SkaffariIMAP", "We received a BAD response from the IMAP server: %1").arg(QString::fromLatin1(status.mid(4))));;
+        qCCritical(SK_IMAP) << "We received a BAD response from the IMAP server:" << QString::fromLatin1(status.mid(4));
     } else if (status.startsWith(QByteArrayLiteral("NO"))) {
         m_imapError = SkaffariIMAPError(SkaffariIMAPError::NoResponse, m_c->translate("SkaffariIMAP", "We received a NO response from the IMAP server: %1").arg(QString::fromLatin1(status.mid(3))));
+        qCCritical(SK_IMAP) << "We received a NO response from the IMAP server:" << QString::fromLatin1(status.mid(3));
     } else {
         m_imapError = SkaffariIMAPError(SkaffariIMAPError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined."));
+        qCCritical(SK_IMAP) << "The IMAP response is undefined.";
     }
 
     return ret;
@@ -686,6 +754,7 @@ bool SkaffariIMAP::sendCommand(const QString &command)
     qCDebug(SK_IMAP) << "Sending command:" << command;
 
     if (Q_UNLIKELY(write(command.toLatin1()) < 0)) {
+        qCCritical(SK_IMAP, "Failed to send command \"%s\" to the IMAP server: %s", qUtf8Printable(command), qUtf8Printable(errorString()));
         m_imapError = SkaffariIMAPError(SkaffariIMAPError::SocketError, m_c->translate("SkaffariIMAP", "Failed to send command to IMAP server: %1").arg(errorString()));
         return false;
     }

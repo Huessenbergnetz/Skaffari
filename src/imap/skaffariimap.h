@@ -66,6 +66,7 @@ public:
     bool createFolder(const QString &folder);
     bool setAcl(const QString &mailbox, const QString &user, const QString &acl = QString());
     bool deleteAcl(const QString &mailbox, const QString &user);
+    QStringList getMailboxes();
 
 	QString errorText() const;
 	SkaffariIMAPError lastError() const;
