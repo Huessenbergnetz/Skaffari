@@ -561,9 +561,9 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                        q.value(10).value<quint32>(),
                        Utils::toUserTZ(c, q.value(11).toDateTime()),
                        Utils::toUserTZ(c, q.value(12).toDateTime()));
-            dom.setHumanQuota(Utils::humanBinarySize(c, (quint64)dom.getQuota() * 1024));
-            dom.setHumanDomainQuota(Utils::humanBinarySize(c, (quint64)dom.getDomainQuota() * 1024));
-            dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, (quint64)dom.getDomainQuotaUsed() * 1024));
+            dom.setHumanQuota(Utils::humanBinarySize(c, static_cast<quint64>(dom.getQuota()) * Q_UINT64_C(1024)));
+            dom.setHumanDomainQuota(Utils::humanBinarySize(c, static_cast<quint64>(dom.getDomainQuota()) * Q_UINT64_C(1024)));
+            dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, static_cast<quint64>(dom.getDomainQuotaUsed()) * Q_UINT64_C(1024)));
             lst.push_back(dom);
         }
     } else {
@@ -808,7 +808,7 @@ bool Domain::checkAccess(Cutelyst::Context *c, quint32 domainId)
 {
     bool allowed = false;
 
-    Cutelyst::AuthenticationUser user = Cutelyst::Authentication::user(c);
+    const Cutelyst::AuthenticationUser user = Cutelyst::Authentication::user(c);
 
     if (user.value(QStringLiteral("type")).value<qint16>() == 0) {
         // this is a super administrator, access granted for all domains
