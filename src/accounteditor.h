@@ -54,6 +54,9 @@ public:
 
     C_ATTR(forwards, :Chained("base") :PathPart("forwards") :Args(0))
     void forwards(Context *c);
+
+    C_ATTR(check, :Chained("base") :PathPart("check") :Args(0))
+    void check(Context *c);
 };
 
 #endif //ACCOUNTEDITOR_H

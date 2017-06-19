@@ -624,7 +624,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
         }
     }
 
-    if (Q_UNLIKELY(!imap.deleteMailbox(username))) {
+    if (!imap.deleteMailbox(username) && (SkaffariConfig::imapCreatemailbox() != DoNotCreate)) {
         // if Skaffari is responsible for mailbox creation, direct or indirect,
         // remove will fail if we can not delete the mailbox on the IMAP server
         if (SkaffariConfig::imapCreatemailbox() > DoNotCreate) {
@@ -1042,6 +1042,108 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const C
     ret = true;
 
     return ret;
+}
+
+
+
+bool Account::check(Cutelyst::Context *c, SkaffariError *e, Account *a, const Domain &d, QStringList *actions)
+{
+    bool ok = false;
+
+    Q_ASSERT_X(c, "check account", "invalid context");
+    Q_ASSERT_X(e, "check account", "invalid error object");
+    Q_ASSERT_X(a, "check account", "invalid account object");
+    Q_ASSERT_X(d.isValid(), "check account", "invalid Domain");
+    Q_ASSERT_X(actions, "check account", "invalid list for performed actions");
+
+    qCInfo(SK_ACCOUNT, "%s started checking account %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(a->getUsername()));
+
+    SkaffariIMAP imap(c);
+    if (Q_UNLIKELY(!imap.login())) {
+        e->setImapError(imap.lastError());
+        return ok;
+    }
+
+    const QStringList mboxes = imap.getMailboxes();
+
+    if (mboxes.empty() && (imap.lastError().type() != SkaffariIMAPError::NoError)) {
+        e->setImapError(imap.lastError(), c->translate("Account", "Failed to get a list of all IMAP maiboxes from the IMAP server."));
+        imap.logout();
+        return ok;
+    }
+
+    if ((SkaffariConfig::imapCreatemailbox() != DoNotCreate) && !mboxes.contains(a->getUsername())) {
+        if (Q_UNLIKELY(!imap.createMailbox(a->getUsername()))) {
+            e->setImapError(imap.lastError());
+            imap.logout();
+            return ok;
+        } else {
+            qCInfo(SK_ACCOUNT, "%s created missing mailbox on IMAP server for user %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(a->getUsername()));
+            actions->append(c->translate("Account", "Created missing mailbox on IMAP server."));
+        }
+    }
+
+    std::pair<quint32,quint32> quota = imap.getQuota(a->getUsername());
+
+    if ((d.getDomainQuota() > 0) && ((a->getQuota() == 0) || (quota.second == 0))) {
+        const quint32 newQuota = (d.getQuota() > 0) ? d.getQuota() : (SkaffariConfig::defQuota() > 0) ? SkaffariConfig::defQuota() : 10240;
+        if (quota.second == 0) {
+            if (Q_UNLIKELY(!imap.setQuota(a->getUsername(), newQuota))) {
+                e->setImapError(imap.lastError());
+                imap.logout();
+                return ok;
+            } else {
+                qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u on IMAP server for user %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), newQuota, qUtf8Printable(a->getUsername()));
+                actions->append(c->translate("Account", "Set correct mailbox storage quota on IMAP server."));
+                quota.second = newQuota;
+            }
+        }
+
+        if (a->getQuota() == 0) {
+            QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET quota = :quota WHERE id = :id"));
+            q.bindValue(QStringLiteral(":quota"), newQuota);
+            q.bindValue(QStringLiteral(":id"), a->getId());
+            if (Q_UNLIKELY(!q.exec())) {
+                e->setSqlError(q.lastError());
+                return ok;
+            } else {
+                qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u in database for user %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), newQuota, qUtf8Printable(a->getUsername()));
+                actions->append(c->translate("Account", "Set correct mailbox storage quota in database."));
+                a->setQuota(newQuota);
+
+                q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET domainquotaused = (SELECT SUM(quota) FROM accountuser WHERE domain_id = :domain_id) WHERE id = :domain_id"));
+                q.bindValue(QStringLiteral(":domain_id"), a->getDomainId());
+                if (Q_UNLIKELY(!q.exec())) {
+                    qCWarning(SK_ACCOUNT) << "Failed to update used domain quota for domain ID" << a->getDomainId();
+                    qCDebug(SK_ACCOUNT) << q.lastError().text();
+                }
+            }
+        }
+    }
+
+    if (quota.second != a->getQuota()) {
+        if (Q_UNLIKELY(!imap.setQuota(a->getUsername(), a->getQuota()))) {
+            e->setImapError(imap.lastError());
+            imap.logout();
+            return ok;
+        } else {
+            qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u on IMAP server for user %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), a->getQuota(), qUtf8Printable(a->getUsername()));
+            actions->append(c->translate("Account", "Set correct mailbox storage quota on IMAP server."));
+            quota.second = a->getQuota();
+        }
+    }
+
+    imap.logout();
+
+    ok = true;
+
+    if (actions->empty()) {
+        qCInfo(SK_ACCOUNT, "Nothing to do for account %s.", qUtf8Printable(a->getUsername()));
+    }
+
+    qCInfo(SK_ACCOUNT, "%s finished checking account %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(a->getUsername()));
+
+    return ok;
 }
 
 

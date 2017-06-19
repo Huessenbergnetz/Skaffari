@@ -33,6 +33,11 @@
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonValue>
+
 using namespace Cutelyst;
 
 AccountEditor::AccountEditor(QObject *parent) : Controller(parent)
@@ -363,5 +368,48 @@ void AccountEditor::forwards(Context *c)
         }
 
         c->setStash(QStringLiteral("template"), QStringLiteral("account/forwards.html"));
+    }
+}
+
+
+void AccountEditor::check(Context *c)
+{
+    if (Domain::accessGranted(c)) {
+        auto a = Account::fromStash(c);
+        auto d = Domain::fromStash(c);
+
+        SkaffariError e(c);
+        QStringList actions;
+        Account::check(c, &e, &a, d, &actions);
+
+        if (c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive)) {
+
+            QJsonObject result;
+            result.insert(QStringLiteral("account"), QJsonValue(a.getUsername()));
+
+            if (e.type() != SkaffariError::NoError) {
+                result.insert(QStringLiteral("error_msg"), QJsonValue(e.errorText()));
+                c->response()->setStatus(Response::InternalServerError);
+            } else {
+                result.insert(QStringLiteral("actions"), QJsonValue(QJsonArray::fromStringList(actions)));
+            }
+
+            QJsonDocument json(result);
+
+            const QByteArray jsonBody = json.toJson(QJsonDocument::Compact);
+
+            c->response()->setJsonBody(json);
+            c->response()->setContentEncoding(QStringLiteral("UTF-8"));
+            c->response()->setContentLength(jsonBody.length());
+
+        } else {
+            if (e.type() != SkaffariError::NoError) {
+                c->setStash(QStringLiteral("error_msg"), e.errorText());
+                c->response()->setStatus(Response::InternalServerError);
+            }
+
+            c->setStash(QStringLiteral("actions"), actions);
+            c->setStash(QStringLiteral("template"), QStringLiteral("account/check.html"));
+        }
     }
 }

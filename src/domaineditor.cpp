@@ -503,6 +503,34 @@ void DomainEditor::add_account(Context* c)
 }
 
 
+void DomainEditor::check(Context *c)
+{
+    if (Domain::accessGranted(c)) {
+
+        auto d = Domain::fromStash(c);
+
+        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id FROM accountuser WHERE domain_id = :domain_id"));
+        q.bindValue(QStringLiteral(":domain_id"), d.id());
+
+        if (Q_LIKELY(q.exec())) {
+            QStringList accountIds;
+            while (q.next()) {
+                accountIds << QString::number(q.value(0).value<quint32>());
+            }
+            c->setStash(QStringLiteral("accountids"), accountIds.join(QLatin1Char(',')));
+        } else {
+            c->setStash(QStringLiteral("error_msg"), c->translate("DomainEditor", "Failed to query all account IDs for domain %1 from database: %2").arg(d.getName(), q.lastError().text()));
+            qCCritical(SK_DOMAIN, "Failed to query all account IDs for domain %s from database: %s", d.getName().toUtf8().constData(), q.lastError().text().toUtf8().constData());
+        }
+
+        c->stash({
+                     {QStringLiteral("template"), QStringLiteral("domain/check.html")},
+                     {QStringLiteral("baseurl"), c->req()->base()}
+                 });
+    }
+}
+
+
 QStringList DomainEditor::trimFolderStrings(const QStringList& folders)
 {
     QStringList trimmed;

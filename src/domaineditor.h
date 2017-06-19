@@ -52,6 +52,9 @@ public:
     C_ATTR(add_account, :Chained("base") :PathPart("add_account") :Args(0))
     void add_account(Context *c);
 
+    C_ATTR(check, :Chained("base") :PathPart("check") :Args(0))
+    void check(Context *c);
+
     C_ATTR(create, :Local("create") :Args(0))
     void create(Context *c);
 

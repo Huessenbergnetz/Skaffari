@@ -45,6 +45,7 @@
                             <a class="dropdown-item" href="/domain/{{ domain.id }}/accounts"><i class="fa fa-users fa-fw"></i> {{ _("Accounts") }}</a>
                             <a class="dropdown-item" href="/domain/{{ domain.id }}/add_account"><i class="fa fa-user-plus fa-fw"></i> {{ _("Add account") }}</a>
                             <a class="dropdown-item" href="/domain/{{ domain.id }}/edit"><i class="fa fa-edit fa-fw"></i> {{ _("Edit domain") }}</a>
+                            <a class="dropdown-item" href="/domain/{{ domain.id }}/check"><i class="fa fa-stethoscope fa-fw"></i> {{ _("Check domain") }}</a>
                             {% ifequal userType 0 %}
                             <a class="dropdown-item" href="/domain/{{ domain.id }}/remove"><i class="fa fa-trash fa-fw"></i> {{ _("Delete domain") }}</a>
                             {% endifequal %}
@@ -62,6 +63,7 @@
                             <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/addresses"><i class="fa fa-envelope-o fa-fw"></i> {{ _("Email addresses") }}</a>
                             <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/forwards"><i class="fa fa-mail-forward fa-fw"></i> {{ _("Forwards") }}</a>
                             {# <a class="dropdown-item" href="#"><i class="fa fa-truck fa-fw"></i> {{ _("Catch all") }}</a> #}
+                            <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/check"><i class="fa fa-stethoscope"></i> {{ _("Check account") }}</a>
                             <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/remove"><i class="fa fa-trash fa-fw"></i> {{ _("Delete account") }}</a>
                         </div>
                     </div>

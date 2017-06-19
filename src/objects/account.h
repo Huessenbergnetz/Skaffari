@@ -472,6 +472,20 @@ public:
     static bool update(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p);
 
     /*!
+     * \brief Checks if all account data is available and creates missing data.
+     *
+     * This will for example check for missing mailbox on the IMAP server and wrong or missing storage quotas.
+     *
+     * \param c Pointer to the current context, used for string translation and user authentication.
+     * \param e Pointer to an object taking information about occuring errors.
+     * \param a Pointer to an Account object that should be checked.
+     * \param d Domain the account belongs to, used for default values.
+     * \param actions Pointer to a list that will contain the actions performed on this account.
+     * \return
+     */
+    static bool check(Cutelyst::Context *c, SkaffariError *e, Account *a, const Domain &d, QStringList *actions);
+
+    /*!
      * \brief Updates a single email address connected to the account pointed to by \a a.
      *
      * If the update fails, the SkaffariError object pointed to by \a e will contain information about occured errors.
