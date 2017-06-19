@@ -33,6 +33,9 @@
 #include <QUrl>
 #include <algorithm>
 #include <vector>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 
 Q_LOGGING_CATEGORY(SK_DOMAIN, "skaffari.domain")
 
@@ -580,6 +583,25 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
 }
 
 
+bool Domain::isAvailable(const QString &domainName)
+{
+    bool available = false;
+
+    Q_ASSERT_X(!domainName.isEmpty(), "check if domain is available", "empty domain name");
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id FROM domain WHERE domain_name = :domain_name"));
+    q.bindValue(QStringLiteral(":domain_name"), QUrl::toAce(domainName));
+
+    if (Q_UNLIKELY(!q.exec())) {
+        qCCritical(SK_DOMAIN, "Failed to check availability of domain name %s: %s", qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
+    } else {
+        available = q.next();
+    }
+
+    return available;
+}
+
+
 bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error)
 {
     bool ret = false;
@@ -819,10 +841,17 @@ bool Domain::checkAccess(Cutelyst::Context *c, quint32 domainId)
     }
 
     if (!allowed) {
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("403.html")},
-                     {QStringLiteral("site_title"), c->translate("Domain", "Access denied")}
-                 });
+        if (c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive)) {
+            QJsonObject json({
+                                 {QStringLiteral("error_msg"), c->translate("Domain", "You are not authorized to access this resource or to perform this action.")}
+                             });
+            c->res()->setJsonBody(QJsonDocument(json));
+        } else {
+            c->stash({
+                         {QStringLiteral("template"), QStringLiteral("403.html")},
+                         {QStringLiteral("site_title"), c->translate("Domain", "Access denied")}
+                     });
+        }
         c->res()->setStatus(403);
         qCWarning(SK_DOMAIN, "Access denied: %s tried to access domain with ID: %u)", c->stash(QStringLiteral("userName")).toString().toUtf8().constData(), domainId);
     }

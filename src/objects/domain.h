@@ -120,6 +120,13 @@ public:
     static std::vector<Domain> list(Cutelyst::Context *c, SkaffariError *errorData, const Cutelyst::AuthenticationUser &user);
 
     /*!
+     * \brief Returns \c true if \a domainName is part of the database.
+     * \param domainName The domain name to check.
+     * \return True if domain name is available.
+     */
+    static bool isAvailable(const QString &domainName);
+
+    /*!
      * \brief Removes the \a domain and all of their accounts from the database and the IMAP server.
      * \todo Remove accounts from IMAP server.
      * \param c         Pointer to the current context, used for translations.
