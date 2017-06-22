@@ -177,11 +177,32 @@ void AccountEditor::addresses(Context *c)
 
         auto d = Domain::fromStash(c);
 
+        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+        QJsonObject json;
+
         if (d.isFreeAddressEnabled()) {
             AuthenticationUser user = Authentication::user(c);
             SkaffariError sde(c);
-            std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().toULong());
-            c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
+            const quint8 userType = user.value(QStringLiteral("type")).value<quint8>();
+            if (isAjax) {
+                const QJsonArray maildomains = SimpleDomain::listJson(c, &sde, userType, user.id().toULong());
+                json.insert(QStringLiteral("maildomains"), maildomains);
+            } else {
+                const std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, userType, user.id().toULong());
+                c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
+            }
+        }
+
+        if (isAjax) {
+            auto a =Account::fromStash(c);
+            json.insert(QStringLiteral("domain_id"), static_cast<qint64>(d.id()));
+            json.insert(QStringLiteral("account_id"), static_cast<qint64>(a.getId()));
+            json.insert(QStringLiteral("addresses"), QJsonArray::fromStringList(a.getAddresses()));
+            json.insert(QStringLiteral("actions_btn_label"), c->translate("AccountEditor", "Email address actions"));
+            json.insert(QStringLiteral("edit_btn_label"), c->translate("AccountEditor", "Edit address"));
+            json.insert(QStringLiteral("delete_btn_label"), c->translate("AccountEditor", "Delete address"));
+            c->res()->setJsonBody(QJsonDocument(json));
+            return;
         }
 
         c->setStash(QStringLiteral("template"), QStringLiteral("account/addresses.html"));
@@ -193,34 +214,51 @@ void AccountEditor::addresses(Context *c)
 void AccountEditor::email(Context *c, const QString &address)
 {
     if (Domain::accessGranted(c)) {
+
         auto a = Account::fromStash(c);
 
+        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+        QJsonObject json;
+
         if (!a.getAddresses().contains(address)) {
-            c->stash({
-                         {QStringLiteral("template"), QStringLiteral("404.html")},
-                         {QStringLiteral("not_found_text"), c->translate("AccountEditor", "The requested email address does not belong to the account %1.").arg(a.getUsername())}
-                     });
-            c->res()->setStatus(404);
+
+            const QString errorMsg = c->translate("AccountEditor", "The requested email address does not belong to the account %1.").arg(a.getUsername());
+
+            if (isAjax) {
+                json.insert(QStringLiteral("error_msg"), QJsonValue(errorMsg));
+                c->res()->setJsonBody(QJsonDocument(json));
+            } else {
+                c->stash({
+                             {QStringLiteral("template"), QStringLiteral("404.html")},
+                             {QStringLiteral("not_found_text"), errorMsg}
+                         });
+            }
+
+            c->res()->setStatus(Response::NotFound);
             return;
         }
 
-        const QStringList parts = address.split(QLatin1Char('@'));
-
-        if (parts.size() == 2) {
-            c->stash({
-                         {QStringLiteral("localpart"), parts.at(0)},
-                         {QStringLiteral("maildomain"), parts.at(1)}
-                     });
-        } else {
-            c->setStash(QStringLiteral("error_msg"), c->translate("AccountEditor", "Invalid email address"));
-        }
-
         auto d = Domain::fromStash(c);
-        if (d.isFreeAddressEnabled()) {
-            AuthenticationUser user = Authentication::user(c);
-            SkaffariError sde(c);
-            std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().toULong());
-            c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
+
+        if (!isAjax) {
+
+            const QStringList parts = address.split(QLatin1Char('@'));
+
+            if (parts.size() == 2) {
+                c->stash({
+                             {QStringLiteral("localpart"), parts.at(0)},
+                             {QStringLiteral("maildomain"), parts.at(1)}
+                         });
+            } else {
+                c->setStash(QStringLiteral("error_msg"), c->translate("AccountEditor", "Invalid email address"));
+            }
+
+            if (d.isFreeAddressEnabled()) {
+                AuthenticationUser user = Authentication::user(c);
+                SkaffariError sde(c);
+                std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().toULong());
+                c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
+            }
         }
 
         if (c->req()->isPost()) {
@@ -230,28 +268,91 @@ void AccountEditor::email(Context *c, const QString &address)
                                    new ValidatorRequired(QStringLiteral("newmaildomain"))
                                });
 
-            ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            const ValidatorResult vr = (isAjax) ? v.validate(c) : v.validate(c, Validator::FillStashOnError);
+
             if (vr) {
+
                 const ParamsMultiMap p = c->req()->bodyParams();
+
                 if (!d.isFreeNamesEnabled() && (p.value(QStringLiteral("newmaildomain")) != d.getName())) {
-                    c->setStash(QStringLiteral("error_msg"), c->translate("AccountEditor", "You can not create email addresses for other domains as long as free addresses are not allowed for this domain."));
+
+                    const QString errorMsg = c->translate("AccountEditor", "You can not create email addresses for other domains as long as free addresses are not allowed for this domain.");
+
+                    if (isAjax) {
+                        json.insert(QStringLiteral("error_msg"), QJsonValue(errorMsg));
+                    } else {
+                        c->setStash(QStringLiteral("error_msg"), errorMsg);
+                    }
+
                 } else {
+
                     SkaffariError e(c);
                     if (Account::updateEmail(c, &e, &a, d, p, address)) {
-                        const ParamsMultiMap successQueryParams = StatusMessage::statusQuery(c, c->translate("AccountEditor", "Successfully updated email address %1 to %2.").arg(address, p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"))));
-                        c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"), QStringList({QString::number(d.id()), QString::number(a.getId())}), QStringList(), successQueryParams));
-                        return;
+
+                        const QString newAddress = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"));
+                        const QString statusMsg = c->translate("AccountEditor", "Successfully changed email address from %1 to %2.").arg(address, newAddress);
+
+                        if (isAjax) {
+
+                            json.insert(QStringLiteral("domain_id"), static_cast<qint64>(d.id()));
+                            json.insert(QStringLiteral("account_id"), static_cast<qint64>(a.getId()));
+                            json.insert(QStringLiteral("status_msg"), statusMsg);
+                            json.insert(QStringLiteral("old_address"), address);
+                            json.insert(QStringLiteral("new_address"), newAddress);
+
+                        } else {
+                            const ParamsMultiMap successQueryParams = StatusMessage::statusQuery(c, statusMsg);
+                            c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"), QStringList({QString::number(d.id()), QString::number(a.getId())}), QStringList(), successQueryParams));
+                            return;
+                        }
+
                     } else {
-                        c->setStash(QStringLiteral("error_msg"), e.errorText());
+
+                        if (isAjax) {
+                            json.insert(QStringLiteral("error_msg"), e.errorText());
+                        } else {
+                            c->setStash(QStringLiteral("error_msg"), e.errorText());
+                        }
+                        c->res()->setStatus(Response::InternalServerError);
+                    }
+                }
+
+            } else {
+
+                c->res()->setStatus(Response::BadRequest);
+
+                if (isAjax) {
+                    const QHash<QString,QStringList> errors = vr.errors();
+                    if (!errors.empty()) {
+                        QJsonObject fieldErrors;
+                        QHash<QString,QStringList>::const_iterator i = errors.constBegin();
+                        while (i != errors.constEnd()) {
+                            fieldErrors.insert(i.key(), QJsonValue(QJsonArray::fromStringList(i.value())));
+                            ++i;
+                        }
+                        json.insert(QStringLiteral("field_errors"), QJsonValue(fieldErrors));
                     }
                 }
             }
+
+        } else {
+            // this is not an post request, for ajax, we will only allow post
+            if (isAjax) {
+                json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AccountEditor", "For AJAX requests, this route is only available for POST requests.")));
+                c->response()->setStatus(Response::MethodNotAllowed);
+                c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
+            }
         }
 
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("account/email.html")},
-                     {QStringLiteral("site_subtitle"), address}
-                 });
+        if (isAjax) {
+            const QJsonDocument jsonDoc(json);
+            c->response()->setJsonBody(jsonDoc);
+        } else {
+            c->stash({
+                         {QStringLiteral("template"), QStringLiteral("account/email.html")},
+                         {QStringLiteral("site_subtitle"), address}
+                     });
+        }
     }
 }
 
@@ -431,6 +532,8 @@ void AccountEditor::new_email(Context *c)
 
                             json.insert(QStringLiteral("status_msg"), QJsonValue(statusMsg));
                             json.insert(QStringLiteral("address"), QJsonValue(newEmailAddress));
+                            json.insert(QStringLiteral("account_id"), QJsonValue(static_cast<qint64>(a.getId())));
+                            json.insert(QStringLiteral("domain_id"), QJsonValue(static_cast<qint64>(d.id())));
 
                         } else {
                             c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"),
