@@ -23,6 +23,8 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QUrl>
+#include <QJsonObject>
+#include <QJsonValue>
 
 SimpleDomain::SimpleDomain() : d(new SimpleDomainData)
 {
@@ -84,7 +86,7 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
         q.bindValue(QStringLiteral(":admin_id"), adminId);
     }
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("SimpleDomain", "Failed to query the list of domains from the database."));
         return lst;
     }
@@ -96,6 +98,28 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
     if (lst.size() > 1) {
         SimpleDomainNameCollator sdnc(c->locale());
         std::sort(lst.begin(), lst.end(), sdnc);
+    }
+
+    return lst;
+}
+
+
+QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError *e, quint16 userType, quint32 adminId)
+{
+    QJsonArray lst;
+
+    Q_ASSERT_X(c, "list simple domains as JSON", "invalid context object");
+    Q_ASSERT_X(e, "list simple domains as JSON", "invalid error object");
+
+    const std::vector<SimpleDomain> _lst = SimpleDomain::list(c, e, userType, adminId);
+
+    if (!_lst.empty()) {
+        for (const SimpleDomain &sd : _lst) {
+            lst.append(QJsonValue(QJsonObject({
+                                                  {QStringLiteral("id"), static_cast<qint64>(sd.id())},
+                                                  {QStringLiteral("name"), sd.name()}
+                                              })));
+        }
     }
 
     return lst;

@@ -23,6 +23,7 @@
 #include <QSharedDataPointer>
 #include <grantlee5/grantlee/metatype.h>
 #include <QVariant>
+#include <QJsonArray>
 
 namespace Cutelyst {
 class Context;
@@ -83,6 +84,16 @@ public:
      * \return          List of simple domain objects.
      */
     static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, quint16 userType, quint32 adminId);
+
+    /*!
+     * \brief Returns a JSON array of domains for the admin defined by \a adminId.
+     * \param c         Pointer to the current context, used for localization.
+     * \param e         Pointer to an object taking occuring errors.
+     * \param userType  The type of the admin user to determine domain access.
+     * \param adminId   The database ID of the admin user to determine domain access.
+     * \return          JSON array containing objects with domain ID and domain name.
+     */
+    static QJsonArray listJson(Cutelyst::Context *c , SkaffariError *e, quint16 userType, quint32 adminId);
 
 private:
     QSharedDataPointer<SimpleDomainData> d;
