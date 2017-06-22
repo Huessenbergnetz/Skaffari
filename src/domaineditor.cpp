@@ -328,7 +328,11 @@ void DomainEditor::add_account(Context* c)
                                    new ValidatorRequired(QStringLiteral("password")),
                                    new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::accPwMinlength()),
                                    new ValidatorConfirmed(QStringLiteral("password")),
-                                   new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("yyyy-MM-dd HH:mm:ss"))
+                                   new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("yyyy-MM-dd HH:mm:ss")),
+                                   new ValidatorBoolean(QStringLiteral("imap")),
+                                   new ValidatorBoolean(QStringLiteral("pop")),
+                                   new ValidatorBoolean(QStringLiteral("sieve")),
+                                   new ValidatorBoolean(QStringLiteral("smtpauth"))
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
