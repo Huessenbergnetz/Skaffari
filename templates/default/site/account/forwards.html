@@ -28,9 +28,9 @@
             
             <div class="form-group row">
                 <div class="col">
-                    <a href="/domain/{{ domain.id }}/accounts" class="btn btn-outline-warning">{{ _("Cancel") }}</a>
-                    <button type="button" class="btn btn-outline-primary" id="addforward">{{ _("Add forward") }}</button>
-                    <button type="submit" class="btn btn-outline-primary">{{ _("Update") }}</button>
+                    <a href="/domain/{{ domain.id }}/accounts" class="btn btn-outline-warning"><i class="fa fa-arrow-circle-o-left"></i> {{ _("Cancel") }}</a>
+                    <button type="button" class="btn btn-outline-primary" id="addforward"><i class="fa fa-plus"></i> {{ _("Add forward") }}</button>
+                    <button type="submit" class="btn btn-outline-primary"><i class="fa fa-save"></i> {{ _("Update") }}</button>
                 </div>
             </div>
         </form>
@@ -41,7 +41,8 @@
         <div class="card">
             <div class="card-header"><i class="fa fa-life-ring"></i> {{ _("Help") }}</div>
             <div class="card-block">
-                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur. Donec ut libero sed arcu vehicula ultricies a non tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ut gravida lorem. Ut turpis felis, pulvinar a semper sed, adipiscing id dolor. Pellentesque auctor nisi id magna consequat sagittis. Curabitur dapibus enim sit amet elit pharetra tincidunt feugiat nisl imperdiet. Ut convallis libero in urna ultrices accumsan. Donec sed odio eros. Donec viverra mi quis quam pulvinar at malesuada arcu rhoncus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. In rutrum accumsan ultricies. Mauris vitae nisi at sem facilisis semper ac in est.</p>
+                <p class="card-text">{{ _("Simply add new email addresses as forwarding destinations for this account's email addresses.") }}</p>
+                <p class="card-text">{{ _("Optionally all incoming emails can be kept additionally in the account's inbox.") }}</p>
             </div>
         </div>
     </section>
