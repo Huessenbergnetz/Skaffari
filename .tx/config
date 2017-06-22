@@ -1,0 +1,21 @@
+[main]
+host = https://www.transifex.com
+
+[skaffari.core]
+file_filter = l10n/skaffari_<lang>.ts
+source_file = l10n/skaffari.ts
+source_lang = en
+type = QT
+
+[skaffari.cmd]
+file_filter = l10n/skaffaricmd_<lang>.ts
+source_file = l10n/skaffaricmd.ts
+source_lang = en
+type = QT
+
+[skaffari.default-template]
+file_filter = templates/default/l10n/tmpl_default_<lang>.ts
+source_file = templates/default/l10n/tmpl_default.ts
+source_lang = en
+type = QT
+

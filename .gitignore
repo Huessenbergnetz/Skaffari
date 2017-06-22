@@ -9,4 +9,5 @@ templates/*/static/js
 templates/*/static/fonts
 templates/*/gulp
 CMakeLists.txt.user
-
+*.qm
+*.pyc
