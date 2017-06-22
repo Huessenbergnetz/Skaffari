@@ -12,7 +12,8 @@ elixir(function(mix) {
         '../../node_modules/bootstrap/dist/js/bootstrap.js',
         '../../node_modules/queuejax/jquery.qjax.js',
         'forwards.js',
-        'checkdomain.js'
+        'checkdomain.js',
+        'manageemailaddresses.js'
     ], 'static/js/scripts.js');
     
     mix.copy('node_modules/font-awesome/fonts', 'static/fonts');

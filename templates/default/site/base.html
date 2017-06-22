@@ -95,8 +95,8 @@
             </div>
         </nav>
         
-        {% if error_msg or status_msg %}
-        <div class="container-fluid">
+        {# if error_msg or status_msg #}
+        <div id="messages-container" class="container-fluid">
         
             {% if error_msg %}
             <div class="row">
@@ -125,7 +125,7 @@
             {% endif %}
         
         </div>
-        {% endif %}
+        {# endif #}
         
         <main class="container-fluid mt-3">
             {% include template %}
