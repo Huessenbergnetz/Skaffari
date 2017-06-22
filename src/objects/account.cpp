@@ -34,6 +34,7 @@
 #include <QRegularExpression>
 #include <QUrl>
 #include <QStringList>
+#include <QCollator>
 
 Q_LOGGING_CATEGORY(SK_ACCOUNT, "skaffari.account")
 
@@ -774,6 +775,8 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
         qCWarning(SK_ACCOUNT) << "Failed to login to IMAP server. Omitting quota query.";
     }
 
+    QCollator col(c->locale());
+
     while (q.next()) {
         const QString username = q.value(1).toString();
 
@@ -781,11 +784,9 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
         q2.bindValue(QStringLiteral(":username"), username);
         q2.exec();
         QStringList emailAddresses;
+
         while (q2.next()) {
             emailAddresses << addressFromACE(q2.value(0).toString());
-        }
-        if (emailAddresses.size() > 1) {
-            emailAddresses.sort();
         }
 
         q2 = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
@@ -806,9 +807,18 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
                 }
             }
         }
-        if (aliases.size() > 1) {
-            aliases.sort();
+
+        if ((emailAddresses.size() > 1) || (aliases.size() > 1)) {
+
+            if (emailAddresses.size() > 1) {
+                std::sort(emailAddresses.begin(), emailAddresses.end(), col);
+            }
+
+            if (aliases.size() > 1) {
+                std::sort(aliases.begin(), aliases.end(), col);
+            }
         }
+
 
         Account a(q.value(0).value<quint32>(),
                   d.id(),
@@ -889,12 +899,6 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
         emailAddresses << addressFromACE(q.value(0).toString());
     }
 
-    if (emailAddresses.size() > 1) {
-        emailAddresses.sort();
-    }
-
-    a.setAddresses(emailAddresses);
-
     q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
     q.bindValue(QStringLiteral(":username"), a.getUsername());
     q.exec();
@@ -911,10 +915,20 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
             }
         }
     }
-    if (aliases.size() > 1) {
-        aliases.sort();
+
+    if ((emailAddresses.size() > 1) || (aliases.size() > 1)) {
+        QCollator col(c->locale());
+
+        if (emailAddresses.size() > 1) {
+            std::sort(emailAddresses.begin(), emailAddresses.end(), col);
+        }
+
+        if (aliases.size() > 1) {
+            std::sort(aliases.begin(), aliases.end(), col);
+        }
     }
 
+    a.setAddresses(emailAddresses);
     a.setForwards(aliases);
 
     SkaffariIMAP imap(c);
@@ -1163,47 +1177,60 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
         address = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + a->getDomainName();
     }
 
-    if (!a->getAddresses().contains(address) && (address != oldAddress)) {
-
-        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias, dest, username FROM virtual WHERE alias = :address"));
-        q.bindValue(QStringLiteral(":address"), address);
-
-        if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("Account", "Failed to check if the new email address %1 is already in use by another account.").append(address));
-            return ret;
-        }
-
-        if (Q_UNLIKELY(q.next())) {
-            const QString user = q.value(2).toString();
-            if (user != a->getUsername()) {
-                e->setErrorType(SkaffariError::InputError);
-                if (!user.isEmpty()) {
-                    e->setErrorText(c->translate("Account", "The email address %1 is already in use by user %2.").arg(address, user));
-                } else {
-                    e->setErrorText(c->translate("Account", "The email address %1 is already in use for destination %2.").arg(address, q.value(1).toString()));
-                }
-                return ret;
-            }
-        }
-
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET alias = :aliasnew WHERE alias = :aliasold AND username = :username"));
-        q.bindValue(QStringLiteral(":aliasnew"), addressToACE(address));
-        q.bindValue(QStringLiteral(":aliasold"), addressToACE(oldAddress));
-        q.bindValue(QStringLiteral(":username"), a->getUsername());
-
-        if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("Account", "Failed to update email address %1.").arg(oldAddress));
-            return ret;
-        }
-
-        QStringList addresses = a->getAddresses();
-        addresses.removeOne(oldAddress);
-        addresses.append(address);
-        if (addresses.size() > 1) {
-            addresses.sort();
-        }
-        a->setAddresses(addresses);
+    if (a->getAddresses().contains(address)) {
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(c->translate("Account", "The email address %1 is already part of account %2.").arg(address, a->getUsername()));
+        qCWarning(SK_ACCOUNT, "Updating email address failed: address %s is already part of account %s.", qUtf8Printable(address), qUtf8Printable(a->getUsername()));
+        return ret;
     }
+
+    if (address == oldAddress) {
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(c->translate("Account", "The email address has not been changed."));
+        qCWarning(SK_ACCOUNT, "Updating email address failed: address %s has not been changed.", qUtf8Printable(address));
+        return ret;
+    }
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias, dest, username FROM virtual WHERE alias = :address"));
+    q.bindValue(QStringLiteral(":address"), addressToACE(address));
+
+    if (Q_UNLIKELY(!q.exec())) {
+        e->setSqlError(q.lastError(), c->translate("Account", "Failed to check if the new email address %1 is already in use by another account.").arg(address));
+        qCCritical(SK_ACCOUNT, "Failed to check if the new email address %s is already in use by another account: %s", qUtf8Printable(address), qUtf8Printable(q.lastError().text()));
+        return ret;
+    }
+
+    if (Q_UNLIKELY(q.next())) {
+        const QString user = q.value(2).toString();
+        e->setErrorType(SkaffariError::InputError);
+        if (!user.isEmpty()) {
+            e->setErrorText(c->translate("Account", "The email address %1 is already in use by user %2.").arg(address, user));
+        } else {
+            e->setErrorText(c->translate("Account", "The email address %1 is already in use for destination %2.").arg(address, q.value(1).toString()));
+        }
+        qCWarning(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "tried to change the email address" << address << "to an already existing address";
+        return ret;
+    }
+
+    q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET alias = :aliasnew WHERE alias = :aliasold AND username = :username"));
+    q.bindValue(QStringLiteral(":aliasnew"), addressToACE(address));
+    q.bindValue(QStringLiteral(":aliasold"), addressToACE(oldAddress));
+    q.bindValue(QStringLiteral(":username"), a->getUsername());
+
+    if (Q_UNLIKELY(!q.exec())) {
+        e->setSqlError(q.lastError(), c->translate("Account", "Failed to update email address %1.").arg(oldAddress));
+        qCCritical(SK_ACCOUNT, "Failed to change email address %s to %s: %s", qUtf8Printable(oldAddress), qUtf8Printable(address), qUtf8Printable(q.lastError().text()));
+        return ret;
+    }
+
+    QStringList addresses = a->getAddresses();
+    addresses.removeOne(oldAddress);
+    addresses.append(address);
+    if (addresses.size() > 1) {
+        QCollator col(c->locale());
+        std::sort(addresses.begin(), addresses.end(), col);
+    }
+    a->setAddresses(addresses);
 
     qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "updated email address" << oldAddress << "of account" << a->getUsername();
 
@@ -1229,7 +1256,7 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const
     }
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias, dest, username FROM virtual WHERE alias = :address"));
-    q.bindValue(QStringLiteral(":address"), address);
+    q.bindValue(QStringLiteral(":address"), addressToACE(address));
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to check if the new email address %1 is already in use by another account.").append(address));
@@ -1238,15 +1265,14 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const
 
     if (Q_UNLIKELY(q.next())) {
         const QString user = q.value(2).toString();
-        if (user != a->getUsername()) {
-            e->setErrorType(SkaffariError::InputError);
-            if (!user.isEmpty()) {
-                e->setErrorText(c->translate("Account", "The email address %1 is already in use by user %2.").arg(address, user));
-            } else {
-                e->setErrorText(c->translate("Account", "The email address %1 is already in use for destination %2.").arg(address, q.value(1).toString()));
-            }
-            return ret;
+        e->setErrorType(SkaffariError::InputError);
+        if (!user.isEmpty()) {
+            e->setErrorText(c->translate("Account", "The email address %1 is already in use by user %2.").arg(address, user));
+        } else {
+            e->setErrorText(c->translate("Account", "The email address %1 is already in use for destination %2.").arg(address, q.value(1).toString()));
         }
+        qCWarning(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "tried to add already in use email address" << address << "to account" << a->getUsername();
+        return ret;
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
@@ -1286,8 +1312,9 @@ bool Account::removeEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :address"));
     q.bindValue(QStringLiteral(":address"), addressToACE(address));
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to remove email address %1 from account %2.").arg(address, a->getUsername()));
+        qCCritical(SK_ACCOUNT, "Failed to remove email address %s from account %s: %s", qUtf8Printable(address), qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -1315,8 +1342,9 @@ bool Account::updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a,
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :username AND username = ''"));
     q.bindValue(QStringLiteral(":username"), a->getUsername());
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Faild to update forwards for account %1 in database.").arg(a->getUsername()));
+        qCCritical(SK_ACCOUNT, "Failed to update forwards for account %s in database: %s", qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
