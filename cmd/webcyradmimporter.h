@@ -20,10 +20,12 @@
 #define WEBCYRADMIMPORTER_H
 
 #include <QFileInfo>
+#include <QCoreApplication>
 #include "configinput.h"
 
 class WebCyradmImporter : public ConfigInput
 {
+    Q_DECLARE_TR_FUNCTIONS(WebCyradmImporter)
 public:
     WebCyradmImporter(const QString &confFileName, const QString &iniFileName);
 
