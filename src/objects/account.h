@@ -466,10 +466,11 @@ public:
      * \param c Pointer to the current context, used for string translation and user authentication.
      * \param e Pointer to an object taking information about occuring errors.
      * \param a Pointer to an Account object that should be updated.
+     * \param d Pointer to an Domain object that will have it's used domain quota updated.
      * \param p Updated parameters for this account.
      * \return \c true on success.
      */
-    static bool update(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p);
+    static bool update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain *d, const Cutelyst::ParamsMultiMap &p);
 
     /*!
      * \brief Checks if all account data is available and creates missing data.

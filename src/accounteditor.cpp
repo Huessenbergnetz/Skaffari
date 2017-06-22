@@ -76,20 +76,24 @@ void AccountEditor::edit(Context* c)
                                    new ValidatorConfirmed(QStringLiteral("password")),
                                    new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::accPwMinlength()),
                                    new ValidatorRequired(QStringLiteral("validUntil")),
-                                   new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("yyyy-MM-dd HH:mm:ss"))
+                                   new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("yyyy-MM-dd HH:mm:ss")),
+                                   new ValidatorBoolean(QStringLiteral("imap")),
+                                   new ValidatorBoolean(QStringLiteral("pop")),
+                                   new ValidatorBoolean(QStringLiteral("sieve")),
+                                   new ValidatorBoolean(QStringLiteral("smtpauth"))
                                });
 
-            ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
 
-                ParamsMultiMap p = c->req()->bodyParams();
+                const ParamsMultiMap p = c->req()->bodyParams();
 
                 // if this domain has a global quota limit, we have to calculate the
                 // quota that is left
                 bool enoughQuotaLeft = true;
                 if (dom.getDomainQuota() > 0) {
 
-                    if ((freeQuota - a.getQuota()) < p.value(QStringLiteral("quota")).toULong()) {
+                    if (freeQuota < p.value(QStringLiteral("quota")).toULong()) {
 
                         enoughQuotaLeft = false;
 
@@ -104,11 +108,16 @@ void AccountEditor::edit(Context* c)
                     if (Account::update(c,
                                         &e,
                                         &a,
+                                        &dom,
                                         p)) {
 
-                        Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
                         c->setStash(QStringLiteral("status_msg"), c->translate("AccountEditor", "Successfully updated account %1.").arg(a.getUsername()));
                         c->setStash(QStringLiteral("account"), QVariant::fromValue<Account>(a));
+                        c->stash({
+                                     {QStringLiteral("status_msg"), c->translate("AccountEditor", "Successfully updated account %1.").arg(a.getUsername())},
+                                     {QStringLiteral("account"), QVariant::fromValue<Account>(a)},
+                                     {QStringLiteral("domain"), QVariant::fromValue<Domain>(dom)}
+                                 });
                     } else {
                         c->setStash(QStringLiteral("error_msg"), e.errorText());
                     }
@@ -136,7 +145,6 @@ void AccountEditor::edit(Context* c)
 
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("account/edit.html")},
-                     {QStringLiteral("edit"), true},
                      {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)}
                  });
     }

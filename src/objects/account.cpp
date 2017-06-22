@@ -977,13 +977,14 @@ Account Account::fromStash(Cutelyst::Context *c)
 
 
 
-bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p)
+bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain *d, const Cutelyst::ParamsMultiMap &p)
 {
     bool ret = false;
 
     Q_ASSERT_X(c, "update account", "invalid context object");
     Q_ASSERT_X(e, "update account", "invalid error object");
     Q_ASSERT_X(a, "update account", "invalid account object");
+    Q_ASSERT_X(d, "update account", "invalid domain object");
 
     const QString password = p.value(QStringLiteral("password"));
     QByteArray encPw;
@@ -993,7 +994,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const C
         if (Q_UNLIKELY(encPw.isEmpty())) {
             e->setErrorType(SkaffariError::ApplicationError);
             e->setErrorText(c->translate("Account", "Failed to encrypt password."));
-            qCWarning(SK_ACCOUNT) << "Failed to encrypt password with method" << SkaffariConfig::accPwMethod() << ", algorithm" << SkaffariConfig::accPwAlgorithm() << "and" << SkaffariConfig::accPwRounds() << "rounds";
+            qCCritical(SK_ACCOUNT) << "Failed to encrypt password with method" << SkaffariConfig::accPwMethod() << ", algorithm" << SkaffariConfig::accPwAlgorithm() << "and" << SkaffariConfig::accPwRounds() << "rounds";
             return ret;
         }
     }
@@ -1023,20 +1024,31 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const C
     }
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
+    const bool imap = (p.contains(QStringLiteral("imap")) && (p.value(QStringLiteral("imap")) == QLatin1String("1")));
+    const bool pop = (p.contains(QStringLiteral("pop")) && (p.value(QStringLiteral("pop")) == QLatin1String("1")));
+    const bool sieve = (p.contains(QStringLiteral("sieve")) && (p.value(QStringLiteral("sieve")) == QLatin1String("1")));
+    const bool smtpauth = (p.contains(QStringLiteral("smtpauth")) && (p.value(QStringLiteral("smtpauth")) == QLatin1String("1")));
+
     QSqlQuery q;
     if (!password.isEmpty()) {
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET password = :password, quota = :quota, valid_until = :validUntil, updated_at = :updated_at WHERE id = :id"));
+        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET password = :password, quota = :quota, valid_until = :validUntil, updated_at = :updated_at, imap = :imap, pop = :pop, sieve = :sieve, smtpauth =:smtpauth WHERE id = :id"));
         q.bindValue(QStringLiteral(":password"), encPw);
     } else {
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET quota = :quota, valid_until = :validUntil, updated_at = :updated_at WHERE id = :id"));
+        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET quota = :quota, valid_until = :validUntil, updated_at = :updated_at, imap = :imap, pop = :pop, sieve = :sieve, smtpauth =:smtpauth WHERE id = :id"));
     }
     q.bindValue(QStringLiteral(":quota"), quota);
     q.bindValue(QStringLiteral(":validUntil"), validUntil);
     q.bindValue(QStringLiteral(":id"), a->getId());
     q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
+    q.bindValue(QStringLiteral(":imap"), imap);
+    q.bindValue(QStringLiteral(":pop"), pop);
+    q.bindValue(QStringLiteral(":sieve"), sieve);
+    q.bindValue(QStringLiteral(":smtpauth"), smtpauth);
+
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to update user account in database."));
+        qCCritical(SK_ACCOUNT, "Failed to update user account ID %u in database: %s", a->getId(), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -1050,6 +1062,21 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, const C
     a->setValidUntil(Utils::toUserTZ(c, validUntil));
     a->setQuota(quota);
     a->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
+    a->setImapEnabled(imap);
+    a->setPopEnabled(pop);
+    a->setSieveEnabled(sieve);
+    a->setSmtpauthEnabled(smtpauth);
+
+    q = CPreparedSqlQueryThread(QStringLiteral("SELECT domainquotaused FROM domain WHERE id = :domain_id"));
+    q.bindValue(QStringLiteral(":domain_id"), d->id());
+    if (Q_UNLIKELY(!q.exec())) {
+        qCWarning(SK_ACCOUNT) << "Failed to query used domain quota after updating account ID" << a->getId() << "in domain ID" << d->id();
+        qCDebug(SK_ACCOUNT) << q.lastError().text();
+    } else {
+        if (Q_LIKELY(q.next())) {
+            d->setDomainQuotaUsed(q.value(0).value<quint32>());
+        }
+    }
 
     qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "updated account" << a->getUsername() << "for domain" << a->getDomainName();
 
