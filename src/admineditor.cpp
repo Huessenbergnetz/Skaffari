@@ -20,6 +20,7 @@
 #include "objects/adminaccount.h"
 #include "objects/skaffarierror.h"
 #include "objects/simpledomain.h"
+#include "objects/helpentry.h"
 #include "utils/skaffariconfig.h"
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
@@ -87,7 +88,7 @@ void AdminEditor::create(Context *c)
                                    new ValidatorConfirmed(QStringLiteral("password"))
                                });
 
-            ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
                 SkaffariError e(c);
                 AdminAccount::create(c, req->parameters(), &e);
@@ -113,7 +114,15 @@ void AdminEditor::create(Context *c)
             c->setStash(QStringLiteral("domains"), QVariant::fromValue<std::vector<SimpleDomain>>(domains));
         }
 
+        QHash<QString,HelpEntry> help;
+        help.insert(QStringLiteral("username"), HelpEntry(c->translate("AdminEditor", "User name"), c->translate("AdminEditor", "The user name for the new administrator. Can only contain alpha-numeric characters as well as dashes and underscores.")));
+        help.insert(QStringLiteral("password"), HelpEntry(c->translate("AdminEditor", "Password"), c->translate("AdminEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
+        help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AdminEditor", "Password confirmation"), c->translate("AdminEditor", "Confirm your entered password.")));
+        help.insert(QStringLiteral("type"), HelpEntry(c->translate("AdminEditor", "Type"), c->translate("AdminEditor", "A super user has access to the whole system, while a domain master only has access to the associated domains.")));
+        help.insert(QStringLiteral("assocdomains"), HelpEntry(c->translate("AdminEditor", "Domains"), c->translate("AdminEditor", "For domain masters, select the associated domains the user is responsible for.")));
+
         c->stash({
+                     {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)},
                      {QStringLiteral("template"), QStringLiteral("admin/create.html")},
                      {QStringLiteral("site_title"), c->translate("AdminUser", "Create admin")}
                  });
@@ -148,11 +157,15 @@ void AdminEditor::edit(Context *c)
                                      req->parameters());
 
                 if (e.type() == SkaffariError::NoError) {
-                    c->setStash(QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated admin %1.").arg(aac.getUsername()));
+                    c->stash({
+                                 {QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac)},
+                                 {QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated admin %1.").arg(aac.getUsername())}
+                             });
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
                     StatusMessage::errorQuery(c, e.errorText());
                 }
+
             }
         }
 
@@ -166,7 +179,17 @@ void AdminEditor::edit(Context *c)
             c->setStash(QStringLiteral("domains"), QVariant::fromValue<std::vector<SimpleDomain>>(domains));
         }
 
+        QHash<QString,HelpEntry> help;
+        help.insert(QStringLiteral("created"), HelpEntry(c->translate("AccountEditor", "Created"), c->translate("AcountEditor", "Date and time this account has been created.")));
+        help.insert(QStringLiteral("updated"), HelpEntry(c->translate("AccountEditor", "Updated"), c->translate("AccountEditor", "Date and time this account has been updated the last time.")));
+        help.insert(QStringLiteral("username"), HelpEntry(c->translate("AdminEditor", "User name"), c->translate("AdminEditor", "The user name for the new administrator. Can only contain alpha-numeric characters as well as dashes and underscores.")));
+        help.insert(QStringLiteral("password"), HelpEntry(c->translate("AdminEditor", "Password"), c->translate("AdminEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
+        help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AdminEditor", "Password confirmation"), c->translate("AdminEditor", "Confirm your entered password.")));
+        help.insert(QStringLiteral("type"), HelpEntry(c->translate("AdminEditor", "Type"), c->translate("AdminEditor", "A super user has access to the whole system, while a domain master only has access to the associated domains.")));
+        help.insert(QStringLiteral("assocdomains"), HelpEntry(c->translate("AdminEditor", "Domains"), c->translate("AdminEditor", "For domain masters, select the associated domains the user is responsible for.")));
+
         c->stash({
+                     {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)},
                      {QStringLiteral("template"), QStringLiteral("admin/edit.html")},
                      {QStringLiteral("site_subtitle"), c->translate("AdminEditor", "Edit")}
                  });

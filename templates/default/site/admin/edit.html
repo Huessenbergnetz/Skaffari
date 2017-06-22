@@ -1,96 +1,73 @@
 <div class="row">
-    <div class="col"><h2><i class="fa {% if adminaccount.isValid %}fa-user{% else %}fa-user-plus{% endif %}"></i> {% if adminaccount.isValid %}{{ _("Edit admin") }} <small class="text-muted">{{ adminaccount.username }}</small>{% else %}{{ _("Create new admin user") }}{% endif %}</h2></div>
+    <div class="col"><h2><i class="fa fa-user"></i> {{ _("Edit admin") }} <small class="text-muted">{{ adminaccount.username }}</small></h2></div>
 </div>
 
-<div class="row mt-1">
-    <div class="col-12 col-sm-12 col-md-6">
+<form method="post">
     
-        <form method="post">
-            {% if adminaccount.isValid %}
-            <div class="form-group row">
-                <label class="col-12 col-lg-4 col-form-label">{{ _("Created") }}</label>
-                <div class="col-12 col-lg-8">
-                    <p class="form-control-static">{{ _(adminaccount.created) }}</p>
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label class="col-12 col-lg-4 col-form-label">{{ _("Updated") }}</label>
-                <div class="col-12 col-lg-8">
-                    <p class="form-control-static">{{ _(adminaccount.updated) }}</p>
-                </div>
-            </div>
-            {% endif %}
-        
-            {% if not adminaccount.isValid %}
-            <div class="form-group row">
-                <label for="username" class="col-12 col-lg-4 col-form-label">{{ _("User name") }}</label>
-                <div class="col-12 col-lg-8{% if validationErrors.username.count %} has-warning{% endif %}">
-                    <input type="text" id="username" name="username" class="form-control{% if validationErrors.username.count %} form-control-warning{% endif %}" value="{{ adminaccount.username|default_if_none:username }}" placeholder="{{ _("User name") }}" required>
-                    {% if validationErrors.username.count %}<div class="form-control-feedback"><small>{{ validationErrors.username.0 }}</small></div>{% endif %}
-                </div>
-            </div>
-            {% endif %}
-            
-            <div class="form-group row">
-                <label for="password" class="col-12 col-lg-4 col-form-label">{{ _("Password") }}</label>
-                <div class="col-12 col-lg-8{% if validationErrors.password.count %} has-warning{% endif %}">
-                    <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ _("Password") }}"{% if not adminaccount.isValid %} required{% endif %}>
-                    {% if validationErrors.password.count %}<div class="form-control-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="password_confirmation" class="col-12 col-lg-4 col-form-label">{{ _("Password confirmation") }}</label>
-                <div class="col-12 col-lg-8">
-                    <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ _("Password confirmation") }}"{% if not adminaccount.isValid %} required{% endif %}>
-                </div>
-            </div>
-
-            <div class="form-group row">
-                <label for="type" class="col-12 col-lg-4 col-form-label">{{ _("Type") }}</label>
-                <div class="rol-12 col-lg-8">
-                    <select class="form-control" id="type" name="type">
-                        <option value="1"{% if not adminaccount.isSuperUser %} selected{% endif %}>{{ _("Domain master") }}</option>
-                        <option value="0"{% if adminaccount.isSuperUser %} selected{% endif %}>{{ _("Super user") }}</option>
-                    </select>
-                </div>
-            </div>
-            
-            {% if not adminaccount.isSuperUser %}
-            <div class="form-group row">
-                <label for="assocdomains" class="col-12 col-lg-4 col-form-label">{{ _("Domains") }}</label>
-                <div class="col-12 col-lg-8">
-                    <select class="form-control" id="assocdomains" name="assocdomains" multiple{% if not domains.size %} disabled{% endif %}>
-                        {% for domain in domains %}
-                        <option value="{{ domain.id }}"{% if domain.id in adminaccount.domains %} selected{% endif %}>{{ domain.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            {% endif %}
-            
-            <div class="form-group row">
-                <div class="col">
-                    <a href="/admin" class="btn btn-outline-warning">{{ _("Cancel") }}</a>
-                    <button type="submit" class="btn btn-outline-primary">{% if adminaccount.isValid %}{{ _("Update") }}{% else %}{{ _("Create") }}{% endif %}</button>
-                </div>
-            </div>
-
-        </form>
+    <div class="row mt-1">
     
-    </div>
-    
-    <div class="col-12 col-sm-12 col-md-6">
-    
-        <div class="card">
-            <div class="card-header"><i class="fa fa-life-ring"></i> {{ _("Help") }}</div>
-            <div class="card-block">
-                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur. Donec ut libero sed arcu vehicula ultricies a non tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ut gravida lorem. Ut turpis felis, pulvinar a semper sed, adipiscing id dolor. Pellentesque auctor nisi id magna consequat sagittis. Curabitur dapibus enim sit amet elit pharetra tincidunt feugiat nisl imperdiet. Ut convallis libero in urna ultrices accumsan. Donec sed odio eros. Donec viverra mi quis quam pulvinar at malesuada arcu rhoncus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. In rutrum accumsan ultricies. Mauris vitae nisi at sem facilisis semper ac in est.</p>
-            </div>
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="form-control-label" for="username">{{ help.username.title }}</label>
+            <p class="form-control-static" id="username" aria-describedby="usernameDesc">{{ adminaccount.username }}</p>
+            <small id="usernameDesc" class="form-text text-muted">{{ help.username.text }}</small>
         </div>
     
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="form-control-label" for="created">{{ help.created.title }}</label>
+            <p class="form-control-static" id="created" aria-describedby="createdDesc">{{ _(adminaccount.created) }}</p>
+            <small id="createdDesc" class="form-text text-muted">{{ help.created.text }}</small>
+        </div>
+        
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="form-control-label" for="updated">{{ help.updated.title }}</label>
+            <p class="form-control-static" id="updated" aria-describedby="updatedDesc">{{ _(adminaccount.updated) }}</p>
+            <small id="updatedDesc" class="form-text text-muted">{{ help.updated.text }}</small>
+        </div>
+        
     </div>
-</div>
+        
+    <div class="row">
+        
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.password.count %} has-warning{% endif %}">
+            <label class="form-control-label" for="passsword">{{ help.password.title }}</label>
+            <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ _("Password") }}" aria-describedby="passwordDesc">
+            {% if validationErrors.password.count %}<div class="form-control-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
+            <small id="passwordDesc" class="form-text text-muted">{{ help.password.text }}</small>
+        </div>
+        
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+             <label class="form-control-label" for="password_confirmation">{{ help.password_confirmation.title }}</label>
+             <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ _("Password confirmation") }}" aria-describedby="passwordConfirmDesc">
+             <small id="passwordConfirmDesc" class="form-text text-muted">{{ help.password_confirmation.text }}</small>
+        </div>
+        
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.type.count %} has-warning{% endif %}">
+            <label for="type" class="col-12 col-lg-4 form-control-label">{{ help.type.title }}</label>
+            <select class="form-control" id="type" name="type" aria-describedby="typeDesc">
+                <option value="1"{% if not adminaccount.isSuperUser %} selected{% endif %}>{{ _("Domain master") }}</option>
+                <option value="0"{% if adminaccount.isSuperUser %} selected{% endif %}>{{ _("Super user") }}</option>
+            </select>
+            {% if validationErrors.type.count %}<div class="form-control-feedback"><small>{{ validationErrors.type.0 }}</small></div>{% endif %}
+            <small id="typeDesc" class="form-text text-muted">{{ help.type.text }}</small>
+        </div>
+        
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.assocdomains.count %} has-warning{% endif %}">
+            <label for="assocdomains" class="col-12 col-lg-4 form-control-label">{{ help.assocdomains.title }}</label>
+            <select class="form-control" id="assocdomains" name="assocdomains" multiple{% if not domains.size %} disabled{% endif %}>
+                {% for domain in domains %}
+                <option value="{{ domain.id }}"{% if domain.id in adminaccount.domains %} selected{% endif %}>{{ domain.name }}</option>
+                {% endfor %}
+            </select>
+            {% if validationErrors.assocdomains.count %}<div class="form-control-feedback"><small>{{ validationErrors.assocdomains.0 }}</small></div>{% endif %}
+            <small id="typeDesc" class="form-text text-muted">{{ help.assocdomains.text }}</small>
+        </div>
+        
+    </div>
     
+    <div class="mt-1">
+        <a href="/admin" class="btn btn-outline-warning float-left" role="button"><i class="fa fa-times"></i> {{ _("Cancel") }}</a>
+        <button type="submit" class="btn btn-outline-primary float-right"><i class="fa fa-save"></i> {{ _("Update") }}</button>
+        <div class="clearfix"></div>
+    </div>
     
+</form>
