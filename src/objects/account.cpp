@@ -1370,7 +1370,7 @@ bool Account::updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a,
     q.bindValue(QStringLiteral(":username"), a->getUsername());
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Faild to update forwards for account %1 in database.").arg(a->getUsername()));
+        e->setSqlError(q.lastError(), c->translate("Account", "Failed to update forwards for account %1 in database.").arg(a->getUsername()));
         qCCritical(SK_ACCOUNT, "Failed to update forwards for account %s in database: %s", qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }

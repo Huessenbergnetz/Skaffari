@@ -423,7 +423,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     q.bindValue(QStringLiteral(":id"), a->getId());
 
     if (!q.exec()) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Faild to update admin to domain connections in database."));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update admin to domain connections in database."));
         return ret;
     }
 
