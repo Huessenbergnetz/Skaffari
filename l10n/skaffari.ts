@@ -168,10 +168,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Faild to update forwards for account %1 in database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The following addresses seem not to be valid: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -426,6 +422,10 @@
     </message>
     <message>
         <source>Tehe is no admin account with database ID %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to update admin to domain connections in database.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

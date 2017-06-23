@@ -91,284 +91,280 @@
     </message>
     <message>
         <source>Failed to query accounts from database.</source>
-        <translation type="unfinished"/>
+        <translation>Benutzerkonten konnten nicht aus der Datenbank abgefragt werden.</translation>
     </message>
     <message>
         <source>Failed to query account from database.</source>
-        <translation type="unfinished"/>
+        <translation>Benutzerkonto konnte nicht aus Datenbank abgefragt werden.</translation>
     </message>
     <message>
         <source>Not found</source>
-        <translation type="unfinished"/>
+        <translation>Nicht gefunden</translation>
     </message>
     <message>
         <source>There is no account with database ID %1.</source>
-        <translation type="unfinished"/>
+        <translation>Unter der Datenbank-ID %1 existiert kein Benutzerkonto.</translation>
     </message>
     <message>
         <source>Failed to encrypt password.</source>
-        <translation type="unfinished"/>
+        <translation>Verschlüsseln des Passworts fehlgeschlagen.</translation>
     </message>
     <message>
         <source>Failed to change user account quota.</source>
-        <translation type="unfinished"/>
+        <translation>Speicherkontingent des Nutzers konnte nicht geändert werden</translation>
     </message>
     <message>
         <source>Failed to update user account in database.</source>
-        <translation type="unfinished"/>
+        <translation>Benutzerkonto konnte nicht in der Datenbank aktualisiert werden.</translation>
     </message>
     <message>
         <source>Failed to get a list of all IMAP maiboxes from the IMAP server.</source>
-        <translation type="unfinished"/>
+        <translation>Fehler beim Abrufen aller Briefkästen vom IMAP-Server.</translation>
     </message>
     <message>
         <source>Created missing mailbox on IMAP server.</source>
-        <translation type="unfinished"/>
+        <translation>Fehlenden Briefkasten auf dem IMAP-Server erstellt.</translation>
     </message>
     <message>
         <source>Set correct mailbox storage quota on IMAP server.</source>
-        <translation type="unfinished"/>
+        <translation>Korrektes Speicherkontingent auf dem IMAP-Server gesetzt.</translation>
     </message>
     <message>
         <source>Set correct mailbox storage quota in database.</source>
-        <translation type="unfinished"/>
+        <translation>Korrektes Speicherkontingent in der Datenbank gesetzt.</translation>
     </message>
     <message>
         <source>The email address %1 is already part of account %2.</source>
-        <translation type="unfinished"/>
+        <translation>Die E-Mail-Adresse %1 ist bereits dem Benutzerkonto %2 zugeordnet.</translation>
     </message>
     <message>
         <source>The email address has not been changed.</source>
-        <translation type="unfinished"/>
+        <translation>Die E-Mail-Adresse wurde nicht geändert.</translation>
     </message>
     <message>
         <source>Failed to check if the new email address %1 is already in use by another account.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte nicht überprüfen, ob die neue E-Mail-Adresse %1 bereits von einem anderen Benutzerkonto genutzt wird.</translation>
     </message>
     <message>
         <source>The email address %1 is already in use by user %2.</source>
-        <translation type="unfinished"/>
+        <translation>Die E-Mail-Adresse %1 wird bereits vom Benutzer %2 genutzt.</translation>
     </message>
     <message>
         <source>The email address %1 is already in use for destination %2.</source>
-        <translation type="unfinished"/>
+        <translation>Die E-Mail-Adresse %1 ist bereits für das Ziel %2 in Benutzung.</translation>
     </message>
     <message>
         <source>Failed to update email address %1.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte E-Mail-Adresse %1 nicht aktualisieren.</translation>
     </message>
     <message>
         <source>Failed to insert new email address into database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte neue E-Mail-Adresse nicht in Datenbank einfügen.</translation>
     </message>
     <message>
         <source>Failed to remove email address %1 from account %2.</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Faild to update forwards for account %1 in database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte E-Mail-Adresse %1 nicht von Benutzerkonto %2 entfernen.</translation>
     </message>
     <message>
         <source>The following addresses seem not to be valid: %1</source>
-        <translation type="unfinished"/>
+        <translation>Die folgenden Adressen scheinen nicht gültig zu sein: %1</translation>
     </message>
     <message>
         <source>Failed to update forwards for account %1 in database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte die Weiterleitungen für Benutzerkonto %1 nicht in der Datenbank aktualisieren.</translation>
     </message>
 </context>
 <context>
     <name>AccountEditor</name>
     <message>
         <source>There is not enough free quota on this domain. Please lower the quota for the account to a maximum of %1 KiB.</source>
-        <translation type="unfinished"/>
+        <translation>In dieser Domäne steht nicht genügend freies Speicherkontingent zur Verfügung. Bitte reduzieren Sie das Speicherkontingent für dieses Konto auf höchstens %1 KiB.</translation>
     </message>
     <message>
         <source>Successfully updated account %1.</source>
-        <translation type="unfinished"/>
+        <translation>Benutzerkonto %1 erfolgreich aktualisiert.</translation>
     </message>
     <message>
         <source>Created</source>
-        <translation type="unfinished"/>
+        <translation>Erstellt</translation>
     </message>
     <message>
         <source>Updated</source>
-        <translation type="unfinished"/>
+        <translation>Aktualisiert</translation>
     </message>
     <message>
         <source>Date and time this account has been updated the last time.</source>
-        <translation type="unfinished"/>
+        <translation>Datum und Zeit zu denen dieses Konto das letzte mal aktualisiert wurde.</translation>
     </message>
     <message>
         <source>Quota</source>
-        <translation type="unfinished"/>
+        <translation>Kontingent</translation>
     </message>
     <message>
         <source>You have to set a storage quota for this account that does not exceed %1.</source>
-        <translation type="unfinished"/>
+        <translation>Sie müssen für dieses Konto ein Speicherkontingent setzen, das %1 nicht überschreitet.</translation>
     </message>
     <message>
         <source>You can freely set a storage quota for this account or set the quota to 0 to disable it.</source>
-        <translation type="unfinished"/>
+        <translation>Sie können ein beliebiges Speicherkontingent setzen oder es mit 0 deaktivieren.</translation>
     </message>
     <message>
         <source>Password</source>
-        <translation type="unfinished"/>
+        <translation>Passwort</translation>
     </message>
     <message>
         <source>Password confirmation</source>
-        <translation type="unfinished"/>
+        <translation>Passwort bestätigen</translation>
     </message>
     <message>
         <source>Confirm your entered password.</source>
-        <translation type="unfinished"/>
+        <translation>Bestätigen Sie das eingegebene Passwort.</translation>
     </message>
     <message>
         <source>Valid until</source>
-        <translation type="unfinished"/>
+        <translation>Gültig bis</translation>
     </message>
     <message>
         <source>You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future.</source>
-        <translation type="unfinished"/>
+        <translation>Sie können einen Zeitpunkt einstellen bis zu dem dieses Konto gültig ist. Für eine unbegrenzte Gültigkeit setzen Sie einfach einen Zeitpunkt weit in der Zukunft.</translation>
     </message>
     <message>
         <source>IMAP Access</source>
-        <translation type="unfinished"/>
+        <translation>IMAP-Zugriff</translation>
     </message>
     <message>
         <source>If enabled, the user of this account can access the mailbox through the IMAP protocol.</source>
-        <translation type="unfinished"/>
+        <translation>Falls aktiviert kann der Nutzer seinen Posteingang über das IMAP-Protokoll erreichen.</translation>
     </message>
     <message>
         <source>POP3 Access</source>
-        <translation type="unfinished"/>
+        <translation>POP3-Zugriff</translation>
     </message>
     <message>
         <source>If enabled, the user of this account can access the mailbox through the POP3 protocol.</source>
-        <translation type="unfinished"/>
+        <translation>Falls aktiviert kann der Nutzer seinen Posteingang über das POP3-Protokoll erreichen.</translation>
     </message>
     <message>
         <source>Sieve Access</source>
-        <translation type="unfinished"/>
+        <translation>Sieve-Zugriff</translation>
     </message>
     <message>
         <source>If enabled, the user of this account can manage own Sieve scripts on the server.</source>
-        <translation type="unfinished"/>
+        <translation>Falls aktiviert kann der Nutzer seine Sieve-Skripte auf dem Server verwalten.</translation>
     </message>
     <message>
         <source>SMTP Access</source>
-        <translation type="unfinished"/>
+        <translation>SMTP-Zugriff</translation>
     </message>
     <message>
         <source>If enabled, the user of this account can send emails via this server through the SMTP protocol.</source>
-        <translation type="unfinished"/>
+        <translation>Falls aktiviert kann der Nutzer E-Mails über das SMTP-Protokoll versenden.</translation>
     </message>
     <message>
         <source>Successfully removed account of user %1.</source>
-        <translation type="unfinished"/>
+        <translation>Konto von Nutzer %1 erfolgreich entfernt.</translation>
     </message>
     <message>
         <source>Failed to remove account. %1</source>
-        <translation type="unfinished"/>
+        <translation>Entfernen von Konto %1 gescheitert.</translation>
     </message>
     <message>
         <source>The entered user name does not match the user name of the account you want to delete.</source>
-        <translation type="unfinished"/>
+        <translation>Der eingegebene Benutzername stimmt nicht mit dem Benutzernamen des Kontos überein, welches Sie löschen möchten.</translation>
     </message>
     <message>
         <source>Email address actions</source>
-        <translation type="unfinished"/>
+        <translation>E-Mail-Addressaktionen</translation>
     </message>
     <message>
         <source>Edit address</source>
-        <translation type="unfinished"/>
+        <translation>Adresse bearbeiten</translation>
     </message>
     <message>
         <source>Delete address</source>
-        <translation type="unfinished"/>
+        <translation>Adresse löschen</translation>
     </message>
     <message>
         <source>The requested email address does not belong to the account %1.</source>
-        <translation type="unfinished"/>
+        <translation>Die angefragte E-Mail-Adresse gehört nicht zum Konto %1.</translation>
     </message>
     <message>
         <source>Invalid email address</source>
-        <translation type="unfinished"/>
+        <translation>Ungültige E-Mail-Adresse</translation>
     </message>
     <message>
         <source>You can not create email addresses for other domains as long as free addresses are not allowed for this domain.</source>
-        <translation type="unfinished"/>
+        <translation>So lange für diese Domäne keine freien Adressen erlaubt sind, können Sie keine E-Mail-Adressen für andere Domänen als diese erstellen.</translation>
     </message>
     <message>
         <source>Successfully changed email address from %1 to %2.</source>
-        <translation type="unfinished"/>
+        <translation>E-Mail-Adresse erfolgreiche von %1 zu %2 geändert.</translation>
     </message>
     <message>
         <source>For AJAX requests, this route is only available for POST requests.</source>
-        <translation type="unfinished"/>
+        <translation>Für AJAX-Anfragen ist diese Route nur via POST erreichbar.</translation>
     </message>
     <message>
         <source>You can not remove the last email address for this account. Remove the entire account instead.</source>
-        <translation type="unfinished"/>
+        <translation>Sie können die letzte E-Mail-Adresse dieses Kontos nicht entfernen. Löschen Sie statt dessen das gesamte Konto.</translation>
     </message>
     <message>
         <source>The entered email address does not match the address you want to remove.</source>
-        <translation type="unfinished"/>
+        <translation>Die eingegebene E-Mail-Adresse stimmt nicht mit der Adresse überein die Sie entfernen möchten.</translation>
     </message>
     <message>
         <source>Successfully removed email address %1 from account %2.</source>
-        <translation type="unfinished"/>
+        <translation>E-Mail-Adresse %1 erfolgreich von Konto %2 entfernt.</translation>
     </message>
     <message>
         <source>You can not create email addresses for domains you are not responsible for. Please create domain %1 before adding email addresses for this domain.</source>
-        <translation type="unfinished"/>
+        <translation>Sie können keine E-Mail-Adressen für Domänen erstellen für die Sie nicht verantwortlich sind. Bitte erstellen Sie zuerst die Domäne %1 bevor Sie E-Mail-Adressen für diese anlegen.</translation>
     </message>
     <message>
         <source>Successfully added email address %1 to account %2.</source>
-        <translation type="unfinished"/>
+        <translation>E-Mail-Adresse %1 erfolgreich zu Konto %2 hinzugefügt.</translation>
     </message>
     <message>
         <source>Successfully updated forward mail addresses for account %1.</source>
-        <translation type="unfinished"/>
+        <translation>Weiterleitungsadressen für Benutzerkonto %1 erfolgreich aktualisiert.</translation>
     </message>
 </context>
 <context>
     <name>AcountEditor</name>
     <message>
         <source>Date and time this account has been created.</source>
-        <translation type="unfinished"/>
+        <translation>Datum und Zeit zu dem dieses Konto erstellt wurde.</translation>
     </message>
 </context>
 <context>
     <name>AdminAccount</name>
     <message>
         <source>Failed to check if user name is already in use.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte nicht prüfen, ob der Benutzername bereits verwendet wird.</translation>
     </message>
     <message>
         <source>This admin user name is already in use.</source>
-        <translation type="unfinished"/>
+        <translation>Dieser Admin-Benutzername wird bereits verwendet.</translation>
     </message>
     <message>
         <source>Failed to query list of admins from database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte die Liste der Administratoren nicht aus der Datenbank abfragen.</translation>
     </message>
     <message>
         <source>Failed to query admin account with ID %1 from database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte Admin-Konto mit ID %1 nicht aus der Datenbank abfragen.</translation>
     </message>
     <message>
         <source>Failed to query domain IDs from database this admin is responsible for.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte die IDs der Domänen für die dieser Administrator verantwortlich ist nicht aus der Datenbank abfragen.</translation>
     </message>
     <message>
         <source>You can not remove the last super user.</source>
-        <translation type="unfinished"/>
+        <translation>Sie können den letzten Superbenutzer nicht entfernen.</translation>
     </message>
     <message>
         <source>Failed to update admin account in database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte Admin-Konto nicht in Datenbank aktualisieren.</translation>
     </message>
     <message>
         <source>Faild to update admin to domain connections in database.</source>
@@ -376,43 +372,43 @@
     </message>
     <message>
         <source>Failed to update admin in database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte Administrator nicht in Datenbank aktualisieren.</translation>
     </message>
     <message>
         <source>Failed to update admin settings in database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte Administratoreinstellungen nicht in Datenbank aktualisieren.</translation>
     </message>
     <message>
         <source>Failed to delete admin to domain connections from database for admin %1.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte die Verbindungen zwischen Admin %1 und den Domänen nicht aus der Datenbank löschen.</translation>
     </message>
     <message>
         <source>Failed to delete admin settings from database for admin %1.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte die Einstellungen für Admin %1 nicht aus der Datenbank löschen.</translation>
     </message>
     <message>
         <source>Failed to delete admin %1 from database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte Admin %1 nicht aus der Datenbank löschen.</translation>
     </message>
     <message>
         <source>Failed to create admin account in database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte das Administratorkonto nicht in der Datenbank erstellen.</translation>
     </message>
     <message>
         <source>Failed to revert admin account changes in database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte die Änderungen am Admin-Konto in der Datenbank nicht rückgängig machen.</translation>
     </message>
     <message>
         <source>Failed to insert admin settings into database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte die Einstellungen für den Admin nicht in der Datenbank einfügen.</translation>
     </message>
     <message>
         <source>Failed to revert admin settings in database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte die Admin-Einstellungen in der Datenbank nicht rückgängig machen.</translation>
     </message>
     <message>
         <source>Failed to insert admin to domain connection into database.</source>
-        <translation type="unfinished"/>
+        <translation>Konnte Verbindung zwischen Admin und Domäne nicht in die Datenbank einfügen.</translation>
     </message>
     <message>
         <source>Failed to revert admin to domain connections in database.</source>
@@ -424,6 +420,10 @@
     </message>
     <message>
         <source>Tehe is no admin account with database ID %1.</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Failed to update admin to domain connections in database.</source>
         <translation type="unfinished"/>
     </message>
 </context>

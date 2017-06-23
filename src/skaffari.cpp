@@ -35,6 +35,7 @@
 #include <QDir>
 #include <QMetaType>
 #include <QCoreApplication>
+#include <QTranslator>
 
 #include "objects/domain.h"
 #include "objects/simpleadmin.h"
@@ -119,7 +120,9 @@ bool Skaffari::init()
         isInitialized = true;
     }
 
-    const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + config(QStringLiteral("template"), QStringLiteral("default")).toString();
+    const QString tmplName = QStringLiteral("default");
+    const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + tmplName;
+
     QString sitePath = tmplBasePath + QLatin1String("/site");
 
     auto view = new GrantleeView(this);
@@ -128,6 +131,36 @@ bool Skaffari::init()
 	view->setCache(false);
     view->setIncludePaths({sitePath});
     view->engine()->addDefaultLibrary(QStringLiteral("grantlee_i18ntags"));
+
+    /* Start loading translations */
+    const QString tmplTransFileName = QLatin1String("tmpl_") + tmplName;
+    const QString tmplTransFilePath = tmplBasePath + QLatin1String("/l10n");
+
+    const QStringList supportedLangs = SKAFFARI_SUPPORTED_LANGS;
+    for (const QString &lang : supportedLangs) {
+        if (Q_LIKELY(lang != QLatin1String("en"))) {
+            qCDebug(SK_CORE, "Loading translations for language %s.", qUtf8Printable(lang));
+            const QLocale locale(lang);
+            if (Q_LIKELY(locale.language() != QLocale::C)) {
+                auto coreTrans = new QTranslator(this);
+                if (Q_LIKELY(coreTrans->load(locale, QStringLiteral("skaffari"), QStringLiteral("_"), QStringLiteral(SKAFFARI_L10NDIR)))) {
+                    addTranslator(locale, coreTrans);
+                } else {
+                    qCWarning(SK_CORE, "Failed to load core translation file for language %s from %s.", qUtf8Printable(locale.bcp47Name()), SKAFFARI_L10NDIR);
+                }
+
+                auto tmplTrans = new QTranslator(this);
+                if (Q_LIKELY(tmplTrans->load(locale, tmplTransFileName, QStringLiteral("_"), tmplTransFilePath))) {
+                    view->addTranslator(locale, tmplTrans);
+                } else {
+                    qCWarning(SK_CORE, "Failed to load template translation file for language %s from %s.", qUtf8Printable(locale.bcp47Name()), qUtf8Printable(tmplTransFilePath));
+                }
+            } else {
+                qCWarning(SK_CORE, "Invalid language code: %s", qUtf8Printable(lang));
+            }
+        }
+    }
+    /* End loading translations */
 
 	new Root(this);
 	new Login(this);

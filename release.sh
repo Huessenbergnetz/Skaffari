@@ -51,12 +51,13 @@ do
     cp CMakeLists.txt ${DIR}/templates/${TMPL}
     cp -r site ${DIR}/templates/${TMPL}
     cp -r static ${DIR}/templates/${TMPL}
+    cp -r l10n ${DIR}/templates/${TMPL}
     popd
 done
 
 popd
 
-for SRCDIR in common cmd sql src doc
+for SRCDIR in common cmd sql src doc l10n
 do
     cp -r $SRCDIR $DIR
 done

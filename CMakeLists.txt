@@ -27,7 +27,7 @@ set(CMAKE_INSTALL_BINDIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Directory to 
 set(CMAKE_INSTALL_DATADIR "${CMAKE_INSTALL_PREFIX}/share" CACHE PATH "Data install directory")
 set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "Library install directory")
 set(APPDIR "${CMAKE_INSTALL_DATADIR}/skaffari")
-set(CMAKE_INSTALL_LOCALEDIR "${APPDIR}/l10n" CACHE PATH "Directory to install translations")
+set(CMAKE_INSTALL_LOCALEDIR "${APPDIR}/l10n" CACHE PATH "Directory to install core translations")
 set(TEMPLATES_INSTALL_DIR "${APPDIR}/templates" CACHE PATH "Directory to install templates")
 set(CMAKE_INSTALL_SYSCONFDIR "/etc/skaffari" CACHE PATH "Directory to install configuration files")
 set(SQL_INSTALL_DIR "${APPDIR}/sql" CACHE PATH "Directory to install SQL files")
@@ -80,8 +80,22 @@ include_directories(
     ${CutelystQt5_INCLUDE_DIR}
 )
 
+find_program(LRELEASE_CMD_PATH NAMES lrelease-qt5 lrelease)
+set(LRELEASE_CMD ${LRELEASE_CMD_PATH})
+if(LRELEASE_CMD)
+    message(STATUS "Found lrelease at ${LRELEASE_CMD}")
+    message(STATUS "Translations are enabled")
+
+    set(LANGS de)
+
+else(LRELEASE_CMD)
+    message(WARNING "lrelease executable cannot be found")
+    message(WARNING "Translations are disabled")
+endif(LRELEASE_CMD)
+
 add_subdirectory(src)
 add_subdirectory(sql)
 add_subdirectory(cmd)
 add_subdirectory(templates)
 add_subdirectory(doc)
+add_subdirectory(l10n)
