@@ -24,7 +24,11 @@
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Session/Session>
+
 #include <QLocale>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 
 using namespace Cutelyst;
 
@@ -83,7 +87,14 @@ bool Root::Auto(Context* c)
     }
 
     if (Q_UNLIKELY(user.isNull())) {
-        c->res()->redirect(c->uriFor(QStringLiteral("/login")));
+        if (c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive)) {
+            c->res()->setStatus(Response::Unauthorized);
+            c->res()->setJsonBody(QJsonDocument(QJsonObject({
+                                                                {QStringLiteral("error_msg"), QJsonValue(c->translate("Root", "You have to login at first."))}
+                                                            })));
+        } else {
+            c->res()->redirect(c->uriFor(QStringLiteral("/login")));
+        }
         return false;
     }
 
