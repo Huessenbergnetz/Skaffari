@@ -36,6 +36,10 @@
 #include <QSqlError>
 #include <QRegularExpression>
 #include <QHash>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
 
 using namespace Cutelyst;
 
@@ -256,37 +260,78 @@ void DomainEditor::remove(Context* c)
 {
     if (Domain::accessGranted(c)) {
 
+        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+        QJsonObject json;
+
         if (c->stash(QStringLiteral("userType")).value<quint16>() == 0) {
 
-        auto req = c->req();
+            auto req = c->req();
 
-        if (req->isPost()) {
-            Domain dom = c->stash(QStringLiteral("domain")).value<Domain>();
+            if (req->isPost()) {
+                Domain dom = c->stash(QStringLiteral("domain")).value<Domain>();
 
-            if (dom.getName() == req->param(QStringLiteral("domainName"))) {
+                if (dom.getName() == req->bodyParam(QStringLiteral("domainName"))) {
 
-                SkaffariError e(c);
-                if (Domain::remove(c, &dom, &e)) {
-                    c->res()->redirect(c->uriFor(QStringLiteral("/domain"), StatusMessage::statusQuery(c, c->translate("DomainEditor", "Successfully deleted domain %1.").arg(dom.getName()))));
+                    SkaffariError e(c);
+                    if (Domain::remove(c, &dom, &e)) {
+
+                        c->res()->redirect(c->uriFor(QStringLiteral("/domain"), StatusMessage::statusQuery(c, c->translate("DomainEditor", "Successfully deleted domain %1.").arg(dom.getName()))));
+
+                    } else {
+
+                        if (isAjax) {
+                            json.insert(QStringLiteral("error_msg"), e.errorText());
+                        } else {
+                            c->setStash(QStringLiteral("error_msg"), e.errorText());
+                        }
+                        c->res()->setStatus(Response::InternalServerError);
+                    }
+
                 } else {
-                    c->setStash(QStringLiteral("error_msg"), e.errorText());
+
+                    const QString errorMsg = c->translate("DomainEditor", "The entered name does not match the domain name.");
+
+                    if (isAjax) {
+                        json.insert(QStringLiteral("error_msg"), errorMsg);
+                    } else {
+                        c->setStash(QStringLiteral("error_msg"), errorMsg);
+                    }
+                    c->res()->setStatus(Response::BadRequest);
                 }
 
             } else {
-                c->setStash(QStringLiteral("error_msg"), c->translate("DomainEditor", "The entered name does not match the domain name."));
+
+                // this is not an post request, for ajax, we will only allow post
+                if (isAjax) {
+                    json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("DomainEditor", "For AJAX requests, this route is only available via POST requests.")));
+                    c->response()->setStatus(Response::MethodNotAllowed);
+                    c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
+                } else {
+                    c->stash({
+                                 {QStringLiteral("template"), QStringLiteral("domain/remove.html")},
+                                 {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Remove")}
+                             });
+                }
             }
+
+        } else {
+
+            if (isAjax) {
+
+                json.insert(QStringLiteral("error_msg"), c->translate("Domain", "Access denied. Only super users are allowed to delete domains."));
+
+            } else {
+                c->stash({
+                             {QStringLiteral("template"), QStringLiteral("403.html")},
+                             {QStringLiteral("site_title"), c->translate("Domain", "Access denied")}
+                         });
+            }
+
+            c->res()->setStatus(Response::Forbidden);
         }
 
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("domain/remove.html")},
-                     {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Remove")}
-                 });
-        } else {
-            c->stash({
-                         {QStringLiteral("template"), QStringLiteral("403.html")},
-                         {QStringLiteral("site_title"), c->translate("Domain", "Access denied")}
-                     });
-            c->res()->setStatus(403);
+        if (isAjax) {
+            c->res()->setJsonBody(QJsonDocument(json));
         }
     }
 }
