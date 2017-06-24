@@ -157,22 +157,65 @@ void AccountEditor::remove(Context* c)
         auto a = Account::fromStash(c);
         auto dom = Domain::fromStash(c);
 
+        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+        QJsonObject json;
+
         if (c->req()->isPost()) {
 
             if (c->req()->bodyParam(QStringLiteral("accountName")) == a.getUsername()) {
 
                 SkaffariError e(c);
                 if (Account::remove(c, &e, a.getUsername(), &dom)) {
-                    c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, c->translate("AccountEditor", "Successfully removed account of user %1.").arg(a.getUsername()))));
+
+                    const QString statusMsg = c->translate("AccountEditor", "Successfully removed account of user %1.").arg(a.getUsername());
+
+                    if (isAjax) {
+                        json.insert(QStringLiteral("status_msg"), statusMsg);
+                        json.insert(QStringLiteral("deleted_id"), static_cast<qint64>(a.getId()));
+                        json.insert(QStringLiteral("deleted_name"), a.getUsername());
+                    } else {
+                        c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, statusMsg)));
+                    }
+
                 } else {
-                    c->setStash(QStringLiteral("error_msg"), c->translate("AccountEditor", "Failed to remove account. %1").arg(e.errorText()));
+
+                    c->res()->setStatus(Response::InternalServerError);
+
+                    const QString errorMsg = c->translate("AccountEditor", "Failed to remove account. %1").arg(e.errorText());
+
+                    if (isAjax) {
+                        json.insert(QStringLiteral("error_msg"), errorMsg);
+                    } else {
+                        c->setStash(QStringLiteral("error_msg"), errorMsg);
+                    }
                 }
+
             } else {
-                c->setStash(QStringLiteral("error_msg"), c->translate("AccountEditor", "The entered user name does not match the user name of the account you want to delete."));
+
+                c->res()->setStatus(Response::BadRequest);
+
+                const QString errorMsg = c->translate("AccountEditor", "The entered user name does not match the user name of the account you want to delete.");
+
+                if (isAjax) {
+                    json.insert(QStringLiteral("error_msg"), errorMsg);
+                } else {
+                    c->setStash(QStringLiteral("error_msg"), errorMsg);
+                }
+            }
+        } else {
+            // this is not an post request, for ajax, we will only allow post
+            if (isAjax) {
+                json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("DomainEditor", "For AJAX requests, this route is only available via POST requests.")));
+                c->response()->setStatus(Response::MethodNotAllowed);
+                c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
             }
         }
 
-        c->setStash(QStringLiteral("template"), QStringLiteral("account/remove.html"));
+        if (isAjax) {
+            c->res()->setJsonBody(QJsonDocument(json));
+        } else {
+            c->setStash(QStringLiteral("template"), QStringLiteral("account/remove.html"));
+        }
     }
 }
 
