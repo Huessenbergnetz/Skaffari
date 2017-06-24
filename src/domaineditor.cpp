@@ -275,7 +275,15 @@ void DomainEditor::remove(Context* c)
                     SkaffariError e(c);
                     if (Domain::remove(c, &dom, &e)) {
 
-                        c->res()->redirect(c->uriFor(QStringLiteral("/domain"), StatusMessage::statusQuery(c, c->translate("DomainEditor", "Successfully deleted domain %1.").arg(dom.getName()))));
+                        const QString statusMsg = c->translate("DomainEditor", "Successfully deleted domain %1.").arg(dom.getName());
+
+                        if (isAjax) {
+                            json.insert(QStringLiteral("status_msg"), statusMsg);
+                            json.insert(QStringLiteral("deleted_id"), static_cast<qint64>(dom.id()));
+                            json.insert(QStringLiteral("deleted_name"), dom.getName());
+                        } else {
+                            c->res()->redirect(c->uriFor(QStringLiteral("/domain"), StatusMessage::statusQuery(c, statusMsg)));
+                        }
 
                     } else {
 
@@ -306,16 +314,13 @@ void DomainEditor::remove(Context* c)
                     json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("DomainEditor", "For AJAX requests, this route is only available via POST requests.")));
                     c->response()->setStatus(Response::MethodNotAllowed);
                     c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
-                } else {
-                    c->stash({
-                                 {QStringLiteral("template"), QStringLiteral("domain/remove.html")},
-                                 {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Remove")}
-                             });
                 }
             }
 
         } else {
+            // userType is not 0, so we are not a super user and are not allowed to delete a domain
 
+            c->res()->setStatus(Response::Forbidden);
             if (isAjax) {
 
                 json.insert(QStringLiteral("error_msg"), c->translate("Domain", "Access denied. Only super users are allowed to delete domains."));
@@ -325,13 +330,17 @@ void DomainEditor::remove(Context* c)
                              {QStringLiteral("template"), QStringLiteral("403.html")},
                              {QStringLiteral("site_title"), c->translate("Domain", "Access denied")}
                          });
+                return;
             }
-
-            c->res()->setStatus(Response::Forbidden);
         }
 
         if (isAjax) {
             c->res()->setJsonBody(QJsonDocument(json));
+        } else {
+            c->stash({
+                         {QStringLiteral("template"), QStringLiteral("domain/remove.html")},
+                         {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Remove")}
+                     });
         }
     }
 }
