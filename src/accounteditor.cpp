@@ -170,9 +170,14 @@ void AccountEditor::remove(Context* c)
                     const QString statusMsg = c->translate("AccountEditor", "Successfully removed account of user %1.").arg(a.getUsername());
 
                     if (isAjax) {
-                        json.insert(QStringLiteral("status_msg"), statusMsg);
-                        json.insert(QStringLiteral("deleted_id"), static_cast<qint64>(a.getId()));
-                        json.insert(QStringLiteral("deleted_name"), a.getUsername());
+                        json = QJsonObject({
+                                               {QStringLiteral("status_msg"), statusMsg},
+                                               {QStringLiteral("account_id"), static_cast<qint64>(a.getId())},
+                                               {QStringLiteral("account_name"), a.getUsername()},
+                                               {QStringLiteral("domain_id"), static_cast<qint64>(dom.id())},
+                                               {QStringLiteral("domain_name"), dom.getName()}
+                                           });
+
                     } else {
                         c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, statusMsg)));
                     }
