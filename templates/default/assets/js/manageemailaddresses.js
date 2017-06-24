@@ -28,8 +28,9 @@ function skaffariRemoveAddress(e) {
             });
         }).fail(function(jqXHR) {
             btn.prop('disabled', false);
-            $('#messages-container').append('<div class="row"><div class="col"><div class="alert alert-warning alert-dismissible fade show mt-3" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' + jqXHR.responseJSON.error_msg  + '</div></div></div>');
-            $('.alert').alert();
+            skaffariCreateAlert('warning', jqXHR.responseJSON.error_msg, '#messages-container', 'mt-13');
+//             $('#messages-container').append('<div class="row"><div class="col"><div class="alert alert-warning alert-dismissible fade show mt-3" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' + jqXHR.responseJSON.error_msg  + '</div></div></div>');
+//             $('.alert').alert();
         });
     }
 }
@@ -178,26 +179,27 @@ $(function() {
                 
             }).fail(function(jqXHR) {
                 if (jqXHR.responseJSON.error_msg) {
-                    var warnDiv = $('<div>');
-                    warnDiv.addClass('alert alert-warning alert-dismissible fade show mt-1');
-                    warnDiv.attr('role', 'alert');
-                    var warnDivCb = $('<button>');
-                    warnDivCb.attr({type: "button", "aria-label": "Close"});
-                    warnDivCb.addClass('close');
-                    warnDivCb.data('dismiss', 'alert');
-                    warnDivCb.click(function() {
-                        warnDiv.alert('close');
-                    });
-                    var warnDivSpan = $('<span>');
-                    warnDivSpan.attr('aria-hidden', 'true');
-                    warnDivSpan.html('&times;')
-                    warnDivCb.append(warnDivSpan);
-                    warnDiv.append(warnDivCb);
-                    warnDiv.append(jqXHR.responseJSON.error_msg);
-                    warnDiv.hide();
-                    $('#modal-message-container').append(warnDiv);
-                    warnDiv.show(300);
-                    warnDiv.alert();
+                    skaffariCreateAlert('warning', jqXHR.responseJSON.error_msg, '#modal-message-container', 'mt-1');
+//                     var warnDiv = $('<div>');
+//                     warnDiv.addClass('alert alert-warning alert-dismissible fade show mt-1');
+//                     warnDiv.attr('role', 'alert');
+//                     var warnDivCb = $('<button>');
+//                     warnDivCb.attr({type: "button", "aria-label": "Close"});
+//                     warnDivCb.addClass('close');
+//                     warnDivCb.data('dismiss', 'alert');
+//                     warnDivCb.click(function() {
+//                         warnDiv.alert('close');
+//                     });
+//                     var warnDivSpan = $('<span>');
+//                     warnDivSpan.attr('aria-hidden', 'true');
+//                     warnDivSpan.html('&times;')
+//                     warnDivCb.append(warnDivSpan);
+//                     warnDiv.append(warnDivCb);
+//                     warnDiv.append(jqXHR.responseJSON.error_msg);
+//                     warnDiv.hide();
+//                     $('#modal-message-container').append(warnDiv);
+//                     warnDiv.show(300);
+//                     warnDiv.alert();
                 }
             });
             
