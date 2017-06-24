@@ -29,6 +29,9 @@
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <QVector>
 #include <QVariant>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 
 AdminEditor::AdminEditor(QObject *parent) : Controller(parent)
 {
@@ -202,30 +205,71 @@ void AdminEditor::remove(Context *c)
     if (accessGranted(c)) {
         auto req = c->req();
 
+        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+        QJsonObject json;
+
         if (req->isPost()) {
 
             auto aac = AdminAccount::fromStash(c);
 
             if (aac.getUsername() == req->param(QStringLiteral("adminName"))) {
+
                 SkaffariError e(c);
                 if (AdminAccount::remove(c, &e, aac)) {
-                    c->res()->redirect(c->uriFor(QStringLiteral("/admin"), StatusMessage::statusQuery(c, c->translate("AdminEditor", "Successfully remove admin %1.").arg(aac.getUsername()))));
+
+                    const QString statusMsg = c->translate("AdminEditor", "Successfully removed admin %1.").arg(aac.getUsername());
+
+                    if (isAjax) {
+                        json.insert(QStringLiteral("status_msg"), statusMsg);
+                        json.insert(QStringLiteral("admin_id"), static_cast<qint64>(aac.getId()));
+                        json.insert(QStringLiteral("admin_name"), aac.getUsername());
+                    } else {
+                        c->res()->redirect(c->uriFor(QStringLiteral("/admin"), StatusMessage::statusQuery(c, statusMsg)));
+                    }
+
                 } else {
-                    c->setStash(QStringLiteral("error_msg"), e.errorText());
+
+                    c->res()->setStatus(Response::InternalServerError);
+
+                    if (isAjax) {
+                        json.insert(QStringLiteral("error_msg"), e.errorText());
+                    } else {
+                        c->setStash(QStringLiteral("error_msg"), e.errorText());
+                    }
+
                 }
+
             } else {
-                c->setStash(QStringLiteral("error_msg"), c->translate("AdminEditor", "The entered user name does not match the user name of the admin you want to delete."));
+                c->res()->setStatus(Response::BadRequest);
+
+                const QString errorMsg = c->translate("AdminEditor", "The entered user name does not match the user name of the admin you want to delete.");
+
+                if (isAjax) {
+                    json.insert(QStringLiteral("error_msg"), errorMsg);
+                } else {
+                    c->setStash(QStringLiteral("error_msg"), errorMsg);
+                }
+
             }
 
+        } else {
+            // this is not a post request, for ajax, we will only allow post
+            if (isAjax) {
+                json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AdminEditor", "For AJAX requests, this route is only available via POST requests.")));
+                c->response()->setStatus(Response::MethodNotAllowed);
+                c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
+            }
         }
 
-        c->stash({
-                     {QStringLiteral("site_subtitle"), c->translate("AdminEditor", "Remove")},
-                     {QStringLiteral("template"), QStringLiteral("admin/remove.html")}
-                 });
-
+        if (isAjax) {
+            c->res()->setJsonBody(QJsonDocument(json));
+        } else {
+            c->stash({
+                         {QStringLiteral("site_subtitle"), c->translate("AdminEditor", "Remove")},
+                         {QStringLiteral("template"), QStringLiteral("admin/remove.html")}
+                     });
+        }
     }
-
 }
 
 
@@ -235,10 +279,17 @@ bool AdminEditor::checkAccess(Context *c)
         return true;
     }
 
-    c->stash({
-                 {QStringLiteral("site_title"), c->translate("AdminEditor", "Access denied")},
-                 {QStringLiteral("template"), QStringLiteral("403.html")}
-             });
+    if (c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive)) {
+        QJsonObject json({
+                             {QStringLiteral("error_msg"), c->translate("AdminEditor", "You are not authorized to access this resource or to perform this action.")}
+                         });
+        c->res()->setJsonBody(QJsonDocument(json));
+    } else {
+        c->stash({
+                     {QStringLiteral("site_title"), c->translate("AdminEditor", "Access denied")},
+                     {QStringLiteral("template"), QStringLiteral("403.html")}
+                 });
+    }
     c->res()->setStatus(403);
 
     return false;
