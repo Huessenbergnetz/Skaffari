@@ -346,7 +346,7 @@ void AccountEditor::email(Context *c, const QString &address)
         } else {
             // this is not an post request, for ajax, we will only allow post
             if (isAjax) {
-                json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AccountEditor", "For AJAX requests, this route is only available for POST requests.")));
+                json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AccountEditor", "For AJAX requests, this route is only available via POST requests.")));
                 c->response()->setStatus(Response::MethodNotAllowed);
                 c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
             }
