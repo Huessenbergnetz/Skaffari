@@ -16,7 +16,8 @@ elixir(function(mix) {
         'checkdomain.js',
         'manageemailaddresses.js',
         'removedomain.js',
-        'removeaccount.js'
+        'removeaccount.js',
+        'removeadmin.js'
     ], 'static/js/scripts.js');
     
     mix.copy('node_modules/font-awesome/fonts', 'static/fonts');
