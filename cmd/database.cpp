@@ -412,7 +412,8 @@ QSqlDatabase Database::getDb() const
 void Database::deleteAll()
 {
     QSqlQuery q(m_db);
-    for (const QString &table : m_db.tables()) {
+    const QStringList tables = m_db.tables();
+    for (const QString &table : tables) {
         q.exec(QStringLiteral("DROP TABLE %1").arg(table));
     }
 }

@@ -130,7 +130,7 @@ bool SkaffariIMAP::login()
             if ((mode() != QSslSocket::SslClientMode || !isEncrypted())) {
                 QString sslErrorString;
                 if (!sslErrors().empty()) {
-                    sslErrorString = sslErrors().first().errorString();
+                    sslErrorString = sslErrors().constFirst().errorString();
                 }
                 m_imapError = SkaffariIMAPError(SkaffariIMAPError::EncryptionError, m_c->translate("SkaffariIMAP", "Failed to initiate STARTTLS: %1").arg(sslErrorString));
                 abort();
@@ -533,8 +533,8 @@ QStringList SkaffariIMAP::getMailboxes()
         return list;
     }
 
-    QVector<QByteArray>::const_iterator i;
-    for (i = respLines.cbegin(); i != respLines.cend(); ++i) {
+//    QVector<QByteArray>::const_iterator i;
+    for (auto i = respLines.cbegin(); i != respLines.cend(); ++i) {
         const QByteArray line = *i;
         const int idx = line.lastIndexOf(QByteArrayLiteral("user."));
         if (idx > -1) {

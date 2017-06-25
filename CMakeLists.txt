@@ -38,7 +38,7 @@ set(BUILD_TEMPLATES OFF CACHE BOOL "If enabled, template assests will be build")
 # Enable C++11 features
 add_definitions(-std=c++11)
 
-add_definitions("-Werror -Wall -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Wformat -Winit-self")
+add_definitions("-Wall -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Wformat -Winit-self")
 
 add_definitions(
     -DQT_NO_KEYWORDS
