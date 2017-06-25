@@ -27,14 +27,14 @@
             </thead>
             <tbody>
                 {% for account in pagination.accounts %}
-                <tr id="account-{{ domain.id }}-{{ account.id }}">
+                <tr id="account-{{ domain.id }}-{{ account.id }}" class="account-row" data-domainid="{{ domain.id }}" data-accountid="{{ account.id }}" data-username="{{ account.username }}">
                     <td>
                         <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("User account actions") }}">
                             <a href="/account/{{ domain.id }}/{{ account.id }}/addresses" title='{{ _("Edit email addresses") }}' class="btn btn-primary" role="button"><i class="fa fa-envelope-o fa-fw"></i></a>
                             <a href="/account/{{ domain.id }}/{{ account.id }}/edit" class="btn btn-secondary" title='{{ _("Edit account") }}' role="button"><i class="fa fa-edit fa-fw"></i></a>
                             <a href="/account/{{ domain.id }}/{{ account.id }}/forwards" title='{{ _("Forward") }}' class="btn btn-secondary" role="button"><i class="fa fa-mail-forward fa-fw"></i></a>
                             {# <a href="#" title='{{ _("Set catch all") }}' class="btn btn-secondary"><i class="fa fa-truck fa-fw"></i></a> #}
-                            <a href="/account/{{ domain.id }}/{{ account.id }}/check" title='{{ _("Check account") }}' class="btn btn-secondary" role="button"><i class="fa fa-stethoscope fa-fw"></i></a>
+                            <button type="button" title="{{ _("Check account") }}" class="btn btn-secondary check-account-btn" data-toggle="modal" data-target="#checkAccountModal"><i class="fa fa-stethoscope fa-fw"></i></button>
                             <button type="button" title='{{ _("Delete account") }}' class="btn btn-danger remove-account-btn" data-toggle="modal" data-target="#removeAccountModal" data-domainid="{{ domain.id }}" data-accountid="{{ account.id }}" data-username="{{ account.username }}"><i class="fa fa-trash fa-fw"></i></button>
                         </div>
                     </td>
@@ -60,6 +60,37 @@
     </div>
 </div>
 
+
+<div class="modal fade" id="checkAccountModal" tabindex="-1" role="dialog" aria-describedby="checkAccountLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="checkAccountLabel">{{ _("Check account") }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{ _("Close") }}">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h3 id="checkAccountName"></h3>
+                <div id="checkAccountActive" class="text-center">
+                    <i class="fa fa-circle-o-notch fa-5x fa-spin"></i>
+                </div>
+                <ul id="checkAccountList">
+                </ul>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div id="check-account-message-container" class="col">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fa fa-times"></i> {{ _("Cancel") }}</button>
+                <button type="button" id="checkAccountSubmit" class="btn btn-danger"><i id="checkAccountIcon" class="fa fa-stethoscope"></i> {{ _("Recheck") }}</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="removeAccountModal" tabindex="-1" role="dialog" aria-describedby="removeAccountLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">

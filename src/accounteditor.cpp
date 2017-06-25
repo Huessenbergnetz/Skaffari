@@ -701,7 +701,11 @@ void AccountEditor::check(Context *c)
                 result.insert(QStringLiteral("error_msg"), QJsonValue(e.errorText()));
                 c->response()->setStatus(Response::InternalServerError);
             } else {
-                result.insert(QStringLiteral("actions"), QJsonValue(QJsonArray::fromStringList(actions)));
+                if (actions.size() > 0) {
+                    result.insert(QStringLiteral("actions"), QJsonValue(QJsonArray::fromStringList(actions)));
+                } else {
+                    result.insert(QStringLiteral("status_msg"), QJsonValue(c->translate("AccountEditor", "Nothing to do. Everything seems to be ok with this account.")));
+                }
             }
 
             QJsonDocument json(result);
