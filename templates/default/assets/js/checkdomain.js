@@ -58,8 +58,8 @@ $(function() {
                 ret.done(function(e) {
                     var info = '<div class="mt-3"><h3>' + e.account + '</h3>';
                     var actions = e.actions;
-                    var al = actions.length;
-                    if (al > 0) {
+                    if (actions) {
+                        var al = actions.length;
                         info += '<ul>';
                         for (i = 0; i < al; ++i) {
                             info += '<li>' + actions[i] + '</li>';
