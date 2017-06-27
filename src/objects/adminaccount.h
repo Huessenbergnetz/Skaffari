@@ -26,8 +26,9 @@
 #include <QVariant>
 #include <Cutelyst/ParamsMultiMap>
 #include <QCryptographicHash>
+#include <QLoggingCategory>
 
-#include <QDebug>
+Q_DECLARE_LOGGING_CATEGORY(SK_ADMIN)
 
 namespace Cutelyst {
 class Context;
