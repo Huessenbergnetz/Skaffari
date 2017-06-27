@@ -1,59 +1,3 @@
-function skaffariRemoveAddress(e) {
-    var btn = $(e.target);
-    var quest = $('#addressesTable').data('removequestion');
-    var address = btn.data('address');
-    quest = quest.replace("$1", address)
-    if (confirm(quest)) {
-        $('.alert').alert('close');
-        btn.prop('disabled', true);
-        var icon = btn.children().first();
-        icon.removeClass('fa-trash');
-        icon.addClass('fa-cog fa-spin');
-
-        $.ajax({
-            type: 'post',
-            url: '/account/' + btn.data('domainid') + '/' + btn.data('accountid') + '/remove_email/' + address,
-            data: {email: address},
-            dataType: 'json'
-        }).always(function() {
-            icon.removeClass('fa-cog fa-spin');
-            icon.addClass('fa-trash');
-        }).done(function(data) {
-            if (($('#addressesTableBody tr').length - 1) <= 1) {
-                $('.remove-address-btn').prop('disabled', true);
-            }
-            var tr = btn.parents('tr').first();
-            tr.hide(300, function() {
-                tr.remove();
-            });
-        }).fail(function(jqXHR) {
-            btn.prop('disabled', false);
-            skaffariCreateAlert('warning', jqXHR.responseJSON.error_msg, '#messages-container', 'mt-13');
-//             $('#messages-container').append('<div class="row"><div class="col"><div class="alert alert-warning alert-dismissible fade show mt-3" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' + jqXHR.responseJSON.error_msg  + '</div></div></div>');
-//             $('.alert').alert();
-        });
-    }
-}
-
-function skaffariEditAddress(e) {
-    var btn = $(e.target);
-    $('#addressForm').attr('action', '/account/' + btn.data('domainid') + '/' + btn.data('accountid') + '/email/' + btn.data('address'));
-    var parts = btn.data('address').split('@');
-    $('#newlocalpart').val(parts[0]);
-    $('#newmaildomain').val(parts[1]);
-    var am = $('#addressModal');
-    am.data('actiontype', 'edit');
-    am.modal('show');
-}
-
-function skaffariAddAddress(e) {
-    var btn = $(e.target);
-    $('#addressForm').attr('action', btn.data('addaction'));
-    var am = $('#addressModal');
-    am.data('actiontype', 'add');
-    am.modal('show');
-}
-
 /*
  * Skaffari - a mail account administration web interface based on Cutelyst
  * Copyright (C) 2017 Matthias Fehring <kontakt@buschmann23.de>
@@ -71,6 +15,61 @@ function skaffariAddAddress(e) {
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+function skaffariRemoveAddress(e) {
+    var btn = $(e.target);
+    var row = btn.parents('tr').first();
+    var quest = $('#addressesTable').data('removequestion');
+    var address = row.data('address');
+    quest = quest.replace("$1", address)
+    if (confirm(quest)) {
+        $('.alert').alert('close');
+        btn.prop('disabled', true);
+        var icon = btn.children().first();
+        icon.removeClass('fa-trash');
+        icon.addClass('fa-cog fa-spin');
+
+        $.ajax({
+            type: 'post',
+            url: '/account/' + row.data('domainid') + '/' + row.data('accountid') + '/remove_email/' + address,
+            data: {email: address},
+            dataType: 'json'
+        }).always(function() {
+            icon.removeClass('fa-cog fa-spin');
+            icon.addClass('fa-trash');
+        }).done(function(data) {
+            if (($('#addressesTableBody tr').length - 1) <= 1) {
+                $('.remove-address-btn').prop('disabled', true);
+            }
+            row.hide(300, function() {
+                row.remove();
+            });
+        }).fail(function(jqXHR) {
+            btn.prop('disabled', false);
+            skaffariCreateAlert('warning', jqXHR.responseJSON.error_msg, '#messages-container', 'mt-13');
+        });
+    }
+}
+
+function skaffariEditAddress(e) {
+    var row = $(e.target).parents('tr').first();
+    $('#addressForm').attr('action', '/account/' + row.data('domainid') + '/' + row.data('accountid') + '/email/' + row.data('address'));
+    var parts = row.data('address').split('@');
+    $('#newlocalpart').val(parts[0]);
+    $('#newmaildomain').val(parts[1]);
+    var am = $('#addressModal');
+    am.data('actiontype', 'edit');
+    am.modal('show');
+}
+
+function skaffariAddAddress(e) {
+    var btn = $(e.target);
+    $('#addressForm').attr('action', btn.data('addaction'));
+    var am = $('#addressModal');
+    am.data('actiontype', 'add');
+    am.modal('show');
+}
+
 
 $(function() {
     var addressModal = $('#addressModal');
@@ -132,6 +131,16 @@ $(function() {
                     var newAddress = data.address;
 
                     var newRow = $('<tr>');
+                    newRow.attr({
+                        "data-domainid": data.domain_id,
+                        "data-accountid": data.account_id,
+                        "data-address": newAddress
+                    });
+                    newRow.data({
+                        domainid: data.domain_id,
+                        accountid: data.account_id,
+                        address: newAddress
+                    });
                     var td1 = $('<td>');
 
                     var btnGrp = $('<div>');
@@ -139,9 +148,8 @@ $(function() {
                     btnGrp.attr({role: "group", "aria-label": data.actions_btn_label});
 
                     var btn1 = $('<button>');
-                    btn1.attr({type: 'button', title: data.edit_btn_label, "data-address": newAddress});
+                    btn1.attr({type: 'button', title: data.edit_btn_label});
                     btn1.addClass('btn btn-primary edit-address-btn');
-                    btn1.data({address: newAddress, domainid: data.domain_id, accountid: data.account_id});
                     btn1.append('<i class="fa fa-edit fa-fw"></i>');
                     btn1.click(skaffariEditAddress);
                     btnGrp.append(btn1);
@@ -149,7 +157,6 @@ $(function() {
                     var btn2 = $('<button>');
                     btn2.attr({type: 'button', title: data.delete_btn_label});
                     btn2.addClass('btn btn-danger remove-address-btn');
-                    btn2.data({address: newAddress, domainid: data.domain_id, accountid: data.account_id});
                     btn2.append('<i class="fa fa-trash fa-fw"></i>');
                     btn2.click(skaffariRemoveAddress);
                     btnGrp.append(btn2);
@@ -185,39 +192,16 @@ $(function() {
                     }
                     
                 } else if (actionType === "edit") {
-                    var oa = data.old_address;
+                    var orgRow = $('tr[data-address="' + data.old_address + '"]');
                     var na = data.new_address;
-                    var orgBtn = $('button[data-address="' + oa + '"]');
-                    orgBtn.data('address', na);
-                    orgBtn.attr('data-address', na);
-                    var row = orgBtn.parents('tr').first();
-                    var td = row.children('td').last();
-                    td.text(na);
+                    orgRow.attr('data-address', na);
+                    orgRow.data('address', na);
+                    orgRow.children('td').last().text(na);
                 }
                 
             }).fail(function(jqXHR) {
                 if (jqXHR.responseJSON.error_msg) {
                     skaffariCreateAlert('warning', jqXHR.responseJSON.error_msg, '#modal-message-container', 'mt-1');
-//                     var warnDiv = $('<div>');
-//                     warnDiv.addClass('alert alert-warning alert-dismissible fade show mt-1');
-//                     warnDiv.attr('role', 'alert');
-//                     var warnDivCb = $('<button>');
-//                     warnDivCb.attr({type: "button", "aria-label": "Close"});
-//                     warnDivCb.addClass('close');
-//                     warnDivCb.data('dismiss', 'alert');
-//                     warnDivCb.click(function() {
-//                         warnDiv.alert('close');
-//                     });
-//                     var warnDivSpan = $('<span>');
-//                     warnDivSpan.attr('aria-hidden', 'true');
-//                     warnDivSpan.html('&times;')
-//                     warnDivCb.append(warnDivSpan);
-//                     warnDiv.append(warnDivCb);
-//                     warnDiv.append(jqXHR.responseJSON.error_msg);
-//                     warnDiv.hide();
-//                     $('#modal-message-container').append(warnDiv);
-//                     warnDiv.show(300);
-//                     warnDiv.alert();
                 }
             });
             
