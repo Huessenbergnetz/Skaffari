@@ -72,3 +72,12 @@ QString Utils::humanBinarySize(Cutelyst::Context *c, quint64 sizeInByte)
 
     return sizeStr;
 }
+
+
+QString Utils::getUserName(Cutelyst::Context *c)
+{
+    QString userName;
+    Q_ASSERT_X(c, "get user name", "invalid context object");
+    userName = c->stash(QStringLiteral("userName")).toString();
+    return userName;
+}
