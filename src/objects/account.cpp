@@ -407,7 +407,20 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     const bool sieve = (p.value(QStringLiteral("sieve"), QStringLiteral("0")) == QLatin1String("1"));
     const bool smtpauth = (p.value(QStringLiteral("smtpauth"), QStringLiteral("0")) == QLatin1String("1"));
     const bool _catchAll = (p.value(QStringLiteral("catchall"), QStringLiteral("0")) == QLatin1String("1"));
-    const quint32 quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULong();
+
+    quint32 quota = 0;
+    if (p.contains(QStringLiteral("humanQuota"))) {
+        bool quotaOk = true;
+        quota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanQuota")), &quotaOk);
+        if (!quotaOk) {
+            e->setErrorType(SkaffariError::InputError);
+            e->setErrorText(c->translate("Account", "Failed to convert human readable quota size string into valid integer value."));
+            return a;
+        }
+    } else {
+        quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULong();
+    }
+
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
 
     // start converting the entered valid until time into UTC

@@ -383,12 +383,16 @@ void DomainEditor::add_account(Context* c)
                                    new ValidatorRequired(QStringLiteral("password")),
                                    new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::accPwMinlength()),
                                    new ValidatorConfirmed(QStringLiteral("password")),
+                                   new ValidatorRequired(QStringLiteral("validUntil")),
                                    new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("yyyy-MM-dd HH:mm:ss")),
                                    new ValidatorBoolean(QStringLiteral("imap")),
                                    new ValidatorBoolean(QStringLiteral("pop")),
                                    new ValidatorBoolean(QStringLiteral("sieve")),
                                    new ValidatorBoolean(QStringLiteral("smtpauth")),
-                                   new ValidatorBoolean(QStringLiteral("catchall"))
+                                   new ValidatorBoolean(QStringLiteral("catchall")),
+                                   new ValidatorRegularExpression(QStringLiteral("humanQuota"), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption)),
+                                   new ValidatorInteger(QStringLiteral("quota")),
+                                   new ValidatorMin(QStringLiteral("quota"), QMetaType::Int, 0)
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
@@ -397,23 +401,39 @@ void DomainEditor::add_account(Context* c)
                 // if this domain has a global quota limit, we have to calculate the
                 // quota that is left
                 bool enoughQuotaLeft = true;
+
                 if (dom.getDomainQuota() > 0) {
 
-                    const quint32 accQuota = p.value(QStringLiteral("quota")).toULong();
-                    if (freeQuota < accQuota) {
+                    quint32 accQuota = 0;
+                    bool quotaOk = true;
 
-                        enoughQuotaLeft = false;
-
-                        c->setStash(QStringLiteral("error_msg"),
-                                    c->translate("DomainEditor", "There is not enough free quota on this domain. Please lower the quota for the new account to a maximum of %1 KiB.").arg(freeQuota));
+                    if (p.contains(QStringLiteral("humanQuota"))) {
+                        accQuota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanQuota")), &quotaOk);
+                        if (!quotaOk) {
+                            c->setStash(QStringLiteral("error_msg"),
+                                        c->translate("DomainEditor", "Failed to convert human readable quota size string into valid integer value."));
+                            enoughQuotaLeft = false;
+                        }
+                    } else {
+                        accQuota = p.value(QStringLiteral("quota")).toULong();
                     }
 
-                    if ((dom.getDomainQuota() > 0) && (accQuota <= 0)) {
+                    if (quotaOk) {
+                        if (freeQuota < accQuota) {
 
-                        enoughQuotaLeft = false;
+                            enoughQuotaLeft = false;
 
-                        c->setStash(QStringLiteral("error_msg"),
-                                    c->translate("DomainEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(dom.getHumanDomainQuota()));
+                            c->setStash(QStringLiteral("error_msg"),
+                                        c->translate("DomainEditor", "There is not enough free quota on this domain. Please lower the quota for the new account to a maximum of %1 KiB.").arg(freeQuota));
+                        }
+
+                        if ((dom.getDomainQuota() > 0) && (accQuota <= 0)) {
+
+                            enoughQuotaLeft = false;
+
+                            c->setStash(QStringLiteral("error_msg"),
+                                        c->translate("DomainEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(dom.getHumanDomainQuota()));
+                        }
                     }
 
                 }
@@ -522,26 +542,34 @@ void DomainEditor::add_account(Context* c)
 
         QHash<QString,HelpEntry> help;
         help.insert(QStringLiteral("accounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "Number of accounts that are currently part of this domain. If there is a maximum account limit defined, it will be shown, too.")));
+
+        const QString quotaTitle = c->translate("DomainEditor", "Quota");
+        const QString domainQuotaTitle = c->translate("DomainEditor", "DomainQuota");
         if (dom.getDomainQuota() > 0) {
-            help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "Used and total amount of storage quota for this domain.")));
-            help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1.").arg(Utils::humanBinarySize(c, static_cast<quint64>(freeQuota) * Q_UINT64_C(1024)))));
+            help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "Used and total amount of storage quota for this domain.")));
+            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1 KiB.").arg(static_cast<quint64>(freeQuota) * Q_UINT64_C(1024))));
+            help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.").arg(Utils::humanBinarySize(c, static_cast<quint64>(freeQuota) * Q_UINT64_C(1024)))));
         } else {
-            help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "This domain has no overall quota limit, so the value shows the sum of the quota limit of all accounts in this domain.")));
-            help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Quota"), c->translate("DomainEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it.")));
+            help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "This domain has no overall quota limit, so the value shows the sum of the quota limit of all accounts in this domain.")));
+            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it.")));
+            help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));
         }
+
+        const QString usernameTitle = c->translate("DomainEditor", "User name");
         if (!SkaffariConfig::imapDomainasprefix()) {
             if (dom.isFreeNamesEnabled()) {
-                help.insert(QStringLiteral("username"), HelpEntry(c->translate("DomainEditor", "User name"), c->translate("DomainEditor", "You can freely select a username, as long as it is not in use by another account. The user name has not to be the same as the local part of the email address.")));
+                help.insert(QStringLiteral("username"), HelpEntry(usernameTitle, c->translate("DomainEditor", "You can freely select a username, as long as it is not in use by another account. The user name has not to be the same as the local part of the email address.")));
             } else {
-                help.insert(QStringLiteral("username"), HelpEntry(c->translate("DomainEditor", "User name"), c->translate("DomainEditor", "You can not define your own username but have to use the system generated user name.")));
+                help.insert(QStringLiteral("username"), HelpEntry(usernameTitle, c->translate("DomainEditor", "You can not define your own username but have to use the system generated user name.")));
             }
         } else {
             if (SkaffariConfig::imapFqun()) {
-                help.insert(QStringLiteral("username"), HelpEntry(c->translate("DomainEditor", "User name"), c->translate("DomainEditor", "The email address defined here will be the user name for this account.")));
+                help.insert(QStringLiteral("username"), HelpEntry(usernameTitle, c->translate("DomainEditor", "The email address defined here will be the user name for this account.")));
             } else {
-                help.insert(QStringLiteral("username"), HelpEntry(c->translate("DomainEditor", "User name"), c->translate("DomainEditor", "The email address defined here will be the user name for this account, but with the @ sign substituted by a dot.")));
+                help.insert(QStringLiteral("username"), HelpEntry(usernameTitle, c->translate("DomainEditor", "The email address defined here will be the user name for this account, but with the @ sign substituted by a dot.")));
             }
         }
+
         help.insert(QStringLiteral("localpart"), HelpEntry(c->translate("DomainEditor", "Email address"), c->translate("DomainEditor", "Enter the local part of the main email address for this account. You can add more alias addresses to this account later on.")));
         help.insert(QStringLiteral("password"), HelpEntry(c->translate("DomainEditor", "Password"), c->translate("DomainEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
         help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("DomainEditor", "Password confirmation"), c->translate("DomainEditor", "Confirm your entered password.")));

@@ -47,14 +47,11 @@
             <small id="localpartDesc" class="form-text text-muted">{{ help.localpart.text }}</small>
         </div>
         
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.quota.count %} has-warning{% endif %}">
-            <label for="quota" class="form-control-label">{{ help.quota.title }}</label>
-            <div class="input-group">
-                <input type="number" id="quota" name="quota" class="form-control{% if validationErrors.quota.count %} form-control-warning{% endif %}" value="{{ quota|default:domain.quota }}" placeholder="{{ help.quota.title }}" aria-describedby="quotaDesc" min="0" max="{{ freequota }}">
-                <span class="input-group-addon" id="quota-addon" title="{{ _("1 Kibibyte (KiB) = 1024 byte") }}">KiB</span>
-            </div>
-            {% if validationErrors.quota.count %}<div class="form-control-feedback"><small>{{ validationErrors.quota.0 }}</small></div>{% endif %}
-            <small id="quotaDesc" class="form-text text-muted">{{ help.quota.text }}</small>
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.humanQuota.count %} has-warning{% endif %}">
+            <label for="humanQuota" class="form-control-label">{{ help.humanQuota.title }}</label>
+            <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} form-control-warning{% endif %}" value="{{ humanQuota|default:domain.humanQuota }}" placeholder="{{ help.humanQuota.title }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+            {% if validationErrors.humanQuota.count %}<div class="form-control-feedback"><small>{{ validationErrors.humanQuota.0 }}</small></div>{% endif %}
+            <small id="humanQuotaDesc" class="form-text text-muted">{{ help.humanQuota.text }}</small>
         </div>
         
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.password.count %} has-warning{% endif %}">
@@ -72,7 +69,7 @@
         
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.validUntil.count %} has-warning{% endif %}">
             <label class="form-control-label" for="validUntil">{{ help.validUntil.title }}</label>
-            <input type="text" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD HH:mm:ss") }}" value="{{ validUntil|default:"2998-12-31 23:59:59" }}" aria-describedby="validUntilDesc" required>
+            <input type="text" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD HH:mm:ss") }}" value="{{ validUntil|default:"2998-12-31 23:59:59" }}" aria-describedby="validUntilDesc" pattern="^2\d{3}-[01]\d-[0123]\d\s[012]\d:[012345]\d:[012345]\d$" required>
             {% if validationErrors.validUntil.count %}<div class="form-control-feedback"><small>{{ validationErrors.validUntil.0 }}</small></div>{% endif %}
             <small id="validUntilDesc" class="form-text text-muted">{{ help.validUntil.text }}</small>
         </div>
