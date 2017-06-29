@@ -102,7 +102,9 @@ void DomainEditor::edit(Context *c)
                                 new ValidatorInteger(QStringLiteral("domainQuota")),
                                 new ValidatorMin(QStringLiteral("domainQuota"), QMetaType::UInt, 0),
                                 new ValidatorBoolean(QStringLiteral("freeNames")),
-                                new ValidatorBoolean(QStringLiteral("freeAddress"))
+                                new ValidatorBoolean(QStringLiteral("freeAddress")),
+                                new ValidatorRegularExpression(QStringLiteral("humanQuota"), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption)),
+                                new ValidatorRegularExpression(QStringLiteral("humanDomainQuota"), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption))
                             });
 
                 vr = v.validate(c, Validator::FillStashOnError);
@@ -110,7 +112,9 @@ void DomainEditor::edit(Context *c)
             } else {
 
                 static Validator v({
-                                new ValidatorMin(QStringLiteral("quota"), QMetaType::UInt, 0)
+                                new ValidatorInteger(QStringLiteral("quota")),
+                                new ValidatorMin(QStringLiteral("quota"), QMetaType::UInt, 0),
+                                new ValidatorRegularExpression(QStringLiteral("humanQuota"), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption))
                             });
 
                 vr = v.validate(c, Validator::FillStashOnError);
@@ -133,16 +137,26 @@ void DomainEditor::edit(Context *c)
         help.insert(QStringLiteral("prefix"), HelpEntry(c->translate("DomainEditor", "Prefix"), c->translate("DomainEditor", "The prefix might be used for automatically generated user names, especially if free names are not allowed for this domain.")));
         help.insert(QStringLiteral("created"), HelpEntry(c->translate("DomainEditor", "Created"), c->translate("DomainEditor", "Date and time this domain has been created in Skaffari.")));
         help.insert(QStringLiteral("updated"), HelpEntry(c->translate("DomainEditor", "Updated"), c->translate("DomainEditor", "Date and time this domain has been updated in Skafari.")));
+
+        const QString domainQuotaTitle = c->translate("DomainEditor", "Domain quota");
         if (c->stash(QStringLiteral("userType")).value<qint16>() == 0) {
             // current user is a super administrator
             help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Maximum accounts"), c->translate("DomainEditor", "The maximum accounts value limits the amount of accounts that can be created for this domain. Set it to 0 to disable the limit.")));
-            help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set, every account must have a quota defined. Set it to 0 to disable the domain quota.")));
+            help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set, every account must have a quota defined. Set it to 0 to disable the domain quota.")));
+            help.insert(QStringLiteral("humanDomainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set, every account must have a quota defined. Set it to 0 to disable the domain quota. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));
         } else {
             // current user is a domain administrator
+            const QString domainQuotaText = c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set (not unlimited), every account must have a quota defined.");
             help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "Shows the current amount of accounts created in this domain and the maximum number of accounts that can be created for this domain.")));
-            help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set (not unlimited), every account must have a quota defined.")));
+            help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, domainQuotaText));
+            help.insert(QStringLiteral("humanDomainQuota"), HelpEntry(domainQuotaTitle, domainQuotaText));
         }
-        help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Default quota"), c->translate("DomainEditor", "Default quota for new accounts for this domain. This value can be changed individually for every account.")));
+
+        const QString quotaTitle = c->translate("DomainEditor", "Default quota");
+        help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "Default quota for new accounts for this domain. This value can be changed individually for every account.")));
+        help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "Default quota for new accounts for this domain. This value can be changed individually for every account. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));
+
+
         help.insert(QStringLiteral("folders"), HelpEntry(c->translate("DomainEditor", "Standard folders"), c->translate("DomainEditor", "Comma separated list of folders that will be automatically created when creating a new account for this domain. You can safely insert localized folder names in UTF-8 encoding. They will be internally converted into UTF-7-IMAP encoding.")));
         help.insert(QStringLiteral("transport"), HelpEntry(c->translate("DomainEditor", "Transport"), c->translate("DomainEditor", "The transport mechanism for received emails for this domain. Defaults to Cyrus.")));
         help.insert(QStringLiteral("freeNames"), HelpEntry(c->translate("DomainEditor", "Allow free names"), c->translate("DomainEditor", "If enabled, account user names for this domain can be freely selected (if not in use already).")));
@@ -215,7 +229,9 @@ void DomainEditor::create(Context* c)
                                    new ValidatorInteger(QStringLiteral("domainQuota")),
                                    new ValidatorMin(QStringLiteral("domainQuota"), QMetaType::UInt, 0),
                                    new ValidatorBoolean(QStringLiteral("freeNames")),
-                                   new ValidatorBoolean(QStringLiteral("freeAddress"))
+                                   new ValidatorBoolean(QStringLiteral("freeAddress")),
+                                   new ValidatorRegularExpression(QStringLiteral("humanQuota"), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption)),
+                                   new ValidatorRegularExpression(QStringLiteral("humanDomainQuota"), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption))
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
@@ -234,8 +250,14 @@ void DomainEditor::create(Context* c)
         help.insert(QStringLiteral("domainName"), HelpEntry(c->translate("DomainEditor", "Domain name"), c->translate("DomainEditor", "The name of the domain you want to manage emails for, like example.com. You can safely insert international domain names in UTF-8 encoding, it will be converted internally into ASCII compatible encoding.")));
         help.insert(QStringLiteral("prefix"), HelpEntry(c->translate("DomainEditor", "Prefix"), c->translate("DomainEditor", "The prefix might be used for automatically generated user names, especially if free names are not allowed for this domain.")));
         help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Maximum accounts"), c->translate("DomainEditor", "The maximum accounts value limits the amount of accounts that can be created for this domain. Set it to 0 to disable the limit.")));
-        help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set, every account must have a quota defined. Set it to 0 to disable the domain quota.")));
-        help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Default quota"), c->translate("DomainEditor", "Default quota for new accounts for this domain. This value can be changed individually for every account.")));
+
+        const QString domainQuotaTitle = c->translate("DomainEditor", "Domain quota");
+        const QString quotaTitle = c->translate("DomainEditor", "Default quota");
+        help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set, every account must have a quota defined. Set it to 0 to disable the domain quota. ")));
+        help.insert(QStringLiteral("humanDomainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set, every account must have a quota defined. Set it to 0 to disable the domain quota. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));
+        help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "Default quota for new accounts for this domain. This value can be changed individually for every account.")));
+        help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "Default quota for new accounts for this domain. This value can be changed individually for every account. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));
+
         help.insert(QStringLiteral("folders"), HelpEntry(c->translate("DomainEditor", "Standard folders"), c->translate("DomainEditor", "Comma separated list of folders that will be automatically created when creating a new account for this domain. You can safely insert localized folder names in UTF-8 encoding. They will be internally converted into UTF-7-IMAP encoding.")));
         help.insert(QStringLiteral("transport"), HelpEntry(c->translate("DomainEditor", "Transport"), c->translate("DomainEditor", "The transport mechanism for received emails for this domain. Defaults to Cyrus.")));
         help.insert(QStringLiteral("freeNames"), HelpEntry(c->translate("DomainEditor", "Allow free names"), c->translate("DomainEditor", "If enabled, account user names for this domain can be freely selected (if not in use already).")));
@@ -243,7 +265,9 @@ void DomainEditor::create(Context* c)
 
         c->stash({
                      {QStringLiteral("defQuota"), SkaffariConfig::defQuota()},
+                     {QStringLiteral("defHumanQuota"), Utils::humanBinarySize(c, static_cast<quint64>(SkaffariConfig::defQuota()) * Q_UINT64_C(1024))},
                      {QStringLiteral("defDomainQuota"), SkaffariConfig::defDomainquota()},
+                     {QStringLiteral("defHumanDomainQuota"), Utils::humanBinarySize(c, static_cast<quint64>(SkaffariConfig::defDomainquota()) * Q_UINT64_C(1024))},
                      {QStringLiteral("defMaxAccounts"), SkaffariConfig::defMaxaccounts()},
                      {QStringLiteral("template"), QStringLiteral("domain/create.html")},
                      {QStringLiteral("domainAsPrefix"), SkaffariConfig::imapDomainasprefix()},

@@ -383,9 +383,43 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
         qCWarning(SK_DOMAIN, "Failed to create domain %s: name is already in use by domain ID %u", domainName.toUtf8().constData(), q.value(0).value<quint32>());
     }
 
+    quint32 quota = 0;
+    bool quotaOk = true;
+    if (params.contains(QStringLiteral("humanQuota"))) {
+        quota = Utils::humanToIntSize(c, params.value(QStringLiteral("humanQuota")), &quotaOk);
+        if (!quotaOk) {
+            errorData->setErrorType(SkaffariError::InputError);
+            errorData->setErrorText(c->translate("Domain", "Failed to convert human readable quota size string into valid integer value."));
+            return dom;
+        }
+    } else {
+        quota = params.value(QStringLiteral("quota")).toULong(&quotaOk);
+        if (!quotaOk) {
+            errorData->setErrorType(SkaffariError::InputError);
+            errorData->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
+            return dom;
+        }
+    }
+
+    quint32 domainQuota = 0;
+    bool domainQuotaOk = true;
+    if (params.contains(QStringLiteral("humanDomainQuota"))) {
+        domainQuota = Utils::humanToIntSize(c, params.value(QStringLiteral("humanDomainQuota")), &domainQuotaOk);
+        if (!domainQuotaOk) {
+            errorData->setErrorType(SkaffariError::InputError);
+            errorData->setErrorText(c->translate("Domain", "Failed to convert human readable quota size string into valid integer value."));
+            return dom;
+        }
+    } else {
+        domainQuota = params.value(QStringLiteral("domainQuota")).toULong(&domainQuotaOk);
+        if (!domainQuotaOk) {
+            errorData->setErrorType(SkaffariError::InputError);
+            errorData->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
+            return dom;
+        }
+    }
+
     const quint32 maxAccounts = params.value(QStringLiteral("maxAccounts")).toULong();
-    const quint32 quota = params.value(QStringLiteral("quota")).toULong();
-    const quint32 domainQuota = params.value(QStringLiteral("domainQuota")).toULong();
     const bool freeNames = params.contains(QStringLiteral("freeNames"));
     const bool freeAddress = params.contains(QStringLiteral("freeAddress"));
     const QStringList folders = Domain::trimStringList(params.value(QStringLiteral("folders")).split(QLatin1Char(','), QString::SkipEmptyParts));
@@ -663,14 +697,49 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
 
     QSqlQuery q;
 
-    const quint32 quota = p.value(QStringLiteral("quota"), QString::number(d->getQuota())).toULong();
     const QStringList folders = Domain::trimStringList(p.value(QStringLiteral("folders")).split(QLatin1Char(','), QString::SkipEmptyParts));
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
+
+    quint32 quota = 0;
+    bool quotaOk = true;
+    if (p.contains(QStringLiteral("humanQuota"))) {
+        quota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanQuota")), &quotaOk);
+        if (!quotaOk) {
+            e->setErrorType(SkaffariError::InputError);
+            e->setErrorText(c->translate("Domain", "Failed to convert human readable quota size string into valid integer value."));
+            return ret;
+        }
+    } else {
+        quota = p.value(QStringLiteral("quota"), QString::number(d->getQuota())).toULong(&quotaOk);
+        if (!quotaOk) {
+            e->setErrorType(SkaffariError::InputError);
+            e->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
+            return ret;
+        }
+    }
+
     if (u.value(QStringLiteral("type")).value<qint16>() == 0) {
 
+        quint32 domainQuota = 0;
+        bool domainQuotaOk = true;
+        if (p.contains(QStringLiteral("humanDomainQuota"))) {
+            domainQuota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanDomainQuota")), &domainQuotaOk);
+            if (!domainQuotaOk) {
+                e->setErrorType(SkaffariError::InputError);
+                e->setErrorText(c->translate("Domain", "Failed to convert human readable quota size string into valid integer value."));
+                return ret;
+            }
+        } else {
+            domainQuota = p.value(QStringLiteral("domainQuota"), QString::number(d->getDomainQuota())).toULong(&domainQuotaOk);
+            if (!domainQuotaOk) {
+                e->setErrorType(SkaffariError::InputError);
+                e->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
+                return ret;
+            }
+        }
+
         const quint32 maxAccounts = p.value(QStringLiteral("maxAccounts"), QString::number(d->getMaxAccounts())).toULong();
-        const quint32 domainQuota = p.value(QStringLiteral("domainQuota"), QString::number(d->getDomainQuota())).toULong();
         const bool freeNames = p.contains(QStringLiteral("freeNames"));
         const bool freeAddress = p.contains(QStringLiteral("freeAddress"));
         const QString transport = p.value(QStringLiteral("transport"), d->getTransport());
@@ -692,8 +761,10 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         }
 
         d->setQuota(quota);
+        d->setHumanQuota(Utils::humanBinarySize(c, static_cast<quint64>(quota) * Q_UINT64_C(1024)));
         d->setMaxAccounts(maxAccounts);
         d->setDomainQuota(domainQuota);
+        d->setHumanDomainQuota(Utils::humanBinarySize(c, static_cast<quint64>(domainQuota) * Q_UINT64_C(1024)));
         d->setFreeNamesEnabled(freeNames);
         d->setFreeAddressEnabled(freeAddress);
         d->setTransport(transport);
@@ -715,6 +786,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         }
 
         d->setQuota(quota);
+        d->setHumanQuota(Utils::humanBinarySize(c, static_cast<quint64>(quota) * Q_UINT64_C(1024)));
         d->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
 
         ret = true;
