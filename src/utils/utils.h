@@ -33,6 +33,18 @@ public:
     static QDateTime toUserTZ(Cutelyst::Context *c, const QDateTime &dt);
     static QString humanBinarySize(Cutelyst::Context *c, quint64 sizeInByte);
     static QString getUserName(Cutelyst::Context *c);
+
+    /*!
+     * \brief Converts a human readable quota size string into KiB.
+     *
+     * The string has to be in a format like \a 7,5 \a GiB.
+     *
+     * \param c     Context object, used for localized number extraction.
+     * \param size  The size string to convert.
+     * \param ok    Pointer to a boolean value that will be \c true if conversion succeeded.
+     * \return      The quota size in KiB.
+     */
+    static quint32 humanToIntSize(Cutelyst::Context *c, const QString &size, bool *ok);
 };
 
 #endif // UTILS_H

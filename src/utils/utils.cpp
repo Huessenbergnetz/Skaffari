@@ -21,6 +21,9 @@
 #include <Cutelyst/Plugins/Session/Session>
 #include <QTimeZone>
 #include <QLocale>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <cmath>
 
 Utils::Utils()
 {
@@ -80,4 +83,57 @@ QString Utils::getUserName(Cutelyst::Context *c)
     Q_ASSERT_X(c, "get user name", "invalid context object");
     userName = c->stash(QStringLiteral("userName")).toString();
     return userName;
+}
+
+
+quint32 Utils::humanToIntSize(Cutelyst::Context *c, const QString &size, bool *ok)
+{
+    quint32 ret = 0;
+
+    Q_ASSERT_X(ok, "convert human quota string to KiB", "invalid pointer to a boolean succeed value (ok)");
+
+    QRegularExpression regex(QStringLiteral("(\\d+[,.٫]?\\d*)\\s*([KMGT]?i?B?)"), QRegularExpression::CaseInsensitiveOption);
+    QRegularExpressionMatch match = regex.match(size);
+
+    if (!match.hasMatch()) {
+        *ok = false;
+        return ret;
+    }
+
+    bool _ok = true;
+
+    float _size = c->locale().toFloat(match.captured(1), &_ok);
+
+    if (!_ok) {
+        *ok = false;
+        return ret;
+    }
+
+    const QString mult = match.captured(2);
+
+    if (mult.startsWith(QLatin1Char('G'), Qt::CaseInsensitive)) {
+        _size = _size * 1073741824.0f;
+    } else if (mult.startsWith(QLatin1Char('M'), Qt::CaseInsensitive)) {
+        _size = _size * 1048576.0f;
+    } else if (mult.startsWith(QLatin1Char('T'), Qt::CaseInsensitive)) {
+        _size = _size * 1099511627776.0f;
+    } else {
+        _size = _size * 1024.0f;
+    }
+
+    _size = _size / 1024.0f;
+
+    // we have to check if the size fits into the quint32 even after rounding
+    // as rounding can also round up, we will give an extra margin of 1 to the
+    // maximum value of unsigned 32bit integer
+    if (_size > 4294967294.0f) {
+        *ok = false;
+        return ret;
+    }
+
+    qlonglong _ret = std::llround(_size);
+
+    ret = static_cast<quint32>(_ret);
+
+    return ret;
 }
