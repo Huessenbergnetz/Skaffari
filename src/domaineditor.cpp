@@ -369,6 +369,7 @@ void DomainEditor::add_account(Context* c)
                          {QStringLiteral("pop"), p.contains(QStringLiteral("pop"))},
                          {QStringLiteral("sieve"), p.contains(QStringLiteral("sieve"))},
                          {QStringLiteral("smtpauth"), p.contains(QStringLiteral("smtpauth"))},
+                         {QStringLiteral("catchall"), p.contains(QStringLiteral("catchall"))},
                          {QStringLiteral("username"), p.value(QStringLiteral("username"))},
                          {QStringLiteral("localpart"), p.value(QStringLiteral("localpart"))},
                          {QStringLiteral("quota"), p.value(QStringLiteral("quota"))}
@@ -386,7 +387,8 @@ void DomainEditor::add_account(Context* c)
                                    new ValidatorBoolean(QStringLiteral("imap")),
                                    new ValidatorBoolean(QStringLiteral("pop")),
                                    new ValidatorBoolean(QStringLiteral("sieve")),
-                                   new ValidatorBoolean(QStringLiteral("smtpauth"))
+                                   new ValidatorBoolean(QStringLiteral("smtpauth")),
+                                   new ValidatorBoolean(QStringLiteral("catchall"))
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
@@ -446,7 +448,8 @@ void DomainEditor::add_account(Context* c)
                          {QStringLiteral("imap"), true},
                          {QStringLiteral("pop"), true},
                          {QStringLiteral("sieve"), true},
-                         {QStringLiteral("smtpauth"), true}
+                         {QStringLiteral("smtpauth"), true},
+                         {QStringLiteral("catchall"), false}
                      });
 
              QString username = dom.getPrefix();
@@ -547,6 +550,14 @@ void DomainEditor::add_account(Context* c)
         help.insert(QStringLiteral("pop"), HelpEntry(c->translate("DomainEditor", "POP3 Access"), c->translate("DomainEditor", "If enabled, the user of this account can access the mailbox through the POP3 protocol.")));
         help.insert(QStringLiteral("sieve"), HelpEntry(c->translate("DomainEditor", "Sieve Access"), c->translate("DomainEditor", "If enabled, the user of this account can manage own Sieve scripts on the server.")));
         help.insert(QStringLiteral("smtpauth"), HelpEntry(c->translate("DomainEditor", "SMTP Access"), c->translate("DomainEditor", "If enabled, the user of this account can send emails via this server through the SMTP protocol.")));
+
+        SkaffariError getCatchAllUserError(c);
+        const QString catchAllUser = dom.getCatchAllAccount(c, &getCatchAllUserError);
+        const QString catchAllLabel = c->translate("DomainEditor", "Catch All");
+        const QString catchAllText = catchAllUser.isEmpty()
+                ? c->translate("DomainEditor", "If enabled, this user will receive all emails sent to addresses not defined for this domain.")
+                : c->translate("DomainEditor", "If enabled, this user will receive all emails sent to addresses not defined for this domain. The currently defined user %1 will not receive any messages to undefined addresses anymore.");
+        help.insert(QStringLiteral("catchall"), HelpEntry(catchAllLabel, catchAllText));
 
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("domain/add_account.html")},
