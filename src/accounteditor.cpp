@@ -80,7 +80,8 @@ void AccountEditor::edit(Context* c)
                                    new ValidatorBoolean(QStringLiteral("imap")),
                                    new ValidatorBoolean(QStringLiteral("pop")),
                                    new ValidatorBoolean(QStringLiteral("sieve")),
-                                   new ValidatorBoolean(QStringLiteral("smtpauth"))
+                                   new ValidatorBoolean(QStringLiteral("smtpauth")),
+                                   new ValidatorBoolean(QStringLiteral("catchall"))
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
@@ -142,6 +143,20 @@ void AccountEditor::edit(Context* c)
         help.insert(QStringLiteral("sieve"), HelpEntry(c->translate("AccountEditor", "Sieve Access"), c->translate("AccountEditor", "If enabled, the user of this account can manage own Sieve scripts on the server.")));
         help.insert(QStringLiteral("smtpauth"), HelpEntry(c->translate("AccountEditor", "SMTP Access"), c->translate("AccountEditor", "If enabled, the user of this account can send emails via this server through the SMTP protocol.")));
 
+        SkaffariError getCatchAllError(c);
+        const QString catchAllUser = dom.getCatchAllAccount(c, &getCatchAllError);
+        const QString catchAllTitle = c->translate("AccountEditor", "Catch All");
+        QString catchAllHelp;
+        if (catchAllUser == a.getUsername()) {
+            catchAllHelp = c->translate("AccountEditor", "If disabled, this user will not receive emails anymore that have been sent to addresses not defined for this domain. There will also be no other user that will receive emails to undefined addresses.");
+        } else {
+            if (catchAllUser.isEmpty()) {
+                catchAllHelp = c->translate("AccountEditor", "If enabled, this user will receive all emails sent to addresses not defined for this domain.");
+            } else {
+                catchAllHelp = c->translate("AccountEditor", "If enabled, this user will receive all emails sent to addresses not defined for this domain. The currently defined user %1 will not receive any messages to undefined addresses anymore.").arg(catchAllUser);
+            }
+        }
+        help.insert(QStringLiteral("catchall"), HelpEntry(catchAllTitle, catchAllHelp));
 
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("account/edit.html")},
