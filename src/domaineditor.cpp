@@ -556,7 +556,7 @@ void DomainEditor::add_account(Context* c)
         const QString catchAllLabel = c->translate("DomainEditor", "Catch All");
         const QString catchAllText = catchAllUser.isEmpty()
                 ? c->translate("DomainEditor", "If enabled, this user will receive all emails sent to addresses not defined for this domain.")
-                : c->translate("DomainEditor", "If enabled, this user will receive all emails sent to addresses not defined for this domain. The currently defined user %1 will not receive any messages to undefined addresses anymore.");
+                : c->translate("DomainEditor", "If enabled, this user will receive all emails sent to addresses not defined for this domain. The currently defined user %1 will not receive any messages to undefined addresses anymore.").arg(catchAllUser);
         help.insert(QStringLiteral("catchall"), HelpEntry(catchAllLabel, catchAllText));
 
         c->stash({
