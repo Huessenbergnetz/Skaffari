@@ -1115,7 +1115,18 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
         }
     }
 
-    const quint32 quota = p.value(QStringLiteral("quota")).toULong();
+    quint32 quota = 0;
+    if (p.contains(QStringLiteral("humanQuota"))) {
+        bool quotaOk = true;
+        quota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanQuota")), &quotaOk);
+        if (!quotaOk) {
+            e->setErrorType(SkaffariError::InputError);
+            e->setErrorText(c->translate("Account", "Failed to convert human readable quota size string into valid integer value."));
+            return ret;
+        }
+    } else {
+        quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULong();
+    }
 
     if (quota != a->getQuota()) {
         SkaffariIMAP imap(c);
@@ -1215,6 +1226,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
 
     a->setValidUntil(Utils::toUserTZ(c, validUntil));
     a->setQuota(quota);
+    a->setHumanQuota(Utils::humanBinarySize(c, static_cast<quint64>(quota) * Q_UINT64_C(1024)));
     a->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
     a->setImapEnabled(imap);
     a->setPopEnabled(pop);
@@ -1229,6 +1241,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
     } else {
         if (Q_LIKELY(q.next())) {
             d->setDomainQuotaUsed(q.value(0).value<quint32>());
+            d->setHumanDomainQuotaUsed(Utils::humanBinarySize(c, static_cast<quint64>(d->getDomainQuotaUsed()) * Q_UINT64_C(1024)));
         }
     }
 

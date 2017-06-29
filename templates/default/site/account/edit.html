@@ -41,16 +41,12 @@
              <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ _("Password confirmation") }}" aria-describedby="passwordConfirmDesc">
              <small id="passwordConfirmDesc" class="form-text text-muted">{{ help.password_confirmation.text }}</small>
         </div>
-        
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.quota.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="quota">{{ help.quota.title }}</label>
-            <div class="input-group">
-                <span class="input-group-addon" id="usage-addon">{{ account.humanUsage }} /</span>
-                <input type="number" id="quota" name="quota" class="form-control{% if validationErrors.localpart.count %} form-control-warning{% endif %}" value="{{ account.quota }}" placeholder="{{ _("Quota") }}" aria-describedby="quotaDesc" min="0" max="{{ freequota }}">
-                <span class="input-group-addon" id="quota-addon" title="{{ _("1 Kibibyte (KiB) = 1024 byte") }}">KiB</span>
-            </div>
-            {% if validationErrors.quota.count %}<div class="form-control-feedback"><small>{{ validationErrors.quota.0 }}</small></div>{% endif %}
-            <small id="quotaDesc" class="form-text text-muted">{{ help.quota.text }}</small>
+               
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.humanQuota.count %} has-warning{% endif %}">
+            <label for="humanQuota" class="form-control-label">{{ help.humanQuota.title }}</label>
+            <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} form-control-warning{% endif %}" value="{{ account.humanQuota }}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+            {% if validationErrors.humanQuota.count %}<div class="form-control-feedback"><small>{{ validationErrors.humanQuota.0 }}</small></div>{% endif %}
+            <small id="humanQuotaDesc" class="form-text text-muted">{{ help.humanQuota.text }}</small>
         </div>
     
     </div>
