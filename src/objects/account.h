@@ -71,8 +71,9 @@ public:
      * \param updated       Date and time this account has been updated the last time
      * \param validUntil    Date and time until this account is valid
      * \param keepLocal     \c true if fowarded emails should be kept local too
+     * \param catchAll      \c true if this is the catch all account for the \a domainName
      */
-    Account(quint32 id, quint32 domainId, const QString &username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quint32 quota, quint32 usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, bool keepLocal);
+    Account(quint32 id, quint32 domainId, const QString &username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quint32 quota, quint32 usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, bool keepLocal, bool catchAll);
 
     /*!
      * \brief Creates a copy of \a other.
@@ -268,6 +269,14 @@ public:
      * \sa setKeepLocal()
      */
     bool keepLocal() const;
+    /*!
+     * \brief Returns \c true if this account is for catch all.
+     *
+     * Access from Grantlee: catchAll
+     *
+     * \sa setCatchAll()
+     */
+    bool cathAll() const;
 
 
     /*!
@@ -365,6 +374,11 @@ public:
      * \sa keepLocal()
      */
     void setKeepLocal(bool nKeepLocal);
+    /*!
+     * \brief Set this to \c true if this is a catch all account.
+     * \sa catchAll()
+     */
+    void setCatchAll(bool nCatchAll);
 
     /*!
      * \brief Creates a new user account in the database and on the IMAP server.
@@ -601,6 +615,8 @@ if (property == QLatin1String("id")) {
     var.setValue(object.getValidUntil().toString(QStringLiteral("yyyy-MM-dd HH:mm:ss")));
 } else if (property == QLatin1String("keepLocal")) {
     var.setValue(object.keepLocal());
+} else if (property == QLatin1String("catchAll")) {
+    var.setValue(object.cathAll());
 }
 return var;
 GRANTLEE_END_LOOKUP

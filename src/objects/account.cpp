@@ -47,8 +47,8 @@ Account::Account() :
 }
 
 
-Account::Account(quint32 id, quint32 domainId, const QString& username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quint32 quota, quint32 usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, bool keepLocal) :
-    d(new AccountData(id, domainId, username, prefix, domainName, imap, pop, sieve, smtpauth, addresses, forwards, quota, usage, created, updated, validUntil, keepLocal))
+Account::Account(quint32 id, quint32 domainId, const QString& username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quint32 quota, quint32 usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, bool keepLocal, bool catchAll) :
+    d(new AccountData(id, domainId, username, prefix, domainName, imap, pop, sieve, smtpauth, addresses, forwards, quota, usage, created, updated, validUntil, keepLocal, catchAll))
 {
 
 }
@@ -326,6 +326,18 @@ void Account::setKeepLocal(bool nKeepLocal)
 }
 
 
+bool Account::cathAll() const
+{
+    return d->catchAll;
+}
+
+
+void Account::setCatchAll(bool nCatchAll)
+{
+    d->catchAll = nCatchAll;
+}
+
+
 Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p, const Domain &d)
 {
     Account a;
@@ -387,10 +399,11 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     }
     // end encrypting the password
 
-    bool imap = p.contains(QStringLiteral("imap"));
-    bool pop = p.contains(QStringLiteral("pop"));
-    bool sieve = p.contains(QStringLiteral("sieve"));
-    bool smtpauth = p.contains(QStringLiteral("smtpauth"));
+    const bool imap = (p.value(QStringLiteral("imap"), QStringLiteral("0")) == QLatin1String("1"));
+    const bool pop = (p.value(QStringLiteral("pop"), QStringLiteral("0")) == QLatin1String("1"));
+    const bool sieve = (p.value(QStringLiteral("sieve"), QStringLiteral("0")) == QLatin1String("1"));
+    const bool smtpauth = (p.value(QStringLiteral("smtpauth"), QStringLiteral("0")) == QLatin1String("1"));
+    const bool _catchAll = (p.value(QStringLiteral("catchall"), QStringLiteral("0")) == QLatin1String("1"));
     const quint32 quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULong();
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
 
@@ -435,12 +448,56 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     q.bindValue(QStringLiteral(":username"), username);
     q.bindValue(QStringLiteral(":status"), 1);
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to create new user account in database."));
         q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
         q.bindValue(QStringLiteral(":id"), id);
         q.exec();
         return a;
+    }
+
+    // removing old catch all alias and setting a new one
+    if (_catchAll) {
+        const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.getName()));
+
+        q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :alias"));
+        q.bindValue(QStringLiteral(":alias"), catchAllAlias);
+
+        if (Q_UNLIKELY(!q.exec())) {
+            e->setSqlError(q.lastError(), c->translate("Account", "Failed to remove old catch all address from database."));
+            qCCritical(SK_ACCOUNT, "Failed to remove old catch all address for domain %s from database: %s", qUtf8Printable(d.getName()), qUtf8Printable(q.lastError().text()));
+
+            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE username = :username"));
+            q.bindValue(QStringLiteral(":username"), username);
+            q.exec();
+
+            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
+            q.bindValue(QStringLiteral(":id"), id);
+            q.exec();
+
+            return a;
+        }
+
+        q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
+        q.bindValue(QStringLiteral(":alias"), catchAllAlias);
+        q.bindValue(QStringLiteral(":dest"), username);
+        q.bindValue(QStringLiteral(":username"), username);
+        q.bindValue(QStringLiteral(":status"), 1);
+
+        if (Q_UNLIKELY(!q.exec())) {
+            e->setSqlError(q.lastError(), c->translate("Account", "Failed to set this account as catch all account."));
+            qCCritical(SK_ACCOUNT, "Failed to set new account %s as catch all account for domain %s: %s", qUtf8Printable(username), qUtf8Printable(d.getName()), qUtf8Printable(q.lastError().text()));
+
+            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE username = :username"));
+            q.bindValue(QStringLiteral(":username"), username);
+            q.exec();
+
+            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
+            q.bindValue(QStringLiteral(":id"), id);
+            q.exec();
+
+            return a;
+        }
     }
 
     // start creating the mailbox on the IMAP server, according to the skaffari settings
@@ -592,6 +649,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     a.setValidUntil(Utils::toUserTZ(c, validUntil));
     a.setHumanQuota(Utils::humanBinarySize(c, (quint64)a.getQuota() * 1024));
     a.setHumanUsage(Utils::humanBinarySize(c, (quint64)a.getUsage() * 1024));
+    a.setCatchAll(_catchAll);
 
     qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "created a new account" << username << "for domain" << d.getName();
 
@@ -776,6 +834,7 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
     }
 
     QCollator col(c->locale());
+    const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.getName()));
 
     while (q.next()) {
         const QString username = q.value(1).toString();
@@ -784,9 +843,16 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
         q2.bindValue(QStringLiteral(":username"), username);
         q2.exec();
         QStringList emailAddresses;
-
+        bool _catchAll = false;
         while (q2.next()) {
-            emailAddresses << addressFromACE(q2.value(0).toString());
+            const QString address = q2.value(0).toString();
+            if (!address.startsWith(QLatin1Char('@'))) {
+                emailAddresses << addressFromACE(address);
+            } else {
+                if (address == catchAllAlias) {
+                    _catchAll = true;
+                }
+            }
         }
 
         q2 = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
@@ -836,7 +902,8 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
                   Utils::toUserTZ(c, q.value(7).toDateTime()),
                   Utils::toUserTZ(c, q.value(8).toDateTime()),
                   Utils::toUserTZ(c, q.value(9).toDateTime()),
-                  _keepLocal);
+                  _keepLocal,
+                  _catchAll);
 
         if (Q_LIKELY(imap.isLoggedIn())) {
             std::pair<quint32,quint32> quota = imap.getQuota(a.getUsername());
@@ -877,6 +944,7 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
         return a;
     }
 
+
     a.setId(q.value(0).value<quint32>());
     a.setUsername(q.value(1).toString());
     a.setImapEnabled(q.value(2).toBool());
@@ -895,8 +963,16 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
     q.bindValue(QStringLiteral(":username"), a.getUsername());
     q.exec();
     QStringList emailAddresses;
+    const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.getName()));
     while (q.next()) {
-        emailAddresses << addressFromACE(q.value(0).toString());
+        const QString address = q.value(0).toString();
+        if (!address.startsWith(QLatin1Char('@'))) {
+            emailAddresses << addressFromACE(address);
+        } else {
+            if (address == catchAllAlias) {
+                a.setCatchAll(true);
+            }
+        }
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
@@ -1024,10 +1100,11 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
     }
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
-    const bool imap = (p.contains(QStringLiteral("imap")) && (p.value(QStringLiteral("imap")) == QLatin1String("1")));
-    const bool pop = (p.contains(QStringLiteral("pop")) && (p.value(QStringLiteral("pop")) == QLatin1String("1")));
-    const bool sieve = (p.contains(QStringLiteral("sieve")) && (p.value(QStringLiteral("sieve")) == QLatin1String("1")));
-    const bool smtpauth = (p.contains(QStringLiteral("smtpauth")) && (p.value(QStringLiteral("smtpauth")) == QLatin1String("1")));
+    const bool imap = (p.value(QStringLiteral("imap"), QStringLiteral("0")) == QLatin1String("1"));
+    const bool pop = (p.value(QStringLiteral("pop"), QStringLiteral("0")) == QLatin1String("1"));
+    const bool sieve = (p.value(QStringLiteral("sieve"), QStringLiteral("0")) == QLatin1String("1"));
+    const bool smtpauth = (p.value(QStringLiteral("smtpauth"), QStringLiteral("0")) == QLatin1String("1"));
+    const bool _catchAll = (p.value(QStringLiteral("catchall"), QStringLiteral("0")) == QLatin1String("1"));
 
     QSqlQuery q;
     if (!password.isEmpty()) {
@@ -1052,11 +1129,48 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
         return ret;
     }
 
+    if (_catchAll != a->cathAll()) {
+        const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d->getName()));
+        if (_catchAll && !a->cathAll()) {
+            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :alias"));
+            q.bindValue(QStringLiteral(":alias"), catchAllAlias);
+
+            if (Q_UNLIKELY(!q.exec())) {
+                e->setSqlError(q.lastError(), c->translate("Account", "Failed to remove old catch all address from database."));
+                qCWarning(SK_ACCOUNT, "Failed to remove old catch all address for domain %s from database: %s", qUtf8Printable(d->getName()), qUtf8Printable(q.lastError().text()));
+            }
+
+            q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
+            q.bindValue(QStringLiteral(":alias"), catchAllAlias);
+            q.bindValue(QStringLiteral(":dest"), a->getUsername());
+            q.bindValue(QStringLiteral(":username"), a->getUsername());
+            q.bindValue(QStringLiteral(":status"), 1);
+
+            if (Q_UNLIKELY(!q.exec())) {
+                e->setSqlError(q.lastError(), c->translate("Account", "Failed to set this account as catch all account."));
+                qCWarning(SK_ACCOUNT, "Failed to set account %s as catch all account for domain %s: %s", qUtf8Printable(a->getUsername()), qUtf8Printable(d->getName()), qUtf8Printable(q.lastError().text()));
+            } else {
+                a->setCatchAll(true);
+            }
+
+        } else if (!_catchAll && a->cathAll()) {
+            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :alias AND username = :username"));
+            q.bindValue(QStringLiteral(":alias"), catchAllAlias);
+            q.bindValue(QStringLiteral(":username"), a->getUsername());
+
+            if (Q_UNLIKELY(!q.exec())) {
+                e->setSqlError(q.lastError(), c->translate("Account", "Failed to deselect this account as catch all account for this domain."));
+                qCWarning(SK_ACCOUNT, "Failed to deselect account %s as catch all account for domain %s: %s", qUtf8Printable(a->getUsername()), qUtf8Printable(a->getDomainName()), qUtf8Printable(q.lastError().text()));
+            } else {
+                a->setCatchAll(false);
+            }
+        }
+    }
+
     q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET domainquotaused = (SELECT SUM(quota) FROM accountuser WHERE domain_id = :domain_id) WHERE id = :domain_id"));
     q.bindValue(QStringLiteral(":domain_id"), a->getDomainId());
     if (Q_UNLIKELY(!q.exec())) {
-        qCWarning(SK_ACCOUNT) << "Failed to update used domain quota for domain ID" << a->getDomainId();
-        qCDebug(SK_ACCOUNT) << q.lastError().text();
+        qCWarning(SK_ACCOUNT, "Failed to update used domain quota for domain ID %u: %s", a->getDomainId(), qUtf8Printable(q.lastError().text()));
     }
 
     a->setValidUntil(Utils::toUserTZ(c, validUntil));

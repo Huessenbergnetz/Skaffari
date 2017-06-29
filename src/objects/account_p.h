@@ -27,7 +27,7 @@ class AccountData: public QSharedData
 public:
     AccountData() {}
 
-    AccountData(quint32 _id, quint32 _domainId, const QString &_username, const QString &_prefix, const QString &_domainName, bool _imap, bool _pop, bool _sieve, bool _smptauth, const QStringList &_addresses, const QStringList _forwards, quint32 _quota, quint32 _usage, const QDateTime &_created, const QDateTime &_updated, const QDateTime &_validUntil, bool _keepLocal) :
+    AccountData(quint32 _id, quint32 _domainId, const QString &_username, const QString &_prefix, const QString &_domainName, bool _imap, bool _pop, bool _sieve, bool _smptauth, const QStringList &_addresses, const QStringList _forwards, quint32 _quota, quint32 _usage, const QDateTime &_created, const QDateTime &_updated, const QDateTime &_validUntil, bool _keepLocal, bool _catchAll) :
         id(_id),
         domainId(_domainId),
         username(_username),
@@ -44,7 +44,8 @@ public:
         created(_created),
         updated(_updated),
         validUntil(_validUntil),
-        keepLocal(_keepLocal)
+        keepLocal(_keepLocal),
+        catchAll(_catchAll)
     {}
 
     AccountData(const AccountData &other) :
@@ -67,7 +68,8 @@ public:
         created(other.created),
         updated(other.updated),
         validUntil(other.validUntil),
-        keepLocal(other.keepLocal)
+        keepLocal(other.keepLocal),
+        catchAll(other.catchAll)
     {}
 
     ~AccountData() {}
@@ -91,6 +93,7 @@ public:
     QDateTime updated;
     QDateTime validUntil;
     bool keepLocal = false;
+    bool catchAll = false;
 };
 
 #endif // ACCOUNT_P_H
