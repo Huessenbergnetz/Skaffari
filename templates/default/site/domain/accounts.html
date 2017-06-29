@@ -39,7 +39,7 @@
                         </div>
                     </td>
                     <td><a href="/account/{{ domain.id }}/{{ account.id }}/edit">{{ account.username }}</a></td>
-                    <td>{{ account.addresses|join:"<br>" }}</td>
+                    <td>{% if account.catchAll %}<span class="text-warning">{{ _("Catches all undefined email addresses for this domain.") }}</span><br>{% endif %}{{ account.addresses|join:"<br>" }}</td>
                     <td>{{ account.forwards|join:"<br>" }}{% if account.forwards.count > 0 %}<br><i class="fa fa-{% if account.keepLocal %}check-circle-o{% else %}times-circle-o{% endif %}"></i> {{ _("keep local copy") }}{% endif %}</td>
                     <td>
                         <div class="progress" title="{{ account.usagePercent }}%">
