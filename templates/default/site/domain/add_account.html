@@ -112,6 +112,14 @@
             <small id="smtpauthDesc" class="form-text text-muted">{{ help.smtpauth.text }}</small>
         </div>
         
+        <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" id="catchall" name="catchall" value="1" aria-describedby="catchallDesc"{% if catchall %} checked{% endif %}>
+                {{ help.catchall.title }}
+            </label>
+            <small id="catchallDesc" class="form-text text-muted">{{ help.catchall.text }}</small>
+        </div>
+        
     </div>
     
     <div class="mt-1">
