@@ -358,6 +358,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to query for already existing username."));
+        qCCritical(SK_ACCOUNT, "Failed to query database for already existing username %s: %s", qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
         return a;
     }
 
@@ -377,6 +378,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to query for already existing email address."));
+        qCCritical(SK_ACCOUNT, "Failed to query database for already existing email address %s: %s", qUtf8Printable(email), qUtf8Printable(q.lastError().text()));
         return a;
     }
 
@@ -395,6 +397,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     if (Q_UNLIKELY(encpw.isEmpty())) {
         e->setErrorText(c->translate("Account", "Failed to encrypt user password. Please check your encryption settings."));
         e->setErrorType(SkaffariError::ConfigError);
+        qCCritical(SK_ACCOUNT, "Failed to encrypt user password. Please check your encryption settings.");
         return a;
     }
     // end encrypting the password
@@ -437,6 +440,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to create new user account in database."));
+        qCCritical(SK_ACCOUNT, "Failed to create new user account in database: %s", qUtf8Printable(q.lastError().text()));
         return a;
     }
 
@@ -449,7 +453,8 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     q.bindValue(QStringLiteral(":status"), 1);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Failed to create new user account in database."));
+        e->setSqlError(q.lastError(), c->translate("Account", "Failed to insert email address new user account in database."));
+        qCCritical(SK_ACCOUNT, "Failed to insert email address for new user account into database: %s", qUtf8Printable(q.lastError().text()));
         q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
         q.bindValue(QStringLiteral(":id"), id);
         q.exec();
@@ -629,7 +634,9 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET accountcount = accountcount + 1, domainquotaused = domainquotaused + :quota WHERE id = :id"));
     q.bindValue(QStringLiteral(":quota"), quota);
     q.bindValue(QStringLiteral(":id"), d.id());
-    q.exec();
+    if (Q_UNLIKELY(!q.exec())) {
+        qCWarning(SK_ACCOUNT, "Failed to update count of accounts and domain quota usage after adding new acocunt to domain ID %u (%s): %s", d.id(), qUtf8Printable(d.getName()), qUtf8Printable(q.lastError().text()));
+    }
 
     a.setId(id);
     a.setDomainId(d.id());
@@ -777,6 +784,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, Domain *d)
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to query the user accounts that belong to this domain."));
+        qCCritical(SK_ACCOUNT, "Failed to query accounts to delete that belong to domain ID %u (%s): %s", d->id(), qUtf8Printable(d->getName()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -823,6 +831,7 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to query accounts from database."));
+        qCCritical(SK_ACCOUNT, "Failed to query accounts of domain ID %u (%s) from the database: %s", d.id(), qUtf8Printable(d.getName()), qUtf8Printable(q.lastError().text()));
         return pag;
     }
 
@@ -830,48 +839,58 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
 
     SkaffariIMAP imap(c);
     if (!imap.login()) {
-        qCWarning(SK_ACCOUNT) << "Failed to login to IMAP server. Omitting quota query.";
+        qCWarning(SK_ACCOUNT, "Failed to login to IMAP server. Omitting quota query while listing accounts for domain ID %u (%s).", d.id(), qUtf8Printable(d.getName()));
     }
 
     QCollator col(c->locale());
     const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.getName()));
 
     while (q.next()) {
+        const quint32 id = q.value(0).value<quint32>();
         const QString username = q.value(1).toString();
+
+        QStringList emailAddresses;
+        bool _catchAll = false;
 
         QSqlQuery q2 = CPreparedSqlQueryThread(QStringLiteral("SELECT alias FROM virtual WHERE dest = :username AND username = :username"));
         q2.bindValue(QStringLiteral(":username"), username);
-        q2.exec();
-        QStringList emailAddresses;
-        bool _catchAll = false;
-        while (q2.next()) {
-            const QString address = q2.value(0).toString();
-            if (!address.startsWith(QLatin1Char('@'))) {
-                emailAddresses << addressFromACE(address);
-            } else {
-                if (address == catchAllAlias) {
-                    _catchAll = true;
-                }
-            }
-        }
 
-        q2 = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
-        q2.bindValue(QStringLiteral(":username"), username);
-        q2.exec();
-
-        QStringList aliases;
-        bool _keepLocal = false;
-        while (q2.next()) {
-            const QStringList destinations = q2.value(0).toString().split(QLatin1Char(','));
-            if (!destinations.empty()) {
-                for (const QString &dest : destinations) {
-                    if (dest != username) {
-                        aliases << dest;
-                    } else {
-                        _keepLocal = true;
+        if (Q_LIKELY(q2.exec())) {
+            while (q2.next()) {
+                const QString address = q2.value(0).toString();
+                if (!address.startsWith(QLatin1Char('@'))) {
+                    emailAddresses << addressFromACE(address);
+                } else {
+                    if (address == catchAllAlias) {
+                        _catchAll = true;
                     }
                 }
             }
+        } else {
+            qCWarning(SK_ACCOUNT, "Failed to query email addresses of account ID %u (%s) from the database: %s", id, qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
+        }
+
+
+        QStringList aliases;
+        bool _keepLocal = false;
+
+        q2 = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
+        q2.bindValue(QStringLiteral(":username"), username);
+        if (Q_LIKELY(q2.exec())) {
+            while (q2.next()) {
+                const QStringList destinations = q2.value(0).toString().split(QLatin1Char(','));
+                if (!destinations.empty()) {
+                    for (const QString &dest : destinations) {
+                        if (dest != username) {
+                            aliases << dest;
+                        } else {
+                            _keepLocal = true;
+                        }
+                    }
+                }
+            }
+        } else {
+            qCWarning(SK_ACCOUNT, "Failed to query forward email addresses of account ID %u (%s) from the database: %s", id, qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
         }
 
         if ((emailAddresses.size() > 1) || (aliases.size() > 1)) {
@@ -935,12 +954,14 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until FROM accountuser au WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), id);
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to query account from database."));
+        qCCritical(SK_ACCOUNT, "Failed to query data for account ID %u from the database: %s", id, qUtf8Printable(q.lastError().text()));
         return a;
     }
 
     if (!q.next()) {
+        qCWarning(SK_ACCOUNT, "Account with ID %u not found in database.", id);
         return a;
     }
 
@@ -959,37 +980,43 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
     a.setPrefix(d.getPrefix());
     a.setDomainName(d.getName());
 
+    QStringList emailAddresses;
     q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias FROM virtual WHERE dest = :username AND username = :username ORDER BY alias ASC"));
     q.bindValue(QStringLiteral(":username"), a.getUsername());
-    q.exec();
-    QStringList emailAddresses;
-    const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.getName()));
-    while (q.next()) {
-        const QString address = q.value(0).toString();
-        if (!address.startsWith(QLatin1Char('@'))) {
-            emailAddresses << addressFromACE(address);
-        } else {
-            if (address == catchAllAlias) {
-                a.setCatchAll(true);
-            }
-        }
-    }
-
-    q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
-    q.bindValue(QStringLiteral(":username"), a.getUsername());
-    q.exec();
-    QStringList aliases;
-    while (q.next()) {
-        const QStringList destinations = q.value(0).toString().split(QLatin1Char(','));
-        if (!destinations.empty()) {
-            for (const QString &dest : destinations) {
-                if (dest != a.getUsername()) {
-                    aliases << dest;
-                } else {
-                    a.setKeepLocal(true);
+    if (Q_LIKELY(q.exec())) {
+        const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.getName()));
+        while (q.next()) {
+            const QString address = q.value(0).toString();
+            if (!address.startsWith(QLatin1Char('@'))) {
+                emailAddresses << addressFromACE(address);
+            } else {
+                if (address == catchAllAlias) {
+                    a.setCatchAll(true);
                 }
             }
         }
+    } else {
+        qCWarning(SK_ACCOUNT, "Failed to query email addresses for account ID %u (%s) from the database: %s", id, qUtf8Printable(a.getUsername()), qUtf8Printable(q.lastError().text()));
+    }
+
+    QStringList aliases;
+    q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
+    q.bindValue(QStringLiteral(":username"), a.getUsername());
+    if (Q_LIKELY(q.exec())) {
+        while (q.next()) {
+            const QStringList destinations = q.value(0).toString().split(QLatin1Char(','));
+            if (!destinations.empty()) {
+                for (const QString &dest : destinations) {
+                    if (dest != a.getUsername()) {
+                        aliases << dest;
+                    } else {
+                        a.setKeepLocal(true);
+                    }
+                }
+            }
+        }
+    } else {
+        qCWarning(SK_ACCOUNT, "Failed to query email forwards for account ID %u (%s) from the database: %s", id, qUtf8Printable(a.getUsername()), qUtf8Printable(q.lastError().text()));
     }
 
     if ((emailAddresses.size() > 1) || (aliases.size() > 1)) {
@@ -1070,7 +1097,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
         if (Q_UNLIKELY(encPw.isEmpty())) {
             e->setErrorType(SkaffariError::ApplicationError);
             e->setErrorText(c->translate("Account", "Failed to encrypt password."));
-            qCCritical(SK_ACCOUNT) << "Failed to encrypt password with method" << SkaffariConfig::accPwMethod() << ", algorithm" << SkaffariConfig::accPwAlgorithm() << "and" << SkaffariConfig::accPwRounds() << "rounds";
+            qCCritical(SK_ACCOUNT) << "Failed to encrypt user password with method" << SkaffariConfig::accPwMethod() << ", algorithm" << SkaffariConfig::accPwAlgorithm() << "and" << SkaffariConfig::accPwRounds() << "rounds";
             return ret;
         }
     }
@@ -1125,7 +1152,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to update user account in database."));
-        qCCritical(SK_ACCOUNT, "Failed to update user account ID %u in database: %s", a->getId(), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_ACCOUNT, "Failed to update user account ID %u (%s) in database: %s", a->getId(), qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -1349,7 +1376,7 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
         } else {
             e->setErrorText(c->translate("Account", "The email address %1 is already in use for destination %2.").arg(address, q.value(1).toString()));
         }
-        qCWarning(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "tried to change the email address" << address << "to an already existing address";
+        qCWarning(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "tried to change the email address" << oldAddress << "to already existing address" << address;
         return ret;
     }
 
@@ -1360,7 +1387,7 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to update email address %1.").arg(oldAddress));
-        qCCritical(SK_ACCOUNT, "Failed to change email address %s to %s: %s", qUtf8Printable(oldAddress), qUtf8Printable(address), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_ACCOUNT, "Failed to change email address %s of account ID %u (%s) to %s: %s", qUtf8Printable(oldAddress), a->getId(), qUtf8Printable(a->getUsername()), qUtf8Printable(address), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -1400,7 +1427,8 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const
     q.bindValue(QStringLiteral(":address"), addressToACE(address));
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Failed to check if the new email address %1 is already in use by another account.").append(address));
+        e->setSqlError(q.lastError(), c->translate("Account", "Failed to check if the new email address %1 is already in use by another account.").arg(address));
+        qCCritical(SK_ACCOUNT, "Failed to check if new email address %s for account ID %u (%s) is already in use by another account: %s", qUtf8Printable(address), a->getId(), qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -1422,8 +1450,9 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const
     q.bindValue(QStringLiteral(":username"), a->getUsername());
     q.bindValue(QStringLiteral(":status"), 1);
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to insert new email address into database."));
+        qCCritical(SK_ACCOUNT, "Failed to insert new email address %s for account ID %u (%s) into database: %s", qUtf8Printable(address), a->getId(), qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -1485,7 +1514,7 @@ bool Account::updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a,
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to update forwards for account %1 in database.").arg(a->getUsername()));
-        qCCritical(SK_ACCOUNT, "Failed to update forwards for account %s in database: %s", qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_ACCOUNT, "Failed to update forwards for account ID %u (%s) in database: %s", a->getId(), qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -1553,6 +1582,7 @@ bool Account::updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a,
 
         if (Q_UNLIKELY(!q.exec())) {
             e->setSqlError(q.lastError(), c->translate("Account", "Failed to update forwards for account %1 in database.").arg(a->getUsername()));
+            qCCritical(SK_ACCOUNT, "Failed to update forwards for account ID %u (%s) in the database: %s", a->getId(), qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
             return ret;
         }
 
