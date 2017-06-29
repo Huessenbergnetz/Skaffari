@@ -880,3 +880,29 @@ QStringList Domain::trimStringList(const QStringList &list)
 
     return tlist;
 }
+
+
+QString Domain::getCatchAllAccount(Cutelyst::Context *c, SkaffariError *e) const
+{
+    QString username;
+
+    Q_ASSERT_X(c, "get catch all account", "invalid context object");
+    Q_ASSERT_X(e, "get catch all account", "invalid error object");
+
+    const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(getName()));
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :alias"));
+    q.bindValue(QStringLiteral(":alias"), catchAllAlias);
+
+    if (Q_UNLIKELY(!q.exec())) {
+        e->setSqlError(q.lastError(), c->translate("Domain", "Failed to get catch all account for this domain."));
+        qCCritical(SK_DOMAIN, "Failed to get catch all account for domain ID %u: %s", id(), qUtf8Printable(q.lastError().text()));
+        return username;
+    }
+
+    if (q.next()) {
+        username = q.value(0).toString();
+    }
+
+    return username;
+}
