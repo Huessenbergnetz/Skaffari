@@ -16,11 +16,12 @@
             <thead>
                 <tr>
                     <th>{{ _("Actions") }}</th>
-                    <th>{{ _("Domain name") }}</th>
-                    <th>{{ _("Prefix") }}</th>
-                    <th class="text-right">{{ _("Accounts") }}</th>
-                    <th class="text-right">{{ _("Default quota") }}</th>
-                    <th class="text-right">{{ _("Domain quota") }}</th>
+                    <th class="sortable" data-sort="string-ins" data-sort-default="asc" data-sort-onload=yes>{{ _("Domain name") }} <small><i class="fa fa-sort-alpha-asc text-muted"></i></small></th>
+                    <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Accounts") }}</th>
+                    <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Max. Accounts")}}</th>
+                    <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Default quota") }}</th>
+                    <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Domain quota") }}</th>
+                    <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Quota usage") }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,20 +38,21 @@
                             {% endifequal %}
                         </div>
                     </td>
-                    <td><a href="/domain/{{ domain.id }}/accounts" title="{{ _("Manage accounts") }}">{{ domain.name }}</a></td>
-                    <td>{{ domain.prefix }}</td>
-                    <td class="text-right">{% if domain.maxAccounts > 0 %}{{ _(domain.accounts) }}/{{ _(domain.maxAccounts) }}{% else %}{{ _(domain.accounts) }}{% endif %}</td>
-                    <td class="text-right">{% if domain.quota > 0 %}{{ domain.humanQuota }}{% else %}{{ _("not set") }}{% endif %}</td>
-                    {% if domain.domainQuota > 0 %}
-                    <td class="text-right">
+                    <td data-sort-value="{{ domain.name }}"><a href="/domain/{{ domain.id }}/accounts" title="{{ _("Manage accounts") }}">{{ domain.name }}</a><br><small class="text-muted">{{ domain.prefix }}</small></td>
+                    <td class="text-right">{{ _(domain.accounts) }}</td>
+                    <td class="text-right" data-sort-value="{{ domain.maxAccounts }}">{% if domain.maxAccounts > 0 %}{{ _(domain.maxAccounts) }}{% else %}{{ _("unlimited") }}{% endif %}</td>
+                    <td class="text-right" data-sort-value="{{ domain.quota }}">{% if domain.quota > 0 %}{{ domain.humanQuota }}{% else %}{{ _("not set") }}{% endif %}</td>
+                    <td class="text-right" data-sort-value="{{ domain.domainQuota }}">{% if domain.domainQuota > 0 %}{{ domain.humanDomainQuota }}{% else %}{{ _("unlimited") }}{% endif %}</td>
+                    <td class="text-right" data-sort-value="{{ domain.domainQuotaUsed }}">
+                        {% if domain.domainQuota > 0 %}
+                        {{ domain.humanDomainQuotaUsed }}
                         <div class="progress" title="{{ domain.domainQuotaUsagePercent|floatformat:2 }}%">
                             <div class="progress-bar bg-info pb-w-{{ domain.domainQuotaUsagePercentFlat }}" role="progressbar" aria-valuenow="{{ domain.domainQuotaUsed }}" aria-valuemin="0" aria-valuemax="{{ domain.domainQuota }}">{{ domain.domainQuotaUsagePercent|floatformat:2 }}%</div>
                         </div>
-                        <small>{{ domain.humanDomainQuotaUsed }}/{{ domain.humanDomainQuota }}</small>
+                        {% else %}
+                        {{ domain.humanDomainQuotaUsed }}
+                        {% endif %}
                     </td>
-                    {% else %}
-                    <td class="text-right">{{ domain.humanDomainQuotaUsed }}</td>
-                    {% endif %}
                 </tr>
             {% endfor %}
             </tbody>

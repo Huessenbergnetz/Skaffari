@@ -10,6 +10,10 @@ body {
     padding-bottom: 60px;
 }
 
+th.sortable {
+    cursor: pointer;
+}
+
 
 /******* PROGRESSBAR WIDTH *********/
 @for $w from 0 through 100 {

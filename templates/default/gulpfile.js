@@ -11,6 +11,7 @@ elixir(function(mix) {
         '../../node_modules/tether/dist/js/tether.js',
         '../../node_modules/bootstrap/dist/js/bootstrap.js',
         '../../node_modules/queuejax/jquery.qjax.js',
+        'stupidtable.js',
         'createalert.js',
         'forwards.js',
         'checkdomain.js',
@@ -18,7 +19,8 @@ elixir(function(mix) {
         'removedomain.js',
         'removeaccount.js',
         'removeadmin.js',
-        'checkaccount.js'
+        'checkaccount.js',
+        'general.js'
     ], 'static/js/scripts.js');
     
     mix.copy('node_modules/font-awesome/fonts', 'static/fonts');
