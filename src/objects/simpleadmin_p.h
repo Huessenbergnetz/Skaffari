@@ -27,7 +27,7 @@ class SimpleAdminData : public QSharedData
 public:
     SimpleAdminData() {}
 
-    SimpleAdminData(quint32 _id, const QString &_name) :
+    SimpleAdminData(dbid_t _id, const QString &_name) :
         id(_id),
         name(_name)
     {}
@@ -40,7 +40,7 @@ public:
 
     ~SimpleAdminData() {}
 
-    quint32 id = 0;
+    dbid_t id = 0;
     QString name;
 };
 

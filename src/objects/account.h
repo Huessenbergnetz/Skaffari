@@ -28,6 +28,7 @@
 #include <QLoggingCategory>
 #include <QDateTime>
 #include <math.h>
+#include "../../common/global.h"
 
 Q_DECLARE_LOGGING_CATEGORY(SK_ACCOUNT)
 
@@ -73,7 +74,7 @@ public:
      * \param keepLocal     \c true if fowarded emails should be kept local too
      * \param catchAll      \c true if this is the catch all account for the \a domainName
      */
-    Account(quint32 id, quint32 domainId, const QString &username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quint32 quota, quint32 usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, bool keepLocal, bool catchAll);
+    Account(dbid_t id, dbid_t domainId, const QString &username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, bool keepLocal, bool catchAll);
 
     /*!
      * \brief Creates a copy of \a other.
@@ -107,7 +108,7 @@ public:
      *
      * \sa setId()
      */
-    quint32 getId() const;
+    dbid_t getId() const;
     /*!
      * \brief Returns the database ID of the domain the account belongs to.
      *
@@ -115,7 +116,7 @@ public:
      *
      * \sa setDomainId()
      */
-    quint32 getDomainId() const;
+    dbid_t getDomainId() const;
     /*!
      * \brief Returns the username of the account.
      *
@@ -195,7 +196,7 @@ public:
      *
      * \sa getHumanQuota(), setQuota()
      */
-    quint32 getQuota() const;
+    quota_size_t getQuota() const;
     /*!
      * \brief Returns a better human readable string of the quota defined for this account.
      *
@@ -211,7 +212,7 @@ public:
      *
      * \sa getHumanUsage(), setUsage()
      */
-    quint32 getUsage() const;
+    quota_size_t getUsage() const;
     /*!
      * \brief Returns a better human redable string of the quota used by this account.
      *
@@ -283,12 +284,12 @@ public:
      * \brief Sets the database ID of this account.
      * \sa getId()
      */
-    void setId(quint32 nId);
+    void setId(dbid_t nId);
     /*!
      * \brief Sets the databsae ID of the domain this account belongs to.
      * \sa getDomainId()
      */
-    void setDomainId(quint32 nDomainId);
+    void setDomainId(dbid_t nDomainId);
     /*!
      * \brief Sets the username of this account.
      * \sa getUsername()
@@ -338,7 +339,7 @@ public:
      * \brief Sets the quota in KiB that is defined for this account.
      * \sa getQuota()
      */
-    void setQuota(quint32 nQuota);
+    void setQuota(quota_size_t nQuota);
     /*!
      * \brief Sets the human readable string of quota defined for this account.
      * \sa getHumanQuota(), Utils::humanBinarySize()
@@ -348,7 +349,7 @@ public:
      * \brief Sets the amount of quota used by this account in KiB.
      * \sa getUsage()
      */
-    void setUsage(quint32 nUsage);
+    void setUsage(quota_size_t nUsage);
     /*!
      * \brief Sets the human readale string of quota used by this account.
      * \sa getHumanUsage(), Utils::humanBinarySize()
@@ -452,7 +453,7 @@ public:
      * \param id    The database ID of the account.
      * \return      Account object containg the account data.
      */
-    static Account get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, quint32 id);
+    static Account get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, dbid_t id);
 
     /*!
      * \brief Requests information about the account defined by \a accountId from the database and adds it to the stash.
@@ -461,7 +462,7 @@ public:
      * \param accountId The database ID of the account.
      * \sa fromStash()
      */
-    static void toStash(Cutelyst::Context *c, const Domain &d, quint32 accountId);
+    static void toStash(Cutelyst::Context *c, const Domain &d, dbid_t accountId);
 
     /*!
      * \brief Returns the current Account object from the stash.

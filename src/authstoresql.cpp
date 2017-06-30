@@ -22,6 +22,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QVariantList>
+#include "../common/global.h"
 
 AuthStoreSql::AuthStoreSql(QObject *parent) : AuthenticationStore(parent)
 {
@@ -52,7 +53,7 @@ AuthenticationUser AuthStoreSql::findUser(Context *c, const ParamsMultiMap &user
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_id FROM domainadmin WHERE admin_id = :admin_id"));
-    q.bindValue(QStringLiteral(":admin_id"), QVariant::fromValue<quint32>(user.id().toULong()));
+    q.bindValue(QStringLiteral(":admin_id"), QVariant::fromValue<dbid_t>(user.id().toULong()));
 
     q.exec();
 

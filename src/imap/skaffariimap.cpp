@@ -298,9 +298,9 @@ QStringList SkaffariIMAP::getCapabilities(bool forceReload)
 }
 
 
-std::pair<quint32,quint32> SkaffariIMAP::getQuota(const QString &user)
+quota_pair SkaffariIMAP::getQuota(const QString &user)
 {
-    std::pair<quint32,quint32> quota(0, 0);
+    quota_pair quota(0, 0);
 
     setNoError();
 
@@ -323,14 +323,14 @@ std::pair<quint32,quint32> SkaffariIMAP::getQuota(const QString &user)
                 // 8 is the length of "STORAGE" + 1
                 startUsage += 8;
                 int startQuota = respLine.indexOf(' ', startUsage);
-                quota.first = respLine.mid(startUsage, startQuota - (startUsage)).toULong();
+                quota.first = respLine.mid(startUsage, startQuota - (startUsage)).toULongLong();
                 // advancing 1 to be at the start of the quota value
                 startQuota++;
                 int endQuota = respLine.indexOf(' ', startQuota);
                 if (endQuota < 0) {
                     endQuota = respLine.indexOf(')', startQuota);
                 }
-                quota.second = respLine.mid(startQuota, endQuota - startQuota).toULong();
+                quota.second = respLine.mid(startQuota, endQuota - startQuota).toULongLong();
             } else {
                 qCWarning(SK_IMAP, "Can not extract storage quota values for user %s from IMAP server response.", user.toUtf8().constData());
             }
@@ -345,7 +345,7 @@ std::pair<quint32,quint32> SkaffariIMAP::getQuota(const QString &user)
 }
 
 
-bool SkaffariIMAP::setQuota(const QString &user, quint32 quota)
+bool SkaffariIMAP::setQuota(const QString &user, quota_size_t quota)
 {
     bool ok = false;
 

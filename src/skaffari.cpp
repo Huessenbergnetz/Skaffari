@@ -49,6 +49,7 @@
 #include "utils/skaffariconfig.h"
 
 #include "../common/config.h"
+#include "../common/global.h"
 #include "root.h"
 #include "authstoresql.h"
 #include "login.h"
@@ -77,6 +78,8 @@ bool Skaffari::init()
     QCoreApplication::setApplicationName(QStringLiteral("Skaffari"));
     QCoreApplication::setApplicationVersion(QStringLiteral(SKAFFARI_VERSION));
 
+    qRegisterMetaType<quota_size_t>("quota_size_t");
+    qRegisterMetaType<dbid_t>("dbid_t");
     qRegisterMetaType<Folder>();
     qRegisterMetaType<Domain>();
     qRegisterMetaType<SimpleAdmin>();

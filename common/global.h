@@ -16,43 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIMPLEDOMAIN_P_H
-#define SIMPLEDOMAIN_P_H
+#ifndef SKAFFARIGLOBAL_H
+#define SKAFFARIGLOBAL_H
 
-#include "simpledomain.h"
-#include <QSharedData>
-#include <QCollator>
+#include <QtGlobal>
+#include <utility>
 
-class SimpleDomainNameCollator : public QCollator
-{
-public:
-    SimpleDomainNameCollator(const QLocale &locale) :
-        QCollator(locale)
-    {}
+typedef quint64 quota_size_t;
+typedef quint32 dbid_t;
+typedef std::pair<quota_size_t,quota_size_t> quota_pair;
 
-    bool operator() (const SimpleDomain &left, const SimpleDomain &right) { return (compare(left.name(), right.name()) < 0); }
-};
+#ifndef SKAFFARI_STRING_TO_DBID
+# define SKAFFARI_STRING_TO_DBID(str) str.toULong()
+#endif
 
-class SimpleDomainData : public QSharedData
-{
-public:
-    SimpleDomainData() {}
+#ifndef qUtf8Printable
+#  define qUtf8Printable(string) QString(string).toUtf8().constData()
+#endif
 
-    SimpleDomainData(dbid_t _id, const QString &_name) :
-        id(_id),
-        name(_name)
-    {}
-
-    SimpleDomainData(const SimpleDomainData &other) :
-        QSharedData(other),
-        id(other.id),
-        name(other.name)
-    {}
-
-    ~SimpleDomainData() {}
-
-    dbid_t id = 0;
-    QString name;
-};
-
-#endif // SIMPLEDOMAIN_P_H
+#endif // SKAFFARIGLOBAL_H

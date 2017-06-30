@@ -27,7 +27,7 @@ class AccountData: public QSharedData
 public:
     AccountData() {}
 
-    AccountData(quint32 _id, quint32 _domainId, const QString &_username, const QString &_prefix, const QString &_domainName, bool _imap, bool _pop, bool _sieve, bool _smptauth, const QStringList &_addresses, const QStringList _forwards, quint32 _quota, quint32 _usage, const QDateTime &_created, const QDateTime &_updated, const QDateTime &_validUntil, bool _keepLocal, bool _catchAll) :
+    AccountData(dbid_t _id, dbid_t _domainId, const QString &_username, const QString &_prefix, const QString &_domainName, bool _imap, bool _pop, bool _sieve, bool _smptauth, const QStringList &_addresses, const QStringList _forwards, quota_size_t _quota, quota_size_t _usage, const QDateTime &_created, const QDateTime &_updated, const QDateTime &_validUntil, bool _keepLocal, bool _catchAll) :
         id(_id),
         domainId(_domainId),
         username(_username),
@@ -74,8 +74,8 @@ public:
 
     ~AccountData() {}
 
-    quint32 id = 0;
-    quint32 domainId = 0;
+    dbid_t id = 0;
+    dbid_t domainId = 0;
     QString username;
     QString prefix;
     QString domainName;
@@ -85,9 +85,9 @@ public:
     bool smtpauth = false;
     QStringList addresses;
     QStringList forwards;
-    quint32 quota = 0;
+    quota_size_t quota = 0;
     QString humanQuota;
-    quint32 usage = 0;
+    quota_size_t usage = 0;
     QString humanUsage;
     QDateTime created;
     QDateTime updated;

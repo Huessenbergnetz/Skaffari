@@ -23,6 +23,7 @@
 #include <QLoggingCategory>
 
 #include "skaffariimaperror.h"
+#include "../../common/global.h"
 
 Q_DECLARE_LOGGING_CATEGORY(SK_IMAP)
 
@@ -59,8 +60,8 @@ public:
     bool isLoggedIn() const;
 
     QStringList getCapabilities(bool forceReload = false);
-    std::pair<quint32,quint32> getQuota(const QString &user);
-    bool setQuota(const QString &user, quint32 quota);
+    quota_pair getQuota(const QString &user);
+    bool setQuota(const QString &user, quota_size_t quota);
     bool createMailbox(const QString &user);
     bool deleteMailbox(const QString &user);
     bool createFolder(const QString &folder);

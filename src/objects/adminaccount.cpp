@@ -40,7 +40,7 @@ AdminAccount::AdminAccount() :
 
 }
 
-AdminAccount::AdminAccount(quint32 id, const QString& username, qint16 type, const QList<quint32> &domains) :
+AdminAccount::AdminAccount(dbid_t id, const QString& username, qint16 type, const QList<dbid_t> &domains) :
     d(new AdminAccountData(id, username, type, domains))
 {
 
@@ -68,13 +68,13 @@ AdminAccount::~AdminAccount()
 }
 
 
-quint32 AdminAccount::getId() const
+dbid_t AdminAccount::getId() const
 {
     return d->id;
 }
 
 
-void AdminAccount::setId(quint32 id)
+void AdminAccount::setId(dbid_t id)
 {
     d->id = id;
 }
@@ -108,14 +108,14 @@ void AdminAccount::setType(qint16 nType)
 
 
 
-QList<quint32> AdminAccount::getDomains() const
+QList<dbid_t> AdminAccount::getDomains() const
 {
 	return d->domains;
 }
 
 
 
-void AdminAccount::setDomains(const QList<quint32> &nDomains)
+void AdminAccount::setDomains(const QList<dbid_t> &nDomains)
 {
     d->domains = nDomains;
 }
@@ -247,7 +247,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMu
 
     const qint16 type = params.value(QStringLiteral("type")).toShort();
 
-    const quint32 id = AdminAccount::setAdminAccount(c, error, params.value(QStringLiteral("username")), password, type);
+    const dbid_t id = AdminAccount::setAdminAccount(c, error, params.value(QStringLiteral("username")), password, type);
     if (id <= 0) {
         return aa;
     }
@@ -257,7 +257,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMu
         return aa;
     }
 
-    QList<quint32> domIds;
+    QList<dbid_t> domIds;
     QStringList assocdoms = params.values(QStringLiteral("assocdomains"));
     for (const QString &did : assocdoms) {
         domIds << did.toULong();
@@ -310,10 +310,10 @@ QVector<AdminAccount> AdminAccount::list(Cutelyst::Context *c, SkaffariError *er
     }
 
     while (q.next()) {
-        list.append(AdminAccount(q.value(0).value<quint32>(),
+        list.append(AdminAccount(q.value(0).value<dbid_t>(),
                                  q.value(1).toString(),
                                  static_cast<AdminAccount::AdminAccountType>(q.value(2).value<qint8>()),
-                                 QList<quint32>()));
+                                 QList<dbid_t>()));
     }
 
     return list;
@@ -321,7 +321,7 @@ QVector<AdminAccount> AdminAccount::list(Cutelyst::Context *c, SkaffariError *er
 
 
 
-AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, quint32 id)
+AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
 {
     AdminAccount acc;
 
@@ -367,9 +367,9 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, quint32 i
             return acc;
         }
 
-        QList<quint32> doms;
+        QList<dbid_t> doms;
         while (q.next()) {
-            doms.append(q.value(0).value<quint32>());
+            doms.append(q.value(0).value<dbid_t>());
         }
 
         acc.setDomains(doms);
@@ -467,12 +467,12 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
         return ret;
     }
 
-    QList<quint32> domIds;
+    QList<dbid_t> domIds;
     if (!domains.isEmpty()) {
         for (int i = 0; i < domains.size(); ++i) {
-            const quint32 did = domains.at(i).toULong();
+            const dbid_t did = domains.at(i).toULong();
             q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domainadmin (domain_id, admin_id) VALUES (:domain_id, :admin_id)"));
-            q.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue<quint32>(did));
+            q.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue<dbid_t>(did));
             q.bindValue(QStringLiteral(":admin_id"), a->getId());
             if (Q_UNLIKELY(!q.exec())) {
                 e->setSqlError(q.lastError(), c->translate("AdminAccount", "Faild to update admin to domain connections in database."));
@@ -507,7 +507,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     Q_ASSERT_X(!p.empty(), "update own account", "empty parameters");
     Q_ASSERT_X(u, "update own accountt", "invalid authentication user object");
 
-    const quint32 id = u->id().toULong();
+    const dbid_t id = u->id().toULong();
     const QString password = p.value(QStringLiteral("password"));
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
 
@@ -534,7 +534,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     }
 
     q.bindValue(QStringLiteral(":updated_at"), currentUtc);
-    q.bindValue(QStringLiteral(":id"), QVariant::fromValue<quint32>(id));
+    q.bindValue(QStringLiteral(":id"), id);
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update admin in database."));
@@ -663,9 +663,9 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e, const AdminAcc
 }
 
 
-quint32 AdminAccount::setAdminAccount(Cutelyst::Context *c, SkaffariError *error, const QString &user, const QByteArray &pass, qint16 type)
+dbid_t AdminAccount::setAdminAccount(Cutelyst::Context *c, SkaffariError *error, const QString &user, const QByteArray &pass, qint16 type)
 {
-    quint32 id = 0;
+    dbid_t id = 0;
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO adminuser (username, password, type, created_at, updated_at) "
                                                          "VALUES (:username, :password, :type, :created_at, :updated_at)"));
@@ -683,13 +683,13 @@ quint32 AdminAccount::setAdminAccount(Cutelyst::Context *c, SkaffariError *error
         return id;
     }
 
-    id = q.lastInsertId().value<quint32>();
+    id = q.lastInsertId().value<dbid_t>();
 
     return id;
 }
 
 
-bool AdminAccount::rollbackAdminAccount(Cutelyst::Context *c, SkaffariError *error, quint32 adminId)
+bool AdminAccount::rollbackAdminAccount(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId)
 {
     bool ret = false;
 
@@ -708,7 +708,7 @@ bool AdminAccount::rollbackAdminAccount(Cutelyst::Context *c, SkaffariError *err
 }
 
 
-bool AdminAccount::setAdminSettings(Cutelyst::Context *c, SkaffariError *error, quint32 adminId)
+bool AdminAccount::setAdminSettings(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId)
 {
     bool ret = false;
 
@@ -727,7 +727,7 @@ bool AdminAccount::setAdminSettings(Cutelyst::Context *c, SkaffariError *error, 
 }
 
 
-bool AdminAccount::rollbackAdminSettings(Cutelyst::Context *c, SkaffariError *error, quint32 adminId)
+bool AdminAccount::rollbackAdminSettings(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId)
 {
     bool ret = false;
 
@@ -747,13 +747,13 @@ bool AdminAccount::rollbackAdminSettings(Cutelyst::Context *c, SkaffariError *er
 }
 
 
-bool AdminAccount::setAdminDomains(Cutelyst::Context *c, SkaffariError *error, quint32 adminId, const QList<quint32> &domains)
+bool AdminAccount::setAdminDomains(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId, const QList<dbid_t> &domains)
 {
     bool ret = false;
 
     if (Q_LIKELY(!domains.empty())) {
 
-        for (quint32 domId : domains) {
+        for (dbid_t domId : domains) {
 
             QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domainadmin (domain_id, admin_id) VALUES (:domain_id, :admin_id)"));
 
@@ -776,7 +776,7 @@ bool AdminAccount::setAdminDomains(Cutelyst::Context *c, SkaffariError *error, q
 }
 
 
-bool AdminAccount::rollbackAdminDomains(Cutelyst::Context *c, SkaffariError *error, quint32 adminId)
+bool AdminAccount::rollbackAdminDomains(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId)
 {
     bool ret = false;
 
@@ -796,7 +796,7 @@ bool AdminAccount::rollbackAdminDomains(Cutelyst::Context *c, SkaffariError *err
 
 
 
-void AdminAccount::toStash(Cutelyst::Context *c, quint32 adminId)
+void AdminAccount::toStash(Cutelyst::Context *c, dbid_t adminId)
 {
     Q_ASSERT_X(c, "admin account to stash", "invalid context object");
 

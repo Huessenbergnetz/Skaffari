@@ -24,6 +24,7 @@
 #include <grantlee5/grantlee/metatype.h>
 #include <QVariant>
 #include <QJsonArray>
+#include "../../common/global.h"
 
 namespace Cutelyst {
 class Context;
@@ -46,7 +47,7 @@ public:
     /*!
      * \brief Constructs a new SimpleDomain with given database \a id and domain \a name.
      */
-    SimpleDomain(quint32 id, const QString &name);
+    SimpleDomain(dbid_t id, const QString &name);
 
     /*!
      * \brief Constructs a copy of \a other.
@@ -68,7 +69,7 @@ public:
      *
      * \c 0 by default.
      */
-    quint32 id() const;
+    dbid_t id() const;
 
     /*!
      * \brief Returns the domain name.
@@ -83,7 +84,7 @@ public:
      * \param adminId   The database ID of the admin user to determine domain access.
      * \return          List of simple domain objects.
      */
-    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, quint16 userType, quint32 adminId);
+    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, quint16 userType, dbid_t adminId);
 
     /*!
      * \brief Returns a JSON array of domains for the admin defined by \a adminId.
@@ -93,7 +94,7 @@ public:
      * \param adminId   The database ID of the admin user to determine domain access.
      * \return          JSON array containing objects with domain ID and domain name.
      */
-    static QJsonArray listJson(Cutelyst::Context *c , SkaffariError *e, quint16 userType, quint32 adminId);
+    static QJsonArray listJson(Cutelyst::Context *c , SkaffariError *e, quint16 userType, dbid_t adminId);
 
 private:
     QSharedDataPointer<SimpleDomainData> d;

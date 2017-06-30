@@ -55,6 +55,7 @@ set(skaffari_SRCS
     skaffari.h
     ../common/password.cpp
     ../common/password.h
+    ../common/global.h
 )
 
 # Create the application

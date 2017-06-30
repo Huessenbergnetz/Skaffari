@@ -51,7 +51,7 @@ QDateTime Utils::toUserTZ(Cutelyst::Context *c, const QDateTime &dt)
 
 
 
-QString Utils::humanBinarySize(Cutelyst::Context *c, quint64 sizeInByte)
+QString Utils::humanBinarySize(Cutelyst::Context *c, quota_size_t sizeInByte)
 {
     QString sizeStr;
 
@@ -86,9 +86,9 @@ QString Utils::getUserName(Cutelyst::Context *c)
 }
 
 
-quint32 Utils::humanToIntSize(Cutelyst::Context *c, const QString &size, bool *ok)
+quota_size_t Utils::humanToIntSize(Cutelyst::Context *c, const QString &size, bool *ok)
 {
-    quint32 ret = 0;
+    quota_size_t ret = 0;
 
     Q_ASSERT_X(ok, "convert human quota string to KiB", "invalid pointer to a boolean succeed value (ok)");
 
@@ -123,17 +123,17 @@ quint32 Utils::humanToIntSize(Cutelyst::Context *c, const QString &size, bool *o
 
     _size = _size / 1024.0f;
 
-    // we have to check if the size fits into the quint32 even after rounding
-    // as rounding can also round up, we will give an extra margin of 1 to the
-    // maximum value of unsigned 32bit integer
-    if (_size > 4294967294.0f) {
-        *ok = false;
-        return ret;
-    }
+//    // we have to check if the size fits into the quint32 even after rounding
+//    // as rounding can also round up, we will give an extra margin of 1 to the
+//    // maximum value of unsigned 32bit integer
+//    if (_size > 4294967294.0f) {
+//        *ok = false;
+//        return ret;
+//    }
 
     qlonglong _ret = std::llround(_size);
 
-    ret = static_cast<quint32>(_ret);
+    ret = static_cast<quota_size_t>(_ret);
 
     return ret;
 }

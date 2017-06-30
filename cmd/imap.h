@@ -22,6 +22,8 @@
 #include <QSslSocket>
 #include <QStringList>
 
+#include "../common/global.h"
+
 class Imap : public QSslSocket
 {
     Q_OBJECT
@@ -47,7 +49,7 @@ public:
     bool logout();
 
     QStringList getCapabilities(bool forceReload = false);
-    std::pair<quint32,quint32> getQuota(const QString &user);
+    quota_pair getQuota(const QString &user);
 
     void setUser(const QString &user);
     void setPassword(const QString &password);

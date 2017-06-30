@@ -25,7 +25,7 @@ Folder::Folder() :
 }
 
 
-Folder::Folder(quint32 id, quint32 domainId, const QString &name) :
+Folder::Folder(dbid_t id, dbid_t domainId, const QString &name) :
     d(new FolderData(id, domainId, name))
 {
 
@@ -52,25 +52,25 @@ Folder::~Folder()
 }
 
 
-quint32 Folder::getId() const
+dbid_t Folder::getId() const
 {
     return d->id;
 }
 
 
-void Folder::setId(quint32 id)
+void Folder::setId(dbid_t id)
 {
     d->id = id;
 }
 
 
-quint32 Folder::getDomainId() const
+dbid_t Folder::getDomainId() const
 {
     return d->domainId;
 }
 
 
-void Folder::setDomainId(quint32 domainId)
+void Folder::setDomainId(dbid_t domainId)
 {
     d->domainId = domainId;
 }

@@ -21,6 +21,7 @@
 
 #include <QSharedDataPointer>
 #include <grantlee5/grantlee/metatype.h>
+#include "../../common/global.h"
 
 class FolderData;
 
@@ -28,17 +29,17 @@ class Folder
 {
 public:
     Folder();
-    Folder(quint32 id, quint32 domainId, const QString &name);
+    Folder(dbid_t id, dbid_t domainId, const QString &name);
     Folder(const Folder &other);
     Folder& operator=(const Folder &other);
     ~Folder();
 
-    quint32 getId() const;
-    quint32 getDomainId() const;
+    dbid_t getId() const;
+    dbid_t getDomainId() const;
     QString getName() const;
 
-    void setId(quint32 id);
-    void setDomainId(quint32 domainId);
+    void setId(dbid_t id);
+    void setDomainId(dbid_t domainId);
     void setName(const QString &name);
 
 protected:

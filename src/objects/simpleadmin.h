@@ -23,6 +23,7 @@
 #include <QSharedDataPointer>
 #include <grantlee5/grantlee/metatype.h>
 #include <QVariant>
+#include "../../common/global.h"
 
 class SimpleAdminData;
 
@@ -30,12 +31,12 @@ class SimpleAdmin
 {
 public:
     SimpleAdmin();
-    SimpleAdmin(quint32 id, const QString &name);
+    SimpleAdmin(dbid_t id, const QString &name);
     SimpleAdmin(const SimpleAdmin &other);
     SimpleAdmin& operator=(const SimpleAdmin &other);
     ~SimpleAdmin();
 
-    quint32 id() const;
+    dbid_t id() const;
     QString name() const;
 
 private:

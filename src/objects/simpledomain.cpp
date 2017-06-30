@@ -32,7 +32,7 @@ SimpleDomain::SimpleDomain() : d(new SimpleDomainData)
 }
 
 
-SimpleDomain::SimpleDomain(quint32 id, const QString &name) :
+SimpleDomain::SimpleDomain(dbid_t id, const QString &name) :
     d(new SimpleDomainData(id, name))
 {
 
@@ -58,7 +58,7 @@ SimpleDomain::~SimpleDomain()
 }
 
 
-quint32 SimpleDomain::id() const
+dbid_t SimpleDomain::id() const
 {
     return d->id;
 }
@@ -70,7 +70,7 @@ QString SimpleDomain::name() const
 }
 
 
-std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, quint16 userType, quint32 adminId)
+std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, quint16 userType, dbid_t adminId)
 {
     std::vector<SimpleDomain> lst;
 
@@ -92,7 +92,7 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
     }
 
     while (q.next()) {
-        lst.push_back(SimpleDomain(q.value(0).value<quint32>(), QUrl::fromAce(q.value(1).toByteArray())));
+        lst.push_back(SimpleDomain(q.value(0).value<dbid_t>(), QUrl::fromAce(q.value(1).toByteArray())));
     }
 
     if (lst.size() > 1) {
@@ -104,7 +104,7 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
 }
 
 
-QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError *e, quint16 userType, quint32 adminId)
+QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError *e, quint16 userType, dbid_t adminId)
 {
     QJsonArray lst;
 

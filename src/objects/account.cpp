@@ -47,7 +47,7 @@ Account::Account() :
 }
 
 
-Account::Account(quint32 id, quint32 domainId, const QString& username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quint32 quota, quint32 usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, bool keepLocal, bool catchAll) :
+Account::Account(dbid_t id, dbid_t domainId, const QString& username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, bool keepLocal, bool catchAll) :
     d(new AccountData(id, domainId, username, prefix, domainName, imap, pop, sieve, smtpauth, addresses, forwards, quota, usage, created, updated, validUntil, keepLocal, catchAll))
 {
 
@@ -73,25 +73,25 @@ Account::~Account()
 
 }
 
-quint32 Account::getId() const
+dbid_t Account::getId() const
 {
     return d->id;
 }
 
 
-void Account::setId(quint32 nId)
+void Account::setId(dbid_t nId)
 {
     d->id = nId;
 }
 
 
-quint32 Account::getDomainId() const
+dbid_t Account::getDomainId() const
 {
     return d->domainId;
 }
 
 
-void Account::setDomainId(quint32 nDomainId)
+void Account::setDomainId(dbid_t nDomainId)
 {
     d->domainId = nDomainId;
 }
@@ -217,13 +217,13 @@ void Account::setForwards(const QStringList &nForwards)
 
 
 
-quint32 Account::getQuota() const
+quota_size_t Account::getQuota() const
 {
 	return d->quota;
 }
 
 
-void Account::setQuota(quint32 nQuota)
+void Account::setQuota(quota_size_t nQuota)
 {
 	d->quota = nQuota;
 }
@@ -241,13 +241,13 @@ void Account::setHumanQuota(const QString &humanQuota)
 }
 
 
-quint32 Account::getUsage() const
+quota_size_t Account::getUsage() const
 {
 	return d->usage;
 }
 
 
-void Account::setUsage(quint32 nUsage)
+void Account::setUsage(quota_size_t nUsage)
 {
 	d->usage = nUsage;
 }
@@ -408,7 +408,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     const bool smtpauth = (p.value(QStringLiteral("smtpauth"), QStringLiteral("0")) == QLatin1String("1"));
     const bool _catchAll = (p.value(QStringLiteral("catchall"), QStringLiteral("0")) == QLatin1String("1"));
 
-    quint32 quota = 0;
+    quota_size_t quota = 0;
     if (p.contains(QStringLiteral("humanQuota"))) {
         bool quotaOk = true;
         quota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanQuota")), &quotaOk);
@@ -418,7 +418,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
             return a;
         }
     } else {
-        quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULong();
+        quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULongLong();
     }
 
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
@@ -457,7 +457,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         return a;
     }
 
-    const quint32 id = q.lastInsertId().value<quint32>();
+    const dbid_t id = q.lastInsertId().value<dbid_t>();
 
     q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
     q.bindValue(QStringLiteral(":alias"), addressToACE(email));
@@ -662,13 +662,12 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     a.setSmtpauthEnabled(smtpauth);
     a.setQuota(quota);
     a.setAddresses(QStringList(email));
-    a.setQuota(p.value(QStringLiteral("quota")).toULong());
     const QDateTime currentUserTime = Utils::toUserTZ(c, currentUtc);
     a.setCreated(currentUserTime);
     a.setUpdated(currentUserTime);
     a.setValidUntil(Utils::toUserTZ(c, validUntil));
-    a.setHumanQuota(Utils::humanBinarySize(c, (quint64)a.getQuota() * 1024));
-    a.setHumanUsage(Utils::humanBinarySize(c, (quint64)a.getUsage() * 1024));
+    a.setHumanQuota(Utils::humanBinarySize(c, a.getQuota() * 1024));
+    a.setHumanUsage(Utils::humanBinarySize(c, a.getUsage() * 1024));
     a.setCatchAll(_catchAll);
 
     qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "created a new account" << username << "for domain" << d.getName();
@@ -719,7 +718,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT quota FROM accountuser WHERE username = :username"));
     q.bindValue(QStringLiteral(":username"), username);
 
-    const quint32 quota = (q.exec() && q.next()) ? q.value(0).value<quint32>() : 0;
+    const quota_size_t quota = (q.exec() && q.next()) ? q.value(0).value<quota_size_t>() : 0;
 
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM alias WHERE username = :username"));
     q.bindValue(QStringLiteral(":username"), username);
@@ -859,7 +858,7 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
     const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.getName()));
 
     while (q.next()) {
-        const quint32 id = q.value(0).value<quint32>();
+        const dbid_t id = q.value(0).value<dbid_t>();
         const QString username = q.value(1).toString();
 
         QStringList emailAddresses;
@@ -918,7 +917,7 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
         }
 
 
-        Account a(q.value(0).value<quint32>(),
+        Account a(q.value(0).value<dbid_t>(),
                   d.id(),
                   q.value(1).toString(),
                   d.getPrefix(),
@@ -929,7 +928,7 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
                   q.value(5).toBool(),
                   emailAddresses,
                   aliases,
-                  q.value(6).value<quint32>(),
+                  q.value(6).value<quota_size_t>(),
                   0,
                   Utils::toUserTZ(c, q.value(7).toDateTime()),
                   Utils::toUserTZ(c, q.value(8).toDateTime()),
@@ -938,13 +937,13 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
                   _catchAll);
 
         if (Q_LIKELY(imap.isLoggedIn())) {
-            std::pair<quint32,quint32> quota = imap.getQuota(a.getUsername());
+            quota_pair quota = imap.getQuota(a.getUsername());
             a.setUsage(quota.first);
             a.setQuota(quota.second);
         }
 
-        a.setHumanQuota(Utils::humanBinarySize(c, (quint64)a.getQuota() * 1024));
-        a.setHumanUsage(Utils::humanBinarySize(c, (quint64)a.getUsage() * 1024));
+        a.setHumanQuota(Utils::humanBinarySize(c, a.getQuota() * 1024));
+        a.setHumanUsage(Utils::humanBinarySize(c, a.getUsage() * 1024));
 
         lst.push_back(a);
     }
@@ -957,7 +956,7 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
 }
 
 
-Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, quint32 id)
+Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, dbid_t id)
 {
     Account a;
 
@@ -979,13 +978,13 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
     }
 
 
-    a.setId(q.value(0).value<quint32>());
+    a.setId(q.value(0).value<dbid_t>());
     a.setUsername(q.value(1).toString());
     a.setImapEnabled(q.value(2).toBool());
     a.setPopEnabled(q.value(3).toBool());
     a.setSieveEnabled(q.value(4).toBool());
     a.setSmtpauthEnabled(q.value(5).toBool());
-    a.setQuota(q.value(6).value<quint32>());
+    a.setQuota(q.value(6).value<quota_size_t>());
     a.setCreated(Utils::toUserTZ(c, q.value(7).toDateTime()));
     a.setUpdated(Utils::toUserTZ(c, q.value(8).toDateTime()));
     a.setValidUntil(Utils::toUserTZ(c, q.value(9).toDateTime()));
@@ -1049,20 +1048,20 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, qu
 
     SkaffariIMAP imap(c);
     if (imap.login()) {
-        std::pair<quint32,quint32> quota = imap.getQuota(a.getUsername());
+        quota_pair quota = imap.getQuota(a.getUsername());
         a.setUsage(quota.first);
         a.setQuota(quota.second);
         imap.logout();
     }
 
-    a.setHumanQuota(Utils::humanBinarySize(c, (quint64)a.getQuota() * 1024));
-    a.setHumanUsage(Utils::humanBinarySize(c, (quint64)a.getUsage() * 1024));
+    a.setHumanQuota(Utils::humanBinarySize(c, a.getQuota() * 1024));
+    a.setHumanUsage(Utils::humanBinarySize(c, a.getUsage() * 1024));
 
     return a;
 }
 
 
-void Account::toStash(Cutelyst::Context *c, const Domain &d, quint32 accountId)
+void Account::toStash(Cutelyst::Context *c, const Domain &d, dbid_t accountId)
 {
     Q_ASSERT_X(c, "account to stash", "invalid context object");
 
@@ -1115,7 +1114,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
         }
     }
 
-    quint32 quota = 0;
+    quota_size_t quota = 0;
     if (p.contains(QStringLiteral("humanQuota"))) {
         bool quotaOk = true;
         quota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanQuota")), &quotaOk);
@@ -1125,7 +1124,12 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
             return ret;
         }
     } else {
-        quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULong();
+        bool quotaOk = true;
+        quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULongLong(&quotaOk);
+        if (!quotaOk) {
+            e->setErrorType(SkaffariError::InputError);
+            e->setErrorText(c->translate("Account", "Failed to parse quota string into integer value."));
+        }
     }
 
     if (quota != a->getQuota()) {
@@ -1226,7 +1230,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
 
     a->setValidUntil(Utils::toUserTZ(c, validUntil));
     a->setQuota(quota);
-    a->setHumanQuota(Utils::humanBinarySize(c, static_cast<quint64>(quota) * Q_UINT64_C(1024)));
+    a->setHumanQuota(Utils::humanBinarySize(c, quota * Q_UINT64_C(1024)));
     a->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
     a->setImapEnabled(imap);
     a->setPopEnabled(pop);
@@ -1240,8 +1244,8 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
         qCDebug(SK_ACCOUNT) << q.lastError().text();
     } else {
         if (Q_LIKELY(q.next())) {
-            d->setDomainQuotaUsed(q.value(0).value<quint32>());
-            d->setHumanDomainQuotaUsed(Utils::humanBinarySize(c, static_cast<quint64>(d->getDomainQuotaUsed()) * Q_UINT64_C(1024)));
+            d->setDomainQuotaUsed(q.value(0).value<quota_size_t>());
+            d->setHumanDomainQuotaUsed(Utils::humanBinarySize(c, d->getDomainQuotaUsed() * Q_UINT64_C(1024)));
         }
     }
 
@@ -1291,10 +1295,10 @@ bool Account::check(Cutelyst::Context *c, SkaffariError *e, Account *a, const Do
         }
     }
 
-    std::pair<quint32,quint32> quota = imap.getQuota(a->getUsername());
+    quota_pair quota = imap.getQuota(a->getUsername());
 
     if ((d.getDomainQuota() > 0) && ((a->getQuota() == 0) || (quota.second == 0))) {
-        const quint32 newQuota = (d.getQuota() > 0) ? d.getQuota() : (SkaffariConfig::defQuota() > 0) ? SkaffariConfig::defQuota() : 10240;
+        const quota_size_t newQuota = (d.getQuota() > 0) ? d.getQuota() : (SkaffariConfig::defQuota() > 0) ? SkaffariConfig::defQuota() : 10240;
         if (quota.second == 0) {
             if (Q_UNLIKELY(!imap.setQuota(a->getUsername(), newQuota))) {
                 e->setImapError(imap.lastError());

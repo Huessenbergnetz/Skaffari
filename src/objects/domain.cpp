@@ -46,14 +46,14 @@ Domain::Domain() : d(new DomainData)
 
 }
 
-Domain::Domain(quint32 id,
+Domain::Domain(dbid_t id,
                const QString& name,
                const QString& prefix,
                const QString& transport,
-               quint32 quota,
+               quota_size_t quota,
                quint32 maxAccounts,
-               quint32 domainQuota,
-               quint32 domainQuotaUsed,
+               quota_size_t domainQuota,
+               quota_size_t domainQuotaUsed,
                bool freeNames,
                bool freeAddress,
                const QVector<Folder> &folders,
@@ -89,12 +89,12 @@ Domain::~Domain()
 }
 
 
-quint32 Domain::id() const
+dbid_t Domain::id() const
 {
     return d->id;
 }
 
-void Domain::setId(quint32 id)
+void Domain::setId(dbid_t id)
 {
     d->id = id;
 }
@@ -137,13 +137,13 @@ void Domain::setTransport(const QString &nTransport)
 }
 
 
-quint32 Domain::getQuota() const
+quota_size_t Domain::getQuota() const
 {
     return d->quota;
 }
 
 
-void Domain::setQuota(quint32 nQuota)
+void Domain::setQuota(quota_size_t nQuota)
 {
     d->quota = nQuota;
 }
@@ -173,13 +173,13 @@ void Domain::setMaxAccounts(quint32 nMaxAccounts)
 }
 
 
-quint32 Domain::getDomainQuota() const
+quota_size_t Domain::getDomainQuota() const
 {
     return d->domainQuota;
 }
 
 
-void Domain::setDomainQuota(quint32 nDomainQuota)
+void Domain::setDomainQuota(quota_size_t nDomainQuota)
 {
     d->domainQuota = nDomainQuota;
 }
@@ -197,13 +197,13 @@ void Domain::setHumanDomainQuota(const QString &humanDomainQuota)
 }
 
 
-quint32 Domain::getDomainQuotaUsed() const
+quota_size_t Domain::getDomainQuotaUsed() const
 {
     return d->domainQuotaUsed;
 }
 
 
-void Domain::setDomainQuotaUsed(quint32 nDomainQuotaUsed)
+void Domain::setDomainQuotaUsed(quota_size_t nDomainQuotaUsed)
 {
     d->domainQuotaUsed = nDomainQuotaUsed;
 }
@@ -327,7 +327,7 @@ bool Domain::hasAccess(Cutelyst::Context *c) const
         ret = true;
     } else {
 
-        const quint32 uid = c->stash(QStringLiteral("userId")).value<quint32>();
+        const dbid_t uid = c->stash(QStringLiteral("userId")).value<dbid_t>();
 
         if (!d->admins.empty()) {
             for (int i = 0; i < d->admins.size(); ++i) {
@@ -380,10 +380,10 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
     if (Q_UNLIKELY(q.next())) {
         errorData->setErrorType(SkaffariError::InputError);
         errorData->setErrorText(c->translate("Domain", "The domain name “%1” is already in use.").arg(domainName));
-        qCWarning(SK_DOMAIN, "Failed to create domain %s: name is already in use by domain ID %u", domainName.toUtf8().constData(), q.value(0).value<quint32>());
+        qCWarning(SK_DOMAIN, "Failed to create domain %s: name is already in use by domain ID %u", domainName.toUtf8().constData(), q.value(0).value<dbid_t>());
     }
 
-    quint32 quota = 0;
+    quota_size_t quota = 0;
     bool quotaOk = true;
     if (params.contains(QStringLiteral("humanQuota"))) {
         quota = Utils::humanToIntSize(c, params.value(QStringLiteral("humanQuota")), &quotaOk);
@@ -393,7 +393,7 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
             return dom;
         }
     } else {
-        quota = params.value(QStringLiteral("quota")).toULong(&quotaOk);
+        quota = params.value(QStringLiteral("quota")).toULongLong(&quotaOk);
         if (!quotaOk) {
             errorData->setErrorType(SkaffariError::InputError);
             errorData->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
@@ -401,7 +401,7 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
         }
     }
 
-    quint32 domainQuota = 0;
+    quota_size_t domainQuota = 0;
     bool domainQuotaOk = true;
     if (params.contains(QStringLiteral("humanDomainQuota"))) {
         domainQuota = Utils::humanToIntSize(c, params.value(QStringLiteral("humanDomainQuota")), &domainQuotaOk);
@@ -411,7 +411,7 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
             return dom;
         }
     } else {
-        domainQuota = params.value(QStringLiteral("domainQuota")).toULong(&domainQuotaOk);
+        domainQuota = params.value(QStringLiteral("domainQuota")).toULongLong(&domainQuotaOk);
         if (!domainQuotaOk) {
             errorData->setErrorType(SkaffariError::InputError);
             errorData->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
@@ -440,14 +440,14 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
     q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
 
     if (Q_LIKELY(q.exec())) {
-        const quint32 domainId = q.lastInsertId().value<quint32>();
+        const dbid_t domainId = q.lastInsertId().value<dbid_t>();
         QVector<Folder> foldersVect;
         for (const QString &folder : folders) {
             q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)"));
             q.bindValue(QStringLiteral(":domain_id"), domainId);
             q.bindValue(QStringLiteral(":name"), folder);
             if (Q_LIKELY(q.exec())) {
-                const quint32 folderId = q.lastInsertId().value<quint32>();
+                const dbid_t folderId = q.lastInsertId().value<dbid_t>();
                 foldersVect.append(Folder(folderId, domainId, folder));
             } else {
                 errorData->setSqlError(q.lastError());
@@ -475,9 +475,9 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
         dom.setCreated(Utils::toUserTZ(c, currentTimeUtc));
         dom.setUpdated(Utils::toUserTZ(c, currentTimeUtc));
 
-        dom.setHumanQuota(Utils::humanBinarySize(c, (quint64)dom.getQuota() * 1024));
-        dom.setHumanDomainQuota(Utils::humanBinarySize(c, (quint64)dom.getDomainQuota() * 1024));
-        dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, (quint64)dom.getDomainQuotaUsed() * 1024));
+        dom.setHumanQuota(Utils::humanBinarySize(c, dom.getQuota() * 1024));
+        dom.setHumanDomainQuota(Utils::humanBinarySize(c, dom.getDomainQuota() * 1024));
+        dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, dom.getDomainQuotaUsed() * 1024));
     } else {
         errorData->setSqlError(q.lastError());
         qCCritical(SK_DOMAIN, "Failed to insert new domain %s into database: %s", qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
@@ -491,7 +491,7 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
 }
 
 
-Domain Domain::get(Cutelyst::Context *c, quint32 domId, SkaffariError *errorData)
+Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
 {
     Domain dom;
 
@@ -507,26 +507,26 @@ Domain Domain::get(Cutelyst::Context *c, quint32 domId, SkaffariError *errorData
         dom.setPrefix(q.value(0).toString());
         dom.setName(QUrl::fromAce(q.value(1).toByteArray()));
         dom.setTransport(q.value(2).toString());
-        dom.setQuota(q.value(3).value<quint32>());
+        dom.setQuota(q.value(3).value<quota_size_t>());
         dom.setMaxAccounts(q.value(4).value<quint32>());
-        dom.setDomainQuota(q.value(5).value<quint32>());
-        dom.setDomainQuotaUsed(q.value(6).value<quint32>());
+        dom.setDomainQuota(q.value(5).value<quota_size_t>());
+        dom.setDomainQuotaUsed(q.value(6).value<quota_size_t>());
         dom.setFreeNamesEnabled(q.value(7).toBool());
         dom.setFreeAddressEnabled(q.value(8).toBool());
         dom.setAccounts(q.value(9).value<quint32>());
         dom.setCreated(Utils::toUserTZ(c, q.value(10).toDateTime()));
         dom.setUpdated(Utils::toUserTZ(c, q.value(11).toDateTime()));
 
-        dom.setHumanQuota(Utils::humanBinarySize(c, (quint64)dom.getQuota() * 1024));
-        dom.setHumanDomainQuota(Utils::humanBinarySize(c, (quint64)dom.getDomainQuota() * 1024));
-        dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, (quint64)dom.getDomainQuotaUsed() * 1024));
+        dom.setHumanQuota(Utils::humanBinarySize(c, dom.getQuota() * 1024));
+        dom.setHumanDomainQuota(Utils::humanBinarySize(c, dom.getDomainQuota() * 1024));
+        dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, dom.getDomainQuotaUsed() * 1024));
 
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, name FROM folder WHERE domain_id = :domain_id"));
         q.bindValue(QStringLiteral(":domain_id"), domId);
         if (Q_LIKELY(q.exec())) {
             QVector<Folder> folders;
             while (q.next()) {
-                folders.append(Folder(q.value(0).value<quint32>(), domId, q.value(1).toString()));
+                folders.append(Folder(q.value(0).value<dbid_t>(), domId, q.value(1).toString()));
             }
             dom.setFolders(folders);
         } else {
@@ -551,7 +551,7 @@ Domain Domain::get(Cutelyst::Context *c, quint32 domId, SkaffariError *errorData
         if (Q_LIKELY(q.exec())) {
             QVector<SimpleAdmin> admins;
             while (q.next()) {
-                admins.append(SimpleAdmin(q.value(0).value<quint32>(), q.value(1).toString()));
+                admins.append(SimpleAdmin(q.value(0).value<dbid_t>(), q.value(1).toString()));
             }
             dom.setAdmins(admins);
         } else {
@@ -577,30 +577,30 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at FROM domain dom ORDER BY dom.domain_name ASC"));
     } else {
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY dom.domain_name ASC"));
-        q.bindValue(QStringLiteral(":admin_id"), QVariant::fromValue<quint32>(user.id().toULong()));
+        q.bindValue(QStringLiteral(":admin_id"), QVariant::fromValue<dbid_t>(user.id().toULong()));
     }
 
 
     if (Q_LIKELY(q.exec())) {
         lst.reserve(q.size());
         while (q.next()) {
-            Domain dom(q.value(0).value<quint32>(),
+            Domain dom(q.value(0).value<dbid_t>(),
                        QUrl::fromAce(q.value(1).toByteArray()),
                        q.value(2).toString(),
                        q.value(3).toString(),
-                       q.value(4).value<quint32>(),
+                       q.value(4).value<quota_size_t>(),
                        q.value(5).value<quint32>(),
-                       q.value(6).value<quint32>(),
-                       q.value(7).value<quint32>(),
+                       q.value(6).value<quota_size_t>(),
+                       q.value(7).value<quota_size_t>(),
                        q.value(8).toBool(),
                        q.value(9).toBool(),
                        QVector<Folder>(),
                        q.value(10).value<quint32>(),
                        Utils::toUserTZ(c, q.value(11).toDateTime()),
                        Utils::toUserTZ(c, q.value(12).toDateTime()));
-            dom.setHumanQuota(Utils::humanBinarySize(c, static_cast<quint64>(dom.getQuota()) * Q_UINT64_C(1024)));
-            dom.setHumanDomainQuota(Utils::humanBinarySize(c, static_cast<quint64>(dom.getDomainQuota()) * Q_UINT64_C(1024)));
-            dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, static_cast<quint64>(dom.getDomainQuotaUsed()) * Q_UINT64_C(1024)));
+            dom.setHumanQuota(Utils::humanBinarySize(c, dom.getQuota() * Q_UINT64_C(1024)));
+            dom.setHumanDomainQuota(Utils::humanBinarySize(c, dom.getDomainQuota() * Q_UINT64_C(1024)));
+            dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, dom.getDomainQuotaUsed() * Q_UINT64_C(1024)));
             lst.push_back(dom);
         }
     } else {
@@ -701,7 +701,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
 
-    quint32 quota = 0;
+    quota_size_t quota = 0;
     bool quotaOk = true;
     if (p.contains(QStringLiteral("humanQuota"))) {
         quota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanQuota")), &quotaOk);
@@ -711,7 +711,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
             return ret;
         }
     } else {
-        quota = p.value(QStringLiteral("quota"), QString::number(d->getQuota())).toULong(&quotaOk);
+        quota = p.value(QStringLiteral("quota"), QString::number(d->getQuota())).toULongLong(&quotaOk);
         if (!quotaOk) {
             e->setErrorType(SkaffariError::InputError);
             e->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
@@ -721,7 +721,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
 
     if (u.value(QStringLiteral("type")).value<qint16>() == 0) {
 
-        quint32 domainQuota = 0;
+        quota_size_t domainQuota = 0;
         bool domainQuotaOk = true;
         if (p.contains(QStringLiteral("humanDomainQuota"))) {
             domainQuota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanDomainQuota")), &domainQuotaOk);
@@ -731,7 +731,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
                 return ret;
             }
         } else {
-            domainQuota = p.value(QStringLiteral("domainQuota"), QString::number(d->getDomainQuota())).toULong(&domainQuotaOk);
+            domainQuota = p.value(QStringLiteral("domainQuota"), QString::number(d->getDomainQuota())).toULongLong(&domainQuotaOk);
             if (!domainQuotaOk) {
                 e->setErrorType(SkaffariError::InputError);
                 e->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
@@ -761,10 +761,10 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         }
 
         d->setQuota(quota);
-        d->setHumanQuota(Utils::humanBinarySize(c, static_cast<quint64>(quota) * Q_UINT64_C(1024)));
+        d->setHumanQuota(Utils::humanBinarySize(c, quota * Q_UINT64_C(1024)));
         d->setMaxAccounts(maxAccounts);
         d->setDomainQuota(domainQuota);
-        d->setHumanDomainQuota(Utils::humanBinarySize(c, static_cast<quint64>(domainQuota) * Q_UINT64_C(1024)));
+        d->setHumanDomainQuota(Utils::humanBinarySize(c, domainQuota * Q_UINT64_C(1024)));
         d->setFreeNamesEnabled(freeNames);
         d->setFreeAddressEnabled(freeAddress);
         d->setTransport(transport);
@@ -786,7 +786,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         }
 
         d->setQuota(quota);
-        d->setHumanQuota(Utils::humanBinarySize(c, static_cast<quint64>(quota) * Q_UINT64_C(1024)));
+        d->setHumanQuota(Utils::humanBinarySize(c, quota * Q_UINT64_C(1024)));
         d->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
 
         ret = true;
@@ -807,7 +807,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
     } else {
         QStringList newFolders;
         QStringList currentFolderNames;
-        QList<quint32> deletedFolders;
+        QList<dbid_t> deletedFolders;
         const QVector<Folder> currentFolders = d->getFolders();
         for (const Folder &folder : currentFolders) {
             currentFolderNames << folder.getName();
@@ -823,8 +823,8 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         }
 
         if (!deletedFolders.empty()) {
-            const QList<quint32> deletedFoldersConst = deletedFolders;
-            for (quint32 fid : deletedFoldersConst) {
+            const QList<dbid_t> deletedFoldersConst = deletedFolders;
+            for (dbid_t fid : deletedFoldersConst) {
                 q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE id = :id"));
                 q.bindValue(QStringLiteral(":id"), fid);
                 if (Q_UNLIKELY(!q.exec())) {
@@ -852,7 +852,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
             qCCritical(SK_DOMAIN) << "Failed to query default folders for domain" << d->getName() << "from database:" << q.lastError().text();
         } else {
             while (q.next()) {
-                foldersVect.append(Folder(q.value(0).value<quint32>(), d->id(), q.value(1).toString()));
+                foldersVect.append(Folder(q.value(0).value<dbid_t>(), d->id(), q.value(1).toString()));
             }
         }
         d->setFolders(foldersVect);
@@ -866,7 +866,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
 }
 
 
-void Domain::toStash(Cutelyst::Context *c, quint32 domainId)
+void Domain::toStash(Cutelyst::Context *c, dbid_t domainId)
 {
     Q_ASSERT_X(c, "domain to stash", "invalid context object");
 
@@ -898,7 +898,7 @@ Domain Domain::fromStash(Cutelyst::Context *c)
 }
 
 
-bool Domain::checkAccess(Cutelyst::Context *c, quint32 domainId)
+bool Domain::checkAccess(Cutelyst::Context *c, dbid_t domainId)
 {
     bool allowed = false;
 

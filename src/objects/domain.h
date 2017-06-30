@@ -32,6 +32,7 @@
 
 #include "simpleadmin.h"
 #include "folder.h"
+#include "../../common/global.h"
 
 Q_DECLARE_LOGGING_CATEGORY(SK_DOMAIN)
 
@@ -50,21 +51,21 @@ class Domain
 {
 public:
     Domain();
-    Domain(quint32 id, const QString &name, const QString &prefix, const QString &transport, quint32 quota, quint32 maxAccounts, quint32 domainQuota, quint32 domainQuotaUsed, bool freeNames, bool freeAddress, const QVector<Folder> &folders, quint32 accounts, const QDateTime &created, const QDateTime &updated);
+    Domain(dbid_t id, const QString &name, const QString &prefix, const QString &transport, quota_size_t quota, quint32 maxAccounts, quota_size_t domainQuota, quota_size_t domainQuotaUsed, bool freeNames, bool freeAddress, const QVector<Folder> &folders, quint32 accounts, const QDateTime &created, const QDateTime &updated);
 	Domain(const Domain &other);
 	Domain& operator=(const Domain &other);
     ~Domain();
 
-    quint32 id() const;
+    dbid_t id() const;
     QString getName() const;
     QString getPrefix() const;
     QString getTransport() const;
-    quint32 getQuota() const;
+    quota_size_t getQuota() const;
     QString getHumanQuota() const;
     quint32 getMaxAccounts() const;
-    quint32 getDomainQuota() const;
+    quota_size_t getDomainQuota() const;
     QString getHumanDomainQuota() const;
-    quint32 getDomainQuotaUsed() const;
+    quota_size_t getDomainQuotaUsed() const;
     QString getHumanDomainQuotaUsed() const;
     bool isFreeNamesEnabled() const;
     bool isFreeAddressEnabled() const;
@@ -87,16 +88,16 @@ public:
     float domainQuotaUsagePercent() const;
 
 
-    void setId(quint32 id);
+    void setId(dbid_t id);
     void setName(const QString &nName);
     void setPrefix(const QString &nPrefix);
     void setTransport(const QString &nTransport);
-    void setQuota(quint32 nQuota);
+    void setQuota(quota_size_t nQuota);
     void setHumanQuota(const QString &nHumanQuota);
     void setMaxAccounts(quint32 nMaxAccounts);
-    void setDomainQuota(quint32 nDomainQuota);
+    void setDomainQuota(quota_size_t nDomainQuota);
     void setHumanDomainQuota(const QString &humanDomainQuota);
-    void setDomainQuotaUsed(quint32 nDomainQuotaUsed);
+    void setDomainQuotaUsed(quota_size_t nDomainQuotaUsed);
     void setHumanDomainQuotaUsed(const QString &humanDomainQuotaUsed);
     void setFreeNamesEnabled(bool nFreeNames);
     void setFreeAddressEnabled(bool nFreeAddress);
@@ -116,7 +117,7 @@ public:
     bool hasAccess(Cutelyst::Context *c) const;
 
     static Domain create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *errorData);
-    static Domain get(Cutelyst::Context *c, quint32 domId, SkaffariError *errorData);
+    static Domain get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData);
     static std::vector<Domain> list(Cutelyst::Context *c, SkaffariError *errorData, const Cutelyst::AuthenticationUser &user);
 
     /*!
@@ -155,7 +156,7 @@ public:
      * \param e Pointer to an object taking error information.
      * \return True on success.
      */
-    static void toStash(Cutelyst::Context *c, quint32 domainId);
+    static void toStash(Cutelyst::Context *c, dbid_t domainId);
 
     /*!
      * \brief Returns the current domain from the context stash that has been set by toStash().
@@ -165,7 +166,7 @@ public:
      */
     static Domain fromStash(Cutelyst::Context *c);
 
-    static bool checkAccess(Cutelyst::Context *c, quint32 domainId = 0);
+    static bool checkAccess(Cutelyst::Context *c, dbid_t domainId = 0);
 
     static bool accessGranted(Cutelyst::Context *c);
 

@@ -24,7 +24,7 @@ SimpleAdmin::SimpleAdmin() : d(new SimpleAdminData)
 }
 
 
-SimpleAdmin::SimpleAdmin(quint32 id, const QString &name) :
+SimpleAdmin::SimpleAdmin(dbid_t id, const QString &name) :
     d(new SimpleAdminData(id, name))
 {
 
@@ -51,7 +51,7 @@ SimpleAdmin::~SimpleAdmin()
 }
 
 
-quint32 SimpleAdmin::id() const
+dbid_t SimpleAdmin::id() const
 {
     return d->id;
 }

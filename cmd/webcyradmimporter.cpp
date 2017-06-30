@@ -36,6 +36,7 @@
 #include "imap.h"
 #include "../common/password.h"
 #include "../common/config.h"
+#include "../common/global.h"
 
 #include <QDebug>
 
@@ -175,8 +176,8 @@ int WebCyradmImporter::exec() const
     QString imappeername;
 
     QString defaultLang = vars.value(QStringLiteral("DEFAULTLANG"));
-    quint32 defaultQuota = vars.value(QStringLiteral("DEFAULT_QUOTA")).toLong();
-    quint32 defaultDomainQuota = vars.value(QStringLiteral("DEFAULT_DOMAIN_QUOTA")).toLong();
+    quota_size_t defaultQuota = vars.value(QStringLiteral("DEFAULT_QUOTA")).toLongLong();
+    quota_size_t defaultDomainQuota = vars.value(QStringLiteral("DEFAULT_DOMAIN_QUOTA")).toLongLong();
     QString defaultTimezone;
     quint32 defaultMaxAccounts = 1000;
 
@@ -465,9 +466,9 @@ int WebCyradmImporter::exec() const
         return dbError(wq.lastError());
     }
 
-    QHash<QString,quint32> domainPrefixId;
-    QHash<QString,quint32> domainNameId;
-    QHash<quint32,QStringList> domainFolders;
+    QHash<QString,dbid_t> domainPrefixId;
+    QHash<QString,dbid_t> domainNameId;
+    QHash<dbid_t,QStringList> domainFolders;
 
     if (sq.prepare(QStringLiteral("INSERT INTO domain (domain_name, prefix, maxaccounts, quota, domainquota, transport, freenames, freeaddress, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)"))) {
         while (wq.next()) {
@@ -487,7 +488,7 @@ int WebCyradmImporter::exec() const
             const QStringList folders = wq.value(8).toString().split(QLatin1Char(','));
 
             if (sq.exec()) {
-                const quint32 id = sq.lastInsertId().value<quint32>();
+                const dbid_t id = sq.lastInsertId().value<dbid_t>();
                 domainPrefixId.insert(prefix, id);
                 domainNameId.insert(name, id);
                 if (!folders.empty()) {
@@ -512,7 +513,7 @@ int WebCyradmImporter::exec() const
 
             auto i = domainFolders.constBegin();
             while (i != domainFolders.constEnd()) {
-                const quint32 id = i.key();
+                const dbid_t id = i.key();
                 const QStringList folders = i.value();
                 for (const QString &folder : folders) {
                     sq.addBindValue(id);
@@ -542,7 +543,7 @@ int WebCyradmImporter::exec() const
         return dbError(wq.lastError());
     }
 
-    QHash<QString,quint32> adminNameIds;
+    QHash<QString,dbid_t> adminNameIds;
 
     if (sq.prepare(QStringLiteral("INSERT INTO adminuser (username, password, type, created_at, updated_at) VALUES (?,?,?,?,?)"))) {
         while (wq.next()) {
@@ -554,7 +555,7 @@ int WebCyradmImporter::exec() const
             sq.addBindValue(currentTime);
 
             if (sq.exec()) {
-                adminNameIds.insert(name, sq.lastInsertId().value<quint32>());
+                adminNameIds.insert(name, sq.lastInsertId().value<dbid_t>());
             } else {
                 printFailed();
                 return dbError(sq.lastError());
@@ -634,7 +635,7 @@ int WebCyradmImporter::exec() const
         while (wq.next()) {
             const QString username = wq.value(0).toString();
             const QString domainName = wq.value(3).toString();
-            std::pair<quint32,quint32> quota = imap.getQuota(username);
+            quota_pair quota = imap.getQuota(username);
             sq.addBindValue(domainNameId.value(domainName));
             sq.addBindValue(username);
             sq.addBindValue(wq.value(1));
@@ -755,8 +756,8 @@ int WebCyradmImporter::exec() const
     auto domainIt = domainPrefixId.constBegin();
     while (domainIt != domainPrefixId.constEnd()) {
         quint32 users;
-        quint32 quotaused;
-        const quint32 domainId = domainIt.value();
+        quota_size_t quotaused;
+        const dbid_t domainId = domainIt.value();
         if (sq.prepare(QStringLiteral("SELECT COUNT(*) FROM accountuser WHERE domain_id = ?"))) {
             sq.addBindValue(domainId);
             if (sq.exec() && sq.next()) {
@@ -772,7 +773,7 @@ int WebCyradmImporter::exec() const
         if (sq.prepare(QStringLiteral("SELECT SUM(quota) FROM accountuser WHERE domain_id = ?"))) {
             sq.addBindValue(domainId);
             if (sq.exec() && sq.next()) {
-                quotaused = sq.value(0).value<quint32>();
+                quotaused = sq.value(0).value<quota_size_t>();
             } else {
                 printFailed();
                 return dbError(sq.lastError());

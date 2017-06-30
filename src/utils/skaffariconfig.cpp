@@ -28,8 +28,8 @@ QCryptographicHash::Algorithm SkaffariConfig::m_admPwAlgorithm = static_cast<QCr
 quint32 SkaffariConfig::m_admPwRounds = SK_DEF_ADM_PWROUNDS;
 quint8 SkaffariConfig::m_admPwMinlength = SK_DEF_ADM_PWMINLENGTH;
 
-quint32 SkaffariConfig::m_defDomainquota = SK_DEF_DEF_DOMAINQUOTA;
-quint32 SkaffariConfig::m_defQuota = SK_DEF_DEF_QUOTA;
+quota_size_t SkaffariConfig::m_defDomainquota = SK_DEF_DEF_DOMAINQUOTA;
+quota_size_t SkaffariConfig::m_defQuota = SK_DEF_DEF_QUOTA;
 quint32 SkaffariConfig::m_defMaxaccounts = SK_DEF_DEF_MAXACCOUNTS;
 QString SkaffariConfig::m_defLanguage = QLatin1String(SK_DEF_DEF_LANGUAGE);
 QString SkaffariConfig::m_defTimezone = QLatin1String(SK_DEF_DEF_TIMEZONE);
@@ -63,8 +63,8 @@ void SkaffariConfig::load(const QVariantMap &accounts, const QVariantMap &admins
     SkaffariConfig::m_admPwRounds = admins.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>();
     SkaffariConfig::m_admPwMinlength = admins.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>();
 
-    SkaffariConfig::m_defDomainquota = defaults.value(QStringLiteral("domainquota"), SK_DEF_DEF_DOMAINQUOTA).value<quint32>();
-    SkaffariConfig::m_defQuota = defaults.value(QStringLiteral("quota"), SK_DEF_DEF_QUOTA).value<quint32>();
+    SkaffariConfig::m_defDomainquota = defaults.value(QStringLiteral("domainquota"), SK_DEF_DEF_DOMAINQUOTA).value<quota_size_t>();
+    SkaffariConfig::m_defQuota = defaults.value(QStringLiteral("quota"), SK_DEF_DEF_QUOTA).value<quota_size_t>();
     SkaffariConfig::m_defMaxaccounts = defaults.value(QStringLiteral("maxaccounts"), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
     SkaffariConfig::m_defLanguage = defaults.value(QStringLiteral("language"), QLatin1String(SK_DEF_DEF_LANGUAGE)).toString();
     SkaffariConfig::m_defTimezone = defaults.value(QStringLiteral("timezone"), QLatin1String(SK_DEF_DEF_TIMEZONE)).toString();
@@ -92,8 +92,8 @@ QCryptographicHash::Algorithm SkaffariConfig::admPwAlgorithm() { return m_admPwA
 quint32 SkaffariConfig::admPwRounds() { return m_admPwRounds; }
 quint8 SkaffariConfig::admPwMinlength() { return m_admPwMinlength; }
 
-quint32 SkaffariConfig::defDomainquota() { return SkaffariConfig::m_defDomainquota; }
-quint32 SkaffariConfig::defQuota() { return SkaffariConfig::m_defQuota; }
+quota_size_t SkaffariConfig::defDomainquota() { return SkaffariConfig::m_defDomainquota; }
+quota_size_t SkaffariConfig::defQuota() { return SkaffariConfig::m_defQuota; }
 quint32 SkaffariConfig::defMaxaccounts() { return SkaffariConfig::m_defMaxaccounts; }
 QString SkaffariConfig::defLanguage() { return SkaffariConfig::m_defLanguage; }
 QString SkaffariConfig::defTimezone() { return SkaffariConfig::m_defTimezone; }

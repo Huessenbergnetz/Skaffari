@@ -27,7 +27,7 @@ class FolderData : public QSharedData
 public:
     FolderData() {}
 
-    FolderData(quint32 _id, quint32 _domainId, const QString &_name) :
+    FolderData(dbid_t _id, dbid_t _domainId, const QString &_name) :
         id(_id),
         domainId(_domainId),
         name(_name)
@@ -42,8 +42,8 @@ public:
 
     ~FolderData() {}
 
-    quint32 id = 0;
-    quint32 domainId = 0;
+    dbid_t id = 0;
+    dbid_t domainId = 0;
     QString name;
 };
 

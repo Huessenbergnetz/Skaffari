@@ -20,6 +20,7 @@ set(skaffaricmd_SRCS
     configinput.h
     ../common/password.cpp
     ../common/password.h
+    ../common/global.h
     tester.cpp
     tester.h
 )

@@ -30,6 +30,8 @@
 #include <QJsonObject>
 #include <QJsonValue>
 
+#include "../common/global.h"
+
 using namespace Cutelyst;
 
 Root::Root(QObject *parent) : Controller(parent)
@@ -101,7 +103,7 @@ bool Root::Auto(Context* c)
     StatusMessage::load(c);
 
     c->stash({
-                 {QStringLiteral("userId"), QVariant::fromValue<quint32>(user.id().toULong())},
+                 {QStringLiteral("userId"), QVariant::fromValue<dbid_t>(user.id().toULong())},
                  {QStringLiteral("userType"), user.value(QStringLiteral("type"))},
                  {QStringLiteral("userName"), user.value(QStringLiteral("username"))},
                  {QStringLiteral("userMaxDisplay"), Session::value(c, QStringLiteral("maxdisplay"), SkaffariConfig::defMaxdisplay()).value<quint8>()},

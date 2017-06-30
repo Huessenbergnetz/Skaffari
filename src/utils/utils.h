@@ -20,6 +20,7 @@
 #define UTILS_H
 
 #include <QDateTime>
+#include "../../common/global.h"
 
 namespace Cutelyst {
 class Context;
@@ -31,7 +32,7 @@ public:
     Utils();
 
     static QDateTime toUserTZ(Cutelyst::Context *c, const QDateTime &dt);
-    static QString humanBinarySize(Cutelyst::Context *c, quint64 sizeInByte);
+    static QString humanBinarySize(Cutelyst::Context *c, quota_size_t sizeInByte);
     static QString getUserName(Cutelyst::Context *c);
 
     /*!
@@ -44,7 +45,7 @@ public:
      * \param ok    Pointer to a boolean value that will be \c true if conversion succeeded.
      * \return      The quota size in KiB.
      */
-    static quint32 humanToIntSize(Cutelyst::Context *c, const QString &size, bool *ok);
+    static quota_size_t humanToIntSize(Cutelyst::Context *c, const QString &size, bool *ok);
 };
 
 #endif // UTILS_H

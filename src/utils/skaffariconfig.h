@@ -22,6 +22,7 @@
 #include <QCryptographicHash>
 #include <QAbstractSocket>
 #include "../../common/password.h"
+#include "../../common/global.h"
 #include "../imap/skaffariimap.h"
 #include "../objects/account.h"
 
@@ -43,8 +44,8 @@ public:
     static quint32 admPwRounds();
     static quint8 admPwMinlength();
 
-    static quint32 defDomainquota();
-    static quint32 defQuota();
+    static quota_size_t defDomainquota();
+    static quota_size_t defQuota();
     static quint32 defMaxaccounts();
     static QString defLanguage();
     static QString defTimezone();
@@ -72,8 +73,8 @@ private:
     static quint32 m_admPwRounds;
     static quint8 m_admPwMinlength;
 
-    static quint32 m_defDomainquota;
-    static quint32 m_defQuota;
+    static quota_size_t m_defDomainquota;
+    static quota_size_t m_defQuota;
     static quint32 m_defMaxaccounts;
     static QString m_defLanguage;
     static QString m_defTimezone;

@@ -23,6 +23,7 @@
 #include "objects/helpentry.h"
 #include "utils/skaffariconfig.h"
 #include "utils/utils.h"
+#include "../common/global.h"
 
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
 #include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
@@ -71,7 +72,7 @@ void DomainEditor::index(Context *c)
 
 void DomainEditor::base(Context* c, const QString &id)
 {
-    const quint32 domainId = id.toULong();
+    const dbid_t domainId = SKAFFARI_STRING_TO_DBID(id);
     if (Domain::checkAccess(c, domainId)) {
         Domain::toStash(c, domainId);
     }
@@ -265,9 +266,9 @@ void DomainEditor::create(Context* c)
 
         c->stash({
                      {QStringLiteral("defQuota"), SkaffariConfig::defQuota()},
-                     {QStringLiteral("defHumanQuota"), Utils::humanBinarySize(c, static_cast<quint64>(SkaffariConfig::defQuota()) * Q_UINT64_C(1024))},
+                     {QStringLiteral("defHumanQuota"), Utils::humanBinarySize(c, SkaffariConfig::defQuota() * Q_UINT64_C(1024))},
                      {QStringLiteral("defDomainQuota"), SkaffariConfig::defDomainquota()},
-                     {QStringLiteral("defHumanDomainQuota"), Utils::humanBinarySize(c, static_cast<quint64>(SkaffariConfig::defDomainquota()) * Q_UINT64_C(1024))},
+                     {QStringLiteral("defHumanDomainQuota"), Utils::humanBinarySize(c, SkaffariConfig::defDomainquota() * Q_UINT64_C(1024))},
                      {QStringLiteral("defMaxAccounts"), SkaffariConfig::defMaxaccounts()},
                      {QStringLiteral("template"), QStringLiteral("domain/create.html")},
                      {QStringLiteral("domainAsPrefix"), SkaffariConfig::imapDomainasprefix()},
@@ -378,7 +379,7 @@ void DomainEditor::add_account(Context* c)
 
     if (Q_LIKELY((user.value(QStringLiteral("type")).value<qint16>() == 0) || user.value(QStringLiteral("domains")).value<QVariantList>().contains(dom.id()))) {
 
-        const quint32 freeQuota = (dom.getDomainQuota() - dom.getDomainQuotaUsed());
+        const quota_size_t freeQuota = (dom.getDomainQuota() - dom.getDomainQuotaUsed());
 
         auto req = c->req();
 
@@ -428,7 +429,7 @@ void DomainEditor::add_account(Context* c)
 
                 if (dom.getDomainQuota() > 0) {
 
-                    quint32 accQuota = 0;
+                    quota_size_t accQuota = 0;
                     bool quotaOk = true;
 
                     if (p.contains(QStringLiteral("humanQuota"))) {
@@ -571,8 +572,8 @@ void DomainEditor::add_account(Context* c)
         const QString domainQuotaTitle = c->translate("DomainEditor", "DomainQuota");
         if (dom.getDomainQuota() > 0) {
             help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "Used and total amount of storage quota for this domain.")));
-            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1 KiB.").arg(static_cast<quint64>(freeQuota) * Q_UINT64_C(1024))));
-            help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.").arg(Utils::humanBinarySize(c, static_cast<quint64>(freeQuota) * Q_UINT64_C(1024)))));
+            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1 KiB.").arg(freeQuota * Q_UINT64_C(1024))));
+            help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.").arg(Utils::humanBinarySize(c, freeQuota * Q_UINT64_C(1024)))));
         } else {
             help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "This domain has no overall quota limit, so the value shows the sum of the quota limit of all accounts in this domain.")));
             help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it.")));
@@ -636,7 +637,7 @@ void DomainEditor::check(Context *c)
         if (Q_LIKELY(q.exec())) {
             QStringList accountIds;
             while (q.next()) {
-                accountIds << QString::number(q.value(0).value<quint32>());
+                accountIds << QString::number(q.value(0).value<dbid_t>());
             }
             c->setStash(QStringLiteral("accountids"), accountIds.join(QLatin1Char(',')));
         } else {

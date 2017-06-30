@@ -29,6 +29,7 @@
 #include "imap.h"
 #include "../common/password.h"
 #include "../common/config.h"
+#include "../common/global.h"
 
 Setup::Setup(const QString &confFile) :
     m_confFile(confFile)
@@ -516,8 +517,8 @@ int Setup::exec() const
 
         os.beginGroup(QStringLiteral("Defaults"));
         QString defaultLang = os.value(QStringLiteral("language"), QStringLiteral(SK_DEF_DEF_LANGUAGE)).toString();
-        quint32 defaultQuota = os.value(QStringLiteral("quota"), SK_DEF_DEF_QUOTA).value<quint32>();
-        quint32 defaultDomainQuota = os.value(QStringLiteral("domainquota"), SK_DEF_DEF_DOMAINQUOTA).value<quint32>();
+        quota_size_t defaultQuota = os.value(QStringLiteral("quota"), SK_DEF_DEF_QUOTA).value<quota_size_t>();
+        quota_size_t defaultDomainQuota = os.value(QStringLiteral("domainquota"), SK_DEF_DEF_DOMAINQUOTA).value<quota_size_t>();
         quint32 defaultMaxAccounts = os.value(QStringLiteral("maxaccounts"), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
         QString defaultTimezone = os.value(QStringLiteral("timezone"), QStringLiteral(SK_DEF_DEF_TIMEZONE)).toString();
         os.endGroup();

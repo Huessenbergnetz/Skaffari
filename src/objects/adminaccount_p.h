@@ -27,7 +27,7 @@ class AdminAccountData : public QSharedData
 public:
     AdminAccountData() {}
 
-    AdminAccountData(quint32 _id, const QString &_username, qint16 _type, const QList<quint32> &_domains) :
+    AdminAccountData(dbid_t _id, const QString &_username, qint16 _type, const QList<dbid_t> &_domains) :
         id(_id),
         username(_username),
         type(_type),
@@ -51,10 +51,10 @@ public:
 
     ~AdminAccountData() {}
 
-    quint32 id;
+    dbid_t id;
 	QString username;
     qint16 type;
-    QList<quint32> domains;
+    QList<dbid_t> domains;
     QString lang;
     QByteArray tz;
     quint8 maxDisplay;

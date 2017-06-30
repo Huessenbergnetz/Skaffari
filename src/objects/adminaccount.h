@@ -27,6 +27,7 @@
 #include <Cutelyst/ParamsMultiMap>
 #include <QCryptographicHash>
 #include <QLoggingCategory>
+#include "../../common/global.h"
 
 Q_DECLARE_LOGGING_CATEGORY(SK_ADMIN)
 
@@ -78,7 +79,7 @@ public:
      * \param domains list of domain IDs this admin is responsible for
      * \sa setUsername(), setPassword(), setType(), setDomains()
 	 */
-    AdminAccount(quint32 id, const QString& username, qint16 type, const QList<quint32> &domains);
+    AdminAccount(dbid_t id, const QString& username, qint16 type, const QList<dbid_t> &domains);
 
 	/*!
 	 * \brief Constructs a copy of other.
@@ -101,7 +102,7 @@ public:
      * \return the database ID
      * \sa setId()
      */
-    quint32 getId() const;
+    dbid_t getId() const;
 
     /*!
      * \brief Sets the database ID:
@@ -109,7 +110,7 @@ public:
      * \param id the database ID
      * \sa getId()
      */
-    void setId(quint32 id);
+    void setId(dbid_t id);
 
 
 	/*!
@@ -135,7 +136,7 @@ public:
 	 * \retun list of domains
      * \sa setDomains()
 	 */
-    QList<quint32> getDomains() const;
+    QList<dbid_t> getDomains() const;
 
 	/*!
      * \brief Sets the list of domain IDs this admin is responsible for.
@@ -145,7 +146,7 @@ public:
      * \param nDomains list of domain IDs
      * \sa getDomains()
 	 */
-    void setDomains(const QList<quint32> &nDomains);
+    void setDomains(const QList<dbid_t> &nDomains);
 
 
 	/*!
@@ -233,25 +234,25 @@ public:
 
     static AdminAccount create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *error);
     static QVector<AdminAccount> list(Cutelyst::Context *c, SkaffariError *error);
-    static AdminAccount get(Cutelyst::Context *c, SkaffariError *e, quint32 id);
+    static AdminAccount get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
     static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, const Cutelyst::ParamsMultiMap &params);
     static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p);
     static bool remove(Cutelyst::Context *c, SkaffariError *e, const AdminAccount &a);
-    static void toStash(Cutelyst::Context *c, quint32 adminId);
+    static void toStash(Cutelyst::Context *c, dbid_t adminId);
     static AdminAccount fromStash(Cutelyst::Context *c);
 
 protected:
     QSharedDataPointer<AdminAccountData> d;
 
 private:
-    static quint32 setAdminAccount(Cutelyst::Context *c, SkaffariError *error, const QString &user, const QByteArray &pass, qint16 type);
-    static bool rollbackAdminAccount(Cutelyst::Context *c, SkaffariError *error, quint32 adminId);
+    static dbid_t setAdminAccount(Cutelyst::Context *c, SkaffariError *error, const QString &user, const QByteArray &pass, qint16 type);
+    static bool rollbackAdminAccount(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId);
 
-    static bool setAdminSettings(Cutelyst::Context *c, SkaffariError *error, quint32 adminId);
-    static bool rollbackAdminSettings(Cutelyst::Context *c, SkaffariError *error, quint32 adminId);
+    static bool setAdminSettings(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId);
+    static bool rollbackAdminSettings(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId);
 
-    static bool setAdminDomains(Cutelyst::Context *c, SkaffariError *error, quint32 adminId, const QList<quint32> &domains);
-    static bool rollbackAdminDomains(Cutelyst::Context *c, SkaffariError *error, quint32 adminId);
+    static bool setAdminDomains(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId, const QList<dbid_t> &domains);
+    static bool rollbackAdminDomains(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId);
 };
 
 Q_DECLARE_METATYPE(AdminAccount)

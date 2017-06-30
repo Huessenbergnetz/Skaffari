@@ -25,6 +25,7 @@
 #include "objects/helpentry.h"
 #include "utils/skaffariconfig.h"
 #include "utils/utils.h"
+#include "../common/global.h"
 
 #include <Cutelyst/Plugins/Session/Session>
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
@@ -50,10 +51,10 @@ AccountEditor::~AccountEditor()
 
 void AccountEditor::base(Context* c, const QString &domainId, const QString& accountId)
 {
-    const quint32 domId = domainId.toULong();
+    const dbid_t domId = SKAFFARI_STRING_TO_DBID(domainId);
     if (Domain::checkAccess(c, domId)) {
         Domain::toStash(c, domId);
-        Account::toStash(c, Domain::fromStash(c), accountId.toULong());
+        Account::toStash(c, Domain::fromStash(c), SKAFFARI_STRING_TO_DBID(accountId));
     }
 }
 
@@ -65,7 +66,7 @@ void AccountEditor::edit(Context* c)
         Account a = Account::fromStash(c);
         Domain dom = Domain::fromStash(c);
 
-        const quint32 freeQuota = (dom.getDomainQuota() - dom.getDomainQuotaUsed() + a.getQuota());
+        const quota_size_t freeQuota = (dom.getDomainQuota() - dom.getDomainQuotaUsed() + a.getQuota());
 
         auto req = c->req();
 
@@ -96,7 +97,7 @@ void AccountEditor::edit(Context* c)
                 bool enoughQuotaLeft = true;
                 if (dom.getDomainQuota() > 0) {
 
-                    quint32 accQuota = 0;
+                    quota_size_t accQuota = 0;
                     bool quotaOk = true;
 
                     if (p.contains(QStringLiteral("humanQuota"))) {
@@ -156,8 +157,8 @@ void AccountEditor::edit(Context* c)
 
         const QString quotaTitle = c->translate("DomainEditor", "Quota");
         if (dom.getDomainQuota() > 0) {
-            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You have to set a storage quota for this account that does not exceed %1.").arg(Utils::humanBinarySize(c, static_cast<quint64>(freeQuota) * Q_UINT64_C(1024)))));
-            help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You have to set a storage quota for this account that does not exceed %1. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.").arg(Utils::humanBinarySize(c, static_cast<quint64>(freeQuota) * Q_UINT64_C(1024)))));
+            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You have to set a storage quota for this account that does not exceed %1.").arg(Utils::humanBinarySize(c, freeQuota * Q_UINT64_C(1024)))));
+            help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You have to set a storage quota for this account that does not exceed %1. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.").arg(Utils::humanBinarySize(c, freeQuota * Q_UINT64_C(1024)))));
         } else {
             help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it.")));
             help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));

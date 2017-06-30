@@ -43,7 +43,7 @@ for TMPL in default
 do
     pushd $TMPL
     npm update --dev
-    ./gulp --production
+    ./gulp
     pushd static
     find $PWD -type f -name "*.css" -o -type f -name "*.js" | parallel compasset
     popd
