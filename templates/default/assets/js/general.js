@@ -16,18 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// domain table sort
+// domain table sort and filter
 $(function() {
     var domainTable = $('#domainTable').stupidtable();
-    domainTable.bind('aftertablesort', function(event, data) {
-        $('#domainTable th > small').remove();
-        var type = data.$th.data('sort');
-        var sortType = '';
-        if (type === "string" || type === "string-ins") {
-            sortType = "alpha";
-        } else {
-            sortType = "amount"
-        }
-        data.$th.append(' <small><i class="fa fa-sort-' + sortType + '-' + data.direction + ' text-muted"></i></small>');
-    });
+    if (domainTable.length > 0) {
+        domainTable.bind('aftertablesort', function(event, data) {
+            $('#domainTable th > small').remove();
+            var type = data.$th.data('sort');
+            var sortType = '';
+            if (type === "string" || type === "string-ins") {
+                sortType = "alpha";
+            } else {
+                sortType = "amount"
+            }
+            data.$th.append(' <small><i class="fa fa-sort-' + sortType + '-' + data.direction + ' text-muted"></i></small>');
+        });
+        
+        domainTable.filterTable({inputSelector: "#domainTableFilter", ignoreClass: "no-filtering"});
+    }
 });

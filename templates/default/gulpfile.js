@@ -12,6 +12,7 @@ elixir(function(mix) {
         '../../node_modules/bootstrap/dist/js/bootstrap.js',
         '../../node_modules/queuejax/jquery.qjax.js',
         'stupidtable.js',
+        'jquery.filtertable.js',
         'createalert.js',
         'forwards.js',
         'checkdomain.js',
