@@ -30,19 +30,19 @@
                 <tr id="account-{{ domain.id }}-{{ account.id }}" class="account-row" data-domainid="{{ domain.id }}" data-accountid="{{ account.id }}" data-username="{{ account.username }}">
                     <td>
                         <div class="btn-group">
-                            <a href="/account/{{ domain.id }}/{{ account.id }}/addresses" title='{{ _("Edit email addresses") }}' class="btn btn-sm btn-secondary" role="button"><i class="fa fa-envelope-o fa-fw"></i></a>
+                            <a href="/account/{{ domain.id }}/{{ account.id }}/edit" title='{{ _("Edit account") }}' class="btn btn-sm btn-secondary" role="button"><i class="fa fa-edit fa-fw"></i></a>
                             <button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="sr-only">{{ _("Toggle dropdown") }}</span>
                             </button>
                             <div class="dropdown-menu">
-                                <a href="/account/{{ domain.id }}/{{ account.id }}/edit" class="dropdown-item"><i class="fa fa-edit fa-fw"></i> {{ _("Edit account") }}</a>
+                                <a href="/account/{{ domain.id }}/{{ account.id }}/addresses" class="dropdown-item"><i class="fa fa-envelope-o"></i> {{ _("Email addresses") }}</a>
                                 <a href="/account/{{ domain.id }}/{{ account.id }}/forwards" class="dropdown-item"><i class="fa fa-mail-forward fa-fw"></i> {{ _("Forwards") }}</a>
                                 <a href="#" class="dropdown-item check-account-btn" data-toggle="modal" data-target="#checkAccountModal"><i class="fa fa-stethoscope fa-fw"></i> {{ _("Check account") }}</a>
                                 <a href="#" class="dropdown-item remove-account-btn text-danger" data-toggle="modal" data-target="#removeAccountModal" data-domainid="{{ domain.id }}" data-accountid="{{ account.id }}" data-username="{{ account.username }}"><i class="fa fa-trash fa-fw"></i> {{ _("Delete account") }}</a>
                             </div>
                         </div>
                     </td>
-                    <td><a href="/account/{{ domain.id }}/{{ account.id }}/edit" title="{{ _("Edit account") }}">{{ account.username }}</a></td>
+                    <td><a href="/account/{{ domain.id }}/{{ account.id }}/addresses" title="{{ _("Email addresses") }}">{{ account.username }}</a></td>
                     <td>{% if account.catchAll %}<span class="text-warning">{{ _("Catches all undefined email addresses for this domain.") }}</span><br>{% endif %}{{ account.addresses|join:"<br>" }}</td>
                     <td>{{ account.forwards|join:"<br>" }}{% if account.forwards.count > 0 %}<br><i class="fa fa-{% if account.keepLocal %}check-circle-o{% else %}times-circle-o{% endif %}"></i> {{ _("keep local copy") }}{% endif %}</td>
                     <td>
