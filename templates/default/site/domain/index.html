@@ -28,14 +28,20 @@
             {% for domain in domains %}
                 <tr id="domain-{{ domain.id }}">
                     <td>
-                        <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Admin actions") }}">
-                            <a href="/domain/{{ domain.id }}/edit" class="btn btn-primary" title='{{ _("Edit domain") }}' role="button"><i class="fa fa-edit fa-fw"></i></a>
-                            <a href="/domain/{{ domain.id }}/add_account" class="btn btn-secondary" title='{{ _("Add account") }}' role="button"><i class="fa fa-user-plus fa-fw"></i></a>
-                            <a href="#" class="btn btn-secondary" title='{{ _("Manage alias addresses") }}' role="button"><i class="fa fa-mail-forward fa-fw"></i></a>
-                            <a href="/domain/{{ domain.id }}/check" class="btn btn-secondary" title='{{ _("Check domain and accounts") }}' role="button"><i class="fa fa-stethoscope fa-fw"></i></a>
-                            {% ifequal userType 0 %}
-                            <button type="button" class="btn btn-danger remove-domain-btn" title='{{ _("Delete domain") }}' data-toggle="modal" data-target="#removeDomainModal" data-name="{{ domain.name }}" data-domainid="{{ domain.id }}" data-accountcount="{{ domain.accounts }}"><i class="fa fa-trash fa-fw"></i></button>
-                            {% endifequal %}
+                        <div class="btn-group">
+                            <a href="/domain/{{ domain.id }}/edit" class="btn btn-sm btn-primary" title='{{ _("Edit domain") }}' role="button"><i class="fa fa-edit fa-fw"></i></a>
+                            <button type="button" class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="sr-only">{{ _("Toggle dropdown") }}</span>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a href="/domain/{{ domain.id }}/add_account" class="dropdown-item"><i class="fa fa-user-plus fa-fw"></i> {{ _("Add account") }}</a>
+                                <a href="/domain/{{ domain.id }}/accounts" class="dropdown-item"><i class="fa fa-users fa-fw"></i> {{ _("Manage accounts") }}</a>
+                                <a href="#" class="dropdown-item"><i class="fa fa-mail-forward fa-fw"></i> {{ _("Alias addresses") }}</a>
+                                <a href="/domain/{{  domain.id }}/check" class="dropdown-item"><i class="fa fa-stethoscope fa-fw"></i> {{ _("Check domain") }}</a>
+                                {% ifequal userType 0 %}
+                                <a href="#" class="dropdown-item remove-domain-btn text-danger" data-toggle="modal" data-target="#removeDomainModal" data-name="{{ domain.name }}" data-domainid="{{ domain.id }}" data-accountcount="{{ domain.accounts }}"><i class="fa fa-trash fa-fw"></i> {{ _("Delete domain") }}</a>
+                                {% endifequal %}
+                            </div>
                         </div>
                     </td>
                     <td data-sort-value="{{ domain.name }}"><a href="/domain/{{ domain.id }}/accounts" title="{{ _("Manage accounts") }}">{{ domain.name }}</a><br><small class="text-muted">{{ domain.prefix }}</small></td>
