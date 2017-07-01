@@ -36,6 +36,9 @@
 #include <QMetaType>
 #include <QCoreApplication>
 #include <QTranslator>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 #include "objects/domain.h"
 #include "objects/simpleadmin.h"
@@ -98,12 +101,35 @@ bool Skaffari::init()
     Grantlee::registerMetaType<Account>();
     Grantlee::registerMetaType<HelpEntry>();
 
+    const QString tmplName = QStringLiteral("default");
+    const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + tmplName;
+
     if (!isInitialized) {
+        QVariantMap tmplConfig;
+        QFile tmplConfigFile(tmplBasePath + QLatin1String("/config.json"));
+        if (tmplConfigFile.exists()) {
+            qCDebug(SK_CORE, "Found template configuration file.");
+            if (tmplConfigFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
+                QJsonParseError jpe;
+                QJsonDocument tmplJsonConfig(QJsonDocument::fromJson(tmplConfigFile.readAll(), &jpe));
+                if (jpe.error != QJsonParseError::NoError) {
+                    qCCritical(SK_CORE, "Failed to parse template configuration file: %s", qUtf8Printable(jpe.errorString()));
+                    return false;
+                }
+
+                tmplConfig = tmplJsonConfig.object().toVariantMap();
+            } else {
+                qCCritical(SK_CORE, "Failed to open template configuration file %s.", qUtf8Printable(tmplConfigFile.fileName()));
+                return false;
+            }
+        }
+
         qCDebug(SK_CORE) << "Initializing configuration.";
         SkaffariConfig::load(engine()->config(QStringLiteral("Accounts")),
                              engine()->config(QStringLiteral("Admins")),
                              engine()->config(QStringLiteral("Defaults")),
-                             engine()->config(QStringLiteral("IMAP")));
+                             engine()->config(QStringLiteral("IMAP")),
+                             tmplConfig);
 
         if (SkaffariConfig::imapUser().isEmpty()) {
             qCCritical(SK_CORE) << "No valid IMAP user defined.";
@@ -122,9 +148,6 @@ bool Skaffari::init()
 
         isInitialized = true;
     }
-
-    const QString tmplName = QStringLiteral("default");
-    const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + tmplName;
 
     QString sitePath = tmplBasePath + QLatin1String("/site");
 

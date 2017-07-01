@@ -31,7 +31,7 @@ class SkaffariConfig
 public:
     SkaffariConfig();
 
-    static void load(const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &defaults, const QVariantMap &imap);
+    static void load(const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &defaults, const QVariantMap &imap, const QVariantMap &tmpl);
 
     static bool isInitialized();
 
@@ -63,6 +63,8 @@ public:
     static bool imapDomainasprefix();
     static bool imapFqun();
 
+    static bool tmplAsyncAccountList();
+
 private:
     static Password::Method m_accPwMethod;
     static Password::Algorithm m_accPwAlgorithm;
@@ -91,6 +93,8 @@ private:
     static Account::CreateMailbox m_imapCreatemailbox;
     static bool m_imapDomainasprefix;
     static bool m_imapFqun;
+
+    static bool m_tmplAsyncAccountList;
 };
 
 #endif // SKAFFARICONFIG_H

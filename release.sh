@@ -48,6 +48,7 @@ do
     find $PWD -type f -name "*.css" -o -type f -name "*.js" | parallel compasset
     popd
     mkdir ${DIR}/templates/${TMPL}
+    cp config.json ${DIR}/templates/${TMPL}
     cp CMakeLists.txt ${DIR}/templates/${TMPL}
     cp -r site ${DIR}/templates/${TMPL}
     cp -r static ${DIR}/templates/${TMPL}

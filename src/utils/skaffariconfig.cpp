@@ -47,12 +47,14 @@ Account::CreateMailbox SkaffariConfig::m_imapCreatemailbox = static_cast<Account
 bool SkaffariConfig::m_imapDomainasprefix = SK_DEF_IMAP_DOMAINASPREFIX;
 bool SkaffariConfig::m_imapFqun = SK_DEF_IMAP_FQUN;
 
+bool SkaffariConfig::m_tmplAsyncAccountList = SK_DEF_TMPL_ASYNCACCOUNTLIST;
+
 SkaffariConfig::SkaffariConfig()
 {
 
 }
 
-void SkaffariConfig::load(const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &defaults, const QVariantMap &imap)
+void SkaffariConfig::load(const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &defaults, const QVariantMap &imap, const QVariantMap &tmpl)
 {
     SkaffariConfig::m_accPwMethod = static_cast<Password::Method>(accounts.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
     SkaffariConfig::m_accPwAlgorithm = static_cast<Password::Algorithm>(accounts.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>());
@@ -81,6 +83,8 @@ void SkaffariConfig::load(const QVariantMap &accounts, const QVariantMap &admins
     SkaffariConfig::m_imapCreatemailbox = static_cast<Account::CreateMailbox>(imap.value(QStringLiteral("createmailbox"), SK_DEF_IMAP_CREATEMAILBOX).value<quint8>());
     SkaffariConfig::m_imapDomainasprefix = imap.value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool();
     SkaffariConfig::m_imapFqun = imap.value(QStringLiteral("fqun"), SK_DEF_IMAP_FQUN).toBool();
+
+    SkaffariConfig::m_tmplAsyncAccountList = tmpl.value(QStringLiteral("asyncaccountlist"), SK_DEF_TMPL_ASYNCACCOUNTLIST).toBool();
 }
 
 Password::Method SkaffariConfig::accPwMethod() { return m_accPwMethod; }
@@ -110,3 +114,5 @@ SkaffariIMAP::EncryptionType SkaffariConfig::imapEncryption() { return SkaffariC
 Account::CreateMailbox SkaffariConfig::imapCreatemailbox() { return SkaffariConfig::m_imapCreatemailbox; }
 bool SkaffariConfig::imapDomainasprefix() { return SkaffariConfig::m_imapDomainasprefix; }
 bool SkaffariConfig::imapFqun() { return SkaffariConfig::m_imapFqun; }
+
+bool SkaffariConfig::tmplAsyncAccountList() { return SkaffariConfig::m_tmplAsyncAccountList; }
