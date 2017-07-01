@@ -13,6 +13,7 @@ elixir(function(mix) {
         '../../node_modules/queuejax/jquery.qjax.js',
         'stupidtable.js',
         'jquery.filtertable.js',
+        'defaulttmpl.js',
         'createalert.js',
         'forwards.js',
         'checkdomain.js',
@@ -21,6 +22,7 @@ elixir(function(mix) {
         'removeaccount.js',
         'removeadmin.js',
         'checkaccount.js',
+        'accountlist.js',
         'general.js'
     ], 'static/js/scripts.js');
     

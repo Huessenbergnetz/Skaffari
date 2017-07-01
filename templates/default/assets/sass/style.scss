@@ -14,6 +14,9 @@ th.sortable {
     cursor: pointer;
 }
 
+.hidden-on-start {
+    display: none;
+}
 
 /******* PROGRESSBAR WIDTH *********/
 @for $w from 0 through 100 {
