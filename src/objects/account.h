@@ -28,6 +28,7 @@
 #include <QLoggingCategory>
 #include <QDateTime>
 #include <math.h>
+#include <QJsonObject>
 #include "../../common/global.h"
 
 Q_DECLARE_LOGGING_CATEGORY(SK_ACCOUNT)
@@ -380,6 +381,8 @@ public:
      * \sa catchAll()
      */
     void setCatchAll(bool nCatchAll);
+    
+    QJsonObject toJson() const;
 
     /*!
      * \brief Creates a new user account in the database and on the IMAP server.

@@ -35,6 +35,9 @@
 #include <QUrl>
 #include <QStringList>
 #include <QCollator>
+#include <QJsonArray>
+#include <QJsonValue>
+#include <QLocale>
 
 Q_LOGGING_CATEGORY(SK_ACCOUNT, "skaffari.account")
 
@@ -335,6 +338,33 @@ bool Account::cathAll() const
 void Account::setCatchAll(bool nCatchAll)
 {
     d->catchAll = nCatchAll;
+}
+
+
+QJsonObject Account::toJson() const
+{
+    QJsonObject ao;
+
+    ao.insert(QStringLiteral("id"), static_cast<qint64>(d->id));
+    ao.insert(QStringLiteral("domainId"), static_cast<qint64>(d->domainId));
+    ao.insert(QStringLiteral("username"), d->username);
+    ao.insert(QStringLiteral("prefix"), d->prefix);
+    ao.insert(QStringLiteral("domainName"), d->domainName);
+    ao.insert(QStringLiteral("imap"), d->imap);
+    ao.insert(QStringLiteral("pop"), d->pop);
+    ao.insert(QStringLiteral("sieve"), d->sieve);
+    ao.insert(QStringLiteral("smtpauth"), d->smtpauth);
+    ao.insert(QStringLiteral("addresses"), QJsonArray::fromStringList(d->addresses));
+    ao.insert(QStringLiteral("forwards"), QJsonArray::fromStringList(d->forwards));
+    ao.insert(QStringLiteral("quota"), static_cast<qint64>(d->quota));
+    ao.insert(QStringLiteral("usage"), static_cast<qint64>(d->usage));
+    ao.insert(QStringLiteral("created"), d->created.toString(Qt::ISODate));
+    ao.insert(QStringLiteral("updated"), d->updated.toString(Qt::ISODate));
+    ao.insert(QStringLiteral("validUntil"), d->validUntil.toString(Qt::ISODate));
+    ao.insert(QStringLiteral("keepLocal"), d->keepLocal);
+    ao.insert(QStringLiteral("catchAll"), d->catchAll);
+
+    return ao;
 }
 
 
@@ -834,9 +864,16 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
     QSqlQuery q(QSqlDatabase::database(Cutelyst::Sql::databaseNameThread()));
 
     if (searchString.isEmpty()) {
-        q.prepare(QStringLiteral("SELECT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until FROM accountuser au WHERE domain_id = :domain_id ORDER BY %1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset())));
+        q.prepare(QStringLiteral("SELECT SQL_CALC_FOUND_ROWS au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until FROM accountuser au WHERE au.domain_id = :domain_id ORDER BY au.%1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset())));
     } else {
-
+        const QString _searchString = QLatin1Char('%') + searchString + QLatin1Char('%');
+        if (searchRole == QLatin1String("username")) {
+            q.prepare(QStringLiteral("SELECT SQL_CALC_FOUND_ROWS au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until FROM accountuser au WHERE au.domain_id = :domain_id AND au.username LIKE '%5' ORDER BY au.%1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset()), _searchString));
+        } else if (searchRole == QLatin1String("email")) {
+            q.prepare(QStringLiteral("SELECT SQL_CALC_FOUND_ROWS DISTINCT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until FROM accountuser au LEFT JOIN virtual vi ON au.username = vi.username WHERE au.domain_id = :domain_id AND vi.dest = au.username AND vi.username = au.username AND vi.alias LIKE '%5' ORDER BY au.%1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset()), _searchString));
+        } else if (searchRole == QLatin1String("forward")) {
+            q.prepare(QStringLiteral("SELECT SQL_CALC_FOUND_ROWS DISTINCT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until FROM accountuser au LEFT JOIN virtual vi ON au.username = vi.alias WHERE au.domain_id = :domain_id AND vi.username = '' AND vi.dest LIKE '%5' ORDER BY au.%1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset()), _searchString));
+        }
     }
 
     q.bindValue(QStringLiteral(":domain_id"), d.id());
@@ -847,7 +884,23 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
         return pag;
     }
 
-    pag = Cutelyst::Pagination(q.size(), p.limit(), p.currentPage(), p.pages().size());
+    QSqlQuery countQuery = CPreparedSqlQueryThread(QStringLiteral("SELECT FOUND_ROWS()"));
+    if (Q_UNLIKELY(!countQuery.exec())) {
+        e->setSqlError(q.lastError(), c->translate("Acocunt", "Failed to query total result count."));
+        qCCritical(SK_ACCOUNT, "Failed to query total result count of domain %s (ID: %u) from the database: %s", qUtf8Printable(d.getName()), d.id(), qUtf8Printable(q.lastError().text()));
+        return pag;
+    }
+
+    quint32 foundRows = 0;
+    if (countQuery.next()) {
+        foundRows = countQuery.value(0).value<quint32>();
+    }
+
+    if (foundRows == 0) {
+        return pag;
+    }
+
+    pag = Cutelyst::Pagination(foundRows, p.limit(), p.currentPage(), p.pages().size());
 
     SkaffariIMAP imap(c);
     if (!imap.login()) {
