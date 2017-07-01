@@ -41,6 +41,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QNetworkCookie>
 
 using namespace Cutelyst;
 
@@ -173,7 +174,13 @@ void DomainEditor::edit(Context *c)
 }
 
 
-
+#define SK_DOM_FILTER_COOKIE_ACCOUNTS_PER_PAGE 0
+#define SK_DOM_FILTER_COOKIE_CURRENT_PAGE 1
+#define SK_DOM_FILTER_COOKIE_SORT_BY 2
+#define SK_DOM_FILTER_COOKIE_SORT_ORDER 3
+#define SK_DOM_FILTER_COOKIE_SEARCH_ROLE 4
+#define SK_DOM_FILTER_COOKIE_SEARCH_STRING 5
+#define SK_DOM_FILTER_COOKIE_NAME "domain_filters"
 
 void DomainEditor::accounts(Context* c)
 {
@@ -181,31 +188,142 @@ void DomainEditor::accounts(Context* c)
 
         auto dom = Domain::fromStash(c);
 
-        ParamsMultiMap p = c->req()->parameters();
+        const ParamsMultiMap p = c->req()->parameters();
+
+        const QString cookieData = c->req()->cookie(QStringLiteral(SK_DOM_FILTER_COOKIE_NAME));
+        QStringList cookieDataList;
+
+        if (!cookieData.isEmpty()) {
+            cookieDataList = QString::fromLatin1(QByteArray::fromBase64(cookieData.toLatin1())).split(QLatin1Char(';'));
+        }
+
+        QString accountsPerPage, currentPage, sortBy, sortOrder, searchRole, searchString;
+
+        if (cookieDataList.empty()) {
+            accountsPerPage = p.value(QStringLiteral("accountsPerPage"), Session::value(c, QStringLiteral("maxdisplay"), 25).toString());
+            currentPage = p.value(QStringLiteral("currentPage"), QStringLiteral("1"));
+            sortBy = p.value(QStringLiteral("sortBy"), QStringLiteral("username"));
+            sortOrder = p.value(QStringLiteral("sortOrder"), QStringLiteral("ASC"));
+            searchRole = p.value(QStringLiteral("searchRole"), QStringLiteral("username"));
+            searchString = p.value(QStringLiteral("searchString"));
+        } else {
+            accountsPerPage = p.value(QStringLiteral("accountsPerPage"), cookieDataList.at(SK_DOM_FILTER_COOKIE_ACCOUNTS_PER_PAGE));
+            currentPage = p.value(QStringLiteral("currentPage"), cookieDataList.at(SK_DOM_FILTER_COOKIE_CURRENT_PAGE));
+            sortBy = p.value(QStringLiteral("sortBy"), cookieDataList.at(SK_DOM_FILTER_COOKIE_SORT_BY));
+            sortOrder = p.value(QStringLiteral("sortOrder"), cookieDataList.at(SK_DOM_FILTER_COOKIE_SORT_ORDER));
+            searchRole = p.value(QStringLiteral("searchRole"), cookieDataList.at(SK_DOM_FILTER_COOKIE_SEARCH_ROLE));
+            if (p.contains(QStringLiteral("searchRole"))) {
+                searchString = p.value(QStringLiteral("searchString"));
+            } else {
+                searchString = p.value(QStringLiteral("searchString"), cookieDataList.at(SK_DOM_FILTER_COOKIE_SEARCH_STRING));
+            }
+        }
+
+        if (accountsPerPage.isEmpty()) {
+            accountsPerPage = Session::value(c, QStringLiteral("maxdisplay"), 25).toString();
+        }
+
+        if (currentPage.isEmpty()) {
+            currentPage = QStringLiteral("1");
+        }
 
         Pagination pag(dom.getAccounts(),
-                       p.value(QStringLiteral("accountsPerPage"), Session::value(c, QStringLiteral("maxdisplay"), 25).toString()).toInt(),
-                       p.value(QStringLiteral("currentPage"), QStringLiteral("1")).toInt());
+                       accountsPerPage.toInt(),
+                       currentPage.toInt());
 
-        QString sortBy = p.value(QStringLiteral("sortBy"), QStringLiteral("username"));
-        static QStringList sortByCols({QStringLiteral("username"), QStringLiteral("created_at"), QStringLiteral("updated_at"), QStringLiteral("valid_until")});
+        static const QStringList sortByCols({QStringLiteral("username"), QStringLiteral("created_at"), QStringLiteral("updated_at"), QStringLiteral("valid_until"), QStringLiteral("quota")});
         if (!sortByCols.contains(sortBy)) {
             sortBy = QStringLiteral("username");
         }
 
-        QString sortOrder = p.value(QStringLiteral("sortOrder"), QStringLiteral("ASC"));
         if ((sortOrder != QLatin1String("ASC")) && (sortOrder != QLatin1String("DESC"))) {
             sortOrder = QStringLiteral("ASC");
         }
 
-        SkaffariError e(c);
-        pag = Account::list(c, &e, dom, pag, sortBy, sortOrder);
+        static const QStringList searchCols({QStringLiteral("username"), QStringLiteral("email"), QStringLiteral("forward")});
+        if (!searchCols.contains(searchRole)) {
+            searchRole = QStringLiteral("username");
+        }
 
-        c->stash({
-                     {QStringLiteral("pagination"), pag},
-                     {QStringLiteral("template"), QStringLiteral("domain/accounts.html")},
-                     {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Accounts")}
-                });
+        if (!searchString.isEmpty()) {
+            searchString.remove(QRegularExpression(QStringLiteral("[^\\w-_\\.]"), QRegularExpression::UseUnicodePropertiesOption));
+        }
+
+        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+        const bool loadAccounts = (!SkaffariConfig::tmplAsyncAccountList() || isAjax);
+
+        SkaffariError e(c);
+        if (loadAccounts) {
+            pag = Account::list(c, &e, dom, pag, sortBy, sortOrder, searchRole, searchString);
+        }
+
+        const QString newCookieData = accountsPerPage + QLatin1Char(';') + currentPage + QLatin1Char(';') + sortBy + QLatin1Char(';') + sortOrder + QLatin1Char(';') + searchRole + QLatin1Char(';') + searchString;
+        QNetworkCookie newCookie(QByteArrayLiteral(SK_DOM_FILTER_COOKIE_NAME), newCookieData.toLatin1().toBase64());
+        const QString path = QLatin1String("/domain/") + QString::number(dom.id()) + QLatin1String("/accounts");
+        newCookie.setPath(path);
+        c->res()->setCookie(newCookie);
+
+        if (isAjax) {
+            QJsonObject json;
+
+            if (e.type() != SkaffariError::NoError) {
+
+                c->res()->setStatus(Response::InternalServerError);
+                json.insert(QStringLiteral("error_msg"), e.errorText());
+
+                c->res()->setJsonBody(QJsonDocument(json));
+
+            } else {
+
+                const std::vector<Account> lst = pag.value(QStringLiteral("accounts")).value<std::vector<Account>>();
+
+                QJsonArray accounts;
+                if (!lst.empty()) {
+                    for (const Account &a : lst) {
+                        accounts.push_back(a.toJson());
+                    }
+                }
+                json.insert(QStringLiteral("accounts"), accounts);
+                json.insert(QStringLiteral("searchString"), searchString);
+                json.insert(QStringLiteral("searchRole"), searchRole);
+                json.insert(QStringLiteral("sortOrder"), sortOrder);
+                json.insert(QStringLiteral("sortBy"), sortBy);
+                json.insert(QStringLiteral("accountsPerPage"), pag.limit());
+                json.insert(QStringLiteral("currentPage"), pag.currentPage());
+                json.insert(QStringLiteral("lastPage"), pag.lastPage());
+
+                QVariantList pagesList;
+                const QVector<int> pages = pag.pages();
+                if (!pagesList.isEmpty()) {
+                    for (int pageNo : pages) {
+                        pagesList << pageNo;
+                    }
+                }
+                json.insert(QStringLiteral("pages"), QJsonArray::fromVariantList(pagesList));
+
+                c->res()->setJsonBody(QJsonDocument(json));
+            }
+
+        } else {
+
+            if (e.type() != SkaffariError::NoError) {
+                c->res()->setStatus(Response::InternalServerError);
+                c->setStash(QStringLiteral("error_msg"), e.errorText());
+            }
+
+            if (loadAccounts) {
+                c->setStash(QStringLiteral("pagination"), pag);
+            }
+
+            c->stash({
+                         {QStringLiteral("template"), QStringLiteral("domain/accounts.html")},
+                         {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Accounts")},
+                         {QStringLiteral("searchString"), searchString},
+                         {QStringLiteral("searchRole"), searchRole},
+                         {QStringLiteral("sortOrder"), sortOrder},
+                         {QStringLiteral("sortBy"), sortBy}
+                    });
+        }
     }
 }
 
