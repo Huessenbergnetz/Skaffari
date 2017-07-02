@@ -236,8 +236,8 @@ void DomainEditor::accounts(Context* c)
             sortBy = QStringLiteral("username");
         }
 
-        if ((sortOrder != QLatin1String("ASC")) && (sortOrder != QLatin1String("DESC"))) {
-            sortOrder = QStringLiteral("ASC");
+        if ((sortOrder != QLatin1String("asc")) && (sortOrder != QLatin1String("desc"))) {
+            sortOrder = QStringLiteral("asc");
         }
 
         static const QStringList searchCols({QStringLiteral("username"), QStringLiteral("email"), QStringLiteral("forward")});

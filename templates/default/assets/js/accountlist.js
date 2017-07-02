@@ -389,6 +389,34 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
         al.resetBtn.click(function() {
             al.resetFilters();
         });
+        
+        // initialize icon on column header
+        var currentCol = $('#accountsTable th[data-sortby="' + $('#sortBy').val() + '"]');
+        currentCol.append(' <small><i class="fa fa-sort-' + currentCol.data('sorttype') + '-' + $('#sortOrder').val() + ' text-muted"></i></small>');
+        
+        $('#accountsTable th.sortable').click(function(e) {
+            if (aff.data('loading') == "0") {
+                $('#accountsTable th > small').remove();
+                var th = $(e.target);
+                var currentSortBy = $('#sortBy').val();
+                var currentSortOrder = $('#sortOrder').val();
+                var sortBy = th.data('sortby');
+                var sortOrder = th.data('sortorder');
+                
+                if (currentSortBy == sortBy) {
+                    if (currentSortOrder == "asc") {
+                        $('#sortOrder').val('desc');
+                    } else {
+                        $('#sortOrder').val('asc');
+                    }
+                } else {
+                    $('#sortBy').val(sortBy);
+                    $('#sortOrder').val(sortOrder);
+                }
+                th.append(' <small><i class="fa fa-sort-' + th.data('sorttype') + '-' + $('#sortOrder').val() + ' text-muted"></i></small>');
+                al.load();
+            }
+        });
     }
 }
 
