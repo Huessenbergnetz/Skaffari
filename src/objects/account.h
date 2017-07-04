@@ -72,10 +72,11 @@ public:
      * \param created       Date and time this account has been created
      * \param updated       Date and time this account has been updated the last time
      * \param validUntil    Date and time until this account is valid
+     * \param pwdExpiration Date and time until the password for this account is valid
      * \param keepLocal     \c true if fowarded emails should be kept local too
      * \param catchAll      \c true if this is the catch all account for the \a domainName
      */
-    Account(dbid_t id, dbid_t domainId, const QString &username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, bool keepLocal, bool catchAll);
+    Account(dbid_t id, dbid_t domainId, const QString &username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const QDateTime &pwdExpiration, bool keepLocal, bool catchAll);
 
     /*!
      * \brief Creates a copy of \a other.
@@ -279,6 +280,31 @@ public:
      * \sa setCatchAll()
      */
     bool cathAll() const;
+    /*!
+     * \brief Returns the date and time when the current password of this user expires.
+     *
+     * Acces from Grantlee: passwordExpires
+     *
+     * \sa setPasswordExpires()
+     */
+    QDateTime passwordExpires() const;
+    /*!
+     * \brief Returns \c true if the password of this user has been expired.
+     *
+     * Access from Grantlee: passwordExpired
+     *
+     * \sa passwordExpires()
+     */
+    bool passwordExpired() const;
+    /*!
+     * \brief Returns \c true if this account has been expired.
+     *
+     * Access from Grantlee: expired
+     *
+     * \sa validUntil()
+     */
+    bool expired() const;
+
 
 
     /*!
@@ -367,7 +393,7 @@ public:
      */
     void setUpdated(const QDateTime &updated);
     /*!
-     * \brief Sets the daten and time until this account is valid.
+     * \brief Sets the date and time until this account is valid.
      * \sa getValidUntil()
      */
     void setValidUntil(const QDateTime &validUntil);
@@ -381,7 +407,15 @@ public:
      * \sa catchAll()
      */
     void setCatchAll(bool nCatchAll);
+    /*!
+     * \brief Sets the date and time when the password for this account expires.
+     * \sa passwordExpires()
+     */
+    void setPasswordExpires(const QDateTime &expirationDate);
     
+    /*!
+     * \brief Converts the account data into a JSON object.
+     */
     QJsonObject toJson() const;
 
     /*!
@@ -621,6 +655,12 @@ if (property == QLatin1String("id")) {
     var.setValue(object.keepLocal());
 } else if (property == QLatin1String("catchAll")) {
     var.setValue(object.cathAll());
+} else if (property == QLatin1String("passwordExpires")) {
+    var.setValue(object.passwordExpires());
+} else if (property == QLatin1String("passwordExpired")) {
+    var.setValue(object.passwordExpired());
+} else if (property == QLatin1String("expired")) {
+    var.setValue(object.expired());
 }
 return var;
 GRANTLEE_END_LOOKUP
