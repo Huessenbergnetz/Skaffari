@@ -728,7 +728,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     a.setCreated(currentUserTime);
     a.setUpdated(currentUserTime);
     a.setValidUntil(Utils::toUserTZ(c, validUntil));
-    a.setPasswordExpires(pwExpires);
+    a.setPasswordExpires(Utils::toUserTZ(c, pwExpires));
     a.setHumanQuota(Utils::humanBinarySize(c, a.getQuota() * 1024));
     a.setHumanUsage(Utils::humanBinarySize(c, a.getUsage() * 1024));
     a.setCatchAll(_catchAll);
@@ -1322,7 +1322,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
     }
 
     a->setValidUntil(Utils::toUserTZ(c, validUntil));
-    a->setValidUntil(Utils::toUserTZ(c, pwExpires));
+    a->setPasswordExpires(Utils::toUserTZ(c, pwExpires));
     a->setQuota(quota);
     a->setHumanQuota(Utils::humanBinarySize(c, quota * Q_UINT64_C(1024)));
     a->setUpdated(Utils::toUserTZ(c, currentTimeUtc));

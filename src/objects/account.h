@@ -657,6 +657,8 @@ if (property == QLatin1String("id")) {
     var.setValue(object.cathAll());
 } else if (property == QLatin1String("passwordExpires")) {
     var.setValue(object.passwordExpires());
+} else if (property == QLatin1String("passwordExpiresString")) {
+    var.setValue(object.passwordExpires().toString(QStringLiteral("yyyy-MM-dd HH:mm:ss")));
 } else if (property == QLatin1String("passwordExpired")) {
     var.setValue(object.passwordExpired());
 } else if (property == QLatin1String("expired")) {
