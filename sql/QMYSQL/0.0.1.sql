@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS accountuser (
   created_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   updated_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   valid_until datetime NOT NULL DEFAULT '2998-12-31 23:59:59',
+  pwd_expire datetime NOT NULL DEFAULT '2998-12-31 23:59:59',
+  status tinyint(1) unsigned NOT NULL DEFAULT 0,
   UNIQUE KEY username (username),
   KEY idx_accountuser_domain_id (domain_id)
 ) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -25,6 +27,8 @@ CREATE TABLE IF NOT EXISTS adminuser (
   type tinyint(1) unsigned NOT NULL DEFAULT 0,
   created_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   updated_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
+  valid_until datetime NOT NULL DEFAULT '2998-12-31 23:59:59',
+  pwd_expire datetime NOT NULL DEFAULT '2998-12-31 23:59:59',
   UNIQUE KEY username (username)
 ) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
