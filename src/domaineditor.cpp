@@ -528,6 +528,8 @@ void DomainEditor::add_account(Context* c)
                                    new ValidatorConfirmed(QStringLiteral("password")),
                                    new ValidatorRequired(QStringLiteral("validUntil")),
                                    new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("yyyy-MM-dd HH:mm:ss")),
+                                   new ValidatorRequired(QStringLiteral("passwordExpires")),
+                                   new ValidatorDateTime(QStringLiteral("passwordExpires"), QStringLiteral("yyyy-MM-dd HH:mm:ss")),
                                    new ValidatorBoolean(QStringLiteral("imap")),
                                    new ValidatorBoolean(QStringLiteral("pop")),
                                    new ValidatorBoolean(QStringLiteral("sieve")),
@@ -717,6 +719,7 @@ void DomainEditor::add_account(Context* c)
         help.insert(QStringLiteral("password"), HelpEntry(c->translate("DomainEditor", "Password"), c->translate("DomainEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
         help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("DomainEditor", "Password confirmation"), c->translate("DomainEditor", "Confirm your entered password.")));
         help.insert(QStringLiteral("validUntil"), HelpEntry(c->translate("DomainEditor", "Valid until"), c->translate("DomainEditor", "You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future.")));
+        help.insert(QStringLiteral("passwordExpires"), HelpEntry(c->translate("DomainEditor", "Password expires"), c->translate("DomainEditor", "You can set a date and time until the password for this account is valid. To let the password never expire, simply set a date far in the future.")));
         help.insert(QStringLiteral("imap"), HelpEntry(c->translate("DomainEditor", "IMAP Access"), c->translate("DomainEditor", "If enabled, the user of this account can access the mailbox through the IMAP protocol.")));
         help.insert(QStringLiteral("pop"), HelpEntry(c->translate("DomainEditor", "POP3 Access"), c->translate("DomainEditor", "If enabled, the user of this account can access the mailbox through the POP3 protocol.")));
         help.insert(QStringLiteral("sieve"), HelpEntry(c->translate("DomainEditor", "Sieve Access"), c->translate("DomainEditor", "If enabled, the user of this account can manage own Sieve scripts on the server.")));

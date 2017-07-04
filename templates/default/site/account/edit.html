@@ -41,6 +41,13 @@
              <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ _("Password confirmation") }}" aria-describedby="passwordConfirmDesc">
              <small id="passwordConfirmDesc" class="form-text text-muted">{{ help.password_confirmation.text }}</small>
         </div>
+        
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.passwordExpires.count %} has-warning{% endif %}">
+            <label class="form-control-label" for="passwordExpires">{{ help.passwordExpires.title }}</label>
+            <input type="text" id="passwordExpires" name="passwordExpires" class="form-control{% if validationErrors.passwordExpires.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD hh:mm:ss") }}" value="{{ account.passwordExpiresString }}" aria-describedby="passwordExpiresDesc" required>
+            {% if validationErrors.passwordExpires.count %}<div class="form-control-feedback"><small>{{ validationErrors.passwordExpires.0 }}</small></div>{% endif %}
+            <small id="passwordExpiresDesc" class="form-text text-muted">{{ help.passwordExpires.text }}</small>
+        </div>
                
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.humanQuota.count %} has-warning{% endif %}">
             <label for="humanQuota" class="form-control-label">{{ help.humanQuota.title }}</label>
