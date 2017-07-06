@@ -3,7 +3,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 ) 
 
-#file(GLOB_RECURSE skaffaricmd_SRCS *.cpp *.h)
 set(skaffaricmd_SRCS
     main.cpp
     consoleoutput.cpp
@@ -23,6 +22,10 @@ set(skaffaricmd_SRCS
     ../common/global.h
     tester.cpp
     tester.h
+    accountstatusupdater.cpp
+    accountstatusupdater.h
+    configfile.cpp
+    configfile.h
 )
 
 add_executable(skaffaricmd ${skaffaricmd_SRCS})

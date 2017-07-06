@@ -25,7 +25,8 @@
 #include <QSqlError>
 #include <QStringList>
 
-ConsoleOutput::ConsoleOutput()
+ConsoleOutput::ConsoleOutput(bool quiet) :
+    m_quiet(quiet)
 {
 
 }
@@ -92,41 +93,51 @@ int ConsoleOutput::imapError(const QString &message) const
 
 void ConsoleOutput::printStatus(const QString &status) const
 {
-    printf("%-100s", status.toUtf8().constData());
+    if (!m_quiet) {
+        printf("%-100s", status.toUtf8().constData());
+    }
 }
 
 
 void ConsoleOutput::printDone(const QString &done) const
 {
-    if (done.isEmpty()) {
-        printf("\x1b[32m%s\x1b[0m\n", QCoreApplication::translate("ConsoleOutput", "Done").toUtf8().constData());
-    } else {
-        printf("\x1b[32m%s\x1b[0m\n", done.toUtf8().constData());
+    if (!m_quiet) {
+        if (done.isEmpty()) {
+            printf("\x1b[32m%s\x1b[0m\n", QCoreApplication::translate("ConsoleOutput", "Done").toUtf8().constData());
+        } else {
+            printf("\x1b[32m%s\x1b[0m\n", done.toUtf8().constData());
+        }
     }
 }
 
 
 void ConsoleOutput::printFailed(const QString &failed) const
 {
-    if (failed.isEmpty()) {
-        printf("\x1b[31m%s\x1b[0m\n", QCoreApplication::translate("ConsoleOutput", "Failed").toUtf8().constData());
-    } else {
-        printf("\x1b[31m%s\x1b[0m\n", failed.toUtf8().constData());
+    if (!m_quiet) {
+        if (failed.isEmpty()) {
+            printf("\x1b[31m%s\x1b[0m\n", QCoreApplication::translate("ConsoleOutput", "Failed").toUtf8().constData());
+        } else {
+            printf("\x1b[31m%s\x1b[0m\n", failed.toUtf8().constData());
+        }
     }
 }
 
 
 void ConsoleOutput::printError(const QString &error) const
 {
-    printf("\x1b[33m%s\x1b[0m\n", error.toUtf8().constData());
+    if (!m_quiet) {
+        printf("\x1b[33m%s\x1b[0m\n", error.toUtf8().constData());
+    }
 }
 
 
 void ConsoleOutput::printError(const QStringList &errors) const
 {
-    if (!errors.empty()) {
-        for (const QString &error : errors) {
-            printError(error);
+    if (!m_quiet) {
+        if (!errors.empty()) {
+            for (const QString &error : errors) {
+                printError(error);
+            }
         }
     }
 }
@@ -134,37 +145,43 @@ void ConsoleOutput::printError(const QStringList &errors) const
 
 void ConsoleOutput::printMessage(const QString &message) const
 {
-    printf("%s\n", message.toUtf8().constData());
+    if (!m_quiet) {
+        printf("%s\n", message.toUtf8().constData());
+    }
 }
 
 
 void ConsoleOutput::printSuccess(const QString &message) const
 {
-    printf("\x1b[32m%s\x1b[0m\n", message.toUtf8().constData());
+    if (!m_quiet) {
+        printf("\x1b[32m%s\x1b[0m\n", message.toUtf8().constData());
+    }
 }
 
 
 void ConsoleOutput::printDesc(const QString &desc) const
 {
-    if (desc.length() <= 95) {
-        printf("# %s\n", desc.toUtf8().constData());
-    } else {
-        const QStringList parts = desc.split(QStringLiteral(" "));
-        QStringList out;
-        int outSize = 0;
-        for (const QString &part : parts) {
-            if ((outSize + part.length() + 1) <= 95) {
-                out << part;
-                outSize += (part.length() + 1);
-            } else {
-                printf("# %s\n", out.join(QStringLiteral(" ")).toUtf8().constData());
-                out.clear();
-                out << part;
-                outSize = (part.length() + 1);
+    if (!m_quiet) {
+        if (desc.length() <= 95) {
+            printf("# %s\n", desc.toUtf8().constData());
+        } else {
+            const QStringList parts = desc.split(QStringLiteral(" "));
+            QStringList out;
+            int outSize = 0;
+            for (const QString &part : parts) {
+                if ((outSize + part.length() + 1) <= 95) {
+                    out << part;
+                    outSize += (part.length() + 1);
+                } else {
+                    printf("# %s\n", out.join(QStringLiteral(" ")).toUtf8().constData());
+                    out.clear();
+                    out << part;
+                    outSize = (part.length() + 1);
+                }
             }
-        }
-        if (!out.isEmpty()) {
-            printf("# %s\n", out.join(QStringLiteral(" ")).toUtf8().constData());
+            if (!out.isEmpty()) {
+                printf("# %s\n", out.join(QStringLiteral(" ")).toUtf8().constData());
+            }
         }
     }
 }
@@ -172,9 +189,11 @@ void ConsoleOutput::printDesc(const QString &desc) const
 
 void ConsoleOutput::printDesc(const QStringList &descList) const
 {
-    if (!descList.empty()) {
-        for (const QString &desc : descList) {
-            printDesc(desc);
+    if (!m_quiet) {
+        if (!descList.empty()) {
+            for (const QString &desc : descList) {
+                printDesc(desc);
+            }
         }
     }
 }
@@ -182,48 +201,50 @@ void ConsoleOutput::printDesc(const QStringList &descList) const
 
 void ConsoleOutput::printTable(std::initializer_list<std::pair<QString, QString> > table, const QString &header) const
 {
-    if (table.size() == 0) {
-        return;
-    }
-
-    int maxLabelLength = 0;
-    int maxValueLength = 0;
-
-    for (const std::pair<QString,QString> &col : table) {
-        if (maxLabelLength < col.first.length()) {
-            maxLabelLength = col.first.length();
+    if (!m_quiet) {
+        if (table.size() == 0) {
+            return;
         }
-        if (maxValueLength < col.second.length()) {
-            maxValueLength = col.second.length();
+
+        int maxLabelLength = 0;
+        int maxValueLength = 0;
+
+        for (const std::pair<QString,QString> &col : table) {
+            if (maxLabelLength < col.first.length()) {
+                maxLabelLength = col.first.length();
+            }
+            if (maxValueLength < col.second.length()) {
+                maxValueLength = col.second.length();
+            }
         }
-    }
 
-    maxLabelLength += 5;
-    maxValueLength += 5;
+        maxLabelLength += 5;
+        maxValueLength += 5;
 
-    int fullLength = maxLabelLength + maxValueLength;
-    if ((fullLength % 2) > 0) {
-        fullLength++;
-    }
+        int fullLength = maxLabelLength + maxValueLength;
+        if ((fullLength % 2) > 0) {
+            fullLength++;
+        }
 
-    QString devider(QLatin1Char('+'));
-    for (int i = 0; i < fullLength; ++i) {
-        devider.append(QLatin1Char('-'));
-    }
-    devider.append(QLatin1Char('+'));
-    printf("%s\n", devider.toUtf8().constData());
+        QString devider(QLatin1Char('+'));
+        for (int i = 0; i < fullLength; ++i) {
+            devider.append(QLatin1Char('-'));
+        }
+        devider.append(QLatin1Char('+'));
+        printf("%s\n", devider.toUtf8().constData());
 
-    if (!header.isEmpty()) {
-        int centerHeader = fullLength / 2 + header.length() / 2;
-        printf("|%*s%*s\n", centerHeader, qUtf8Printable(header), fullLength-centerHeader+1, "|");
+        if (!header.isEmpty()) {
+            int centerHeader = fullLength / 2 + header.length() / 2;
+            printf("|%*s%*s\n", centerHeader, qUtf8Printable(header), fullLength-centerHeader+1, "|");
+            printf("%s\n", qUtf8Printable(devider));
+        }
+
+        for (const std::pair<QString,QString> &col : table) {
+            printf("| %-*s| %-*s|\n", maxLabelLength-1, qUtf8Printable(col.first), maxValueLength-1, qUtf8Printable(col.second));
+        }
+
         printf("%s\n", qUtf8Printable(devider));
     }
-
-    for (const std::pair<QString,QString> &col : table) {
-        printf("| %-*s| %-*s|\n", maxLabelLength-1, qUtf8Printable(col.first), maxValueLength-1, qUtf8Printable(col.second));
-    }
-
-    printf("%s\n", qUtf8Printable(devider));
 }
 
 

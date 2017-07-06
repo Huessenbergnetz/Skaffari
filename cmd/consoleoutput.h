@@ -31,7 +31,7 @@ class ConsoleOutput {
 
     Q_DECLARE_TR_FUNCTIONS(ConsoleOutput)
 public:
-    ConsoleOutput();
+    ConsoleOutput(bool quiet = false);
     ~ConsoleOutput();
 
 protected:
@@ -60,6 +60,9 @@ protected:
     quint8 readChar(const QString &name, quint8 defaultVal, const QStringList &desc = QStringList(), const QList<quint8> acceptableInput = QList<quint8>()) const;
     quint32 readInt(const QString &name, quint32 defaultVal, const QStringList &desc = QStringList()) const;
     bool readBool(const QString &name, bool defaultVal, const QStringList &desc = QStringList()) const;
+
+private:
+    bool m_quiet = false;
 };
 
 #endif // CONSOLEOUTPUT_H

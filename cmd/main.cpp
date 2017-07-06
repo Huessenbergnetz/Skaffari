@@ -29,6 +29,7 @@
 #include "setup.h"
 #include "webcyradmimporter.h"
 #include "tester.h"
+#include "accountstatusupdater.h"
 
 int main(int argc, char *argv[])
 {
@@ -56,6 +57,12 @@ int main(int argc, char *argv[])
     QCommandLineOption iniPath(QStringList({QStringLiteral("ini"), QStringLiteral("i")}), QCoreApplication::translate("main", "Path to the configuration file. Default: %1").arg(confFilePath), QStringLiteral("ini-file"), confFilePath);
     parser.addOption(iniPath);
 
+    QCommandLineOption quiet(QStringList({QStringLiteral("quiet"), QStringLiteral("q")}), QCoreApplication::translate("main", "Do not print any output."));
+    parser.addOption(quiet);
+
+    QCommandLineOption updateAccountStatus(QStringLiteral("update-account-status"), QCoreApplication::translate("main", "Checks and updates the status column of every account."));
+    parser.addOption(updateAccountStatus);
+
     parser.process(app);
 
     if (parser.isSet(setup)) {
@@ -72,6 +79,11 @@ int main(int argc, char *argv[])
 
         Tester tester(parser.value(iniPath));
         return tester.exec();
+
+    } else if (parser.isSet(updateAccountStatus)) {
+
+        AccountStatusUpdater asu(parser.value(iniPath), parser.isSet(quiet));
+        return asu.exec();
 
     } else {
         parser.showHelp(1);

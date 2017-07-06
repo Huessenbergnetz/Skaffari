@@ -6,7 +6,7 @@
 .ad 1
 
 .SH "NAME"
-skaffaricmd \- Skaffari setup and configuration tool
+skaffaricmd \- Skaffari setup, configuration and maintenance tool
 
 .SH "SYNOPSIS"
 .HP \w'\fBskaffaricmd\fR\ 'u
@@ -15,7 +15,7 @@ skaffaricmd \- Skaffari setup and configuration tool
 .SH "DESCRIPTION"
 .PP
 \fBskaffaricmd\fR
-is a setup and configuration tool for the Skaffari email account management web interface. See \fBskaffari(8)\fR for more information about Skaffari in general. It can be used to create a new and clean Skaffari setup including database schema installation or to import data (configuration and database) from a web-cyradm installation. Furthermore it provides a small function to test a Skaffari installation/configuration.
+is a setup, configuration and maintenance tool for the Skaffari email account management web interface. See \fBskaffari(8)\fR for more information about Skaffari in general. It can be used to create a new and clean Skaffari setup including database schema installation or to import data (configuration and database) from a web-cyradm installation. Furthermore it provides a small function to test a Skaffari installation/configuration.
 
 .SH "OPTIONS"
 .PP
@@ -37,6 +37,17 @@ Configures Skaffari. This will guide you through the setup process by asking for
 \fB\-\-import-web-cyradm\fR \fB\fIweb-cyradm-config-file\fR\fR
 .RS 4
 Imports configuration and database from a web-cyradm installation. Uses the configuration file defined by \fB\-i\fR to write the Skaffari configuration. This will also ask you for basic configuration settings. Importing a web-cyradm installation will delete the current Skaffari installation. (You will be asked before doing the last step.)
+.RE
+.PP
+\fB\-\-update-account-status\fR
+.RS 4
+pam_mysql can use the status column to return errors indicating that the account or the account's password is not valid anymore. In Skaffari you can set expiration dates and times for accounts and passwords. This command can be used in a cron job or systemd timer unit to regularly update the status column according to the expiration date and times. If configured in pam_mysql, users can not use their account anymore if the account or the password has been expired.
+
+To access the database you have to specify the Skaffari configuration file with the \fB-i\fR option.
+.PP
+\fB\-q, \-\-quiet\fR
+.RS 4
+Do not print any output.
 .RE
 .PP
 \fB\-v, \-\-version\fR
