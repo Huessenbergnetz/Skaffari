@@ -735,13 +735,14 @@ void AccountEditor::check(Context *c)
         auto d = Domain::fromStash(c);
 
         SkaffariError e(c);
-        QStringList actions;
-        Account::check(c, &e, &a, d, &actions);
+        const QStringList actions = a.check(c, &e, d);
+
+        Account::toStash(c, a);
 
         if (c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive)) {
 
             QJsonObject result;
-            result.insert(QStringLiteral("account"), QJsonValue(a.getUsername()));
+            result.insert(QStringLiteral("username"), QJsonValue(a.getUsername()));
 
             if (e.type() != SkaffariError::NoError) {
                 result.insert(QStringLiteral("error_msg"), QJsonValue(e.errorText()));
@@ -749,6 +750,7 @@ void AccountEditor::check(Context *c)
             } else {
                 if (actions.size() > 0) {
                     result.insert(QStringLiteral("actions"), QJsonValue(QJsonArray::fromStringList(actions)));
+                    result.insert(QStringLiteral("account"), a.toJson());
                 } else {
                     result.insert(QStringLiteral("status_msg"), QJsonValue(c->translate("AccountEditor", "Nothing to do. Everything seems to be ok with this account.")));
                 }

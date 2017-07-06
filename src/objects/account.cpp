@@ -17,7 +17,6 @@
  */
 
 #include "account_p.h"
-#include "domain.h"
 #include "skaffarierror.h"
 #include "../utils/utils.h"
 #include "../imap/skaffariimap.h"
@@ -42,6 +41,8 @@
 Q_LOGGING_CATEGORY(SK_ACCOUNT, "skaffari.account")
 
 #define ACCOUNT_STASH_KEY "account"
+#define PAM_ACCT_EXPIRED 1
+#define PAM_NEW_AUTHTOK_REQD 2
 
 Account::Account() :
     d(new AccountData)
@@ -50,8 +51,8 @@ Account::Account() :
 }
 
 
-Account::Account(dbid_t id, dbid_t domainId, const QString& username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const QDateTime &pwdExpiration, bool keepLocal, bool catchAll) :
-    d(new AccountData(id, domainId, username, prefix, domainName, imap, pop, sieve, smtpauth, addresses, forwards, quota, usage, created, updated, validUntil, pwdExpiration, keepLocal, catchAll))
+Account::Account(dbid_t id, dbid_t domainId, const QString& username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const QDateTime &pwdExpiration, bool keepLocal, bool catchAll, quint8 status) :
+    d(new AccountData(id, domainId, username, prefix, domainName, imap, pop, sieve, smtpauth, addresses, forwards, quota, usage, created, updated, validUntil, pwdExpiration, keepLocal, catchAll, status))
 {
 
 }
@@ -365,6 +366,18 @@ bool Account::expired() const
 }
 
 
+quint8 Account::status() const
+{
+    return d->status;
+}
+
+
+void Account::setStatus(quint8 status)
+{
+    d->status = status;
+}
+
+
 QJsonObject Account::toJson() const
 {
     QJsonObject ao;
@@ -390,6 +403,7 @@ QJsonObject Account::toJson() const
     ao.insert(QStringLiteral("keepLocal"), d->keepLocal);
     ao.insert(QStringLiteral("catchAll"), d->catchAll);
     ao.insert(QStringLiteral("expired"), expired());
+    ao.insert(QStringLiteral("status"), d->status);
 
     return ao;
 }
@@ -489,14 +503,16 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         pwExpires.setTimeSpec(Qt::UTC);
     } else {
         validUntil.setTimeZone(userTz);
-        validUntil = validUntil.toUTC();
         pwExpires.setTimeZone(userTz);
-        pwExpires = pwExpires.toUTC();
     }
+    const QDateTime validUntilUTC = validUntil.toUTC();
+    const QDateTime pwExpiresUTC = validUntil.toUTC();
+
+    const quint8 accountStatus = Account::calcStatus(validUntilUTC, pwExpiresUTC);
     // end converting the entered valid until time into UTC
 
-    q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, prefix, domain_name, imap, pop, sieve, smtpauth, quota, created_at, updated_at, valid_until, pwd_expire) "
-                                         "VALUES (:domain_id, :username, :password, :prefix, :domain_name, :imap, :pop, :sieve, :smtpauth, :quota, :created_at, :updated_at, :valid_until, :pwd_expire)"));
+    q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, prefix, domain_name, imap, pop, sieve, smtpauth, quota, created_at, updated_at, valid_until, pwd_expire, status) "
+                                         "VALUES (:domain_id, :username, :password, :prefix, :domain_name, :imap, :pop, :sieve, :smtpauth, :quota, :created_at, :updated_at, :valid_until, :pwd_expire, :status)"));
 
     q.bindValue(QStringLiteral(":domain_id"), d.id());
     q.bindValue(QStringLiteral(":username"), username);
@@ -508,10 +524,11 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     q.bindValue(QStringLiteral(":sieve"), sieve);
     q.bindValue(QStringLiteral(":smtpauth"), smtpauth);
     q.bindValue(QStringLiteral(":quota"), quota);
-    q.bindValue(QStringLiteral(":created_at"), currentUtc.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss")));
+    q.bindValue(QStringLiteral(":created_at"), currentUtc);
     q.bindValue(QStringLiteral(":updated_at"), currentUtc);
-    q.bindValue(QStringLiteral(":valid_until"), validUntil);
-    q.bindValue(QStringLiteral(":pwd_expire"), pwExpires);
+    q.bindValue(QStringLiteral(":valid_until"), validUntilUTC);
+    q.bindValue(QStringLiteral(":pwd_expire"), pwExpiresUTC);
+    q.bindValue(QStringLiteral(":status"), accountStatus);
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to create new user account in database."));
@@ -897,15 +914,15 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
     QSqlQuery q(QSqlDatabase::database(Cutelyst::Sql::databaseNameThread()));
 
     if (searchString.isEmpty()) {
-        q.prepare(QStringLiteral("SELECT SQL_CALC_FOUND_ROWS au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire FROM accountuser au WHERE au.domain_id = :domain_id ORDER BY au.%1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset())));
+        q.prepare(QStringLiteral("SELECT SQL_CALC_FOUND_ROWS au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire, au.status FROM accountuser au WHERE au.domain_id = :domain_id ORDER BY au.%1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset())));
     } else {
         const QString _searchString = QLatin1Char('%') + searchString + QLatin1Char('%');
         if (searchRole == QLatin1String("username")) {
-            q.prepare(QStringLiteral("SELECT SQL_CALC_FOUND_ROWS au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire FROM accountuser au WHERE au.domain_id = :domain_id AND au.username LIKE '%5' ORDER BY au.%1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset()), _searchString));
+            q.prepare(QStringLiteral("SELECT SQL_CALC_FOUND_ROWS au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire, au.status FROM accountuser au WHERE au.domain_id = :domain_id AND au.username LIKE '%5' ORDER BY au.%1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset()), _searchString));
         } else if (searchRole == QLatin1String("email")) {
-            q.prepare(QStringLiteral("SELECT SQL_CALC_FOUND_ROWS DISTINCT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire FROM accountuser au LEFT JOIN virtual vi ON au.username = vi.username WHERE au.domain_id = :domain_id AND vi.dest = au.username AND vi.username = au.username AND vi.alias LIKE '%5' ORDER BY au.%1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset()), _searchString));
+            q.prepare(QStringLiteral("SELECT SQL_CALC_FOUND_ROWS DISTINCT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire, au.status FROM accountuser au LEFT JOIN virtual vi ON au.username = vi.username WHERE au.domain_id = :domain_id AND vi.dest = au.username AND vi.username = au.username AND vi.alias LIKE '%5' ORDER BY au.%1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset()), _searchString));
         } else if (searchRole == QLatin1String("forward")) {
-            q.prepare(QStringLiteral("SELECT SQL_CALC_FOUND_ROWS DISTINCT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire FROM accountuser au LEFT JOIN virtual vi ON au.username = vi.alias WHERE au.domain_id = :domain_id AND vi.username = '' AND vi.dest LIKE '%5' ORDER BY au.%1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset()), _searchString));
+            q.prepare(QStringLiteral("SELECT SQL_CALC_FOUND_ROWS DISTINCT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire, au.status FROM accountuser au LEFT JOIN virtual vi ON au.username = vi.alias WHERE au.domain_id = :domain_id AND vi.username = '' AND vi.dest LIKE '%5' ORDER BY au.%1 %2 LIMIT %3 OFFSET %4").arg(sortBy, sortOrder, QString::number(p.limit()), QString::number(p.offset()), _searchString));
         }
     }
 
@@ -1021,7 +1038,8 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
                   Utils::toUserTZ(c, q.value(9).toDateTime()),
                   Utils::toUserTZ(c, q.value(10).toDateTime()),
                   _keepLocal,
-                  _catchAll);
+                  _catchAll,
+                  q.value(11).value<quint8>());
 
         if (Q_LIKELY(imap.isLoggedIn())) {
             quota_pair quota = imap.getQuota(a.getUsername());
@@ -1050,7 +1068,7 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, db
     Q_ASSERT_X(c, "get account", "invalid context object");
     Q_ASSERT_X(e, "get account", "invalid error object");
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire FROM accountuser au WHERE id = :id"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire, au.status FROM accountuser au WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), id);
 
     if (Q_UNLIKELY(!q.exec())) {
@@ -1079,6 +1097,7 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, db
     a.setDomainId(d.id());
     a.setPrefix(d.getPrefix());
     a.setDomainName(d.getName());
+    a.setStatus(q.value(11).value<quint8>());
 
     QStringList emailAddresses;
     q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias FROM virtual WHERE dest = :username AND username = :username ORDER BY alias ASC"));
@@ -1168,6 +1187,17 @@ void Account::toStash(Cutelyst::Context *c, const Domain &d, dbid_t accountId)
                  });
         c->res()->setStatus(404);
     }
+}
+
+
+void Account::toStash(Cutelyst::Context *c, const Account &a)
+{
+    Q_ASSERT_X(c, "account to stash", "invalid context object");
+    Q_ASSERT_X(a.isValid(), "account to stash", "invalid account object");
+    c->stash({
+                 {QStringLiteral(ACCOUNT_STASH_KEY), QVariant::fromValue<Account>(a)},
+                 {QStringLiteral("site_subtitle"), a.getUsername()}
+             });
 }
 
 
@@ -1350,24 +1380,34 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
     return ret;
 }
 
+#define PAM_ACCT_EXPIRED 1
+#define PAM_NEW_AUTHTOK_REQD 2
 
-
-bool Account::check(Cutelyst::Context *c, SkaffariError *e, Account *a, const Domain &d, QStringList *actions)
+QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain &domain)
 {
-    bool ok = false;
+    QStringList actions;
 
     Q_ASSERT_X(c, "check account", "invalid context");
     Q_ASSERT_X(e, "check account", "invalid error object");
-    Q_ASSERT_X(a, "check account", "invalid account object");
-    Q_ASSERT_X(d.isValid(), "check account", "invalid Domain");
-    Q_ASSERT_X(actions, "check account", "invalid list for performed actions");
 
-    qCInfo(SK_ACCOUNT, "%s started checking account %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(a->getUsername()));
+    qCInfo(SK_ACCOUNT, "%s started checking user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), d->id);
+
+    Domain dom = domain;
+
+    if (!dom.isValid()) {
+        dom = Domain::fromStash(c);
+        if (!dom.isValid()) {
+            dom = Domain::get(c, d->domainId, e);
+            if (!dom.isValid()) {
+                return actions;
+            }
+        }
+    }
 
     SkaffariIMAP imap(c);
     if (Q_UNLIKELY(!imap.login())) {
         e->setImapError(imap.lastError());
-        return ok;
+        return actions;
     }
 
     const QStringList mboxes = imap.getMailboxes();
@@ -1375,81 +1415,130 @@ bool Account::check(Cutelyst::Context *c, SkaffariError *e, Account *a, const Do
     if (mboxes.empty() && (imap.lastError().type() != SkaffariIMAPError::NoError)) {
         e->setImapError(imap.lastError(), c->translate("Account", "Failed to get a list of all IMAP maiboxes from the IMAP server."));
         imap.logout();
-        return ok;
+        return actions;
     }
 
-    if ((SkaffariConfig::imapCreatemailbox() != DoNotCreate) && !mboxes.contains(a->getUsername())) {
-        if (Q_UNLIKELY(!imap.createMailbox(a->getUsername()))) {
+    if ((SkaffariConfig::imapCreatemailbox() != DoNotCreate) && !mboxes.contains(d->username)) {
+        if (Q_UNLIKELY(!imap.createMailbox(d->username))) {
             e->setImapError(imap.lastError());
             imap.logout();
-            return ok;
+            return actions;
         } else {
-            qCInfo(SK_ACCOUNT, "%s created missing mailbox on IMAP server for user %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(a->getUsername()));
-            actions->append(c->translate("Account", "Created missing mailbox on IMAP server."));
+            qCInfo(SK_ACCOUNT, "%s created missing mailbox on IMAP server for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), d->id);
+            actions.append(c->translate("Account", "Created missing mailbox on IMAP server."));
         }
     }
 
-    quota_pair quota = imap.getQuota(a->getUsername());
+    quota_pair quota = imap.getQuota(d->username);
 
-    if ((d.getDomainQuota() > 0) && ((a->getQuota() == 0) || (quota.second == 0))) {
-        const quota_size_t newQuota = (d.getQuota() > 0) ? d.getQuota() : (SkaffariConfig::defQuota() > 0) ? SkaffariConfig::defQuota() : 10240;
+    if ((dom.getDomainQuota() > 0) && ((d->quota == 0) || (quota.second == 0))) {
+        const quota_size_t newQuota = (dom.getQuota() > 0) ? dom.getQuota() : (SkaffariConfig::defQuota() > 0) ? SkaffariConfig::defQuota() : 10240;
         if (quota.second == 0) {
-            if (Q_UNLIKELY(!imap.setQuota(a->getUsername(), newQuota))) {
+            if (Q_UNLIKELY(!imap.setQuota(d->username, newQuota))) {
                 e->setImapError(imap.lastError());
                 imap.logout();
-                return ok;
+                return actions;
             } else {
-                qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u on IMAP server for user %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), newQuota, qUtf8Printable(a->getUsername()));
-                actions->append(c->translate("Account", "Set correct mailbox storage quota on IMAP server."));
+                qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u on IMAP server for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), newQuota, d->id);
+                actions.append(c->translate("Account", "Set correct mailbox storage quota on IMAP server."));
                 quota.second = newQuota;
             }
         }
 
-        if (a->getQuota() == 0) {
+        if (d->quota == 0) {
             QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET quota = :quota WHERE id = :id"));
             q.bindValue(QStringLiteral(":quota"), newQuota);
-            q.bindValue(QStringLiteral(":id"), a->getId());
+            q.bindValue(QStringLiteral(":id"), d->id);
             if (Q_UNLIKELY(!q.exec())) {
                 e->setSqlError(q.lastError());
-                return ok;
+                return actions;
             } else {
-                qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u in database for user %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), newQuota, qUtf8Printable(a->getUsername()));
-                actions->append(c->translate("Account", "Set correct mailbox storage quota in database."));
-                a->setQuota(newQuota);
+                qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u in database for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), newQuota, d->id);
+                actions.append(c->translate("Account", "Set correct mailbox storage quota in database."));
+                d->quota = newQuota;
 
                 q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET domainquotaused = (SELECT SUM(quota) FROM accountuser WHERE domain_id = :domain_id) WHERE id = :domain_id"));
-                q.bindValue(QStringLiteral(":domain_id"), a->getDomainId());
+                q.bindValue(QStringLiteral(":domain_id"), d->domainId);
                 if (Q_UNLIKELY(!q.exec())) {
-                    qCWarning(SK_ACCOUNT) << "Failed to update used domain quota for domain ID" << a->getDomainId();
-                    qCDebug(SK_ACCOUNT) << q.lastError().text();
+                    qCWarning(SK_ACCOUNT, "Failed to update used domain quota in database for domain ID %u: %s", d->domainId, qUtf8Printable(q.lastError().text()));
                 }
             }
         }
     }
 
-    if (quota.second != a->getQuota()) {
-        if (Q_UNLIKELY(!imap.setQuota(a->getUsername(), a->getQuota()))) {
+    if (quota.second != d->quota) {
+        if (Q_UNLIKELY(!imap.setQuota(d->username, d->quota))) {
             e->setImapError(imap.lastError());
             imap.logout();
-            return ok;
+            return actions;
         } else {
-            qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u on IMAP server for user %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), a->getQuota(), qUtf8Printable(a->getUsername()));
-            actions->append(c->translate("Account", "Set correct mailbox storage quota on IMAP server."));
-            quota.second = a->getQuota();
+            qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u on IMAP server for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), d->quota, d->id);
+            actions.append(c->translate("Account", "Set correct mailbox storage quota on IMAP server."));
+            quota.second = d->quota;
         }
     }
 
     imap.logout();
 
-    ok = true;
+    const QDateTime now = QDateTime::currentDateTimeUtc();
+    const QDateTime validUntil = d->validUntil.toUTC();
+    const QDateTime pwdExpires = d->passwordExpires.toUTC();
 
-    if (actions->empty()) {
-        qCInfo(SK_ACCOUNT, "Nothing to do for account %s.", qUtf8Printable(a->getUsername()));
+    quint8 newStatus = 0;
+    bool newAccExpired = false;
+    if (validUntil < now) {
+        newStatus |= PAM_ACCT_EXPIRED;
+        newAccExpired = true;
     }
 
-    qCInfo(SK_ACCOUNT, "%s finished checking account %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(a->getUsername()));
+    bool newPwExpired = false;
+    if (pwdExpires < now) {
+        newStatus |= PAM_NEW_AUTHTOK_REQD;
+        newPwExpired = true;
+    }
 
-    return ok;
+    if (d->status != newStatus) {
+        bool oldAccExpired = ((d->status & PAM_ACCT_EXPIRED) == PAM_ACCT_EXPIRED);
+        bool oldPwExpired = ((d->status & PAM_NEW_AUTHTOK_REQD) == PAM_NEW_AUTHTOK_REQD);
+        if (oldAccExpired != newAccExpired) {
+            if (!oldAccExpired && newAccExpired) {
+                actions.append(c->translate("Account", "The account was only valid until %1 and has been expired.").arg(c->locale().toString(d->validUntil, QLocale::ShortFormat)));
+            } else {
+                actions.append(c->translate("Account", "The account was marked as expired but is now valid again until %1.").arg(c->locale().toString(d->validUntil, QLocale::ShortFormat)));
+            }
+        }
+
+        if (oldPwExpired != newPwExpired) {
+            if (!oldPwExpired && newPwExpired) {
+                actions.append(c->translate("Accont", "The password of the account was only valid until %1 and has been expired.").arg(c->locale().toString(d->passwordExpires, QLocale::ShortFormat)));
+            } else {
+                actions.append(c->translate("Account", "The password of the account was marked as expired but is now valid again until %1.").arg(c->locale().toString(d->passwordExpires, QLocale::ShortFormat)));
+            }
+        }
+
+        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET status = :status WHERE id = :id"));
+        q.bindValue(QStringLiteral(":status"), newStatus);
+        q.bindValue(QStringLiteral(":id"), d->id);
+
+        if (Q_UNLIKELY(!q.exec())) {
+            qCWarning(SK_ACCOUNT, "Failed to update status for account ID %u in the database: %s", d->id, qUtf8Printable(q.lastError().text()));
+        } else {
+            qCInfo(SK_ACCOUNT, "%s seth correct status value of %i for user account ID %u.", qUtf8Printable(Utils::getUserName(c)), newStatus, d->id);
+        }
+    }
+
+    if (actions.empty()) {
+        qCInfo(SK_ACCOUNT, "Nothing to do for user account ID %u.", d->id);
+    } else {
+        d->humanQuota = Utils::humanBinarySize(c, d->quota * Q_UINT64_C(1024));
+        d->usage = quota.first;
+        d->humanUsage = Utils::humanBinarySize(c, d->usage * Q_UINT64_C(1024));
+        d->status = newStatus;
+    }
+
+    qCInfo(SK_ACCOUNT, "%s finished checking user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), d->id);
+
+    return actions;
 }
 
 
@@ -1758,4 +1847,24 @@ QString Account::addressToACE(const QString &address)
     addressACE = addressLocalPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(addressDomainPart.toString()));
 
     return addressACE;
+}
+
+
+quint8 Account::calcStatus(const QDateTime validUntil, const QDateTime pwExpires)
+{
+    quint8 _stat = 0;
+
+    const QDateTime _validUntil = (validUntil.timeSpec() == Qt::UTC) ? validUntil : validUntil.toUTC();
+    const QDateTime _pwExpires = (pwExpires.timeSpec() == Qt::UTC) ? pwExpires : pwExpires.toUTC();
+    const QDateTime now = QDateTime::currentDateTimeUtc();
+
+    if (_validUntil < now) {
+        _stat |= PAM_ACCT_EXPIRED;
+    }
+
+    if (_pwExpires < now) {
+        _stat |= PAM_NEW_AUTHTOK_REQD;
+    }
+
+    return _stat;
 }

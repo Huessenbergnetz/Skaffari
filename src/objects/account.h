@@ -30,6 +30,7 @@
 #include <math.h>
 #include <QJsonObject>
 #include "../../common/global.h"
+#include "domain.h"
 
 Q_DECLARE_LOGGING_CATEGORY(SK_ACCOUNT)
 
@@ -39,7 +40,6 @@ class Context;
 
 class AccountData;
 class SkaffariError;
-class Domain;
 
 /*!
  * \brief Represents an user account
@@ -75,8 +75,9 @@ public:
      * \param pwdExpiration Date and time until the password for this account is valid
      * \param keepLocal     \c true if fowarded emails should be kept local too
      * \param catchAll      \c true if this is the catch all account for the \a domainName
+     * \param status        Status value saved in the database.
      */
-    Account(dbid_t id, dbid_t domainId, const QString &username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const QDateTime &pwdExpiration, bool keepLocal, bool catchAll);
+    Account(dbid_t id, dbid_t domainId, const QString &username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const QDateTime &pwdExpiration, bool keepLocal, bool catchAll, quint8 status);
 
     /*!
      * \brief Creates a copy of \a other.
@@ -304,6 +305,10 @@ public:
      * \sa validUntil()
      */
     bool expired() const;
+    /*!
+     * \brief Returns the status as it is saved in the database.
+     */
+    quint8 status() const;
 
 
 
@@ -412,6 +417,10 @@ public:
      * \sa passwordExpires()
      */
     void setPasswordExpires(const QDateTime &expirationDate);
+    /*!
+     * \brief Sets the status as it is saved in the database.
+     */
+    void setStatus(quint8 status);
     
     /*!
      * \brief Converts the account data into a JSON object.
@@ -502,6 +511,13 @@ public:
     static void toStash(Cutelyst::Context *c, const Domain &d, dbid_t accountId);
 
     /*!
+     * \brief Puts the account \a into the context statsh.
+     * \param c         Pointer to the current context.
+     * \param a         Account to put into the context stash.
+     */
+    static void toStash(Cutelyst::Context *c, const Account &a);
+
+    /*!
      * \brief Returns the current Account object from the stash.
      * \param c Pointer to the current context, used for string translation, user authentication and to get the stash.
      * \return Account object of the current account in the stash.
@@ -531,12 +547,10 @@ public:
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
      * \param e Pointer to an object taking information about occuring errors.
-     * \param a Pointer to an Account object that should be checked.
-     * \param d Domain the account belongs to, used for default values.
      * \param actions Pointer to a list that will contain the actions performed on this account.
-     * \return
+     * \return List of actions performed for this account.
      */
-    static bool check(Cutelyst::Context *c, SkaffariError *e, Account *a, const Domain &d, QStringList *actions);
+    QStringList check(Cutelyst::Context *c, SkaffariError *e, const Domain &domain = Domain());
 
     /*!
      * \brief Updates a single email address connected to the account pointed to by \a a.
@@ -597,6 +611,8 @@ public:
      * \brief Converts an email address from UTF-8 to ACE.
      */
     static QString addressToACE(const QString &address);
+
+    static quint8 calcStatus(const QDateTime validUntil, const QDateTime pwExpires);
 
 protected:
     QSharedDataPointer<AccountData> d;
