@@ -35,6 +35,9 @@ set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATADIR}/doc/skaffari" CACHE PATH "Dir
 set(CMAKE_INSTALL_MANDIR "${CMAKE_INSTALL_DATADIR}/man" CACHE PATH "Directory to install man pages")
 set(BUILD_TEMPLATES OFF CACHE BOOL "If enabled, template assests will be build")
 
+set(Grantlee5_MAJOR_MINOR_VERSION_STRING "${Grantlee5_VERSION_MAJOR}.${Grantlee5_VERSION_MINOR}" )
+set(GRANTLEE_PLUGIN_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/grantlee/${Grantlee5_MAJOR_MINOR_VERSION_STRING} )
+
 # Enable C++11 features
 add_definitions(-std=c++11)
 
@@ -100,3 +103,4 @@ add_subdirectory(cmd)
 add_subdirectory(templates)
 add_subdirectory(doc)
 add_subdirectory(l10n)
+add_subdirectory(grantlee)

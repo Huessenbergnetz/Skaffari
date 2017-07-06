@@ -82,4 +82,4 @@ target_link_libraries(skaffari
     ${ICU_LIBRARIES}
 )
 
-install(TARGETS skaffari DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS skaffari DESTINATION ${CMAKE_INSTALL_LIBDIR}/cutelyst-apps)

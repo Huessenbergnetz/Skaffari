@@ -58,7 +58,7 @@ done
 
 popd
 
-for SRCDIR in common cmd sql src doc l10n
+for SRCDIR in common cmd sql src doc l10n grantlee
 do
     cp -r $SRCDIR $DIR
 done
