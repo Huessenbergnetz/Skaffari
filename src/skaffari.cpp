@@ -157,6 +157,7 @@ bool Skaffari::init()
 	view->setCache(false);
     view->setIncludePaths({sitePath});
     view->engine()->addDefaultLibrary(QStringLiteral("grantlee_i18ntags"));
+    view->engine()->addDefaultLibrary(QStringLiteral("grantlee_skaffari"));
 
     /* Start loading translations */
     const QString tmplTransFileName = QLatin1String("tmpl_") + tmplName;
