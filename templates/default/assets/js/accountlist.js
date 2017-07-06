@@ -147,6 +147,11 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     unLink.attr('title', l10n.emailAddresses);
     unLink.text(a.username);
     username.append(unLink);
+    username.append('<br>');
+    var idsmall = $('<small>');
+    idsmall.addClass('text-muted')
+    idsmall.text(l10n.id + ' ' + a.id);
+    username.append(idsmall);
     tr.append(username);
     
     var addresses = $('<td>');

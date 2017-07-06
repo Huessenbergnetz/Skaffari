@@ -40,17 +40,17 @@
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.humanDomainQuota.count %} has-warning{% endif %}">
             <label for="humanDomainQuota" class="form-control-label">{{ help.humanDomainQuota.title }}</label>
             {% ifequal userType 0 %}
-            <input type="text" id="humanDomainQuota" name="humanDomainQuota" class="form-control{% if validationErrors.humanDomainQuota.count %} form-control-warning{% endif %}" value="{{ domain.humanDomainQuota }}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanDomainQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+            <input type="text" id="humanDomainQuota" name="humanDomainQuota" class="form-control{% if validationErrors.humanDomainQuota.count %} form-control-warning{% endif %}" value="{% sk_fsf domain.domainQuota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanDomainQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
             {% if validationErrors.humanDomainQuota.count %}<div class="form-control-feedback"><small>{{ validationErrors.humanDomainQuota.0 }}</small></div>{% endif %}
             {% else %}
-            <p id="humanDomainQuota" class="form-control-static" aria-describedby="humanDomainQuotaDesc">{% if domain.domainQuota > 0 %}{{ domain.humanDomainQuota }}{% else %}{{ _("unlimited") }}{% endif %}</p>
+            <p id="humanDomainQuota" class="form-control-static" aria-describedby="humanDomainQuotaDesc">{% if domain.domainQuota > 0 %}{% sk_fsf domain.domainQuota 2 2 1024 %}{% else %}{{ _("unlimited") }}{% endif %}</p>
             {% endifequal %}
             <small id="humanDomainQuotaDesc" class="form-text text-muted">{{ help.humanDomainQuota.text }}</small>
         </div>
         
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.humanQuota.count %} has-warning{% endif %}">
             <label for="humanQuota" class="form-control-label">{{ help.humanQuota.title }}</label>
-            <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} form-control-warning{% endif %}" value="{{ domain.humanQuota }}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+            <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} form-control-warning{% endif %}" value="{% sk_fsf domain.quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
             {% if validationErrors.humanQuota.count %}<div class="form-control-feedback"><small>{{ validationErrors.humanQuota.0 }}</small></div>{% endif %}
             <small id="humanQuotaDesc" class="form-text text-muted">{{ help.humanQuota.text }}</small>
         </div>
