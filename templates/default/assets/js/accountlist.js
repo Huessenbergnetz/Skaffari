@@ -208,6 +208,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     var created = new Date(a.created);
     var updated = new Date(a.updated);
     var validUntil = new Date(a.validUntil);
+    var passwordExpires = new Date(a.passwordExpires)
     var dateOptions = {
         year: "2-digit",
         month: "2-digit",
@@ -218,7 +219,18 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     };
     times.append(created.toLocaleString(undefined, dateOptions) + '<br>');
     times.append(updated.toLocaleString(undefined, dateOptions) + '<br>');
-    times.append(validUntil.toLocaleString(undefined, dateOptions));
+    var validUntilSpan = $('<span>')
+    if (a.expired) {
+        validUntilSpan.addClass('text-danger');
+    }
+    validUntilSpan.append(validUntil.toLocaleString(undefined, dateOptions) + '<br>');
+    times.append(validUntilSpan);
+    var pwExpirationSpan = $('<span>');
+    if (a.passwordExpired) {
+        pwExpirationSpan.addClass('text-danger');
+    }
+    pwExpirationSpan.append(passwordExpires.toLocaleString(undefined, dateOptions))
+    times.append(pwExpirationSpan);
     tr.append(times);
     
     var services = $('<td>');

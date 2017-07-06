@@ -32,13 +32,14 @@ function skaffariCheckAccount() {
         method: 'get',
         url: '/account/' + domainid + '/' + accountid + '/check',
         dataType: 'json'
-    }).always(function() {
+    }).always(function(data) {
         checkAccountActive.hide();
         checkAccountSubmit.prop('disabled', false);
+        console.log(data);
     }).done(function(data) {
-        var actionsLength = data.actions;
-        if (actionsLength > 0) {
+        if (data.actions) {
             var actions = data.actions;
+            var actionsLength = actions.length;
             for (i = 0; i < actionsLength; ++i) {
                 var li = $('<li>');
                 li.text(actions[i]);

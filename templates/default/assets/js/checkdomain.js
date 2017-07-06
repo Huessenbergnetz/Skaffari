@@ -56,7 +56,7 @@ $(function() {
                     url: '/account/' + domainId +'/' + accountIds[i] + '/check',
                 });
                 ret.done(function(e) {
-                    var info = '<div class="mt-3"><h3>' + e.account + '</h3>';
+                    var info = '<div class="mt-3"><h3>' + e.username + '</h3>';
                     var actions = e.actions;
                     if (actions) {
                         var al = actions.length;
