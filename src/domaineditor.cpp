@@ -577,7 +577,7 @@ void DomainEditor::add_account(Context* c)
                             enoughQuotaLeft = false;
 
                             c->setStash(QStringLiteral("error_msg"),
-                                        c->translate("DomainEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(dom.getHumanDomainQuota()));
+                                        c->translate("DomainEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(Utils::humanBinarySize(c, dom.getDomainQuota())));
                         }
                     }
 
@@ -689,7 +689,7 @@ void DomainEditor::add_account(Context* c)
         help.insert(QStringLiteral("accounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "Number of accounts that are currently part of this domain. If there is a maximum account limit defined, it will be shown, too.")));
 
         const QString quotaTitle = c->translate("DomainEditor", "Quota");
-        const QString domainQuotaTitle = c->translate("DomainEditor", "DomainQuota");
+        const QString domainQuotaTitle = c->translate("DomainEditor", "Domain quota");
         if (dom.getDomainQuota() > 0) {
             help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "Used and total amount of storage quota for this domain.")));
             help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1 KiB.").arg(freeQuota * Q_UINT64_C(1024))));

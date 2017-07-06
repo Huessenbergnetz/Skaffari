@@ -127,7 +127,7 @@ void AccountEditor::edit(Context* c)
                             enoughQuotaLeft = false;
 
                             c->setStash(QStringLiteral("error_msg"),
-                                        c->translate("AccountEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(dom.getHumanDomainQuota()));
+                                        c->translate("AccountEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(Utils::humanBinarySize(c, dom.getDomainQuota())));
 
                         }
                     }

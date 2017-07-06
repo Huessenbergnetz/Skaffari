@@ -61,12 +61,9 @@ public:
     QString getPrefix() const;
     QString getTransport() const;
     quota_size_t getQuota() const;
-    QString getHumanQuota() const;
     quint32 getMaxAccounts() const;
     quota_size_t getDomainQuota() const;
-    QString getHumanDomainQuota() const;
     quota_size_t getDomainQuotaUsed() const;
-    QString getHumanDomainQuotaUsed() const;
     bool isFreeNamesEnabled() const;
     bool isFreeAddressEnabled() const;
     QVector<Folder> getFolders() const;
@@ -93,12 +90,9 @@ public:
     void setPrefix(const QString &nPrefix);
     void setTransport(const QString &nTransport);
     void setQuota(quota_size_t nQuota);
-    void setHumanQuota(const QString &nHumanQuota);
     void setMaxAccounts(quint32 nMaxAccounts);
     void setDomainQuota(quota_size_t nDomainQuota);
-    void setHumanDomainQuota(const QString &humanDomainQuota);
     void setDomainQuotaUsed(quota_size_t nDomainQuotaUsed);
-    void setHumanDomainQuotaUsed(const QString &humanDomainQuotaUsed);
     void setFreeNamesEnabled(bool nFreeNames);
     void setFreeAddressEnabled(bool nFreeAddress);
     void setFolders(const QVector<Folder> &nFolders);
@@ -204,22 +198,14 @@ if (property == QLatin1String("id")) {
     var.setValue(object.getTransport());
 } else if (property == QLatin1String("quota")) {
     var.setValue(object.getQuota());
-} else if (property == QLatin1String("humanQuota")) {
-    var.setValue(object.getHumanQuota());
 } else if (property == QLatin1String("maxAccounts")) {
     var.setValue(object.getMaxAccounts());
 } else if (property == QLatin1String("domainQuota")) {
     var.setValue(object.getDomainQuota());
-} else if (property == QLatin1String("humanDomainQuota")) {
-    var.setValue(object.getHumanDomainQuota());
 } else if (property == QLatin1String("domainQuotaUsed")) {
     var.setValue(object.getDomainQuotaUsed());
-} else if (property == QLatin1String("humanDomainQuotaUsed")) {
-    var.setValue(object.getHumanDomainQuotaUsed());
 } else if (property == QLatin1String("domainQuotaUsagePercent")) {
     var.setValue(object.domainQuotaUsagePercent());
-} else if (property == QLatin1String("domainQuotaUsagePercentFlat")) {
-    var.setValue(lround(object.domainQuotaUsagePercent()));
 }  else if (property == QLatin1String("freeNames")) {
     var.setValue(object.isFreeNamesEnabled());
 } else if (property == QLatin1String("freeAddress")) {

@@ -149,18 +149,6 @@ void Domain::setQuota(quota_size_t nQuota)
 }
 
 
-QString Domain::getHumanQuota() const
-{
-    return d->humanQuota;
-}
-
-
-void Domain::setHumanQuota(const QString &nHumanQuota)
-{
-    d->humanQuota = nHumanQuota;
-}
-
-
 quint32 Domain::getMaxAccounts() const
 {
     return d->maxAccounts;
@@ -185,18 +173,6 @@ void Domain::setDomainQuota(quota_size_t nDomainQuota)
 }
 
 
-QString Domain::getHumanDomainQuota() const
-{
-    return d->humanDomainQuota;
-}
-
-
-void Domain::setHumanDomainQuota(const QString &humanDomainQuota)
-{
-    d->humanDomainQuota = humanDomainQuota;
-}
-
-
 quota_size_t Domain::getDomainQuotaUsed() const
 {
     return d->domainQuotaUsed;
@@ -206,18 +182,6 @@ quota_size_t Domain::getDomainQuotaUsed() const
 void Domain::setDomainQuotaUsed(quota_size_t nDomainQuotaUsed)
 {
     d->domainQuotaUsed = nDomainQuotaUsed;
-}
-
-
-QString Domain::getHumanDomainQuotaUsed() const
-{
-    return d->humanDomainQuotaUsed;
-}
-
-
-void Domain::setHumanDomainQuotaUsed(const QString &humanDomainQuotaUsed)
-{
-    d->humanDomainQuotaUsed = humanDomainQuotaUsed;
 }
 
 
@@ -474,10 +438,6 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
         dom.setTransport(transport);
         dom.setCreated(Utils::toUserTZ(c, currentTimeUtc));
         dom.setUpdated(Utils::toUserTZ(c, currentTimeUtc));
-
-        dom.setHumanQuota(Utils::humanBinarySize(c, dom.getQuota() * 1024));
-        dom.setHumanDomainQuota(Utils::humanBinarySize(c, dom.getDomainQuota() * 1024));
-        dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, dom.getDomainQuotaUsed() * 1024));
     } else {
         errorData->setSqlError(q.lastError());
         qCCritical(SK_DOMAIN, "Failed to insert new domain %s into database: %s", qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
@@ -516,10 +476,6 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
         dom.setAccounts(q.value(9).value<quint32>());
         dom.setCreated(Utils::toUserTZ(c, q.value(10).toDateTime()));
         dom.setUpdated(Utils::toUserTZ(c, q.value(11).toDateTime()));
-
-        dom.setHumanQuota(Utils::humanBinarySize(c, dom.getQuota() * 1024));
-        dom.setHumanDomainQuota(Utils::humanBinarySize(c, dom.getDomainQuota() * 1024));
-        dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, dom.getDomainQuotaUsed() * 1024));
 
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, name FROM folder WHERE domain_id = :domain_id"));
         q.bindValue(QStringLiteral(":domain_id"), domId);
@@ -598,9 +554,6 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                        q.value(10).value<quint32>(),
                        Utils::toUserTZ(c, q.value(11).toDateTime()),
                        Utils::toUserTZ(c, q.value(12).toDateTime()));
-            dom.setHumanQuota(Utils::humanBinarySize(c, dom.getQuota() * Q_UINT64_C(1024)));
-            dom.setHumanDomainQuota(Utils::humanBinarySize(c, dom.getDomainQuota() * Q_UINT64_C(1024)));
-            dom.setHumanDomainQuotaUsed(Utils::humanBinarySize(c, dom.getDomainQuotaUsed() * Q_UINT64_C(1024)));
             lst.push_back(dom);
         }
     } else {
@@ -761,10 +714,8 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         }
 
         d->setQuota(quota);
-        d->setHumanQuota(Utils::humanBinarySize(c, quota * Q_UINT64_C(1024)));
         d->setMaxAccounts(maxAccounts);
         d->setDomainQuota(domainQuota);
-        d->setHumanDomainQuota(Utils::humanBinarySize(c, domainQuota * Q_UINT64_C(1024)));
         d->setFreeNamesEnabled(freeNames);
         d->setFreeAddressEnabled(freeAddress);
         d->setTransport(transport);
@@ -786,7 +737,6 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         }
 
         d->setQuota(quota);
-        d->setHumanQuota(Utils::humanBinarySize(c, quota * Q_UINT64_C(1024)));
         d->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
 
         ret = true;

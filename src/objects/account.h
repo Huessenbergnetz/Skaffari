@@ -201,14 +201,6 @@ public:
      */
     quota_size_t getQuota() const;
     /*!
-     * \brief Returns a better human readable string of the quota defined for this account.
-     *
-     * Access from Grantlee: humanQuota
-     *
-     * \sa getQuota(), setHumanQuota()
-     */
-    QString getHumanQuota() const;
-    /*!
      * \brief Returns the quota used by this account in KiB.
      *
      * Access from Grantlee: usage
@@ -216,14 +208,6 @@ public:
      * \sa getHumanUsage(), setUsage()
      */
     quota_size_t getUsage() const;
-    /*!
-     * \brief Returns a better human redable string of the quota used by this account.
-     *
-     * Access from Grantlee: humanUsage
-     *
-     * \sa getUsage(), setHumanUsage()
-     */
-    QString getHumanUsage() const;
     /*!
      * \brief Returns a percentage value of the used quota.
      *
@@ -373,20 +357,10 @@ public:
      */
     void setQuota(quota_size_t nQuota);
     /*!
-     * \brief Sets the human readable string of quota defined for this account.
-     * \sa getHumanQuota(), Utils::humanBinarySize()
-     */
-    void setHumanQuota(const QString &humanQuota);
-    /*!
      * \brief Sets the amount of quota used by this account in KiB.
      * \sa getUsage()
      */
     void setUsage(quota_size_t nUsage);
-    /*!
-     * \brief Sets the human readale string of quota used by this account.
-     * \sa getHumanUsage(), Utils::humanBinarySize()
-     */
-    void setHumanUsage(const QString &humanUsage);
     /*!
      * \brief Sets the date and time this account has been created.
      * \sa getCreated()
@@ -647,16 +621,10 @@ if (property == QLatin1String("id")) {
     var.setValue(object.getForwards());
 } else if (property == QLatin1String("quota")) {
     var.setValue(object.getQuota());
-} else if (property == QLatin1String("humanQuota")) {
-    var.setValue(object.getHumanQuota());
 } else if (property == QLatin1String("usage")) {
     var.setValue(object.getUsage());
-} else if (property == QLatin1String("humanUsage")) {
-    var.setValue(object.getHumanUsage());
 } else if (property == QLatin1String("usagePercent")) {
     var.setValue(object.getUsagePercent());
-} else if (property == QLatin1String("usagePercentFlat")) {
-    var.setValue(lround(object.getUsagePercent()));
 } else if (property == QLatin1String("isValid")) {
     var.setValue(object.isValid());
 } else if (property == QLatin1String("created")) {

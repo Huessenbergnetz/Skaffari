@@ -233,18 +233,6 @@ void Account::setQuota(quota_size_t nQuota)
 }
 
 
-QString Account::getHumanQuota() const
-{
-    return d->humanQuota;
-}
-
-
-void Account::setHumanQuota(const QString &humanQuota)
-{
-    d->humanQuota = humanQuota;
-}
-
-
 quota_size_t Account::getUsage() const
 {
 	return d->usage;
@@ -254,18 +242,6 @@ quota_size_t Account::getUsage() const
 void Account::setUsage(quota_size_t nUsage)
 {
 	d->usage = nUsage;
-}
-
-
-QString Account::getHumanUsage() const
-{
-    return d->humanUsage;
-}
-
-
-void Account::setHumanUsage(const QString &humanUsage)
-{
-    d->humanUsage = humanUsage;
 }
 
 
@@ -746,8 +722,6 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     a.setUpdated(currentUserTime);
     a.setValidUntil(Utils::toUserTZ(c, validUntil));
     a.setPasswordExpires(Utils::toUserTZ(c, pwExpires));
-    a.setHumanQuota(Utils::humanBinarySize(c, a.getQuota() * 1024));
-    a.setHumanUsage(Utils::humanBinarySize(c, a.getUsage() * 1024));
     a.setCatchAll(_catchAll);
 
     qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "created a new account" << username << "for domain" << d.getName();
@@ -1047,9 +1021,6 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
             a.setQuota(quota.second);
         }
 
-        a.setHumanQuota(Utils::humanBinarySize(c, a.getQuota() * 1024));
-        a.setHumanUsage(Utils::humanBinarySize(c, a.getUsage() * 1024));
-
         lst.push_back(a);
     }
 
@@ -1160,9 +1131,6 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, db
         a.setQuota(quota.second);
         imap.logout();
     }
-
-    a.setHumanQuota(Utils::humanBinarySize(c, a.getQuota() * 1024));
-    a.setHumanUsage(Utils::humanBinarySize(c, a.getUsage() * 1024));
 
     return a;
 }
@@ -1354,7 +1322,6 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
     a->setValidUntil(Utils::toUserTZ(c, validUntil));
     a->setPasswordExpires(Utils::toUserTZ(c, pwExpires));
     a->setQuota(quota);
-    a->setHumanQuota(Utils::humanBinarySize(c, quota * Q_UINT64_C(1024)));
     a->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
     a->setImapEnabled(imap);
     a->setPopEnabled(pop);
@@ -1369,7 +1336,6 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
     } else {
         if (Q_LIKELY(q.next())) {
             d->setDomainQuotaUsed(q.value(0).value<quota_size_t>());
-            d->setHumanDomainQuotaUsed(Utils::humanBinarySize(c, d->getDomainQuotaUsed() * Q_UINT64_C(1024)));
         }
     }
 
@@ -1530,9 +1496,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
     if (actions.empty()) {
         qCInfo(SK_ACCOUNT, "Nothing to do for user account ID %u.", d->id);
     } else {
-        d->humanQuota = Utils::humanBinarySize(c, d->quota * Q_UINT64_C(1024));
         d->usage = quota.first;
-        d->humanUsage = Utils::humanBinarySize(c, d->usage * Q_UINT64_C(1024));
         d->status = newStatus;
     }
 
