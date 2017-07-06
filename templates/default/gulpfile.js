@@ -21,7 +21,6 @@ elixir(function(mix) {
         'removedomain.js',
         'removeaccount.js',
         'removeadmin.js',
-        'checkaccount.js',
         'accountlist.js',
         'general.js'
     ], 'static/js/scripts.js');

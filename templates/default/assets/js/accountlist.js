@@ -271,6 +271,46 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     return tr;
 };
 
+Skaffari.DefaultTmpl.AccountList.checkAccount = function() {
+    var cam = Skaffari.DefaultTmpl.AccountList.checkAccountModal;
+    var domainid = cam.data('domainid');
+    var accountid = cam.data('accountid');
+    var checkAccountList = $('#checkAccountList');
+    checkAccountList.empty();
+    var checkAccountActive = $('#checkAccountActive');
+    checkAccountActive.show();
+    var checkAccountSubmit = $('#checkAccountSubmit');
+    checkAccountSubmit.prop('disabled', true);
+    $('#check-account-message-container').empty();
+    
+    $.ajax({
+        method: 'get',
+        url: '/account/' + domainid + '/' + accountid + '/check',
+        dataType: 'json'
+    }).always(function(data) {
+        checkAccountActive.hide();
+        checkAccountSubmit.prop('disabled', false);
+    }).done(function(data) {
+        if (data.actions) {
+            var actions = data.actions;
+            var actionsLength = actions.length;
+            for (i = 0; i < actionsLength; ++i) {
+                var li = $('<li>');
+                li.text(actions[i]);
+                checkAccountList.append(li);
+            }
+            var a = data.account;
+            var row = Skaffari.DefaultTmpl.AccountList.createRow(a);
+            $('#account-' + a.domainId + '-' + a.id).replaceWith(row);
+        } else {
+            skaffariCreateAlert('success', data.status_msg, '#check-account-message-container');
+        }
+    }).fail(function(jqXHR) {
+        if (jqXHR.responseJSON.error_msg) {
+            skaffariCreateAlert('warning', jqXHR.responseJSON.error_msg, '#check-account-message-container');
+        }
+    });
+}
 
 Skaffari.DefaultTmpl.AccountList.load = function(loadMore) {
     var aff = Skaffari.DefaultTmpl.AccountList.filterForm;
@@ -383,6 +423,7 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
         al.loadingActive = $('#loadingActive');
         al.currentPage = $('#currentPage');
         al.accountsPerPage = $('#accountsPerPage');
+        al.checkAccountModal = $('#checkAccountModal');
         
         al.l10n = JSON.parse(document.getElementById('translationStrings').innerHTML);
         
@@ -434,6 +475,30 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
                 al.load();
             }
         });
+        
+        if (al.checkAccountModal.length > 0) {
+            $('#checkAccountSubmit').click(function() {
+                Skaffari.DefaultTmpl.AccountList.checkAccount();
+            });
+            
+            al.checkAccountModal.on('show.bs.modal', function(e) {
+                $('.check-account-btn').prop('disabled', true);
+                var btn = $(e.relatedTarget);
+                var accountRow = btn.parents('.account-row').first();
+                $('#checkAccountName').text(accountRow.data('username'));
+                var did = accountRow.data('domainid');
+                var aid = accountRow.data('accountid');
+                al.checkAccountModal.data({
+                    domainid: did,
+                    accountid: aid
+                });
+                Skaffari.DefaultTmpl.AccountList.checkAccount();
+            });
+            
+            al.checkAccountModal.on('hide.bs.modal', function() {
+                $('.check-account-btn').prop('disabled', false);
+            });
+        }
     }
 }
 
