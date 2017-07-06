@@ -19,8 +19,8 @@
 #include "configfile.h"
 #include <QDir>
 
-ConfigFile::ConfigFile(const QString &confFile, bool createIfNotExists, bool quiet) :
-    ConsoleOutput(quiet), m_createIfNotExists(createIfNotExists), m_confFile(confFile)
+ConfigFile::ConfigFile(const QString &confFile, bool createIfNotExists, bool checkIfWritable, bool quiet) :
+    ConsoleOutput(quiet), m_confFile(confFile), m_createIfNotExists(createIfNotExists), m_checkIfWritable(checkIfWritable)
 {
 
 }
@@ -36,7 +36,7 @@ int ConfigFile::checkConfigFile() const
             return fileError(tr("Configuration file exists at %1 but is not readable.").arg(m_confFile.absoluteFilePath()));
         }
 
-        if (!m_confFile.isWritable()) {
+        if (m_checkIfWritable && !m_confFile.isWritable()) {
             printFailed();
             return fileError(tr("Configuration file exists at %1 but is not writable.").arg(m_confFile.absoluteFilePath()));
         }

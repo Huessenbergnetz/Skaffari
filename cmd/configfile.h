@@ -27,15 +27,16 @@ class ConfigFile : public ConsoleOutput
 {
     Q_DECLARE_TR_FUNCTIONS(ConfigFile)
 public:
-    ConfigFile(const QString &confFile, bool createIfNotExists = true, bool quiet = false);
+    ConfigFile(const QString &confFile, bool createIfNotExists = true, bool checkIfWritable = true, bool quiet = false);
 
     int checkConfigFile() const;
 
     QString configFileName() const;
 
 private:
-    bool m_createIfNotExists = true;
     QFileInfo m_confFile;
+    bool m_createIfNotExists = true;
+    bool m_checkIfWritable = true;
 };
 
 #endif // CONFIGFILE_H

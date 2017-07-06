@@ -28,7 +28,7 @@
 #define PAM_NEW_AUTHTOK_REQD 2
 
 AccountStatusUpdater::AccountStatusUpdater(const QString &confFile, bool quiet) :
-    ConfigFile(confFile, false, quiet)
+    ConfigFile(confFile, false, false, quiet)
 {
 
 }
