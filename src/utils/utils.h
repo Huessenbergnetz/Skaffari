@@ -46,6 +46,8 @@ public:
      * \return      The quota size in KiB.
      */
     static quota_size_t humanToIntSize(Cutelyst::Context *c, const QString &size, bool *ok);
+
+    static bool isAjax(Cutelyst::Context *c);
 };
 
 #endif // UTILS_H

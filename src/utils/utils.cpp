@@ -18,6 +18,7 @@
 
 #include "utils.h"
 #include <Cutelyst/Context>
+#include <Cutelyst/Request>
 #include <Cutelyst/Plugins/Session/Session>
 #include <QTimeZone>
 #include <QLocale>
@@ -136,4 +137,10 @@ quota_size_t Utils::humanToIntSize(Cutelyst::Context *c, const QString &size, bo
     ret = static_cast<quota_size_t>(_ret);
 
     return ret;
+}
+
+
+bool Utils::isAjax(Cutelyst::Context *c)
+{
+    return c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
 }
