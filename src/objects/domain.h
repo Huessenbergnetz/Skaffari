@@ -106,9 +106,22 @@ public:
      * \brief Sets the date and time this domain has been updated.
      */
     void setUpdated(const QDateTime &dt);
-
+    /*!
+     * \brief Returns \c true if this domain is valid.
+     *
+     * A domain will be valid if the database ID is greater than \c 0.
+     */
     bool isValid() const;
     bool hasAccess(Cutelyst::Context *c) const;
+
+    /*!
+     * \brief Returns \c true if this domain is valid.
+     *
+     * A domain will be valid if the database ID is greater than \c 0.
+     */
+    explicit operator bool() const {
+        return isValid();
+    }
 
     static Domain create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *errorData);
     static Domain get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData);
