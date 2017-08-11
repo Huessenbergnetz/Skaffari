@@ -34,7 +34,7 @@ class SkaffariError;
 class SimpleDomainData;
 
 /*!
- * \brief Contains basic domain data.
+ * \brief Contains basic domain data (only database ID and domain name).
  */
 class SimpleDomain
 {
@@ -77,6 +77,32 @@ public:
     QString name() const;
 
     /*!
+     * \brief Sets database ID and domain name to a SimpleDomain object.
+     */
+    void setData(dbid_t id, const QString &name);
+
+    /*!
+     * \brief Returns \c true if this domain is valid.
+     *
+     * A domain is valid if the \a id is greater than \c 0 and if the \a name is not empty.
+     *
+     * \sa operator bool()
+     */
+    bool isValid() const;
+
+    /*!
+     * \brief Returns \c true if this domain is valid.
+     *
+     * A domain is valid if the \a id is greater than \c 0 and if the \a name is not empty.
+     *
+     * \sa isValid()
+     */
+    explicit operator bool() const
+    {
+        return isValid();
+    }
+
+    /*!
      * \brief Returns a list of domains for the admin defined by \a adminId.
      * \param c         Pointer to the current context, used for localization.
      * \param e         Pointer to an object taking occuring errors.
@@ -95,6 +121,15 @@ public:
      * \return          JSON array containing objects with domain ID and domain name.
      */
     static QJsonArray listJson(Cutelyst::Context *c , SkaffariError *e, quint16 userType, dbid_t adminId);
+
+    /*!
+     * \brief Returns a single simpled domain object identified by its database \a id.
+     * \param c     Pointer to the current context, used for localization.
+     * \param e     Pointer to an object taking occuring errors.
+     * \param id    The database ID of the domain to retrieve.
+     * \return      Simple domain object.
+     */
+    static SimpleDomain get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
 
 private:
     QSharedDataPointer<SimpleDomainData> d;

@@ -70,6 +70,19 @@ QString SimpleDomain::name() const
 }
 
 
+void SimpleDomain::setData(dbid_t id, const QString &name)
+{
+    d->id = id;
+    d->name = name;
+}
+
+
+bool SimpleDomain::isValid() const
+{
+    return ((d->id > 0) && !d->name.isEmpty());
+}
+
+
 std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, quint16 userType, dbid_t adminId)
 {
     std::vector<SimpleDomain> lst;
@@ -123,4 +136,31 @@ QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError *e, quint1
     }
 
     return lst;
+}
+
+
+SimpleDomain SimpleDomain::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
+{
+    SimpleDomain dom;
+
+    Q_ASSERT_X(c, "get simple domain data", "invalid context object");
+    Q_ASSERT_X(e, "get simple domain data", "invalid error object");
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_name FROM domain WHERE id = :id"));
+    q.bindValue(QStringLiteral(":id"), id);
+
+    if (Q_UNLIKELY(!q.exec())) {
+        e->setSqlError(q.lastError(), c->translate("SimpleDomain", "Failed to query simple domain data for domain ID %1.").arg(id));
+        return dom;
+    }
+
+    if (Q_UNLIKELY(!q.next())) {
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(c->translate("SimpleDomain", "Can not find domain with database ID %1.").arg(id));
+        return dom;
+    }
+
+    dom.setData(id, q.value(0).toString());
+
+    return dom;
 }
