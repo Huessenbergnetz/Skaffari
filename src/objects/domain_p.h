@@ -70,7 +70,10 @@ public:
         folders(other.folders),
         accounts(other.accounts),
         created(other.created),
-        updated(other.updated)
+        updated(other.updated),
+        parent(other.parent),
+        children(other.children),
+        admins(other.admins)
     {}
 
     ~DomainData() {}
@@ -89,6 +92,8 @@ public:
     quint32 accounts = 0;
     QDateTime created;
     QDateTime updated;
+    SimpleDomain parent;
+    QVector<SimpleDomain> children;
     QVector<SimpleAdmin> admins;
 };
 

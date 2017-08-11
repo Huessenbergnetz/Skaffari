@@ -31,6 +31,7 @@
 #include <QLoggingCategory>
 
 #include "simpleadmin.h"
+#include "simpledomain.h"
 #include "folder.h"
 #include "../../common/global.h"
 
@@ -78,6 +79,14 @@ public:
      */
     QDateTime updated() const;
     /*!
+     * \brief Returns information about the parent domain, if any has been set.
+     */
+    SimpleDomain parent() const;
+    /*!
+     * \brief Returns a list of child domains if any.
+     */
+    QVector<SimpleDomain> children() const;
+    /*!
      * \brief Returns the percental value of used domain quota if any quota is set.
      *
      * If there is no domain quota set (domain quota == 0), this will return \c 0.
@@ -106,6 +115,15 @@ public:
      * \brief Sets the date and time this domain has been updated.
      */
     void setUpdated(const QDateTime &dt);
+    /*!
+     * \brief Sets the parent domain information.
+     */
+    void setParent(const SimpleDomain &parent);
+    /*!
+     * \brief Sets the list of child domains.
+     */
+    void setChildren(const QVector<SimpleDomain> &children);
+
     /*!
      * \brief Returns \c true if this domain is valid.
      *
@@ -137,12 +155,14 @@ public:
     /*!
      * \brief Removes the \a domain and all of their accounts from the database and the IMAP server.
      * \todo Remove accounts from IMAP server.
-     * \param c         Pointer to the current context, used for translations.
-     * \param domain    Pointer to the domain to remove.
-     * \param error     Pointer to an error object to give feedback on database and IMAP errors.
+     * \param c                 Pointer to the current context, used for translations.
+     * \param domain            Pointer to the domain to remove.
+     * \param error             Pointer to an error object to give feedback on database and IMAP errors.
+     * \param newParent         Database ID of the new parent domain if the domain to remove has child domains.
+     * \param deleteChildren    If \c true, child domains will be removed too.
      * \return          True on success.
      */
-    static bool remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error);
+    static bool remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error, dbid_t newParentId, bool deleteChildren);
 
     /*!
      * \brief Updates domain \a d in the database.
@@ -235,6 +255,8 @@ if (property == QLatin1String("id")) {
     var.setValue(object.created());
 } else if (property == QLatin1String("updated")) {
     var.setValue(object.updated());
+} else if (property == QLatin1String("parent")) {
+    var.setValue(object.parent());
 }
 return var;
 GRANTLEE_END_LOOKUP

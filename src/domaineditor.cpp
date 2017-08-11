@@ -411,12 +411,12 @@ void DomainEditor::remove(Context* c)
             auto req = c->req();
 
             if (req->isPost()) {
-                Domain dom = c->stash(QStringLiteral("domain")).value<Domain>();
+                auto dom = Domain::fromStash(c);
 
                 if (dom.getName() == req->bodyParam(QStringLiteral("domainName"))) {
 
                     SkaffariError e(c);
-                    if (Domain::remove(c, &dom, &e)) {
+                    if (Domain::remove(c, &dom, &e, req->bodyParam(QStringLiteral("newParentId"), QStringLiteral("0")).toULong(), false)) {
 
                         const QString statusMsg = c->translate("DomainEditor", "Successfully deleted domain %1.").arg(dom.getName());
 

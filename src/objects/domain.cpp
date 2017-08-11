@@ -60,7 +60,7 @@ Domain::Domain(dbid_t id,
                quint32 accounts,
                const QDateTime &created,
                const QDateTime &updated) :
-    d(new DomainData(id,name, prefix, transport, quota, maxAccounts, domainQuota, domainQuotaUsed, freeNames, freeAddress, folders, accounts, created, updated))
+    d(new DomainData(id, name, prefix, transport, quota, maxAccounts, domainQuota, domainQuotaUsed, freeNames, freeAddress, folders, accounts, created, updated))
 {
 
 }
@@ -245,7 +245,7 @@ void Domain::setAdmins(const QVector<SimpleAdmin> &adminList)
 
 bool Domain::isValid() const
 {
-    return (!d->name.isEmpty() && !d->prefix.isEmpty());
+    return (!d->name.isEmpty() && !d->prefix.isEmpty() && (d->id > 0));
 }
 
 QDateTime Domain::created() const
@@ -258,7 +258,6 @@ void Domain::setCreated(const QDateTime &dt)
     d->created = dt;
 }
 
-
 QDateTime Domain::updated() const
 {
     return d->updated;
@@ -269,6 +268,25 @@ void Domain::setUpdated(const QDateTime &dt)
     d->updated = dt;
 }
 
+SimpleDomain Domain::parent() const
+{
+    return d->parent;
+}
+
+void Domain::setParent(const SimpleDomain &parent)
+{
+    d->parent = parent;
+}
+
+QVector<SimpleDomain> Domain::children() const
+{
+    return d->children;
+}
+
+void Domain::setChildren(const QVector<SimpleDomain> &children)
+{
+    d->children = children;
+}
 
 float Domain::domainQuotaUsagePercent() const
 {
@@ -388,10 +406,12 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
     const bool freeAddress = params.contains(QStringLiteral("freeAddress"));
     const QStringList folders = Domain::trimStringList(params.value(QStringLiteral("folders")).split(QLatin1Char(','), QString::SkipEmptyParts));
     const QString transport = params.value(QStringLiteral("transport"), QStringLiteral("cyrus"));
+    const dbid_t parentId = params.value(QStringLiteral("parentId"), QStringLiteral("0")).toULong();
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
-    q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domain (domain_name, prefix, maxaccounts, quota, domainquota, freenames, freeaddress, transport, created_at, updated_at) "
-                                                         "VALUES (:domain_name, :prefix, :maxaccounts, :quota, :domainquota, :freenames, :freeaddress, :transport, :created_at, :updated_at)"));
+    q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domain (parent_id, domain_name, prefix, maxaccounts, quota, domainquota, freenames, freeaddress, transport, created_at, updated_at) "
+                                                         "VALUES (:parent_id, :domain_name, :prefix, :maxaccounts, :quota, :domainquota, :freenames, :freeaddress, :transport, :created_at, :updated_at)"));
+    q.bindValue(QStringLiteral(":parent_id"), parentId);
     q.bindValue(QStringLiteral(":domain_name"), QUrl::toAce(domainName));
     q.bindValue(QStringLiteral(":prefix"), prefix);
     q.bindValue(QStringLiteral(":maxaccounts"), maxAccounts);
@@ -438,6 +458,14 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
         dom.setTransport(transport);
         dom.setCreated(Utils::toUserTZ(c, currentTimeUtc));
         dom.setUpdated(Utils::toUserTZ(c, currentTimeUtc));
+
+        if (parentId > 0) {
+            dom.setParent(SimpleDomain::get(c, errorData, parentId));
+            if (Q_UNLIKELY(!dom.parent())) {
+                qCWarning(SK_DOMAIN, "Can not find parent domain with ID %u for new domain %s (ID %u).", parentId, qUtf8Printable(domainName), domainId);
+            }
+        }
+
     } else {
         errorData->setSqlError(q.lastError());
         qCCritical(SK_DOMAIN, "Failed to insert new domain %s into database: %s", qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
@@ -458,8 +486,10 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
     Q_ASSERT_X(errorData, "get domain", "invalid errorData object");
     Q_ASSERT_X(c, "get domain", "invalid Cutelyst context");
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.prefix, dom.domain_name, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at FROM domain dom WHERE dom.id = :id"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.prefix, dom.domain_name, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id FROM domain dom WHERE dom.id = :id"));
     q.bindValue(QStringLiteral(":id"), domId);
+
+    dbid_t parentId = 0;
 
     if (Q_LIKELY(q.exec() && q.next())) {
 
@@ -476,6 +506,8 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
         dom.setAccounts(q.value(9).value<quint32>());
         dom.setCreated(Utils::toUserTZ(c, q.value(10).toDateTime()));
         dom.setUpdated(Utils::toUserTZ(c, q.value(11).toDateTime()));
+
+        parentId = q.value(12).value<dbid_t>();
 
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, name FROM folder WHERE domain_id = :domain_id"));
         q.bindValue(QStringLiteral(":domain_id"), domId);
@@ -501,13 +533,35 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
     }
 
     if (dom.isValid()) {
+        if (parentId > 0) {
+            dom.setParent(SimpleDomain::get(c, errorData, parentId));
+            if (!dom.parent()) {
+                qWarning(SK_DOMAIN, "Can not find parent domain with ID %u for domain %s (ID: %u).", parentId, qUtf8Printable(dom.getName()), dom.id());
+            }
+        } else {
+            q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, domain_name FROM domain WHERE parent_id = :id"));
+            q.bindValue(QStringLiteral(":id"), domId);
+
+            if (Q_LIKELY(q.exec())) {
+                QVector<SimpleDomain> thekids;
+                thekids.reserve(q.size());
+                while(q.next()) {
+                    thekids.push_back(SimpleDomain(q.value(0).value<dbid_t>(), q.value(1).toString()));
+                }
+                dom.setChildren(thekids);
+            } else {
+                qCCritical(SK_DOMAIN, "Failed to query child domains for domain %s (ID %u): %s", qUtf8Printable(dom.getName()), dom.id(), qUtf8Printable(q.lastError().text()));
+            }
+        }
+
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username FROM domainadmin da JOIN adminuser a ON a.id = da.admin_id WHERE da.domain_id = :domain_id"));
         q.bindValue(QStringLiteral(":domain_id"), dom.id());
 
         if (Q_LIKELY(q.exec())) {
             QVector<SimpleAdmin> admins;
+            admins.reserve(q.size());
             while (q.next()) {
-                admins.append(SimpleAdmin(q.value(0).value<dbid_t>(), q.value(1).toString()));
+                admins.push_back(SimpleAdmin(q.value(0).value<dbid_t>(), q.value(1).toString()));
             }
             dom.setAdmins(admins);
         } else {
@@ -530,12 +584,11 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
     QSqlQuery q;
 
     if (user.value(QStringLiteral("type")).value<qint16>() == 0) {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at FROM domain dom ORDER BY dom.domain_name ASC"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id FROM domain dom ORDER BY dom.domain_name ASC"));
     } else {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY dom.domain_name ASC"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY dom.domain_name ASC"));
         q.bindValue(QStringLiteral(":admin_id"), QVariant::fromValue<dbid_t>(user.id().toULong()));
     }
-
 
     if (Q_LIKELY(q.exec())) {
         lst.reserve(q.size());
@@ -554,6 +607,29 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                        q.value(10).value<quint32>(),
                        Utils::toUserTZ(c, q.value(11).toDateTime()),
                        Utils::toUserTZ(c, q.value(12).toDateTime()));
+
+            const dbid_t parentId = q.value(13).value<dbid_t>();
+            if (parentId > 0) {
+                dom.setParent(SimpleDomain::get(c, errorData, parentId));
+                if (Q_UNLIKELY(!dom.parent())) {
+                    qWarning(SK_DOMAIN, "Can not find parent domain with ID %u for domain %s (ID: %u).", parentId, qUtf8Printable(dom.getName()), dom.id());
+                }
+            } else {
+                QSqlQuery q2 = CPreparedSqlQueryThread(QStringLiteral("SELECT id, domain_name FROM domain WHERE parent_id = :id"));
+                q2.bindValue(QStringLiteral(":id"), dom.id());
+
+                if (Q_LIKELY(q2.exec())) {
+                    QVector<SimpleDomain> thekids;
+                    thekids.reserve(q2.size());
+                    while(q2.next()) {
+                        thekids.push_back(SimpleDomain(q2.value(0).value<dbid_t>(), q2.value(1).toString()));
+                    }
+                    dom.setChildren(thekids);
+                } else {
+                    qCCritical(SK_DOMAIN, "Failed to query child domains for domain %s (ID %u): %s", qUtf8Printable(dom.getName()), dom.id(), qUtf8Printable(q2.lastError().text()));
+                }
+            }
+
             lst.push_back(dom);
         }
     } else {
@@ -582,14 +658,14 @@ bool Domain::isAvailable(const QString &domainName)
     if (Q_UNLIKELY(!q.exec())) {
         qCCritical(SK_DOMAIN, "Failed to check availability of domain name %s: %s", qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
     } else {
-        available = q.next();
+        available = !q.next();
     }
 
     return available;
 }
 
 
-bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error)
+bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error, dbid_t newParentId, bool deleteChildren)
 {
     bool ret = false;
 
@@ -620,10 +696,35 @@ bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error)
         return ret;
     }
 
+    if (deleteChildren) {
+        if (!domain->children().empty()) {
+            const QVector<SimpleDomain> thekids = domain->children();
+            for (const SimpleDomain &kid : thekids) {
+                Domain child = Domain::get(c, kid.id(), error);
+                if (child) {
+                    if (Q_UNLIKELY(!Domain::remove(c, &child, error, 0, true))) {
+                        qCCritical(SK_DOMAIN, "Failed to remove child domains of domain %s (ID %u).", qUtf8Printable(domain->getName()), domain->id());
+                        return ret;
+                    }
+                }
+            }
+        }
+    } else {
+        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET parent_id = :new_parent_id WHERE parent_id = :old_parent_id"));
+        q.bindValue(QStringLiteral(":new_parent_id"), newParentId);
+        q.bindValue(QStringLiteral(":old_parent_id"), domain->id());
+
+        if (Q_UNLIKELY(!q.exec())) {
+            error->setSqlError(q.lastError(), c->translate("Domain", "Failed to set new parent domain for child domains."));
+            qCCritical(SK_DOMAIN, "Failed to set new parent domain ID %u while removing domain %s (ID: %u): %s. Abort removing domain.", newParentId, qUtf8Printable(domain->getName()), domain->id(), qUtf8Printable(q.lastError().text()));
+            return ret;
+        }
+    }
+
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), domain->id());
 
-    if (!q.exec()) {
+    if (Q_UNLIKELY(!q.exec())) {
         error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain %1 from database.").arg(domain->getName()));
         qCCritical(SK_DOMAIN, "Failed to remove domain %s from database: %s", domain->getName().toUtf8().constData(), q.lastError().text().toUtf8().constData());
         return ret;
@@ -696,8 +797,9 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         const bool freeNames = p.contains(QStringLiteral("freeNames"));
         const bool freeAddress = p.contains(QStringLiteral("freeAddress"));
         const QString transport = p.value(QStringLiteral("transport"), d->getTransport());
+        const dbid_t parentId = p.value(QStringLiteral("parentId"), QStringLiteral("0")).toULong();
 
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET maxaccounts = :maxaccounts, quota = :quota, domainquota = :domainquota, freenames = :freenames, freeaddress = :freeaddress, transport = :transport, updated_at = :updated_at WHERE id = :id"));
+        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET maxaccounts = :maxaccounts, quota = :quota, domainquota = :domainquota, freenames = :freenames, freeaddress = :freeaddress, transport = :transport, updated_at = :updated_at, parent_id = :parent_id WHERE id = :id"));
         q.bindValue(QStringLiteral(":maxaccounts"), maxAccounts);
         q.bindValue(QStringLiteral(":quota"), quota);
         q.bindValue(QStringLiteral(":domainquota"), domainQuota);
@@ -705,6 +807,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         q.bindValue(QStringLiteral(":freeaddress"), freeAddress);
         q.bindValue(QStringLiteral(":transport"), transport);
         q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
+        q.bindValue(QStringLiteral(":parent_id"), parentId);
         q.bindValue(QStringLiteral(":id"), d->id());
 
         if (!q.exec()) {
@@ -720,6 +823,17 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         d->setFreeAddressEnabled(freeAddress);
         d->setTransport(transport);
         d->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
+
+        if (parentId != d->parent().id()) {
+            if (parentId > 0) {
+                d->setParent(SimpleDomain::get(c, e, parentId));
+                if (Q_UNLIKELY(!d->parent())) {
+                    qWarning(SK_DOMAIN, "Can not find parent domain with ID %u for domain %s (ID: %u).", parentId, qUtf8Printable(d->getName()), d->id());
+                }
+            } else {
+                d->setParent(SimpleDomain());
+            }
+        }
 
         ret = true;
 
