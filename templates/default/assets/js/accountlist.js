@@ -165,14 +165,12 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     forwards.append(a.forwards.join('<br>'));
     if (a.forwards.length > 0) {
         forwards.append('<br>');
-        var klIcon = $('<i>');
         if (a.keepLocal) {
-            klIcon.addClass('fa fa-check-circle-o');
-        } else {
-            klIcon.addClass('fa fa-times-circle-o');
+            var klIcon = $('<i>');
+            klIcon.addClass('fa fa-copy');
+            forwards.append(klIcon);
+            forwards.append(' ' + l10n.keepLocal)
         }
-                forwards.append(klIcon);
-                forwards.append(' ' + l10n.keepLocal)
     }
     tr.append(forwards);
     
