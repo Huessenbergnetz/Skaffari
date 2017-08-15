@@ -20,7 +20,7 @@
         
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.validUntil.count %} has-warning{% endif %}">
             <label class="form-control-label" for="validUntil">{{ help.validUntil.title }}</label>
-            <input type="text" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD hh:mm:ss") }}" value="{{ account.validUntilString }}" aria-describedby="validUntilDesc" required>
+            <input type="text" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD hh:mm:ss") }}" value="{{ account.validUntil|time:"yyyy-MM-dd HH:mm:ss" }}" aria-describedby="validUntilDesc" required>
             {% if validationErrors.validUntil.count %}<div class="form-control-feedback"><small>{{ validationErrors.validUntil.0 }}</small></div>{% endif %}
             <small id="validUntilDesc" class="form-text text-muted">{{ help.validUntil.text }}</small>
         </div>
@@ -44,14 +44,14 @@
         
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.passwordExpires.count %} has-warning{% endif %}">
             <label class="form-control-label" for="passwordExpires">{{ help.passwordExpires.title }}</label>
-            <input type="text" id="passwordExpires" name="passwordExpires" class="form-control{% if validationErrors.passwordExpires.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD hh:mm:ss") }}" value="{{ account.passwordExpiresString }}" aria-describedby="passwordExpiresDesc" required>
+            <input type="text" id="passwordExpires" name="passwordExpires" class="form-control{% if validationErrors.passwordExpires.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD hh:mm:ss") }}" value="{{ account.passwordExpires|time:"yyyy-MM-dd HH:mm:ss" }}" aria-describedby="passwordExpiresDesc" required>
             {% if validationErrors.passwordExpires.count %}<div class="form-control-feedback"><small>{{ validationErrors.passwordExpires.0 }}</small></div>{% endif %}
             <small id="passwordExpiresDesc" class="form-text text-muted">{{ help.passwordExpires.text }}</small>
         </div>
                
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.humanQuota.count %} has-warning{% endif %}">
             <label for="humanQuota" class="form-control-label">{{ help.humanQuota.title }}</label>
-            <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} form-control-warning{% endif %}" value="{{ account.humanQuota }}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+            <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} form-control-warning{% endif %}" value="{% sk_fsf account.quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
             {% if validationErrors.humanQuota.count %}<div class="form-control-feedback"><small>{{ validationErrors.humanQuota.0 }}</small></div>{% endif %}
             <small id="humanQuotaDesc" class="form-text text-muted">{{ help.humanQuota.text }}</small>
         </div>

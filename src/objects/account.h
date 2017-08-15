@@ -633,16 +633,12 @@ if (property == QLatin1String("id")) {
     var.setValue(object.getUpdated());
 } else if (property == QLatin1String("validUntil")) {
     var.setValue(object.getValidUntil());
-} else if (property == QLatin1String("validUntilString")) {
-    var.setValue(object.getValidUntil().toString(QStringLiteral("yyyy-MM-dd HH:mm:ss")));
 } else if (property == QLatin1String("keepLocal")) {
     var.setValue(object.keepLocal());
 } else if (property == QLatin1String("catchAll")) {
     var.setValue(object.cathAll());
 } else if (property == QLatin1String("passwordExpires")) {
     var.setValue(object.passwordExpires());
-} else if (property == QLatin1String("passwordExpiresString")) {
-    var.setValue(object.passwordExpires().toString(QStringLiteral("yyyy-MM-dd HH:mm:ss")));
 } else if (property == QLatin1String("passwordExpired")) {
     var.setValue(object.passwordExpired());
 } else if (property == QLatin1String("expired")) {
