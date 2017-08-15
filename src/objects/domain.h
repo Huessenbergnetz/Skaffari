@@ -262,6 +262,8 @@ if (property == QLatin1String("id")) {
     var.setValue(object.updated());
 } else if (property == QLatin1String("parent")) {
     var.setValue(object.parent());
+} else if (property == QLatin1String("children")) {
+    var.setValue(object.children());
 }
 return var;
 GRANTLEE_END_LOOKUP
