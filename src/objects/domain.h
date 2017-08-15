@@ -127,15 +127,20 @@ public:
     /*!
      * \brief Returns \c true if this domain is valid.
      *
-     * A domain will be valid if the database ID is greater than \c 0.
+     * A domain will be valid if the database ID is greater than \c 0 and if
+     * prefix and domain name are not empty.
      */
     bool isValid() const;
+
     bool hasAccess(Cutelyst::Context *c) const;
 
     /*!
      * \brief Returns \c true if this domain is valid.
      *
-     * A domain will be valid if the database ID is greater than \c 0.
+     * A domain will be valid if the database ID is greater than \c 0 and if
+     * prefix and domain name are not empty.
+     *
+     * \sa isValid()
      */
     explicit operator bool() const {
         return isValid();
