@@ -32,8 +32,8 @@
                 <tr id="domain-{{ domain.id }}">
                     <td class="no-filtering">
                         <div class="btn-group">
-                            <a href="/domain/{{ domain.id }}/edit" class="btn btn-sm btn-secondary" title='{{ _("Edit domain") }}' role="button"><i class="fa fa-edit fa-fw"></i></a>
-                            <button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a href="/domain/{{ domain.id }}/edit" class="btn btn-sm btn-light" title='{{ _("Edit domain") }}' role="button"><i class="fa fa-edit fa-fw"></i></a>
+                            <button type="button" class="btn btn-sm btn-light dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="sr-only">{{ _("Toggle dropdown") }}</span>
                             </button>
                             <div class="dropdown-menu">
@@ -106,8 +106,8 @@
 
 <div class="row mt-4 justify-content-center">
     <div class="col-12 col-sm-12 col-md-8 col-lg-6">
-        <div class="card card-outline-primary text-center">
-            <div class="card-block">
+        <div class="card border-primary text-center">
+            <div class="card-body">
                 <h2 class="card-title">{{ _("Welcome to Skaffari") }}</h2>
                 <p class="card-text">{{ _("You have no domains configured. In order to create email accounts you have to first create at least one domain for which you want to add new email accounts.") }}</p>
                 <a href="/domain/create" class="btn btn-primary"><i class="fa fa-plus"></i> {{ _("Add domain") }}</a>

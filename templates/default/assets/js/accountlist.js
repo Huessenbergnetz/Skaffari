@@ -48,7 +48,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     btnGroup.addClass('btn-group');
     
     var mainBtn = $('<a>');
-    mainBtn.addClass('btn btn-sm btn-secondary');
+    mainBtn.addClass('btn btn-sm btn-light');
     mainBtn.attr({
         href: '/account/' + a.domainId + '/' + a.id + '/edit',
         title: l10n.editAccount,
@@ -61,7 +61,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     btnGroup.append(mainBtn);
     
     var toggleBtn = $('<button>');
-    toggleBtn.addClass('btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split');
+    toggleBtn.addClass('btn btn-sm btn-light dropdown-toggle dropdown-toggle-split');
     toggleBtn.attr({
         type: "button",
         "data-toggle": "dropdown",
@@ -373,7 +373,7 @@ Skaffari.DefaultTmpl.AccountList.load = function(loadMore) {
                     lmbCol.addClass('col-12');
                     var lmbtn = $('<button>');
                     lmbtn.attr('type', 'button');
-                    lmbtn.addClass('btn btn-secondary btn-lg btn-block');
+                    lmbtn.addClass('btn btn-light btn-lg btn-block');
                     lmbtn.text(al.l10n.loadMore);
                     lmbtn.click(function() {
                         al.load(true);

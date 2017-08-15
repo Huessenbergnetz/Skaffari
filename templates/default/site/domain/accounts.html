@@ -17,10 +17,10 @@
             <div class="input-group">
                 <input type="search" id="searchString" name="searchString" class="form-control" value="{{ searchString }}" placeholder="{{ _("Filter accounts") }}">
                 <span class="input-group-btn">
-                    <button id="accountFilterFormSubmit" type="submit" class="btn btn-secondary" title="{{ _("Apply filters") }}"><i class="fa fa-filter"></i></button>
+                    <button id="accountFilterFormSubmit" type="submit" class="btn btn-light" title="{{ _("Apply filters") }}"><i class="fa fa-filter"></i></button>
                 </span>
                 <span class="input-group-btn">
-                    <button id="accountFilterFormReset" type="button" class="btn btn-secondary" title="{{ _("Reset filters") }}"><i class="fa fa-undo"></i></button>
+                    <button id="accountFilterFormReset" type="button" class="btn btn-light" title="{{ _("Reset filters") }}"><i class="fa fa-undo"></i></button>
                 </span>
 
             </div>
@@ -68,8 +68,8 @@
 
 <div id="emptyListInfo" class="row mt-4 justify-content-center hidden-on-start">
     <div class="col-12 col-sm-12 col-md-8 col-lg-6">
-        <div class="card card-outline-primary text-center">
-            <div class="card-block">
+        <div class="card border-primary text-center">
+            <div class="card-body">
                 <h2 class="card-title">{% i18n "No accounts for %1" domain.name %}</h2>
                 <p class="card-text">{{ _("There are no user accounts for this domain. Add new email accounts by hitting the button below or change your filter settings.") }}</p>
                 <a href="/domain/{{ domain.id }}/add_account" class="btn btn-primary"><i class="fa fa-plus"></i> {{ _("Add Account") }}</a>
