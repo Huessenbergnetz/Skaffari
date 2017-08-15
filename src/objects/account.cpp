@@ -417,7 +417,8 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     // end checking if the username is already in use
 
     // construct the email address from local part and domain name
-    const QString email = p.value(QStringLiteral("localpart")) + QLatin1Char('@') + d.getName();
+    const QString localPart = p.value(QStringLiteral("localpart"));
+    const QString email = localPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.getName()));
 
     // start checking if the email address is already in use
     q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :email"));
@@ -425,12 +426,12 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to query for already existing email address."));
-        qCCritical(SK_ACCOUNT, "Failed to query database for already existing email address %s: %s", qUtf8Printable(email), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_ACCOUNT, "Failed to query database for already existing email address %s: %s", qUtf8Printable(Account::addressFromACE(email)), qUtf8Printable(q.lastError().text()));
         return a;
     }
 
     if (Q_UNLIKELY(q.next())) {
-        e->setErrorText(c->translate("Account", "Email address %1 is already in use by user %2.").arg(email, q.value(0).toString()));
+        e->setErrorText(c->translate("Account", "Email address %1 is already in use by user %2.").arg(Account::addressFromACE(email), q.value(0).toString()));
         e->setErrorType(SkaffariError::InputError);
         return a;
     }
@@ -515,7 +516,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     const dbid_t id = q.lastInsertId().value<dbid_t>();
 
     q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
-    q.bindValue(QStringLiteral(":alias"), addressToACE(email));
+    q.bindValue(QStringLiteral(":alias"), email);
     q.bindValue(QStringLiteral(":dest"), username);
     q.bindValue(QStringLiteral(":username"), username);
     q.bindValue(QStringLiteral(":status"), 1);
@@ -527,6 +528,33 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
         q.bindValue(QStringLiteral(":id"), id);
         q.exec();
         return a;
+    }
+
+    if (!d.children().empty()) {
+        const QVector<SimpleDomain> thekids = d.children();
+        for (const SimpleDomain &kid : thekids) {
+            const QString kidEmail = localPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(kid.name()));
+            q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :email"));
+            q.bindValue(QStringLiteral(":email"), kidEmail);
+
+            if (Q_UNLIKELY(!q.exec())) {
+                qCCritical(SK_ACCOUNT, "Failed to query database for already existing email address %s: %s", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(q.lastError().text()));
+            } else {
+                if (Q_LIKELY(!q.next())) {
+                    QSqlQuery qq = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
+                    qq.bindValue(QStringLiteral(":alias"), kidEmail);
+                    qq.bindValue(QStringLiteral(":dest"), username);
+                    qq.bindValue(QStringLiteral(":username"), username);
+                    qq.bindValue(QStringLiteral(":status"), 1);
+
+                    if (Q_UNLIKELY(!qq.exec())) {
+                        qCCritical(SK_ACCOUNT, "Failed to insert email address %s for new user account into database: %s", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(qq.lastError().text()));
+                    }
+                } else {
+                    qCWarning(SK_ACCOUNT, "Email address %s for child domain %s already exists when creating new account %s.", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(username));
+                }
+            }
+        }
     }
 
     // removing old catch all alias and setting a new one
