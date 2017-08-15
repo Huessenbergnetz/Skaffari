@@ -531,27 +531,32 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     }
 
     if (!d.children().empty()) {
-        const QVector<SimpleDomain> thekids = d.children();
-        for (const SimpleDomain &kid : thekids) {
-            const QString kidEmail = localPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(kid.name()));
-            q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :email"));
-            q.bindValue(QStringLiteral(":email"), kidEmail);
+        const QStringList selectedKids = p.values(QStringLiteral("children"));
+        if (!selectedKids.empty()) {
+            const QVector<SimpleDomain> thekids = d.children();
+            for (const SimpleDomain &kid : thekids) {
+                if (selectedKids.contains(QString::number(kid.id()))) {
+                    const QString kidEmail = localPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(kid.name()));
+                    q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :email"));
+                    q.bindValue(QStringLiteral(":email"), kidEmail);
 
-            if (Q_UNLIKELY(!q.exec())) {
-                qCCritical(SK_ACCOUNT, "Failed to query database for already existing email address %s: %s", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(q.lastError().text()));
-            } else {
-                if (Q_LIKELY(!q.next())) {
-                    QSqlQuery qq = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
-                    qq.bindValue(QStringLiteral(":alias"), kidEmail);
-                    qq.bindValue(QStringLiteral(":dest"), username);
-                    qq.bindValue(QStringLiteral(":username"), username);
-                    qq.bindValue(QStringLiteral(":status"), 1);
+                    if (Q_UNLIKELY(!q.exec())) {
+                        qCCritical(SK_ACCOUNT, "Failed to query database for already existing email address %s: %s", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(q.lastError().text()));
+                    } else {
+                        if (Q_LIKELY(!q.next())) {
+                            QSqlQuery qq = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
+                            qq.bindValue(QStringLiteral(":alias"), kidEmail);
+                            qq.bindValue(QStringLiteral(":dest"), username);
+                            qq.bindValue(QStringLiteral(":username"), username);
+                            qq.bindValue(QStringLiteral(":status"), 1);
 
-                    if (Q_UNLIKELY(!qq.exec())) {
-                        qCCritical(SK_ACCOUNT, "Failed to insert email address %s for new user account into database: %s", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(qq.lastError().text()));
+                            if (Q_UNLIKELY(!qq.exec())) {
+                                qCCritical(SK_ACCOUNT, "Failed to insert email address %s for new user account into database: %s", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(qq.lastError().text()));
+                            }
+                        } else {
+                            qCWarning(SK_ACCOUNT, "Email address %s for child domain %s already exists when creating new account %s.", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(username));
+                        }
                     }
-                } else {
-                    qCWarning(SK_ACCOUNT, "Email address %s for child domain %s already exists when creating new account %s.", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(username));
                 }
             }
         }

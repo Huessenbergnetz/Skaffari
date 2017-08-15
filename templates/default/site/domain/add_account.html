@@ -124,6 +124,18 @@
             <small id="catchallDesc" class="form-text text-muted">{{ help.catchall.text }}</small>
         </div>
         
+        {% if domain.children.count > 0 %}
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label for="children" class="form-control-label">{{ help.children.title }}</small>
+            <select multiple class="form-control" id="children" name="children" aria-describedby="childrenDesc">
+            {% for child in domain.children %}
+                <option value="{{ child.id }}" selected>{{ child.name }}</option>
+            {% endfor %}
+            </select>
+            <small id="childrenDesc" class="form-text text-muted">{{ help.children.text }}</small>
+        </div>
+        {% endif %}
+        
     </div>
     
     <div class="mt-1">
