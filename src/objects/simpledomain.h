@@ -110,7 +110,7 @@ public:
      * \param adminId   The database ID of the admin user to determine domain access.
      * \return          List of simple domain objects.
      */
-    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, quint16 userType, dbid_t adminId);
+    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, quint16 userType, dbid_t adminId, bool orphansOnly = false);
 
     /*!
      * \brief Returns a JSON array of domains for the admin defined by \a adminId.
