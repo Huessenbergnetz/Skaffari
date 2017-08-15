@@ -258,7 +258,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMu
     }
 
     QList<dbid_t> domIds;
-    QStringList assocdoms = params.values(QStringLiteral("assocdomains"));
+    const QStringList assocdoms = params.values(QStringLiteral("assocdomains"));
     for (const QString &did : assocdoms) {
         domIds << did.toULong();
     }
