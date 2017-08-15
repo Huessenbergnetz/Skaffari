@@ -406,7 +406,7 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
     const bool freeAddress = params.contains(QStringLiteral("freeAddress"));
     const QStringList folders = Domain::trimStringList(params.value(QStringLiteral("folders")).split(QLatin1Char(','), QString::SkipEmptyParts));
     const QString transport = params.value(QStringLiteral("transport"), QStringLiteral("cyrus"));
-    const dbid_t parentId = params.value(QStringLiteral("parentId"), QStringLiteral("0")).toULong();
+    const dbid_t parentId = params.value(QStringLiteral("parent"), QStringLiteral("0")).toULong();
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
     q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domain (parent_id, domain_name, prefix, maxaccounts, quota, domainquota, freenames, freeaddress, transport, created_at, updated_at) "
@@ -793,11 +793,18 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
             }
         }
 
+        const dbid_t parentId = p.value(QStringLiteral("parent"), QStringLiteral("0")).toULong();
+        if (parentId == d->id()) {
+            e->setErrorType(SkaffariError::InputError);
+            e->setErrorText(c->translate("Domain", "You can not set a domain as its own parent domain."));
+            qCWarning(SK_DOMAIN, "Tried to set domain ID %u as parent for domain ID %u.", parentId, parentId);
+            return ret;
+        }
+
         const quint32 maxAccounts = p.value(QStringLiteral("maxAccounts"), QString::number(d->getMaxAccounts())).toULong();
         const bool freeNames = p.contains(QStringLiteral("freeNames"));
         const bool freeAddress = p.contains(QStringLiteral("freeAddress"));
         const QString transport = p.value(QStringLiteral("transport"), d->getTransport());
-        const dbid_t parentId = p.value(QStringLiteral("parentId"), QStringLiteral("0")).toULong();
 
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET maxaccounts = :maxaccounts, quota = :quota, domainquota = :domainquota, freenames = :freenames, freeaddress = :freeaddress, transport = :transport, updated_at = :updated_at, parent_id = :parent_id WHERE id = :id"));
         q.bindValue(QStringLiteral(":maxaccounts"), maxAccounts);
