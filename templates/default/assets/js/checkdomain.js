@@ -21,7 +21,12 @@ $(function() {
     $('#checkdomain').click(function() {
         var checkDom = $('#checkdomain');
         var domainId = checkDom.data('domainid');
-        var accountIds = checkDom.data('accountids').split(',');
+        var accountIds = checkDom.data('accountids');
+        if (typeof accountIds === 'string') {
+            accountIds = checkDom.data('accountids').split(',');
+        } else {
+            accountIds = [accountIds];
+        }
         var baseUrl = checkDom.data('baseurl');
         var ntdStr = checkDom.data('ntdstr');
         var idCount = accountIds.length;
