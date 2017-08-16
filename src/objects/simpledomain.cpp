@@ -168,7 +168,7 @@ SimpleDomain SimpleDomain::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
         return dom;
     }
 
-    dom.setData(id, q.value(0).toString());
+    dom.setData(id, QUrl::fromAce(q.value(0).toByteArray()));
 
     return dom;
 }
