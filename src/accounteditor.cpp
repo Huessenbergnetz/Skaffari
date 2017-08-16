@@ -610,7 +610,7 @@ void AccountEditor::new_email(Context *c)
 
                 } else if (!Domain::isAvailable(newMailDomain)) {
 
-                    const QString errorMsg = c->translate("AccountEditor", "You can not create email addresses for domains you are not responsible for. Please create domain %1 before adding email addresses for this domain.");
+                    const QString errorMsg = c->translate("AccountEditor", "You can not create email addresses for domains you are not responsible for. Please create domain %1 before adding email addresses for this domain.").arg(newMailDomain);
 
                     if (isAjax) {
                         json.insert(QStringLiteral("error_msg"), QJsonValue(errorMsg));
