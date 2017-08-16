@@ -658,7 +658,7 @@ bool Domain::isAvailable(const QString &domainName)
     if (Q_UNLIKELY(!q.exec())) {
         qCCritical(SK_DOMAIN, "Failed to check availability of domain name %s: %s", qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
     } else {
-        available = !q.next();
+        available = q.next();
     }
 
     return available;
@@ -720,6 +720,13 @@ bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error, 
             return ret;
         }
     }
+
+    if (Q_UNLIKELY(!q.exec(QStringLiteral("DELETE FROM virtual WHERE alias LIKE '%@%1'").arg(QString::fromLatin1(QUrl::toAce(domain->getName())))))) {
+        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove email addresses from database."));
+        qCCritical(SK_DOMAIN, "Failed to remove email addresses for domain %s (ID: %u) from database: %s", qUtf8Printable(domain->getName()), domain->id(), qUtf8Printable(q.lastError().text()));
+        return ret;
+    }
+
 
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), domain->id());
