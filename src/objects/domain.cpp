@@ -762,6 +762,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         if (!quotaOk) {
             e->setErrorType(SkaffariError::InputError);
             e->setErrorText(c->translate("Domain", "Failed to convert human readable quota size string into valid integer value."));
+            qCCritical(SK_DOMAIN, "Failed to convert human readable quota size \"%s\" into valid integer value.", qUtf8Printable(p.value(QStringLiteral("humanQuota"))));
             return ret;
         }
     } else {
@@ -769,6 +770,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         if (!quotaOk) {
             e->setErrorType(SkaffariError::InputError);
             e->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
+            qCCritical(SK_DOMAIN, "Failed to parse quota string \"%s\" into integer value.", qUtf8Printable(q.value(QStringLiteral("quota"))));
             return ret;
         }
     }
@@ -782,6 +784,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
             if (!domainQuotaOk) {
                 e->setErrorType(SkaffariError::InputError);
                 e->setErrorText(c->translate("Domain", "Failed to convert human readable quota size string into valid integer value."));
+                qCCritical(SK_DOMAIN, "Failed to convert human readable quota size string \"%s\" into valid integer value.", qUtf8Printable(p.value(QStringLiteral("humanDomainQuota"))));
                 return ret;
             }
         } else {
@@ -789,6 +792,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
             if (!domainQuotaOk) {
                 e->setErrorType(SkaffariError::InputError);
                 e->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
+                qCCritical(SK_DOMAIN, "Failed to parse quota string \"%s\" into integer value.", qUtf8Printable(p.value(QStringLiteral("domainQuota"))));
                 return ret;
             }
         }
