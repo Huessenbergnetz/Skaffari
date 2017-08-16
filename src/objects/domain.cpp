@@ -546,7 +546,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
                 QVector<SimpleDomain> thekids;
                 thekids.reserve(q.size());
                 while(q.next()) {
-                    thekids.push_back(SimpleDomain(q.value(0).value<dbid_t>(), q.value(1).toString()));
+                    thekids.push_back(SimpleDomain(q.value(0).value<dbid_t>(), QUrl::fromAce(q.value(1).toByteArray())));
                 }
                 dom.setChildren(thekids);
             } else {
@@ -622,7 +622,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                     QVector<SimpleDomain> thekids;
                     thekids.reserve(q2.size());
                     while(q2.next()) {
-                        thekids.push_back(SimpleDomain(q2.value(0).value<dbid_t>(), q2.value(1).toString()));
+                        thekids.push_back(SimpleDomain(q2.value(0).value<dbid_t>(), QUrl::fromAce(q2.value(1).toByteArray())));
                     }
                     dom.setChildren(thekids);
                 } else {
@@ -797,7 +797,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         if (parentId == d->id()) {
             e->setErrorType(SkaffariError::InputError);
             e->setErrorText(c->translate("Domain", "You can not set a domain as its own parent domain."));
-            qCWarning(SK_DOMAIN, "Tried to set domain ID %u as parent for domain ID %u.", parentId, parentId);
+            qCCritical(SK_DOMAIN, "Tried to set domain ID %u as parent for domain ID %u.", parentId, parentId);
             return ret;
         }
 
