@@ -82,7 +82,7 @@ QVector<Language> Language::supportedLangs()
 
     const QStringList list = Language::supportedLangsList();
     for (const QString &lang : list) {
-        langs.append(Language(lang));
+        langs.push_back(Language(lang));
     }
 
     return langs;

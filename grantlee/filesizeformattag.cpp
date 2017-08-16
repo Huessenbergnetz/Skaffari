@@ -30,7 +30,7 @@ Grantlee::Node *FileSizeFormatTag::getNode(const QString &tagContent, Grantlee::
 {
     QStringList parts = smartSplit(tagContent);
     parts.removeFirst(); // not intereseted in the name of the tag
-    if (parts.isEmpty()) {
+    if (parts.empty()) {
         throw Grantlee::Exception(Grantlee::TagSyntaxError, QStringLiteral("sk_fsf requires at least the file size"));
     }
 

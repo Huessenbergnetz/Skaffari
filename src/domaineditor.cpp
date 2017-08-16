@@ -790,7 +790,7 @@ QStringList DomainEditor::trimFolderStrings(const QStringList& folders)
 {
     QStringList trimmed;
 
-    if (folders.isEmpty()) {
+    if (folders.empty()) {
         return trimmed;
     }
 

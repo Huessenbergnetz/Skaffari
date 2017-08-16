@@ -148,7 +148,7 @@ bool Imap::login()
         return false;
     }
 
-    if (Imap::m_capabilities.isEmpty()) {
+    if (Imap::m_capabilities.empty()) {
         if (response.size() == 1) {
             const QByteArray loginRespLine = response.first();
             int start = loginRespLine.indexOf(QByteArrayLiteral("[CAPABILITY"));
@@ -162,9 +162,9 @@ bool Imap::login()
                     Imap::m_capabilities = capstring.split(QChar(QChar::Space), QString::SkipEmptyParts);
                 }
             }
-            if (Imap::m_capabilities.isEmpty()) {
+            if (Imap::m_capabilities.empty()) {
                 Imap::m_capabilities = getCapabilities();
-                if (Imap::m_capabilities.isEmpty()) {
+                if (Imap::m_capabilities.empty()) {
                     m_lastError = tr("Failed to get capabilities from the IMAP server.");
                     this->disconnectFromHost();
                     this->waitForDisconnected();
@@ -263,7 +263,7 @@ QStringList Imap::getCapabilities(bool forceReload)
             Imap::m_capabilities = respString.split(QChar(QChar::Space), QString::SkipEmptyParts);
         }
 
-        if (Q_UNLIKELY(Imap::m_capabilities.isEmpty())) {
+        if (Q_UNLIKELY(Imap::m_capabilities.empty())) {
              m_lastError = tr("Failed to request capabilities from the IMAP server. Aborting.");
         }
     }
@@ -322,7 +322,7 @@ bool Imap::checkResponse(const QByteArray &data, const QString &tag, QList<QByte
     }
 
     const QList<QByteArray> lines = data.split('\n');
-    if (Q_UNLIKELY(lines.isEmpty())) {
+    if (Q_UNLIKELY(lines.empty())) {
         m_lastError = tr("The IMAP response is empty");
         return ret;
     }
@@ -338,7 +338,7 @@ bool Imap::checkResponse(const QByteArray &data, const QString &tag, QList<QByte
                 if (baTrimmed.startsWith(tagLatin1)) {
                     statusLine = baTrimmed;
                 } else {
-                    trimmedList.append(baTrimmed);
+                    trimmedList.push_back(baTrimmed);
                 }
             }
         }
@@ -353,8 +353,8 @@ bool Imap::checkResponse(const QByteArray &data, const QString &tag, QList<QByte
         return ret;
     }
 
-    if (trimmedList.isEmpty()) {
-        trimmedList.append(statusLine);
+    if (trimmedList.empty()) {
+        trimmedList.push_back(statusLine);
     }
 
     const QByteArray status = statusLine.mid(tagLatin1.size()+1);

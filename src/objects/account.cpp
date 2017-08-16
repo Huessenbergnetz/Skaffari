@@ -1424,7 +1424,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
             return actions;
         } else {
             qCInfo(SK_ACCOUNT, "%s created missing mailbox on IMAP server for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), d->id);
-            actions.append(c->translate("Account", "Created missing mailbox on IMAP server."));
+            actions.push_back(c->translate("Account", "Created missing mailbox on IMAP server."));
         }
     }
 
@@ -1439,7 +1439,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
                 return actions;
             } else {
                 qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u on IMAP server for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), newQuota, d->id);
-                actions.append(c->translate("Account", "Set correct mailbox storage quota on IMAP server."));
+                actions.push_back(c->translate("Account", "Set correct mailbox storage quota on IMAP server."));
                 quota.second = newQuota;
             }
         }
@@ -1453,7 +1453,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
                 return actions;
             } else {
                 qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u in database for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), newQuota, d->id);
-                actions.append(c->translate("Account", "Set correct mailbox storage quota in database."));
+                actions.push_back(c->translate("Account", "Set correct mailbox storage quota in database."));
                 d->quota = newQuota;
 
                 q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET domainquotaused = (SELECT SUM(quota) FROM accountuser WHERE domain_id = :domain_id) WHERE id = :domain_id"));
@@ -1472,7 +1472,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
             return actions;
         } else {
             qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u on IMAP server for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), d->quota, d->id);
-            actions.append(c->translate("Account", "Set correct mailbox storage quota on IMAP server."));
+            actions.push_back(c->translate("Account", "Set correct mailbox storage quota on IMAP server."));
             quota.second = d->quota;
         }
     }
@@ -1501,17 +1501,17 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
         bool oldPwExpired = ((d->status & PAM_NEW_AUTHTOK_REQD) == PAM_NEW_AUTHTOK_REQD);
         if (oldAccExpired != newAccExpired) {
             if (!oldAccExpired && newAccExpired) {
-                actions.append(c->translate("Account", "The account was only valid until %1 and has been expired.").arg(c->locale().toString(d->validUntil, QLocale::ShortFormat)));
+                actions.push_back(c->translate("Account", "The account was only valid until %1 and has been expired.").arg(c->locale().toString(d->validUntil, QLocale::ShortFormat)));
             } else {
-                actions.append(c->translate("Account", "The account was marked as expired but is now valid again until %1.").arg(c->locale().toString(d->validUntil, QLocale::ShortFormat)));
+                actions.push_back(c->translate("Account", "The account was marked as expired but is now valid again until %1.").arg(c->locale().toString(d->validUntil, QLocale::ShortFormat)));
             }
         }
 
         if (oldPwExpired != newPwExpired) {
             if (!oldPwExpired && newPwExpired) {
-                actions.append(c->translate("Accont", "The password of the account was only valid until %1 and has been expired.").arg(c->locale().toString(d->passwordExpires, QLocale::ShortFormat)));
+                actions.push_back(c->translate("Accont", "The password of the account was only valid until %1 and has been expired.").arg(c->locale().toString(d->passwordExpires, QLocale::ShortFormat)));
             } else {
-                actions.append(c->translate("Account", "The password of the account was marked as expired but is now valid again until %1.").arg(c->locale().toString(d->passwordExpires, QLocale::ShortFormat)));
+                actions.push_back(c->translate("Account", "The password of the account was marked as expired but is now valid again until %1.").arg(c->locale().toString(d->passwordExpires, QLocale::ShortFormat)));
             }
         }
 
@@ -1603,7 +1603,7 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
 
     QStringList addresses = a->getAddresses();
     addresses.removeOne(oldAddress);
-    addresses.append(address);
+    addresses.push_back(address);
     if (addresses.size() > 1) {
         QCollator col(c->locale());
         std::sort(addresses.begin(), addresses.end(), col);
@@ -1667,7 +1667,7 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const
     }
 
     QStringList addresses = a->getAddresses();
-    addresses.append(address);
+    addresses.push_back(address);
     if (address.size() > 1) {
         addresses.sort();
     }

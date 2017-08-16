@@ -136,10 +136,10 @@ QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError *e, quint1
 
     if (!_lst.empty()) {
         for (const SimpleDomain &sd : _lst) {
-            lst.append(QJsonValue(QJsonObject({
-                                                  {QStringLiteral("id"), static_cast<qint64>(sd.id())},
-                                                  {QStringLiteral("name"), sd.name()}
-                                              })));
+            lst.push_back(QJsonValue(QJsonObject({
+                                                     {QStringLiteral("id"), static_cast<qint64>(sd.id())},
+                                                     {QStringLiteral("name"), sd.name()}
+                                                 })));
         }
     }
 

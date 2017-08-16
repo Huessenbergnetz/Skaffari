@@ -432,7 +432,7 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
             q.bindValue(QStringLiteral(":name"), folder);
             if (Q_LIKELY(q.exec())) {
                 const dbid_t folderId = q.lastInsertId().value<dbid_t>();
-                foldersVect.append(Folder(folderId, domainId, folder));
+                foldersVect.push_back(Folder(folderId, domainId, folder));
             } else {
                 errorData->setSqlError(q.lastError());
                 qCCritical(SK_DOMAIN, "Failed to create folder %s for new domain %s in database: %s", qUtf8Printable(folder), qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
@@ -514,7 +514,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
         if (Q_LIKELY(q.exec())) {
             QVector<Folder> folders;
             while (q.next()) {
-                folders.append(Folder(q.value(0).value<dbid_t>(), domId, q.value(1).toString()));
+                folders.push_back(Folder(q.value(0).value<dbid_t>(), domId, q.value(1).toString()));
             }
             dom.setFolders(folders);
         } else {
@@ -770,7 +770,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         if (!quotaOk) {
             e->setErrorType(SkaffariError::InputError);
             e->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
-            qCCritical(SK_DOMAIN, "Failed to parse quota string \"%s\" into integer value.", qUtf8Printable(q.value(QStringLiteral("quota"))));
+            qCCritical(SK_DOMAIN, "Failed to parse quota string \"%s\" into integer value.", qUtf8Printable(p.value(QStringLiteral("quota"))));
             return ret;
         }
     }
@@ -927,7 +927,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
             qCCritical(SK_DOMAIN) << "Failed to query default folders for domain" << d->getName() << "from database:" << q.lastError().text();
         } else {
             while (q.next()) {
-                foldersVect.append(Folder(q.value(0).value<dbid_t>(), d->id(), q.value(1).toString()));
+                foldersVect.push_back(Folder(q.value(0).value<dbid_t>(), d->id(), q.value(1).toString()));
             }
         }
         d->setFolders(foldersVect);

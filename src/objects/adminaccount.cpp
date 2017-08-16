@@ -310,10 +310,10 @@ QVector<AdminAccount> AdminAccount::list(Cutelyst::Context *c, SkaffariError *er
     }
 
     while (q.next()) {
-        list.append(AdminAccount(q.value(0).value<dbid_t>(),
-                                 q.value(1).toString(),
-                                 static_cast<AdminAccount::AdminAccountType>(q.value(2).value<qint8>()),
-                                 QList<dbid_t>()));
+        list.push_back(AdminAccount(q.value(0).value<dbid_t>(),
+                                    q.value(1).toString(),
+                                    static_cast<AdminAccount::AdminAccountType>(q.value(2).value<qint8>()),
+                                    QList<dbid_t>()));
     }
 
     return list;
@@ -369,7 +369,7 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
 
         QList<dbid_t> doms;
         while (q.next()) {
-            doms.append(q.value(0).value<dbid_t>());
+            doms.push_back(q.value(0).value<dbid_t>());
         }
 
         acc.setDomains(doms);
