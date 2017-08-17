@@ -366,7 +366,7 @@ bool SkaffariIMAP::setQuota(const QString &user, quota_size_t quota)
     ok = checkResponse(readAll(), tag);
 
     if (Q_UNLIKELY(!ok)) {
-        qCCritical(SK_IMAP, "Failed to set quota value of %i for user %s.", quota, qUtf8Printable(user));
+        qCCritical(SK_IMAP, "Failed to set quota value of %llu for user %s.", quota, qUtf8Printable(user));
     }
 
     return ok;

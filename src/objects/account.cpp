@@ -554,7 +554,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
                                 qCCritical(SK_ACCOUNT, "Failed to insert email address %s for new user account into database: %s", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(qq.lastError().text()));
                             }
                         } else {
-                            qCWarning(SK_ACCOUNT, "Email address %s for child domain %s already exists when creating new account %s.", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(username));
+                            qCWarning(SK_ACCOUNT, "Email address %s for child domain %s already exists when creating new account %s.", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(kid.name()), qUtf8Printable(username));
                         }
                     }
                 }
@@ -1438,7 +1438,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
                 imap.logout();
                 return actions;
             } else {
-                qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u on IMAP server for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), newQuota, d->id);
+                qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %llu on IMAP server for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), newQuota, d->id);
                 actions.push_back(c->translate("Account", "Set correct mailbox storage quota on IMAP server."));
                 quota.second = newQuota;
             }
@@ -1452,7 +1452,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
                 e->setSqlError(q.lastError());
                 return actions;
             } else {
-                qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u in database for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), newQuota, d->id);
+                qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %llu in database for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), newQuota, d->id);
                 actions.push_back(c->translate("Account", "Set correct mailbox storage quota in database."));
                 d->quota = newQuota;
 
@@ -1471,7 +1471,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
             imap.logout();
             return actions;
         } else {
-            qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %u on IMAP server for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), d->quota, d->id);
+            qCInfo(SK_ACCOUNT, "%s set correct mailbox storage quota of %llu on IMAP server for user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), d->quota, d->id);
             actions.push_back(c->translate("Account", "Set correct mailbox storage quota on IMAP server."));
             quota.second = d->quota;
         }
