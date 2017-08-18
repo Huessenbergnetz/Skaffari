@@ -533,7 +533,6 @@ QStringList SkaffariIMAP::getMailboxes()
         return list;
     }
 
-//    QVector<QByteArray>::const_iterator i;
     for (auto i = respLines.cbegin(); i != respLines.cend(); ++i) {
         const QByteArray line = *i;
         const int idx = line.lastIndexOf(QByteArrayLiteral("user."));
