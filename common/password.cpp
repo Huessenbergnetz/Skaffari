@@ -40,7 +40,7 @@ QByteArray Password::encrypt(Method method, Algorithm algo, quint32 rounds)
     if (method == PlainText) {
 
         pw = m_password.toUtf8();
-        qCWarning(SK_PASSWORD) << "Do not used unencrypted passwords!";
+        qCWarning(SK_PASSWORD) << "Do not use unencrypted passwords!";
 
     } else if (method == Crypt) {
 
@@ -70,9 +70,9 @@ QByteArray Password::encrypt(Method method, Algorithm algo, quint32 rounds)
             }
 
             if (rounds < 1000) {
-                rounds = 1000;
+                rounds = 5000;
             } else if (rounds > 999999999) {
-                rounds = 999999999;
+                rounds = 5000;
             }
 
             settings.append(QByteArray::number(rounds));
