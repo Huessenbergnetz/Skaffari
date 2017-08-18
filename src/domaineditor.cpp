@@ -361,7 +361,9 @@ void DomainEditor::create(Context* c)
                                    new ValidatorBoolean(QStringLiteral("freeNames")),
                                    new ValidatorBoolean(QStringLiteral("freeAddress")),
                                    new ValidatorRegularExpression(QStringLiteral("humanQuota"), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption)),
-                                   new ValidatorRegularExpression(QStringLiteral("humanDomainQuota"), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption))
+                                   new ValidatorRegularExpression(QStringLiteral("humanDomainQuota"), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption)),
+                                   new ValidatorInteger(QStringLiteral("parent")),
+                                   new ValidatorMin(QStringLiteral("parent"), QMetaType::UInt, 0)
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
@@ -389,9 +391,17 @@ void DomainEditor::create(Context* c)
         help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "Default quota for new accounts for this domain. This value can be changed individually for every account. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));
 
         help.insert(QStringLiteral("folders"), HelpEntry(c->translate("DomainEditor", "Standard folders"), c->translate("DomainEditor", "Comma separated list of folders that will be automatically created when creating a new account for this domain. You can safely insert localized folder names in UTF-8 encoding. They will be internally converted into UTF-7-IMAP encoding.")));
+        help.insert(QStringLiteral("parent"), HelpEntry(c->translate("DomainEditor", "Parent domain"), c->translate("DomainEditor", "Setting a parent domain for this domain will automatically create email addresses for this domain when creating new accounts in the parent domain.")));
         help.insert(QStringLiteral("transport"), HelpEntry(c->translate("DomainEditor", "Transport"), c->translate("DomainEditor", "The transport mechanism for received emails for this domain. Defaults to Cyrus.")));
         help.insert(QStringLiteral("freeNames"), HelpEntry(c->translate("DomainEditor", "Allow free names"), c->translate("DomainEditor", "If enabled, account user names for this domain can be freely selected (if not in use already).")));
         help.insert(QStringLiteral("freeAddress"), HelpEntry(c->translate("DomainEditor", "Allow free addresses"), c->translate("DomainEditor", "If enabled, user accounts in this domain can have email addresses for all domains managed by Skaffari. If disabled, only email addresses for this domain can be added to user accounts in this domain.")));
+
+        SkaffariError e(c);
+        AuthenticationUser user = Authentication::user(c);
+        const std::vector<SimpleDomain> doms = SimpleDomain::list(c, &e, user.value(QStringLiteral("type")).value<qint16>(), user.id().toULong(), true);
+        if (e.type() != SkaffariError::NoError) {
+            c->setStash(QStringLiteral("error_msg"), e.errorText());
+        }
 
         c->stash({
                      {QStringLiteral("defQuota"), SkaffariConfig::defQuota()},
@@ -403,7 +413,8 @@ void DomainEditor::create(Context* c)
                      {QStringLiteral("domainAsPrefix"), SkaffariConfig::imapDomainasprefix()},
                      {QStringLiteral("edit"), false},
                      {QStringLiteral("site_title"), c->translate("DomainEditor", "Create domain")},
-                     {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)}
+                     {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)},
+                     {QStringLiteral("domains"), QVariant::fromValue<std::vector<SimpleDomain>>(doms)}
                 });
     }
 }
