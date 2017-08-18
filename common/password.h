@@ -24,36 +24,86 @@
 
 Q_DECLARE_LOGGING_CATEGORY(SK_PASSWORD)
 
+/*!
+ * \brief Handles passwords encrypted with the crypt(3) function or MySQL password hashing.
+ *
+ * For more information about crypt(3) see man 3 crypt, for more information about MySQL encrpytion
+ * see <A HREF="https://dev.mysql.com/doc/refman/5.7/en/password-hashing.html">Password Hasing in MySQL</A>.
+ *
+ * The methods and algorithms are used as they are used by <A HREF="https://github.com/NigelCunningham/pam-MySQL/blob/master/README">pam_mysql</A>.
+ */
 class Password
 {
 public:
+    /*!
+     * \brief Different methods for password hashing.
+     */
     enum Method : quint8 {
-        PlainText       = 0,
-        Crypt           = 1,
-        MySQL           = 2,
-        MD5             = 3,
-        SHA1            = 4
+        PlainText       = 0,    /**< No encryption, passwords stored in plaintext. (HIGHLY DISCOURAGED) */
+        Crypt           = 1,    /**< Use crypt(3) function. */
+        MySQL           = 2,    /**< Use MySQL PASSWORD() function. */
+        MD5             = 3,    /**< Use plain hex MD5. Not recommended.*/
+        SHA1            = 4     /**< Use plain hex SHA1. */
     };
 
+    /*!
+     * \brief Different algorithms for crpyt(3) and MySQL password hashing methods.
+     */
     enum Algorithm : quint8 {
-        Default         = 0,
-        CryptDES        = 1,
-        CryptMD5        = 2,
-        CryptSHA256     = 3,
-        CryptSHA512     = 4,
-        CryptBcrypt     = 5,
-        MySQLNew        = 6,
-        MySQLOld        = 7
+        Default         = 0,    /**< Uses the default algorithm for the specified method. (SHA256 for crypt(3) and the new style hashing for MySQL) */
+        CryptDES        = 1,    /**< Traditional DES-based encryption of the crypt(3) function. No longer offering adequate security. */
+        CryptMD5        = 2,    /**< FreeBSD-style MD5-based encryption of the crypt(3) function. Not recommended anymore. */
+        CryptSHA256     = 3,    /**< SHA256-based encryption of the crypt(3) function. */
+        CryptSHA512     = 4,    /**< SHA512-based encryption of the crypt(3) function. */
+        CryptBcrypt     = 5,    /**< OpenBSD-style Blowfish-based (bcrypt) encryption of the crypt(3) function. This is not available on every platform/distribution. */
+        MySQLNew        = 6,    /**< New hashing algorithm of the MySQL PASSWORD() function. */
+        MySQLOld        = 7     /**< Old hashing algorithm of the MySQL PASSWORD() function. */
     };
 
+    /*!
+     * \brief Constructs a new Password object.
+     * \param pw The unencrypted password.
+     */
     explicit Password(const QString &pw);
 
-    QByteArray encrypt(Method type, Algorithm method = Default, quint32 rounds = 0);
+    /*!
+     * \brief Encrypt the password set in the constructor according to the parameters.
+     *
+     * If using Crypt as \a method and CryptSHA256, CryptSHA512 or CryptBcrypt as \a algo,
+     * you can set the number of rounds used for encrytption. For CryptSHA256 and CryptSHA512 the
+     * number of iterations can be between 1000 and 999999999, setting a value outside this range
+     * it will fall back to the default of 5000 iterations. For CryptBcrypt the numer of iterations
+     * is the base-2 logarithm of the \a rounds value. Current bcrypt implementations support values
+     * between 4 and 31. If the value for \a rounds is out of bounds, it will be either set to the
+     * lowest or highest supported value.
+     *
+     * \param method    The method to use for encrypting the password.
+     * \param algo      The algorithm to use if the method supports different algorithms.
+     * \param rounds    The number of encryption rounds to use if the algorithm supports it.
+     * \return          Encrypted password.
+     */
+    QByteArray encrypt(Method method, Algorithm algo = Default, quint32 rounds = 0);
+
+    /*!
+     * \brief Checks if the unencrypted password in the constructor is equal to the saved password.
+     * \todo Implement password checking. It currently only returns false.
+     * \param savedPw   The encrypted saved password.
+     * \return          True if both passwords are equal.
+     */
     bool check(const QByteArray &savedPw);
 
 private:
     QString m_password;
 
+    /*!
+     * \brief Requests a salt value of given \a length and with the \a allowed characters.
+     *
+     * This uses \c /dev/urandom to request pseudo random numbers.
+     *
+     * \param length        Length of the salt value.
+     * \param allowedChars  Array of allowed characters.
+     * \return              Byte array that can be used as salt.
+     */
     static QByteArray requestSalt(quint16 length, const QByteArray allowedChars = QByteArray());
 };
 

@@ -22,10 +22,30 @@
 #include <QtGlobal>
 #include <utility>
 
+/*!
+ * \brief 64bit unsigned integer type for mailbox storage quota.
+ */
 typedef quint64 quota_size_t;
+
+/*!
+ * \brief 32bit unsigned integer type for database IDs.
+ */
 typedef quint32 dbid_t;
+
+/*!
+ * \brief Holds information about available and used mailbox storage quota.
+ *
+ * The first value stores the used quota in KiB, the second value stores the
+ * total quota in KiB.
+ */
 typedef std::pair<quota_size_t,quota_size_t> quota_pair;
 
+/*!
+ * \def SKAFFARI_STRING_TO_DBID(str)
+ * \brief Converts a string into an unsigned long integer.
+ *
+ * The unsigned long integer is the type used to store database IDs.
+ */
 #ifndef SKAFFARI_STRING_TO_DBID
 # define SKAFFARI_STRING_TO_DBID(str) str.toULong()
 #endif
