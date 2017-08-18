@@ -1,0 +1,140 @@
+------------------------------------------------------------------
+Skaffari 0.0.17 - 2017-08-18 10:28:00 UTC
+
+* domains can now be grouped in a parent/children relationship where
+  accounts in the parent domain automatically get also base email
+  addresses for the child domains.
+* fixed the JS code in the default template to check whole domains if
+  there is only a single account in the domain
+* update default template to Bootstrap 4 Beta
+* delete all email addresses of a domain when deleting the domain. As
+  accounts can have multiple email addresses and can also have addresses
+  from other domains.
+
+------------------------------------------------------------------
+Skaffari 0.0.16 - 2017-07-06 16:52:00 UTC
+
+* New support for the status column that can be used by pam_mysql
+  to determine if an account or the password has been expired.
+  To make this possible, accounts gained a new column to store the
+  expiration date of the password. The account check route and
+  skaffaricmd --update-account-status can be used to update the
+  status column.
+* The account list is now sortable.
+* Default template: accounts in the account list will be updated
+  if they have been checked and if the check changed somthing.
+
+------------------------------------------------------------------
+Skaffari 0.0.15 - 2017-07-01 19:20:00 UTC
+
+* domain table is now sortable (#13)
+* account list now loads asynchrous and an loads more content
+  on behalf of the user (#11)
+* account list can be filtered by username, email addres or
+  forward address
+* templates can have configuration files to set some Skaffari
+  behavior (#17)
+
+------------------------------------------------------------------
+Skaffari 0.0.14 - 2017-06-30 07:01:00 UTC
+
+* use human readable sizes to set quota (#6)
+* add more log file output to account management (#10)
+* implement catch all functionality (#4)
+* use unsigned 64bit integer to store quota values,
+  fixes issue (#15)
+
+------------------------------------------------------------------
+Skaffari 0.0.13 - 2017-06-27 12:51:00 UTC
+
+* fix deleting email address after renaming dores not work (#1)
+* more logging in admin management (#3)
+* use AJAX for more actions in default template (#2)
+
+------------------------------------------------------------------
+Skaffari 0.0.12 - 2017-06-23 15:55:00 UTC
+
+* make email management routes AJAX friendly
+* use AJAX for email address management
+* add localization support
+
+------------------------------------------------------------------
+Skaffari 0.0.11 - 2017-06-19 09:32:00 UTC
+
+* store email addresses in ACE format
+* fix gettings single domain
+* use QCollator for locale aware sorting
+* add HelpEntry class to unify help entries in templates
+* add general skaffari 8 man page
+* move help text into core instead of template files
+* begin improving input template forms
+* add functions to check account consistency
+
+------------------------------------------------------------------
+Skaffari 0.0.10 - 2017-05-11 11:44:00 UTC
+
+* IMAP: implement mailbox management (create, delete, subscribe, setacl,
+  setquota)
+* fix some issues in template
+
+------------------------------------------------------------------
+Skaffari 0.0.9 - 2017-05-09 20:26:00 UTC
+
+* fixing fucking typos
+
+------------------------------------------------------------------
+Skaffari 0.0.8 - 2017-05-09 20:11:00 UTC
+
+* fix wrong key name in map
+
+------------------------------------------------------------------
+Skaffari 0.0.7 - 2017-05-09 19:40:00 UTC
+
+* fix man page names
+
+------------------------------------------------------------------
+Skaffari 0.0.6 - 2017-05-09 19:27:00 UTC
+
+* improve IMAP response parsing
+* rename some configuration key names and variables to be not confused
+* set default values for configuration in main CMakeLists.txt file to
+  use them in man pages
+* rename skaffarictl to skaffaricmd
+
+------------------------------------------------------------------
+Skaffari 0.0.5 - 2017-05-07 23:53:00 UTC
+
+* add new SkaffariConfig class as central configuration storage and use
+  it all over Skaffari
+* fix MySQL initialization when using mutliple threads, workaround for
+  QTBUG-54872
+* SkaffariIMAP: remove overladoed constructors and use SkaffariConfig
+  in default constructor
+* define configuration default values in config.h file
+* skaffarictl: improve IMAP parsing (has to be applied to SkaffariIMAP)
+* add option to set a different peer name for SLL/TLS verification
+* get rid of SkaffariEngine and SEngine, both are not needed anymore
+
+------------------------------------------------------------------
+Skaffari 0.0.4 - 2017-05-04 22:53:00 UTC
+
+* improve packaging
+* improve startup error reporting
+* add testing switch to skaffarictl
+* add skaffarictl man page
+
+------------------------------------------------------------------
+Skaffari 0.0.3 - 2017-05-02 13:21:00 UTC
+
+* Fixed missing installation of skaffarictl
+
+------------------------------------------------------------------
+Skaffari 0.0.2 - 2017-05-02 13:13:00 UTC
+
+* fix missing CMakeLists.txt files in release tarball
+
+------------------------------------------------------------------
+Skaffari 0.0.1 - 2017-05-02 13:03:00 UTC
+
+* early preview release with basic functionality
+
