@@ -28,6 +28,9 @@ set(skaffari_SRCS
     objects/helpentry.cpp
     objects/helpentry.h
     objects/helpentry_p.h
+    objects/simpleaccount.cpp
+    objects/simpleaccount.h
+    objects/simpleaccount_p.h
     utils/language.cpp
     utils/language.h
     utils/language_p.h
