@@ -8,13 +8,26 @@
 
 {% if domain.accounts > 0 %}
 <div class="mt-1">
+    <form id="checkDomainForm">
+        {% if domain.children.count > 0 %}
+        <div class="form-check">
+            <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" name="checkChildAddresses" value="1">
+                {{ _("Check for missing child domain addresses") }}
+            </label>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<div class="mt-1">
     <div class="progress">
         <div id="checkdomainprogress" class="progress-bar bg-info" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="{{ domain.accounts }}">0/{{ domain.accounts }}</div>
     </div>
 </div>
 
 <div class="mt-1" id="checkdomaininfo">
-    
+
 </div>
 
 {% else %}

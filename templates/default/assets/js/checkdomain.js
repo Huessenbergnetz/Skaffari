@@ -31,16 +31,19 @@ $(function() {
         var ntdStr = checkDom.data('ntdstr');
         var idCount = accountIds.length;
         var infoBlock = $('#checkdomaininfo');
-        
+        var checkOptions = $('#checkDomainForm').serialize();
+
         if ((idCount > 0) && !checkDomainRunning) {
             checkDomainRunning = true;
             checkDom.prop('disabled', true);
+            $('input[name="checkChildAddresses"]').prop('disabled', true);
             infoBlock.empty();
-        
+
             var _qjax = new $.qjax({
                 timeout: 10000,
                 ajaxSettings: {
-                    dataType: "json"
+                    dataType: "json",
+                    data: checkOptions
                 },
                 onQueueChange: function(length) {
                     var finishedCount = idCount - length;
@@ -51,11 +54,12 @@ $(function() {
                     cdp.text(finishedCount + '/' + idCount);
                     if (length === 0) {
                         checkDom.prop('disabled', false);
+                        $('input[name="checkChildAddresses"]').prop('disabled', false);
                         checkDomainRunning = false;
                     }
                 }
             });
-            
+
             for (i = 0; i < idCount; ++i) {
                 var ret = _qjax.Queue({
                     url: '/account/' + domainId +'/' + accountIds[i] + '/check',
