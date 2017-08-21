@@ -39,14 +39,14 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
         accountid: a.id,
         username: a.username
     });
-    
+
     /* Start action button dropdown */
-    
+
     var actions = $('<td>');
-    
+
     var btnGroup = $('<div>');
     btnGroup.addClass('btn-group');
-    
+
     var mainBtn = $('<a>');
     mainBtn.addClass('btn btn-sm btn-light');
     mainBtn.attr({
@@ -57,9 +57,9 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     var mainBtnIcon = $('<i>');
     mainBtnIcon.addClass('fa fa-edit fa-fw');
     mainBtn.append(mainBtnIcon);
-    
+
     btnGroup.append(mainBtn);
-    
+
     var toggleBtn = $('<button>');
     toggleBtn.addClass('btn btn-sm btn-light dropdown-toggle dropdown-toggle-split');
     toggleBtn.attr({
@@ -73,21 +73,21 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     toggleBtnDesc.addClass('sr-only');
     toggleBtnDesc.text(l10n.toggleDropdown);
     toggleBtn.append(toggleBtnDesc);
-    
+
     btnGroup.append(toggleBtn);
-    
+
     var dropdownMenu = $('<div>');
     dropdownMenu.addClass('dropdown-menu');
-    
+
     var addressesBtn = $('<a>');
     addressesBtn.addClass('dropdown-item');
     addressesBtn.attr('href', '/account/' + a.domainId + '/' + a.id + '/addresses');
     var addressesBtnIcon = $('<i>');
     addressesBtnIcon.addClass('fa fa-envelope-o fa-fw');
     addressesBtn.append(addressesBtnIcon);
-    addressesBtn.append(' ' + l10n.emailAddresses);    
+    addressesBtn.append(' ' + l10n.emailAddresses);
     dropdownMenu.append(addressesBtn);
-    
+
     var forwardsBtn = $('<a>');
     forwardsBtn.addClass('dropdown-item');
     forwardsBtn.attr('href', '/account/' + a.domainId + '/' + a.id + '/forwards');
@@ -96,7 +96,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     forwardsBtn.append(forwardsBtnIcon);
     forwardsBtn.append(' ' + l10n.forwards);
     dropdownMenu.append(forwardsBtn);
-    
+
     var checkBtn = $('<a>');
     checkBtn.addClass('dropdown-item check-account-btn');
     checkBtn.attr({href: '#', 'data-target': '#checkAccountModal', 'data-toggle': 'modal'});
@@ -109,7 +109,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     checkBtn.append(checkBtnIcon);
     checkBtn.append(' ' + l10n.checkAccount);
     dropdownMenu.append(checkBtn);
-    
+
     var removeBtn = $('<a>');
     removeBtn.addClass('dropdown-item remove-account-btn text-danger');
     removeBtn.attr({
@@ -132,15 +132,15 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     removeBtn.append(removeBtnIcon);
     removeBtn.append(' ' + l10n.deleteAccount);
     dropdownMenu.append(removeBtn);
-    
+
     btnGroup.append(dropdownMenu);
-    
+
     actions.append(btnGroup);
-    
+
     tr.append(actions);
-    
+
     /* End action button dropdown */
-    
+
     var username = $('<td>');
     var unLink = $('<a>');
     unLink.attr('href', '/account/' + a.domainId + '/' + a.id + '/addresses');
@@ -153,14 +153,14 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     idsmall.text(l10n.id + ' ' + a.id);
     username.append(idsmall);
     tr.append(username);
-    
+
     var addresses = $('<td>');
     if (a.catchAll) {
         addresses.append('<span class="text-warning">' + l10n.catchAll + '</span><br>')
     }
     addresses.append(a.addresses.join('<br>'));
     tr.append(addresses);
-    
+
     var forwards = $('<td>');
     forwards.append(a.forwards.join('<br>'));
     if (a.forwards.length > 0) {
@@ -173,7 +173,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
         }
     }
     tr.append(forwards);
-    
+
     var progress = $('<td>');
     var usagePercent = 0;
     if ((a.quota != 0) && (a.usage != 0)) {
@@ -182,7 +182,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     var progDiv = $('<div>');
     progDiv.addClass('progress');
     progDiv.attr('title', usagePercent.toFixed(2) + '%');
-    
+
     var barDiv = $('<div>');
     barDiv.addClass('progress-bar bg-info pb-w-' + Math.round(usagePercent).toString());
     barDiv.attr({
@@ -195,7 +195,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     barDiv.text(usagePercent.toFixed(2) + '%');
     progDiv.append(barDiv);
     progress.append(progDiv);
-    
+
     var humanUsage = Skaffari.DefaultTmpl.humanBinarySize(a.usage * 1024);
     var humanQuota = Skaffari.DefaultTmpl.humanBinarySize(a.quota * 1024);
     var progText = $('<p>');
@@ -204,9 +204,9 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     progTextSmall.text(humanUsage + '/' + humanQuota);
     progText.append(progTextSmall);
     progress.append(progText);
-    
+
     tr.append(progress);
-    
+
     var times = $('<td>');
     var created = new Date(a.created);
     var updated = new Date(a.updated);
@@ -235,7 +235,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     pwExpirationSpan.append(passwordExpires.toLocaleString(undefined, dateOptions))
     times.append(pwExpirationSpan);
     tr.append(times);
-    
+
     var services = $('<td>');
     var slist = ['imap', 'pop', 'sieve', 'smtpauth'];
     for (var i = 0; i < 4; i++) {
@@ -265,7 +265,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
                 }
     }
     tr.append(services);
-    
+
     return tr;
 };
 
@@ -275,19 +275,24 @@ Skaffari.DefaultTmpl.AccountList.checkAccount = function() {
     var accountid = cam.data('accountid');
     var checkAccountList = $('#checkAccountList');
     checkAccountList.empty();
+    var checkOptions = $('#checkAccountForm').serialize();
     var checkAccountActive = $('#checkAccountActive');
     checkAccountActive.show();
     var checkAccountSubmit = $('#checkAccountSubmit');
     checkAccountSubmit.prop('disabled', true);
+    var checkChildAddresses = $('input[name="checkChildAddresses"]');
+    checkChildAddresses.prop('disabled', true);
     $('#check-account-message-container').empty();
-    
+
     $.ajax({
         method: 'get',
         url: '/account/' + domainid + '/' + accountid + '/check',
-        dataType: 'json'
+        dataType: 'json',
+        data: checkOptions
     }).always(function(data) {
         checkAccountActive.hide();
         checkAccountSubmit.prop('disabled', false);
+        checkChildAddresses.prop('disabled', false);
     }).done(function(data) {
         if (data.actions) {
             var actions = data.actions;
@@ -332,11 +337,11 @@ Skaffari.DefaultTmpl.AccountList.load = function(loadMore) {
         if (loadMoreBtn.length > 0) {
             loadMoreBtn.hide();
         }
-        
+
         // the number of table rows will be the index
         // of the next newly added row
         var newStartIdx = al.tbody.children().length;
-        
+
         $.ajax({
             url: '/domain/' + aff.data('domainid') + '/accounts',
             data: formData,
@@ -356,10 +361,10 @@ Skaffari.DefaultTmpl.AccountList.load = function(loadMore) {
                     var tr = Skaffari.DefaultTmpl.AccountList.createRow(accounts[i]);
                     al.tbody.append(tr);
                 }
-            } else {                    
-                al.emptyListInfo.show();                    
+            } else {
+                al.emptyListInfo.show();
             }
-            
+
             if (data.currentPage < data.lastPage) {
                 if (loadMoreBtn.length > 0) {
                     loadMoreBtn.show();
@@ -381,7 +386,7 @@ Skaffari.DefaultTmpl.AccountList.load = function(loadMore) {
                     al.loadingActive.after(loadMoreBtn);
                 }
             }
-            
+
             if (loadMore) {
                 // calculate the offset to the top
                 // if we do not take the fixed top navabar into account,
@@ -391,7 +396,7 @@ Skaffari.DefaultTmpl.AccountList.load = function(loadMore) {
                     scrollTop: dist
                 }, 400);
             }
-            
+
         }).fail(function(jqXHR) {
             Skaffari.DefaultTmpl.createAlert('warning', jqXHR.responseJSON.error_msg, Skaffari.DefaultTmpl.messageContainer, 'mt-1')
         });
@@ -410,7 +415,7 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
     var al = Skaffari.DefaultTmpl.AccountList;
     var aff = al.filterForm;
     if (aff.length > 0) {
-        
+
         al.emptyListInfo = $('#emptyListInfo');
         al.emptyListInfo.hide();
         al.searchString = $('#searchString');
@@ -422,34 +427,34 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
         al.currentPage = $('#currentPage');
         al.accountsPerPage = $('#accountsPerPage');
         al.checkAccountModal = $('#checkAccountModal');
-        
+
         al.l10n = JSON.parse(document.getElementById('translationStrings').innerHTML);
-        
+
         aff.data('loading', '0');
-        
+
         al.load(false);
-        
+
         aff.submit(function(e) {
             al.currentPage.val('1');
             al.load(false);
             e.preventDefault();
         });
-        
+
         al.searchRole.change(function() {
             if (al.searchString.val().trim().length > 0) {
                 al.currentPage.val('1');
                 al.load(false);
             }
         });
-        
+
         al.resetBtn.click(function() {
             al.resetFilters();
         });
-        
+
         // initialize icon on column header
         var currentCol = $('#accountsTable th[data-sortby="' + $('#sortBy').val() + '"]');
         currentCol.append(' <small><i class="fa fa-sort-' + currentCol.data('sorttype') + '-' + $('#sortOrder').val() + ' text-muted"></i></small>');
-        
+
         $('#accountsTable th.sortable').click(function(e) {
             if (aff.data('loading') == "0") {
                 $('#accountsTable th > small').remove();
@@ -458,7 +463,7 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
                 var currentSortOrder = $('#sortOrder').val();
                 var sortBy = th.data('sortby');
                 var sortOrder = th.data('sortorder');
-                
+
                 if (currentSortBy == sortBy) {
                     if (currentSortOrder == "asc") {
                         $('#sortOrder').val('desc');
@@ -473,12 +478,14 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
                 al.load();
             }
         });
-        
+
         if (al.checkAccountModal.length > 0) {
+            $('#checkAccountActive').hide();
+
             $('#checkAccountSubmit').click(function() {
                 Skaffari.DefaultTmpl.AccountList.checkAccount();
             });
-            
+
             al.checkAccountModal.on('show.bs.modal', function(e) {
                 $('.check-account-btn').prop('disabled', true);
                 var btn = $(e.relatedTarget);
@@ -490,9 +497,9 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
                     domainid: did,
                     accountid: aid
                 });
-                Skaffari.DefaultTmpl.AccountList.checkAccount();
+//                 Skaffari.DefaultTmpl.AccountList.checkAccount();
             });
-            
+
             al.checkAccountModal.on('hide.bs.modal', function() {
                 $('.check-account-btn').prop('disabled', false);
             });

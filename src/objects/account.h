@@ -519,12 +519,13 @@ public:
      *
      * This will for example check for missing mailbox on the IMAP server and wrong or missing storage quotas.
      *
-     * \param c Pointer to the current context, used for string translation and user authentication.
-     * \param e Pointer to an object taking information about occuring errors.
-     * \param actions Pointer to a list that will contain the actions performed on this account.
+     * \param c         Pointer to the current context, used for string translation and user authentication.
+     * \param e         Pointer to an object taking information about occuring errors.
+     * \param domain    Object containing information about the domain the account belongs to.
+     * \param p         Man of input parameters containing checks to perform.
      * \return List of actions performed for this account.
      */
-    QStringList check(Cutelyst::Context *c, SkaffariError *e, const Domain &domain = Domain());
+    QStringList check(Cutelyst::Context *c, SkaffariError *e, const Domain &domain = Domain(), const Cutelyst::ParamsMultiMap &p = Cutelyst::ParamsMultiMap());
 
     /*!
      * \brief Updates a single email address connected to the account pointed to by \a a.
@@ -587,6 +588,13 @@ public:
     static QString addressToACE(const QString &address);
 
     static quint8 calcStatus(const QDateTime validUntil, const QDateTime pwExpires);
+
+    /*!
+     * \brief Splits an email address into local and domain part.
+     * \param address The email adress to split.
+     * \return String pair where first contains the local part and second the domain part.
+     */
+    static std::pair<QString,QString> addressParts(const QString &address);
 
 protected:
     QSharedDataPointer<AccountData> d;

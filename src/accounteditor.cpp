@@ -731,43 +731,68 @@ void AccountEditor::forwards(Context *c)
 void AccountEditor::check(Context *c)
 {
     if (Domain::accessGranted(c)) {
+
+        const bool isAjax = Utils::isAjax(c);
+
+        static Validator v({
+                               new ValidatorBoolean(QStringLiteral("checkChildAddresses"))
+                           });
+
+        const ValidatorResult vr = isAjax ? v.validate(c) : v.validate(c, Validator::FillStashOnError);
+
         auto a = Account::fromStash(c);
-        auto d = Domain::fromStash(c);
 
-        SkaffariError e(c);
-        const QStringList actions = a.check(c, &e, d);
+        if (vr) {
+            auto d = Domain::fromStash(c);
 
-        Account::toStash(c, a);
+            SkaffariError e(c);
+            const QStringList actions = a.check(c, &e, d, c->req()->params());
 
-        if (c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive)) {
+            Account::toStash(c, a);
 
-            QJsonObject result;
-            result.insert(QStringLiteral("username"), QJsonValue(a.getUsername()));
+            if (isAjax) {
 
-            if (e.type() != SkaffariError::NoError) {
-                result.insert(QStringLiteral("error_msg"), QJsonValue(e.errorText()));
-                c->response()->setStatus(Response::InternalServerError);
-            } else {
-                if (actions.size() > 0) {
-                    result.insert(QStringLiteral("actions"), QJsonValue(QJsonArray::fromStringList(actions)));
-                    result.insert(QStringLiteral("account"), a.toJson());
+                QJsonObject result;
+                result.insert(QStringLiteral("username"), QJsonValue(a.getUsername()));
+
+                if (e.type() != SkaffariError::NoError) {
+                    result.insert(QStringLiteral("error_msg"), QJsonValue(e.errorText()));
+                    c->response()->setStatus(Response::InternalServerError);
                 } else {
-                    result.insert(QStringLiteral("status_msg"), QJsonValue(c->translate("AccountEditor", "Nothing to do. Everything seems to be ok with this account.")));
+                    if (!actions.empty()) {
+                        result.insert(QStringLiteral("actions"), QJsonValue(QJsonArray::fromStringList(actions)));
+                        result.insert(QStringLiteral("account"), a.toJson());
+                    } else {
+                        result.insert(QStringLiteral("status_msg"), QJsonValue(c->translate("AccountEditor", "Nothing to do. Everything seems to be ok with this account.")));
+                    }
                 }
+
+                QJsonDocument json(result);
+
+                c->response()->setJsonBody(json);
+
+            } else {
+                if (e.type() != SkaffariError::NoError) {
+                    c->setStash(QStringLiteral("error_msg"), e.errorText());
+                    c->response()->setStatus(Response::InternalServerError);
+                }
+
+                c->setStash(QStringLiteral("actions"), actions);
+                c->setStash(QStringLiteral("template"), QStringLiteral("account/check.html"));
             }
-
-            QJsonDocument json(result);
-
-            c->response()->setJsonBody(json);
-
         } else {
-            if (e.type() != SkaffariError::NoError) {
-                c->setStash(QStringLiteral("error_msg"), e.errorText());
-                c->response()->setStatus(Response::InternalServerError);
-            }
+            if (isAjax) {
+                QJsonObject result;
+                result.insert(QStringLiteral("username"), a.getUsername());
+                result.insert(QStringLiteral("error_msg"), vr.errorStrings().at(0));
 
-            c->setStash(QStringLiteral("actions"), actions);
-            c->setStash(QStringLiteral("template"), QStringLiteral("account/check.html"));
+                QJsonDocument json(result);
+
+                c->response()->setJsonBody(json);
+            } else {
+                c->setStash(QStringLiteral("template"), QStringLiteral("account/check.html"));
+            }
+            c->response()->setStatus(Response::BadRequest);
         }
     }
 }

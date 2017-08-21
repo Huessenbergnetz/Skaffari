@@ -90,6 +90,16 @@
             </div>
             <div class="modal-body">
                 <h3 id="checkAccountName"></h3>
+                <form id="checkAccountForm">
+                    {% if domain.children.count > 0 %}
+                    <div class="form-check">
+                        <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" name="checkChildAddresses" value="1">
+                            {{ _("Check for missing child domain addresses") }}
+                        </label>
+                    </div>
+                    {% endif %}
+                </form>
                 <div id="checkAccountActive" class="text-center">
                     <i class="fa fa-circle-o-notch fa-5x fa-spin"></i>
                 </div>
@@ -104,7 +114,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fa fa-times"></i> {{ _("Cancel") }}</button>
-                <button type="button" id="checkAccountSubmit" class="btn btn-danger"><i id="checkAccountIcon" class="fa fa-stethoscope"></i> {{ _("Recheck") }}</button>
+                <button type="button" id="checkAccountSubmit" class="btn btn-danger"><i id="checkAccountIcon" class="fa fa-stethoscope"></i> {{ _("Check") }}</button>
             </div>
         </div>
     </div>

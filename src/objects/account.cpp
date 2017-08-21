@@ -1382,7 +1382,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
 #define PAM_ACCT_EXPIRED 1
 #define PAM_NEW_AUTHTOK_REQD 2
 
-QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain &domain)
+QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain &domain, const Cutelyst::ParamsMultiMap &p)
 {
     QStringList actions;
 
@@ -1509,7 +1509,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
 
         if (oldPwExpired != newPwExpired) {
             if (!oldPwExpired && newPwExpired) {
-                actions.push_back(c->translate("Accont", "The password of the account was only valid until %1 and has been expired.").arg(c->locale().toString(d->passwordExpires, QLocale::ShortFormat)));
+                actions.push_back(c->translate("Account", "The password of the account was only valid until %1 and has been expired.").arg(c->locale().toString(d->passwordExpires, QLocale::ShortFormat)));
             } else {
                 actions.push_back(c->translate("Account", "The password of the account was marked as expired but is now valid again until %1.").arg(c->locale().toString(d->passwordExpires, QLocale::ShortFormat)));
             }
@@ -1522,7 +1522,54 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
         if (Q_UNLIKELY(!q.exec())) {
             qCWarning(SK_ACCOUNT, "Failed to update status for account ID %u in the database: %s", d->id, qUtf8Printable(q.lastError().text()));
         } else {
-            qCInfo(SK_ACCOUNT, "%s seth correct status value of %i for user account ID %u.", qUtf8Printable(Utils::getUserName(c)), newStatus, d->id);
+            qCInfo(SK_ACCOUNT, "%s set correct status value of %i for user account ID %u.", qUtf8Printable(Utils::getUserName(c)), newStatus, d->id);
+        }
+    }
+
+    if (p.contains(QStringLiteral("checkChildAddresses")) && (p.value(QStringLiteral("checkChildAddresses")) == QLatin1String("1")) && !domain.children().empty()) {
+        const QStringList addresses = d->addresses;
+        if (!addresses.empty()) {
+            QSqlQuery q;
+            QStringList newAddresses;
+            for (const QString &address : addresses) {
+                std::pair<QString,QString> parts = addressParts(address);
+                if (parts.second == d->domainName) {
+                    const QVector<SimpleDomain> thekids = domain.children();
+                    for (const SimpleDomain &kid : thekids) {
+                        const QString childAddress = parts.first + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(kid.name()));
+                        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :alias"));
+                        q.bindValue(QStringLiteral(":alias"), childAddress);
+
+                        if (Q_LIKELY(q.exec())) {
+                            if (!q.next()) {
+                                QSqlQuery qq = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
+                                qq.bindValue(QStringLiteral(":alias"), childAddress);
+                                qq.bindValue(QStringLiteral(":dest"), d->username);
+                                qq.bindValue(QStringLiteral(":username"), d->username);
+                                qq.bindValue(QStringLiteral(":status"), 1);
+
+                                if (Q_LIKELY(qq.exec())) {
+                                    const QString newAddress = parts.first + QLatin1Char('@') + kid.name();
+                                    newAddresses.push_back(newAddress);
+                                    qCInfo(SK_ACCOUNT, "%s added a new address for child domain %s to account ID %u.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(kid.name()), d->id);
+                                    actions.push_back(c->translate("Account", "Added new address for child domain: %1").arg(newAddress));
+                                } else {
+                                    qCWarning(SK_ACCOUNT, "Failed to add new email address for child domain while checking account ID %u: %s", d->id, qUtf8Printable(qq.lastError().text()));
+                                }
+                            }
+                        } else {
+                            qCWarning(SK_ACCOUNT, "Failed to check if email address is already in use by another account: %s", qUtf8Printable(q.lastError().text()));
+                        }
+                    }
+                }
+            }
+            if (!newAddresses.empty()) {
+                d->addresses.append(newAddresses);
+                if (d->addresses.size() > 1) {
+                    QCollator col(c->locale());
+                    std::sort(d->addresses.begin(), d->addresses.end(), col);
+                }
+            }
         }
     }
 
@@ -1864,4 +1911,16 @@ quint8 Account::calcStatus(const QDateTime validUntil, const QDateTime pwExpires
     }
 
     return _stat;
+}
+
+
+std::pair<QString,QString> Account::addressParts(const QString &address)
+{
+    std::pair<QString,QString> parts;
+
+    const int atIdx = address.lastIndexOf(QLatin1Char('@'));
+    parts.first = address.left(atIdx);
+    parts.second = address.mid(atIdx + 1);
+
+    return parts;
 }
