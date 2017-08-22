@@ -3,110 +3,114 @@
 </div>
 
 <form id="createDomainForm" method="post">
-    <div class="row mt-1">
+    <fieldset class="row mt-1">
 
         <input type="hidden" id="domainAsPrefix" name="domainAsPrefix" value="{{ domainAsPrefix }}">
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.domainName.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="domainName">{{ help.domainName.title }}</label>
-            <input type="text" id="domainName" name="domainName" class="form-control{% if validationErrors.domainName.count %} form-control-warning{% endif %}" value="{{ domain.name|default_if_none:domainName }}" placeholder="example.com" pattern="^\S*\.\S{2,}$" aria-describedby="domainNameDesc" required>
-            {% if validationErrors.domainName.count %}<div class="form-control-feedback"><small>{{ validationErrors.domainName.0 }}</small></div>{% endif %}
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="domainName">{{ help.domainName.title }}</label>
+            <input type="text" id="domainName" name="domainName" class="form-control{% if validationErrors.domainName.count %} is-invalid{% endif %}" value="{{ domain.name|default_if_none:domainName }}" placeholder="example.com" pattern="^\S*\.\S{2,}$" aria-describedby="domainNameDesc" required>
+            {% if validationErrors.domainName.count %}<div class="invalid-feedback"><small>{{ validationErrors.domainName.0 }}</small></div>{% endif %}
             <small id="domainNameDesc" class="form-text text-muted">{{ help.domainName.text }}</small>
         </div>
 
         {% if not domainAsPrefix %}
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.prefix.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="prefix">{{ help.prefix.title }}</label>
-            <input type="text" id="prefix" name="prefix" class="form-control{% if validationErrors.prefix.count %} form-control-warning{% endif %}" value="{{ domain.prefix|default_if_none:prefix }}" placeholder="{{ help.prefix.title }}" aria-describedby="prefixDesc" required>
-            {% if validationErrors.prefix.count %}<div class="form-control-feedback"><small>{{ validationErrors.prefix.0 }}</small></div>{% endif %}
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="prefix">{{ help.prefix.title }}</label>
+            <input type="text" id="prefix" name="prefix" class="form-control{% if validationErrors.prefix.count %} is-invalid{% endif %}" value="{{ domain.prefix|default_if_none:prefix }}" placeholder="{{ help.prefix.title }}" aria-describedby="prefixDesc" required>
+            {% if validationErrors.prefix.count %}<div class="invalid-feedback"><small>{{ validationErrors.prefix.0 }}</small></div>{% endif %}
             <small id="prefixDesc" class="form-text text-muted">{{ help.prefix.text }}</small>
         </div>
         {% endif %}
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.maxAccounts.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="maxAccounts">{{ help.maxAccounts.title }}</label>
-            <input type="number" id="maxAccounts" name="maxAccounts" class="form-control{% if validationErrors.maxAccounts.count %} form-control-warning{% endif %}" value="{{ domain.maxAccounts|default:defMaxAccounts}}" min="0" aria-describedby="maxAccountsDesc" required>
-            {% if validationErrors.maxAccounts.count %}<div class="form-control-feedback"><small>{{ validationErrors.maxAccounts.0 }}</small></div>{% endif %}
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="maxAccounts">{{ help.maxAccounts.title }}</label>
+            <input type="number" id="maxAccounts" name="maxAccounts" class="form-control{% if validationErrors.maxAccounts.count %} is-invalid{% endif %}" value="{{ domain.maxAccounts|default:defMaxAccounts}}" min="0" aria-describedby="maxAccountsDesc" required>
+            {% if validationErrors.maxAccounts.count %}<div class="invalid-feedback"><small>{{ validationErrors.maxAccounts.0 }}</small></div>{% endif %}
             <small id="maxAccountsDesc" class="form-text text-muted">{{ help.maxAccounts.text }}</small>
         </div>
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.humanDomainQuota.count %} has-warning{% endif %}">
-            <label for="humanDomainQuota" class="form-control-label">{{ help.humanDomainQuota.title }}</label>
-            <input type="text" id="humanDomainQuota" name="humanDomainQuota" class="form-control{% if validationErrors.humanDomainQuota.count %} form-control-warning{% endif %}" value="{{ humanDomainQuota|default:defHumanDomainQuota }}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanDomainQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
-            {% if validationErrors.humanDomainQuota.count %}<div class="form-control-feedback"><small>{{ validationErrors.humanDomainQuota.0 }}</small></div>{% endif %}
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label for="humanDomainQuota" class="col-form-label">{{ help.humanDomainQuota.title }}</label>
+            <input type="text" id="humanDomainQuota" name="humanDomainQuota" class="form-control{% if validationErrors.humanDomainQuota.count %} is-invalid{% endif %}" value="{{ humanDomainQuota|default:defHumanDomainQuota }}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanDomainQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+            {% if validationErrors.humanDomainQuota.count %}<div class="invalid-feedback"><small>{{ validationErrors.humanDomainQuota.0 }}</small></div>{% endif %}
             <small id="humanDomainQuotaDesc" class="form-text text-muted">{{ help.humanDomainQuota.text }}</small>
         </div>
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.humanQuota.count %} has-warning{% endif %}">
-            <label for="humanQuota" class="form-control-label">{{ help.humanQuota.title }}</label>
-            <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} form-control-warning{% endif %}" value="{{ humanQuota|default:defHumanQuota }}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
-            {% if validationErrors.humanQuota.count %}<div class="form-control-feedback"><small>{{ validationErrors.humanQuota.0 }}</small></div>{% endif %}
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label for="humanQuota" class="col-form-label">{{ help.humanQuota.title }}</label>
+            <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} is-invalid{% endif %}" value="{{ humanQuota|default:defHumanQuota }}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+            {% if validationErrors.humanQuota.count %}<div class="invalid-feedback"><small>{{ validationErrors.humanQuota.0 }}</small></div>{% endif %}
             <small id="humanQuotaDesc" class="form-text text-muted">{{ help.humanQuota.text }}</small>
         </div>
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.folders.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="folders">{{ help.folders.title }}</label>
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="folders">{{ help.folders.title }}</label>
             <input type="text" id="folders" name="folders" class="form-control" value="{{ domain.folders|join:"," }}" placeholder="{{ _("e.g. Trash,Spam,Drafts,Sent Messages") }}" aria-describedby="foldersDesc">
-            {% if validationErrors.folders.count %}<div class="form-control-feedback"><small>{{ validationErrors.folders.0 }}</small></div>{% endif %}
+            {% if validationErrors.folders.count %}<div class="invalid-feedback"><small>{{ validationErrors.folders.0 }}</small></div>{% endif %}
             <small id="foldersDesc" class="form-text text-muted">{{ help.folders.text }}</small>
         </div>
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.parent.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="parent">{{ help.parent.title }}</label>
-            <select id="parent" name="parent" class="form-control{% if validationErrors.parent.count %} form-control-warning{% endif %}" aria-describedby="parentDesc">
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="parent">{{ help.parent.title }}</label>
+            <select id="parent" name="parent" class="form-control{% if validationErrors.parent.count %} is-invalid{% endif %} select2" aria-describedby="parentDesc">
                 <option value="0"{% if domain.parent.id == 0 %} selected{% endif %}>{{ _("none") }}</option>
                 {% for dom in domains %}
                 <option value="{{ dom.id }}"{% if domain.parent.id == dom.id %} selected{% endif %}>{{ dom.name }}</option>
                 {% endfor %}
             </select>
-            {% if validationErrors.parent.count %}<div class="form-control-feedback"><small>{{ validationErrors.parent.0 }}</small></div>{% endif %}
+            {% if validationErrors.parent.count %}<div class="invalid-feedback"><small>{{ validationErrors.parent.0 }}</small></div>{% endif %}
             <small id="parentDesc" class="form-text text-muted">{{ help.parent.text }}</small>
         </div>
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.transport.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="transport">{{ help.transport.title }}</label>
-            <select class="form-control" id="transport" name="transport" aria-describedby="transportDesc">
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="transport">{{ help.transport.title }}</label>
+            <select class="form-control{% if validationErrors.transport.count %} is-invalid{% endif %}" id="transport" name="transport" aria-describedby="transportDesc">
                 <option value="cyrus"{% ifequal transport "cyrus" %} selected{% endifequal %}>Cyrus</option>
                 <option value="lmtp"{% ifequal transport "lmtp" %} selected{% endifequal %}>LMTP</option>
                 <option value="smtp"{% ifequal transport "smtp" %} selected{% endifequal %}>SMTP</option>
                 <option value="uucp"{% ifequal transport "uucp" %} selected{% endifequal %}>UUCP</option>
             </select>
-            {% if validationErrors.transport.count %}<div class="form-control-feedback"><small>{{ validationErrors.transport.0 }}</small></div>{% endif %}
+            {% if validationErrors.transport.count %}<div class="invalid-feedback"><small>{{ validationErrors.transport.0 }}</small></div>{% endif %}
             <small id="transportDesc" class="form-text text-muted">{{ help.transport.text }}</small>
         </div>
 
-    </div>
+    </fieldset>
 
-    <div class="row">
+    <fieldset class="row">
 
-        <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if domain.freeNames %} checked{% endif %}>
-                {{ help.freeNames.title }}
-            </label>
-            <small id="freeNamesDesc" class="form-text text-muted">{{ help.freeNames.text }}</small>
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <div class="form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if domain.freeNames %} checked{% endif %}>
+                    {{ help.freeNames.title }}
+                </label>
+                <small id="freeNamesDesc" class="form-text text-muted">{{ help.freeNames.text }}</small>
+            </div>
         </div>
 
-        <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if domain.freeAddress %} checked{% endif %}>
-                {{ help.freeAddress.title }}
-            </label>
-            <small id="freeAddressDesc" class="form-text text-muted">{{ help.freeAddress.text }}</small>
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <div class="form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if domain.freeAddress %} checked{% endif %}>
+                    {{ help.freeAddress.title }}
+                </label>
+                <small id="freeAddressDesc" class="form-text text-muted">{{ help.freeAddress.text }}</small>
+            </div>
         </div>
 
-    </div>
+    </fieldset>
 
-    <div class="row">
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.abuseAccount.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="abuseAccount">{{ help.abuseAccount.title }}</label>
-            <select class="form-control select2-ajax" id="abuseAccount" name="abuseAccount" aria-describedby="abuseAccountDesc">
-                <option value="0"{% if abuseAccount == 0 %} selected{% endif %}>{{ _("None") }}</option>
+    <fieldset class="row">
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="abuseAccount">{{ help.abuseAccount.title }}</label>
+            <select class="form-control{% if validationErrors.abuseAccount.count %} is-invalid{% endif %} select2-ajax" id="abuseAccount" name="abuseAccount" aria-describedby="abuseAccountDesc">
+                <option value="0"{% if not abuseAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
             </select>
-            {% if validationErrors.abuseAccount.count %}<div class="form-control-feedback"><small>{{ validationErrors.abuseAccount.0 }}</small></div>{% endif %}
+            {% if validationErrors.abuseAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.abuseAccount.0 }}</small></div>{% endif %}
             <small id="abuseAccountDesc" class="form-text text-muted">{{ help.abuseAccount.text }}</small>
         </div>
-    </div>
+    </fieldset>
 
     <div class="mt-1">
         <a href="/domain" class="btn btn-outline-warning float-left" role="button"><i class="fa fa-times"></i> {{ _("Cancel") }}</a>
