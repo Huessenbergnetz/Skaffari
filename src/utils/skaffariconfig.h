@@ -26,22 +26,112 @@
 #include "../imap/skaffariimap.h"
 #include "../objects/account.h"
 
+/*!
+ * \brief Static interface to access Skaffari and template settings in read only mode.
+ *
+ * This class contains the settings from the Skaffari configuration file as well as the settings
+ * from the current template.
+ *
+ * All configuration values are saved static to be accessible globally.
+ */
 class SkaffariConfig
 {
 public:
+    /*!
+     * \brief Constructs a new SkaffariConfig object.
+     */
     SkaffariConfig();
 
+    /*!
+     * \brief Loads the different configuration areas.
+     * \param accounts  Entries from the \a Accounts section.
+     * \param admins    Entries from the \a Admins section.
+     * \param defaults  Entries from the \a Defaults section.
+     * \param imap      Entries from the \a IMAP section.
+     * \param tmpl      Entrief from the current template.
+     */
     static void load(const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &defaults, const QVariantMap &imap, const QVariantMap &tmpl);
 
-    static bool isInitialized();
-
+    /*!
+     * \brief Password encryption method for the user accounts.
+     *
+     * The basic method to encrypt the user's password. Some methods support further settings that are defined in pwmethod.
+     * If it is possible to use for you, the recommended type is to use the crypt(3) function, because it supports modern
+     * hashing algorithms together with salts and an extensible storage format. The other encryption methods are there for
+     * backwards compatibility.
+     *
+     * \par Config file key
+     * Accounts/pwmethod
+     */
     static Password::Method accPwMethod();
+    /*!
+     * \brief Password encryption algorithm for the user accounts.
+     *
+     * The MySQL and crypt(3) password encryption methods support different algorithms to derive a key from a password
+     * string. To see which algorithms are supported by crypt(3) on your system, use man crypt. Especially the bcrypt
+     * algorithm that uses Blowfish is not available on every system because it is not part of the default crypt(3) distribution.
+     * The not recommended hashing methods are provided for backwards compatibility and if you have to store passwords for
+     * use across different operating systems.
+     *
+     * \par Config file key
+     * Accounts/pwalgorithm
+     */
     static Password::Algorithm accPwAlgorithm();
+    /*!
+     * \brief Password encryption iterations for the user accounts.
+     *
+     * If you are using the crypt(3) to create passwords together with the SHA-256, SHA-512 or bcrypt algorithm, you can
+     * specify an iteration count to increase the cost for deriving the key from the password. This hardens the password
+     * against brute force attacks.
+     *
+     * For SHA-256 and SHA-512 you can choose values from 1000 to 999999999 - the default is 32000. The iteration count passed
+     * to the crypt(3) function when using bcrypt is the base-2 logarithm of the acutal iteration count. Supported values for
+     * bcrypt are between 4 and 32, the default is 12.
+     *
+     * \par Config file key
+     * Accounts/pwrounds
+     */
     static quint32 accPwRounds();
+    /*!
+     * \brief Minimum length for user account passwords.
+     *
+     * The required minimum length for user account passwords created or changed via Skaffari.
+     *
+     * \par Config file key
+     * Accounts/pwminlength
+     */
     static quint8 accPwMinlength();
 
+    /*!
+     * \brief Password encryption algorithm for admin accounts.
+     *
+     * Skaffari uses <A HREF="https://en.wikipedia.org/wiki/PBKDF2">PBKDF2</A> to secure the administrator passwords. PBKDF2 can use
+     * different hashing algorithms and iteration counts to produce a derived key and to increase the cost for the derivation. To
+     * better secure your administartor passwords you should use values that lead to a time consumption of around 0.5s on your system
+     * for creating the derived key. This might be a good compromise between security and user experience. To test  different settings
+     * with the PBKDF2 implementation of Cutelyst/Skaffari you can use <A HREF="https://github.com/Buschtrommel/pbkdf2test">pbkdf2test</A>.
+     *
+     * \par Config file key
+     * Admins/pwalgorithm
+     */
     static QCryptographicHash::Algorithm admPwAlgorithm();
+    /*!
+     * \brief Password encryption iterations for admin accounts.
+     *
+     * The iteration count used by the PBKDF2 implementation to increase the cost for the key derivation.
+     *
+     * \par Config file key
+     * Admins/pwrounds
+     */
     static quint32 admPwRounds();
+    /*!
+     * \brief Minimum length for admin account passwords.
+     *
+     * The required minimum length for adiminstrator account passwords.
+     *
+     * \par Config file key
+     * Admins/pwminlength
+     */
     static quint8 admPwMinlength();
 
     static quota_size_t defDomainquota();
@@ -52,17 +142,120 @@ public:
     static quint8 defMaxdisplay();
     static quint8 defWarnlevel();
 
+    /*!
+     * \brief IMAP server address.
+     *
+     * The host the IMAP server is running on.
+     *
+     * \par Config file key
+     * IMAP/host
+     */
     static QString imapHost();
+    /*!
+     * \brief IMAP server port.
+     *
+     * The port the IMAP server is listening on.
+     *
+     * \par Config file key
+     * IMAP/port
+     */
     static quint16 imapPort();
+    /*!
+     * \brief IMAP admin user name.
+     *
+     * The user name of the IAMP admin user. This user has to be defined as administrator in the configuration of your IMAP
+     * server. For Cyrus-IMAP this is one of the users defined in the admins: key in the imapd.conf(5) configuration file.
+     *
+     * \par Config file key
+     * IMAP/user
+     */
     static QString imapUser();
+    /*!
+     * \brief IMAP admin user password.
+     *
+     * Password for the IMAP server administrator.
+     *
+     * \par Config file key
+     * IMAP/password
+     */
     static QString imapPassword();
+    /*!
+     * \brief IMAP server peer name.
+     *
+     * If you use a different host name to connect to your IMAP server than the one used in the certificate of the IMAP server,
+     * you can define this different peer name here. This can for example be used to establish an encrypted connection to an
+     * IMAP server running on your local host.
+     *
+     * \par Config file key
+     * IMAP/peername
+     */
     static QString imapPeername();
+    /*!
+     * \brief IMAP network layer protocol.
+     *
+     * The network layer protocol to connect to the IMAP server.
+     *
+     * \par Config file key
+     * IMAP/protocol
+     */
     static QAbstractSocket::NetworkLayerProtocol imapProtocol();
+    /*!
+     * \brief IMAP connection encryption.
+     *
+     * The method to encrypt the connection to the IMAP server.
+     *
+     * \par Config file key
+     * IMAP/encryption
+     */
     static SkaffariIMAP::EncryptionType imapEncryption();
+    /*!
+     * \brief IMAP mailbox creation strategy.
+     *
+     * Skaffari can create the mailboxes and all default folders on the IMAP server after creating a new user account. Alternatively
+     * the IMAP server can create default folders and account quotas on the first user login or first incoming email for the new account
+     * (has to be configured in your imapd.conf file). Skaffari is more flexible on creating different default folders for different domains.
+     *
+     * \par Config file key
+     * IMAP/createmailbox
+     */
     static Account::CreateMailbox imapCreatemailbox();
+    /*!
+     * \brief The IMAP server uses the UNIX hierarchy seperator.
+     *
+     * This setting should correspond to the value of the same setting in your imapd.conf(5) file and indicates that your imap server uses
+     * the UNIX separator character '/' for delimiting levels of mailbox hierarchy instead of the netnews separator character '.'. Up to
+     * Cyrus-IMAP 2.5.x the default value for this value in the IMAP server configuration is \c off, beginning with version 3.0.0 of Cyrus-IMAP
+     * the default has changed to \c on.
+     *
+     * \par Config file key
+     * IMAP/unixhierarchysep
+     */
+    static bool imapUnixhierarchysep();
+    /*!
+     * \brief Use dot separated email address like user names.
+     *
+     * If enabled, usernames will be composed from the email local part and the domain name, separated by a dot instead of an @ sign. Like
+     * \c user.example.com. If you want to use real email addresses (fully qualified user names aka. fqun) like \c user@example.com as user
+     * imapFqun() must return \c true, too.
+     *
+     * \note This will only return \c true, if imapUnixhierarchysep() returns \c true as well.
+     *
+     * \par Config file key
+     * IMAP/domainasprefix
+     */
     static bool imapDomainasprefix();
+    /*!
+     * \brief Use fully qualified user names.
+     *
+     * If enabled, usernames will be email addresses like john.doe@example.com.
+     *
+     * \note This will only return \c true, if imapUnixhierarchysep() and imapDomainasprefix() return \c true as well.
+     */
     static bool imapFqun();
 
+    /*!
+     * \brief Returns \c true if the current template uses asynchronous/AJAX requests to load the list of accounts.
+     */
     static bool tmplAsyncAccountList();
 
 private:
@@ -91,6 +284,7 @@ private:
     static QAbstractSocket::NetworkLayerProtocol m_imapProtocol;
     static SkaffariIMAP::EncryptionType m_imapEncryption;
     static Account::CreateMailbox m_imapCreatemailbox;
+    static bool m_imapUnixhierarchysep;
     static bool m_imapDomainasprefix;
     static bool m_imapFqun;
 

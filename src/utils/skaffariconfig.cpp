@@ -44,6 +44,7 @@ quint16 SkaffariConfig::m_imapPort = 143;
 QAbstractSocket::NetworkLayerProtocol SkaffariConfig::m_imapProtocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(SK_DEF_IMAP_PROTOCOL);
 SkaffariIMAP::EncryptionType SkaffariConfig::m_imapEncryption = static_cast<SkaffariIMAP::EncryptionType>(SK_DEF_IMAP_ENCRYPTION);
 Account::CreateMailbox SkaffariConfig::m_imapCreatemailbox = static_cast<Account::CreateMailbox>(SK_DEF_IMAP_CREATEMAILBOX);
+bool SkaffariConfig::m_imapUnixhierarchysep = SK_DEF_IMAP_UNIXHIERARCHYSEP;
 bool SkaffariConfig::m_imapDomainasprefix = SK_DEF_IMAP_DOMAINASPREFIX;
 bool SkaffariConfig::m_imapFqun = SK_DEF_IMAP_FQUN;
 
@@ -81,6 +82,7 @@ void SkaffariConfig::load(const QVariantMap &accounts, const QVariantMap &admins
     SkaffariConfig::m_imapProtocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(imap.value(QStringLiteral("protocol"), SK_DEF_IMAP_PROTOCOL).value<quint8>());
     SkaffariConfig::m_imapEncryption = static_cast<SkaffariIMAP::EncryptionType>(imap.value(QStringLiteral("encryption"), SK_DEF_IMAP_ENCRYPTION).value<quint8>());
     SkaffariConfig::m_imapCreatemailbox = static_cast<Account::CreateMailbox>(imap.value(QStringLiteral("createmailbox"), SK_DEF_IMAP_CREATEMAILBOX).value<quint8>());
+    SkaffariConfig::m_imapUnixhierarchysep = imap.value(QStringLiteral("unixhierarchysep"), SK_DEF_IMAP_UNIXHIERARCHYSEP).toBool();
     SkaffariConfig::m_imapDomainasprefix = imap.value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool();
     SkaffariConfig::m_imapFqun = imap.value(QStringLiteral("fqun"), SK_DEF_IMAP_FQUN).toBool();
 
@@ -112,7 +114,8 @@ QString SkaffariConfig::imapPeername() { return SkaffariConfig::m_imapPeername; 
 QAbstractSocket::NetworkLayerProtocol SkaffariConfig::imapProtocol() { return SkaffariConfig::m_imapProtocol; }
 SkaffariIMAP::EncryptionType SkaffariConfig::imapEncryption() { return SkaffariConfig::m_imapEncryption; }
 Account::CreateMailbox SkaffariConfig::imapCreatemailbox() { return SkaffariConfig::m_imapCreatemailbox; }
-bool SkaffariConfig::imapDomainasprefix() { return SkaffariConfig::m_imapDomainasprefix; }
-bool SkaffariConfig::imapFqun() { return SkaffariConfig::m_imapFqun; }
+bool SkaffariConfig::imapUnixhierarchysep() { return SkaffariConfig::m_imapUnixhierarchysep; }
+bool SkaffariConfig::imapDomainasprefix() { return (SkaffariConfig::m_imapUnixhierarchysep && SkaffariConfig::m_imapDomainasprefix); }
+bool SkaffariConfig::imapFqun() { return (SkaffariConfig::m_imapUnixhierarchysep && SkaffariConfig::m_imapDomainasprefix && SkaffariConfig::m_imapFqun); }
 
 bool SkaffariConfig::tmplAsyncAccountList() { return SkaffariConfig::m_tmplAsyncAccountList; }

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -52,6 +52,7 @@
 #define SK_DEF_IMAP_FQUN @DEFVAL_IMAP_FQUN@
 #define SK_DEF_IMAP_PROTOCOL @DEFVAL_IMAP_PROTOCOL@
 #define SK_DEF_IMAP_ENCRYPTION @DEFVAL_IMAP_ENCRYPTION@
+#define SK_DEF_IMAP_UNIXHIERARCHYSEP @DEFVAL_IMAP_UNIXHIERARCHYSEP@
 
 // default values for Template config
 #define SK_DEF_TMPL_ASYNCACCOUNTLIST @DEFVAL_TMPL_ASYNCACCOUNTLIST@

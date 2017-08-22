@@ -7,12 +7,12 @@ skaffari.ini - Skaffari configuration file
 .B @CMAKE_INSTALL_SYSCONFDIR@/skaffari.ini
 is the main configuration file for the Skaffari email account management web interface
 .B skaffari(8).
-You can manipulate its content either by hand with your favorite text editor or by using 
+You can manipulate its content either by hand with your favorite text editor or by using
 .B skaffaricmd(8).
 Whatever way you prefer to change the Skaffari configuration, it will not be applied automatically - you have to restart a running Skaffari instance to apply the changes.
 
 .B @CMAKE_INSTALL_SYSCONFDIR@/skaffari.ini
-uses the INI file format to define the sections and entries. See 
+uses the INI file format to define the sections and entries. See
 .UR https://en.wikipedia.org/wiki/INI_file
 .UE
 to learn more about the INI file format. Data is stored as
@@ -37,7 +37,7 @@ key3=true
 As this file contains information about user access to your database and IMAP server, it should only be readable by the user that executes Skaffari.
 
 .SH "FIELD DESCRIPTIONS"
-Below you find the different configuration sections and entries used by Skaffari in 
+Below you find the different configuration sections and entries used by Skaffari in
 .B @CMAKE_INSTALL_SYSCONFDIR@/skaffari.ini.
 Every entry shows the key name and the option's default value. Some options have no default value, these are listed with ``<no default>''. Some options default to the empty string, these are listed with ``<none>''.
 
@@ -48,7 +48,7 @@ This section contains configuration options for user account creation.
 .B pwmethod
 = @DEFVAL_ACC_PWMETHOD@
 .RS 4
-The basic method to encrypt the user's password. Some methods support further settings that are defined in 
+The basic method to encrypt the user's password. Some methods support further settings that are defined in
 .B pwmethod.
 If it is possible to use for you, the recommended type is to use the crypt(3) function, because it supports modern hashing algorithms together with salts and an extensible storage format. The other encryption methods are there for backwards compatibility.
 
@@ -338,11 +338,34 @@ Only set quota - Skaffari will login to the new account after creation to let th
 Create by Skaffari - Skaffari will create the new mailbox and the default folders and will set the account quota after adding a new account
 .RE
 
+.B unixhierarchysep
+= @DEFVAL_IMAP_UNIXHIERARCHYSEP@
+.RS 4
+This setting should correspond to the value of the same setting in your
+.B imapd.conf(5)
+file and indicates that your imap server uses the UNIX separator character '/' for delimiting levels of mailbox hierarchy instead of the netnews separator character '.'. Up to Cyrus-IMAP 2.5.x the default value for this value in the IMAP server configuration is
+.IR "off",
+beginning with version 3.0.0 of Cyrus-IMAP the default has changed to
+.IR "on".
+.RE
+
 .B domainasprefix
 = @DEFVAL_IMAP_DOMAINASPREFIX@
 .RS 4
-If you want to use email addresses with dots in them such as john.doe@example.com you can activate this option.
+If enabled, usernames will be composed from the email local part and the domain name, separated by a dot instead of an @ sign. Like user.example.com. If you want to use real email addresses (fully qualified user names aka. fqun) like user@example.com as user names, you also have to set
+.I fqun
+to true.
 
+Additionally,
+.I unixhierarchysep
+has to be set to
+.I true
+in Skaffari config and to
+.I yes
+in your Cyrus-IMAP
+.B imapd.conf(5)
+file.
+.P
 NOTE: you have to set the following line in your Cyrus-IMAP
 .B imapd.conf(5)
 file:
@@ -354,7 +377,11 @@ yes
 .B fqun
 = @DEFVAL_IMAP_FQUN@
 .RS 4
-If you wish to use user names like email addresses you can activate this option.
+If you wish to use user names like email addresses (aka. fully qualified user name) you can activate this option together with the
+.I domainasprefix
+and the
+.I unixhierarchysep
+option.
 .P
 NOTE: you also have to add this lines to your Cyrus-IMAP
 .B imapd.conf(5)
