@@ -39,21 +39,24 @@ class SimpleAccountData : public  QSharedData
 public:
     SimpleAccountData() {}
 
-    SimpleAccountData(dbid_t _id, const QString &_username) :
+    SimpleAccountData(dbid_t _id, const QString &_username, const QString &_domainname) :
         id(_id),
-        username(_username)
+        username(_username),
+        domainname(_domainname)
     {}
 
     SimpleAccountData(const SimpleAccountData &other) :
         QSharedData(other),
         id(other.id),
-        username(other.username)
+        username(other.username),
+        domainname(other.domainname)
     {}
 
     ~SimpleAccountData() {}
 
     dbid_t id = 0;
     QString username;
+    QString domainname;
 };
 
 #endif // SIMPLEACCOUNT_P_H

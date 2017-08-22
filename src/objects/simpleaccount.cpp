@@ -20,9 +20,10 @@
 #include "skaffarierror.h"
 #include <Cutelyst/Context>
 #include <Cutelyst/Plugins/Utils/Sql>
+#include <Cutelyst/Plugins/Authentication/authentication.h>
+#include <Cutelyst/Plugins/Authentication/authenticationuser.h>
 #include <QSqlQuery>
 #include <QSqlError>
-#include <QJsonObject>
 #include <QJsonValue>
 
 SimpleAccount::SimpleAccount() : d(new SimpleAccountData)
@@ -31,8 +32,8 @@ SimpleAccount::SimpleAccount() : d(new SimpleAccountData)
 }
 
 
-SimpleAccount::SimpleAccount(dbid_t id, const QString &username) :
-    d(new SimpleAccountData(id, username))
+SimpleAccount::SimpleAccount(dbid_t id, const QString &username, const QString &domainname) :
+    d(new SimpleAccountData(id, username, domainname))
 {
 
 }
@@ -70,14 +71,123 @@ QString SimpleAccount::username() const
 }
 
 
-void SimpleAccount::setData(dbid_t id, const QString &username)
+QString SimpleAccount::domainname() const
+{
+    return d->domainname;
+}
+
+
+void SimpleAccount::setData(dbid_t id, const QString &username, const QString &domainname)
 {
     d->id = id;
     d->username = username;
+    d->domainname = domainname;
 }
 
 
 bool SimpleAccount::isValid() const
 {
-    return ((d->id > 0) && !d->username.isEmpty());
+    return ((d->id > 0) && !d->username.isEmpty() && !d->domainname.isEmpty());
+}
+
+
+QJsonObject SimpleAccount::toJson() const
+{
+    QJsonObject o;
+
+    o.insert(QStringLiteral("id"), static_cast<qint64>(d->id));
+    o.insert(QStringLiteral("username"), d->username);
+    o.insert(QStringLiteral("domainname"), d->domainname);
+
+    return o;
+}
+
+
+std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, dbid_t domainId, const QString searchString)
+{
+    std::vector<SimpleAccount> lst;
+
+    Q_ASSERT_X(c, "list simple accounts", "invalid context object");
+    Q_ASSERT_X(e, "list simple accounts", "invalid error object");
+
+    QSqlQuery q;
+
+    QString _search;
+    if (!searchString.isEmpty()) {
+        _search = QLatin1Char('%') + searchString + QLatin1Char('%');
+    }
+
+    if (userType == 0) {
+        if (domainId == 0) {
+            if (searchString.isEmpty()) {
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, domain_name FROM accountuser ORDER BY username ASC"));
+            } else {
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, domain_name FROM accountuser WHERE username LIKE :search ORDER BY username ASC"));
+                q.bindValue(QStringLiteral(":search"), _search);
+            }
+        } else {
+            if (searchString.isEmpty()) {
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, domain_name FROM accountuser WHERE domain_id = :domain_id ORDER BY username ASC"));
+            } else {
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, domain_name FROM accountuser WHERE username LIKE :search AND domain_id = :domain_id ORDER BY username ASC"));
+                q.bindValue(QStringLiteral(":search"), _search);
+            }
+            q.bindValue(QStringLiteral(":domain_id"), domainId);
+        }
+    } else {
+        if (domainId == 0) {
+            if (searchString.isEmpty()) {
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT ac.id, ac.username, ac.domain_name FROM accountuser ac LEFT JOIN domainadmin da ON ac.domain_id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY username ASC"));
+            } else {
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT ac.id, ac.username, ac.domain_name FROM accountuser ac LEFT JOIN domainadmin da ON ac.domain_id = da.domain_id WHERE ac.username LIKE :search AND da.admin_id = :admin_id ORDER BY username ASC"));
+                q.bindValue(QStringLiteral(":search"), _search);
+            }
+            q.bindValue(QStringLiteral(":admin_id"), adminId);
+        } else {
+            if (searchString.isEmpty()) {
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT ac.id, ac.username, ac.domain_name FROM accountuser ac LEFT JOIN domainadmin da ON ac.domain_id = da.domain_id WHERE da.admin_id = :admin_id AND da.domain_id = :domain_id ORDER BY username ASC"));
+            } else {
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT ac.id, ac.username, ac.domain_name FROM accountuser ac LEFT JOIN domainadmin da ON ac.domain_id = da.domain_id WHERE ac.username LIKE :search AND da.admin_id = :admin_id AND da.domain_id = :domain_id ORDER BY username ASC"));
+                q.bindValue(QStringLiteral(":search"), _search);
+            }
+            q.bindValue(QStringLiteral(":domain_id"), domainId);
+        }
+    }
+
+    if (Q_UNLIKELY(!q.exec())) {
+        e->setSqlError(q.lastError(), c->translate("SimpleAccount", "Failed to query list of accounts from database."));
+        return lst;
+    }
+
+    while (q.next()) {
+        lst.push_back(SimpleAccount(q.value(0).value<dbid_t>(),
+                                    q.value(1).toString(),
+                                    QUrl::fromAce(q.value(2).toByteArray())));
+    }
+
+    if (lst.size() > 1) {
+        SimpleAccountCollator sac(c->locale());
+        std::sort(lst.begin(), lst.end(), sac);
+    }
+
+    return lst;
+}
+
+
+QJsonArray SimpleAccount::listJson(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, dbid_t domainId, const QString searchString)
+{
+    QJsonArray lst;
+
+    Q_ASSERT_X(c, "list simple accounts json", "invalid context object");
+    Q_ASSERT_X(e, "list simple accounts json", "invalid error object");
+
+    const std::vector<SimpleAccount> _lst = SimpleAccount::list(c, e, userType, adminId, domainId, searchString);
+
+    if (!_lst.empty()) {
+        for (const SimpleAccount &ac : _lst) {
+            lst.push_back(QJsonValue(ac.toJson()));
+        }
+    }
+
+    return lst;
 }

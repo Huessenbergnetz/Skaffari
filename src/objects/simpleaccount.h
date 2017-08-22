@@ -24,6 +24,7 @@
 #include <grantlee5/grantlee/metatype.h>
 #include <QVariant>
 #include <QJsonArray>
+#include <QJsonObject>
 #include "../../common/global.h"
 
 namespace Cutelyst {
@@ -46,10 +47,11 @@ public:
 
     /*!
      * \brief Constructs a new SimpleAccount with the given parameters.
-     * \param id        Database ID.
-     * \param username  Account user name.
+     * \param id            Database ID.
+     * \param username      Account user name.
+     * \param domainname    Name of the domain the account belongs to.
      */
-    SimpleAccount(dbid_t id, const QString &username);
+    SimpleAccount(dbid_t id, const QString &username, const QString &domainname);
 
     /*!
      * \brief Constructs a copy of \a other.
@@ -70,6 +72,9 @@ public:
      * \brief Returns the database ID.
      *
      * \c 0 by default.
+     *
+     * \par Grantlee property name
+     * id
      */
     dbid_t id() const;
 
@@ -77,13 +82,26 @@ public:
      * \brief Returns the user name.
      *
      * Empty by default.
+     *
+     * \par Grantlee property name
+     * username
      */
     QString username() const;
 
     /*!
-     * \brief Sets database ID and user name.
+     * \brief Returns the name of the domain the accounts belongs to.
+     *
+     * Empty by default.
+     *
+     * \par Grantlee property name
+     * domainname
      */
-    void setData(dbid_t id, const QString &username);
+    QString domainname() const;
+
+    /*!
+     * \brief Sets database ID, user name and domain name.
+     */
+    void setData(dbid_t id, const QString &username, const QString &domainname);
 
     /*!
      * \brief Returns \c true if this account is valid.
@@ -106,6 +124,43 @@ public:
         return isValid();
     }
 
+    /*!
+     * \brief Converts the SimpleAccount object into a QJsonObject.
+     *
+     * \par JSON object content
+     * Key        | Value
+     * ---------- | ----------------------------------------------
+     * id         | The database ID of the account.
+     * username   | The account user name.
+     * domainname | The name of the domain the account belongs to.
+     */
+    QJsonObject toJson() const;
+
+    /*!
+     * \brief Returns a list of accounts.
+     * \param c         Pointer to the current context, used for localization.
+     * \param e         Pointer to an object taking occuring errors.
+     * \param userType  The type of the admin user to determine domain access.
+     * \param adminId   The database ID of the admin user to determine domain access.
+     * \param domainId  The database ID of the domain to request accounts for. If 0 and permission is granted, all accounts will be returned.
+     * \return          List of simple account objects.
+     */
+    static std::vector<SimpleAccount> list(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
+
+    /*!
+     * \brief Returns a JSON array of accounts.
+     *
+     * \sa toJson()
+     *
+     * \param c         Pointer to the current context, used for localization.
+     * \param e         Pointer to an object taking occuring errors.
+     * \param userType  The type of the admin user to determine domain access.
+     * \param adminId   The database ID of the admin user to determine domain access.
+     * \param domainId  The database ID of the domain to request accounts for. If 0 and permission is granted, all accounts will be returned.
+     * \return          JSON array containing objects with account ID, user name and domain name.
+     */
+    static QJsonArray listJson(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
+
 private:
     QSharedDataPointer<SimpleAccountData> d;
 };
@@ -119,7 +174,7 @@ if (property == QLatin1String("id")) {
     var.setValue(object.id());
 } else if (property == QLatin1String("username")) {
     var.setValue(object.username());
-}
+} else if (property == QLatin1String("domainname"))
 return var;
 GRANTLEE_END_LOOKUP
 
