@@ -207,6 +207,7 @@ int WebCyradmImporter::exec() const
 
     bool domainAsPrefix = vars.value(QStringLiteral("DOMAIN_AS_PREFIX")).toInt() > 0;
     bool fqun = vars.value(QStringLiteral("FQUN")).toInt() > 0;
+    bool unixHierarchySep = domainAsPrefix;
     quint8 createmailbox = 3;
 
     printDone();
@@ -224,6 +225,7 @@ int WebCyradmImporter::exec() const
                    {tr("IMAP Encryption"), Imap::encryptionTypeToString(imapencryption)},
                    {tr("IMAP User"), imapuser},
                    {tr("IMAP Password"), QStringLiteral("********")},
+                   {QStringLiteral("UNIX hierarchy seperator"), unixHierarchySep ? tr("yes") : tr("no")},
                    {QStringLiteral("Domain as prefix"), domainAsPrefix ? tr("yes") : tr("no")},
                    {QStringLiteral("FQUN"), fqun ? tr("yes") : tr("no")},
                    {tr("Default language"), defaultLang},
@@ -273,7 +275,7 @@ int WebCyradmImporter::exec() const
     imap.setPassword(imappass);
     imap.setProtocol(static_cast<QAbstractSocket::NetworkLayerProtocol>(imapprotocol));
     imap.setEncryptionType(static_cast<Imap::EncryptionType>(imapencryption));
-    if (domainAsPrefix || fqun) {
+    if (unixHierarchySep) {
         imap.setHierarchySeparator(QLatin1Char('/'));
     } else {
         imap.setHierarchySeparator(QLatin1Char('.'));
@@ -858,6 +860,7 @@ int WebCyradmImporter::exec() const
     settings.setValue(QStringLiteral("password"), imappass);
     settings.setValue(QStringLiteral("protocol"), imapprotocol);
     settings.setValue(QStringLiteral("encryption"), imapencryption);
+    settings.setValue(QStringLiteral("unixhierarchysep"), unixHierarchySep);
     settings.setValue(QStringLiteral("fqun"), fqun);
     settings.setValue(QStringLiteral("domainasprefix"), domainAsPrefix);
     settings.setValue(QStringLiteral("createmailbox"), createmailbox);
