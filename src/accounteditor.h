@@ -57,6 +57,9 @@ public:
 
     C_ATTR(check, :Chained("base") :PathPart("check") :Args(0))
     void check(Context *c);
+
+    C_ATTR(list, :Local("list") :Args(0))
+    void list(Context *c);
 };
 
 #endif //ACCOUNTEDITOR_H

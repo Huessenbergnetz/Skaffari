@@ -22,6 +22,7 @@
 #include "objects/domain.h"
 #include "objects/skaffarierror.h"
 #include "objects/simpledomain.h"
+#include "objects/simpleaccount.h"
 #include "objects/helpentry.h"
 #include "utils/skaffariconfig.h"
 #include "utils/utils.h"
@@ -795,4 +796,26 @@ void AccountEditor::check(Context *c)
             c->response()->setStatus(Response::BadRequest);
         }
     }
+}
+
+
+void AccountEditor::list(Context *c)
+{
+    AuthenticationUser user = Authentication::user(c);
+
+    const dbid_t domainId = SKAFFARI_STRING_TO_DBID(c->req()->param(QStringLiteral("domainId"), QStringLiteral("0")));
+    const QString searchString = c->req()->param(QStringLiteral("searchString"));
+    const dbid_t adminId = SKAFFARI_STRING_TO_DBID(user.id());
+    const qint64 userType = user.value(QStringLiteral("type")).value<qint64>();
+
+    SkaffariError e(c);
+    const QJsonArray accounts = SimpleAccount::listJson(c, &e, userType, adminId, domainId, searchString);
+    QJsonObject o;
+    o.insert(QStringLiteral("accounts"), accounts);
+    if (e.type() != SkaffariError::NoError) {
+        o.insert(QStringLiteral("error_msg"), e.errorText());
+        c->res()->setStatus(Response::InternalServerError);
+    }
+    QJsonDocument json(o);
+    c->res()->setJsonBody(json);
 }
