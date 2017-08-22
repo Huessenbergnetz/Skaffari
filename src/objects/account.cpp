@@ -1065,14 +1065,14 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
 }
 
 
-Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, dbid_t id)
+Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
 {
     Account a;
 
     Q_ASSERT_X(c, "get account", "invalid context object");
     Q_ASSERT_X(e, "get account", "invalid error object");
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire, au.status FROM accountuser au WHERE id = :id"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire, au.status, au.domain_id, au.prefix, au.domain_name FROM accountuser au WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), id);
 
     if (Q_UNLIKELY(!q.exec())) {
@@ -1098,16 +1098,17 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, db
     a.setUpdated(Utils::toUserTZ(c, q.value(8).toDateTime()));
     a.setValidUntil(Utils::toUserTZ(c, q.value(9).toDateTime()));
     a.setPasswordExpires(Utils::toUserTZ(c, q.value(10).toDateTime()));
-    a.setDomainId(d.id());
-    a.setPrefix(d.getPrefix());
-    a.setDomainName(d.getName());
     a.setStatus(q.value(11).value<quint8>());
+    a.setDomainId(q.value(12).value<dbid_t>());
+    a.setPrefix(q.value(13).toString());
+    const QString domainNameAce = q.value(14).toString();
+    a.setDomainName(QUrl::fromAce(domainNameAce.toLatin1()));
 
     QStringList emailAddresses;
     q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias FROM virtual WHERE dest = :username AND username = :username ORDER BY alias ASC"));
     q.bindValue(QStringLiteral(":username"), a.getUsername());
     if (Q_LIKELY(q.exec())) {
-        const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.getName()));
+        const QString catchAllAlias = QLatin1Char('@') + domainNameAce;
         while (q.next()) {
             const QString address = q.value(0).toString();
             if (!address.startsWith(QLatin1Char('@'))) {
@@ -1169,12 +1170,12 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, db
 }
 
 
-void Account::toStash(Cutelyst::Context *c, const Domain &d, dbid_t accountId)
+void Account::toStash(Cutelyst::Context *c, dbid_t accountId)
 {
     Q_ASSERT_X(c, "account to stash", "invalid context object");
 
     SkaffariError e(c);
-    Account a = Account::get(c, &e, d, accountId);
+    Account a = Account::get(c, &e, accountId);
     if (Q_LIKELY(a.isValid())) {
         c->stash({
                      {QStringLiteral(ACCOUNT_STASH_KEY), QVariant::fromValue<Account>(a)},

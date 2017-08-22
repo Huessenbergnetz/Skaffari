@@ -55,7 +55,7 @@ void AccountEditor::base(Context* c, const QString &domainId, const QString& acc
     const dbid_t domId = SKAFFARI_STRING_TO_DBID(domainId);
     if (Domain::checkAccess(c, domId)) {
         Domain::toStash(c, domId);
-        Account::toStash(c, Domain::fromStash(c), SKAFFARI_STRING_TO_DBID(accountId));
+        Account::toStash(c, SKAFFARI_STRING_TO_DBID(accountId));
     }
 }
 

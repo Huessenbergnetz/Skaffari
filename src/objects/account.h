@@ -469,20 +469,18 @@ public:
      *
      * \param c     Pointer to the current context, used for string translation, user authentication and to set the stash.
      * \param e     Pointer to an object taking information about occuring errors.
-     * \param d     The domain the account belongs to.
      * \param id    The database ID of the account.
      * \return      Account object containg the account data.
      */
-    static Account get(Cutelyst::Context *c, SkaffariError *e, const Domain &d, dbid_t id);
+    static Account get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
 
     /*!
      * \brief Requests information about the account defined by \a accountId from the database and adds it to the stash.
      * \param c         Pointer to the current context, used for string translation and user authentication.
-     * \param d         Domain the account belongs to.
      * \param accountId The database ID of the account.
      * \sa fromStash()
      */
-    static void toStash(Cutelyst::Context *c, const Domain &d, dbid_t accountId);
+    static void toStash(Cutelyst::Context *c, dbid_t accountId);
 
     /*!
      * \brief Puts the account \a into the context statsh.
