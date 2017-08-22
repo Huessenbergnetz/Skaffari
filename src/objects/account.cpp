@@ -394,7 +394,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     Q_ASSERT_X(!p.empty(), "create account", "empty parameters");
     Q_ASSERT_X(d.isValid(), "create account", "invalid domain object");
 
-    // if domain as prefix is enabled, the username will be the local part of the email address
+    // if domain as prefix is enabled, the username will be the local part of the email address plus the domain separated by a dot
     // if additionally fqun is enabled, it will a fully qualified user name (email address like user@example.com
     // if both are disabled, the username will be the entered username
     const QString username = SkaffariConfig::imapDomainasprefix() ? p.value(QStringLiteral("localpart")).trimmed() + (SkaffariConfig::imapFqun() ? QLatin1Char('@') : QLatin1Char('.')) + d.getName() : p.value(QStringLiteral("username")).trimmed();
@@ -522,7 +522,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     q.bindValue(QStringLiteral(":status"), 1);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Failed to insert email address new user account in database."));
+        e->setSqlError(q.lastError(), c->translate("Account", "Failed to insert email address for new user account in database."));
         qCCritical(SK_ACCOUNT, "Failed to insert email address for new user account into database: %s", qUtf8Printable(q.lastError().text()));
         q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
         q.bindValue(QStringLiteral(":id"), id);
@@ -736,7 +736,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     q.bindValue(QStringLiteral(":quota"), quota);
     q.bindValue(QStringLiteral(":id"), d.id());
     if (Q_UNLIKELY(!q.exec())) {
-        qCWarning(SK_ACCOUNT, "Failed to update count of accounts and domain quota usage after adding new acocunt to domain ID %u (%s): %s", d.id(), qUtf8Printable(d.getName()), qUtf8Printable(q.lastError().text()));
+        qCWarning(SK_ACCOUNT, "Failed to update count of accounts and domain quota usage after adding new account to domain ID %u (%s): %s", d.id(), qUtf8Printable(d.getName()), qUtf8Printable(q.lastError().text()));
     }
 
     a.setId(id);
