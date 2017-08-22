@@ -472,26 +472,41 @@ int Setup::exec() const
         printDesc(QString());
 
         os.beginGroup(QStringLiteral("IMAP"));
+        bool unixHierarchySep = os.value(QStringLiteral("unixhierarchysep"), SK_DEF_IMAP_UNIXHIERARCHYSEP).toBool();
         bool domainAsPrefix = os.value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool();
         bool fqun = os.value(QStringLiteral("fqun"), SK_DEF_IMAP_FQUN).toBool();
         quint8 createmailbox = os.value(QStringLiteral("createmailbox"), SK_DEF_IMAP_CREATEMAILBOX).value<quint8>();
         os.endGroup();
 
-        domainAsPrefix = readBool(tr("Domain as prefix"),
-                                  domainAsPrefix,
-                                  QStringList({
-                                                  tr("If you want to use email addresses with dots in them such as john.doe@example.com you can activate this option."),
-                                                  tr("NOTE: you have to set the following line in your imapd.conf file:"),
-                                                  QStringLiteral("unixhierarchysep: yes")
-                                              }));
-        fqun = readBool(tr("Fully qualified user name"),
-                        fqun,
-                        QStringList({
-                                        tr("If you wish to use user names like email addresses you can activate this option."),
-                                        tr("NOTE: you also have to add this lines to your imapd.conf file:"),
-                                        QStringLiteral("unixhierarchysep: yes"),
-                                        QStringLiteral("virtdomains: yes")
-                                    }));
+        unixHierarchySep = readBool(tr("UNIX hierarchy seperator"),
+                                    unixHierarchySep,
+                                    QStringList({
+                                                    tr("This setting should correspond to the value of the same setting in your imapd.conf(5) file and indicates that your imap server uses the UNIX separator character '/' for delimiting levels of mailbox hierarchy instead of the netnews separator character '.'. Up to Cyrus-IMAP 2.5.x the default value for this value in the IMAP server configuration is off, beginning with version 3.0.0 of Cyrus-IMAP the default has changed to on.")
+                                                }));
+
+        if (unixHierarchySep) {
+
+            domainAsPrefix = readBool(tr("Domain as prefix"),
+                                      domainAsPrefix,
+                                      QStringList({
+                                                      tr("If you want to use email addresses with dots in them such as john.doe@example.com you can activate this option."),
+                                                      tr("NOTE: you have to set the following line in your imapd.conf file:"),
+                                                      QStringLiteral("unixhierarchysep: yes")
+                                                  }));
+        }
+
+        if (unixHierarchySep && domainAsPrefix) {
+
+            fqun = readBool(tr("Fully qualified user name"),
+                            fqun,
+                            QStringList({
+                                            tr("If you wish to use user names like email addresses you can activate this option."),
+                                            tr("NOTE: you also have to add this lines to your imapd.conf file:"),
+                                            QStringLiteral("unixhierarchysep: yes"),
+                                            QStringLiteral("virtdomains: yes")
+                                        }));
+        }
+
         createmailbox = readChar(tr("Create mailboxes"),
                                  createmailbox,
                                  QStringList({
@@ -505,6 +520,7 @@ int Setup::exec() const
                                  QList<quint8>({0,1,2,3}));
 
         os.beginGroup(QStringLiteral("IMAP"));
+        os.setValue(QStringLiteral("unixhierarchysep"), unixHierarchySep);
         os.setValue(QStringLiteral("domainasprefix"), domainAsPrefix);
         os.setValue(QStringLiteral("fqun"), fqun);
         os.setValue(QStringLiteral("createmailbox"), createmailbox);
