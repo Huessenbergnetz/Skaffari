@@ -25,7 +25,6 @@ Skaffari.DefaultTmpl.CreateDomain = Skaffari.DefaultTmpl.CreateDomain || {};
 Skaffari.DefaultTmpl.CreateDomain.init = function() {
     if ($('#createDomainForm').length > 0) {
         $('.select2-ajax').select2({
-            theme: 'bootstrap',
             ajax: {
                 url: '/account/list',
                 dataType: 'json',
@@ -61,6 +60,3 @@ Skaffari.DefaultTmpl.CreateDomain.init = function() {
     }
 }
 
-$(function() {
-    Skaffari.DefaultTmpl.CreateDomain.init();
-});

@@ -18,6 +18,9 @@
 
 // domain table sort and filter
 $(function() {
+    Skaffari.DefaultTmpl.init();
+    Skaffari.DefaultTmpl.CreateDomain.init();
+
     var domainTable = $('#domainTable').stupidtable();
     if (domainTable.length > 0) {
         domainTable.bind('aftertablesort', function(event, data) {
@@ -31,7 +34,7 @@ $(function() {
             }
             data.$th.append(' <small><i class="fa fa-sort-' + sortType + '-' + data.direction + ' text-muted"></i></small>');
         });
-        
+
         domainTable.filterTable({inputSelector: "#domainTableFilter", ignoreClass: "no-filtering"});
     }
 });

@@ -31,7 +31,7 @@ Skaffari.DefaultTmpl.clearMessages = function() {
 Skaffari.DefaultTmpl.humanBinarySize = function(size) {
     var ret = '';
     var _size = 0.0;
-    var mulit = 'KiB';
+    var multi = 'KiB';
     if (size < 1048576) {
         _size = size/1024.0;
         multi = 'KiB';
@@ -45,10 +45,10 @@ Skaffari.DefaultTmpl.humanBinarySize = function(size) {
         _size = size/1099511627776.0;
         multi = 'TiB';
     }
-            
-                ret = _size.toFixed(2) + ' ' + multi;
-                
-                return ret;
+
+    ret = _size.toFixed(2) + ' ' + multi;
+
+    return ret;
 }
 
 Skaffari.DefaultTmpl.createAlert = function(type, text, target, classes) {
@@ -59,21 +59,26 @@ Skaffari.DefaultTmpl.createAlert = function(type, text, target, classes) {
     if (classes) {
         warnDiv.addClass(classes);
     }
-        warnDiv.attr('role', 'alert');
-        var warnDivCb = $('<button>');
-        warnDivCb.attr({type: "button", "aria-label": "Close"});
-        warnDivCb.addClass('close');
-        warnDivCb.data('dismiss', 'alert');
-        warnDivCb.click(function() {
-            warnDiv.alert('close');
-        });
-        var warnDivSpan = $('<span>');
-        warnDivSpan.attr('aria-hidden', 'true');
-        warnDivSpan.html('&times;')
-        warnDivCb.append(warnDivSpan);
-        warnDiv.append(warnDivCb);
-        warnDiv.append(text);
-        warnDiv.hide();
-        $(target).append(warnDiv);
-        warnDiv.show(300);
+    warnDiv.attr('role', 'alert');
+    var warnDivCb = $('<button>');
+    warnDivCb.attr({type: "button", "aria-label": "Close"});
+    warnDivCb.addClass('close');
+    warnDivCb.data('dismiss', 'alert');
+    warnDivCb.click(function() {
+        warnDiv.alert('close');
+    });
+    var warnDivSpan = $('<span>');
+    warnDivSpan.attr('aria-hidden', 'true');
+    warnDivSpan.html('&times;')
+    warnDivCb.append(warnDivSpan);
+    warnDiv.append(warnDivCb);
+    warnDiv.append(text);
+    warnDiv.hide();
+    $(target).append(warnDiv);
+    warnDiv.show(300);
+}
+
+Skaffari.DefaultTmpl.init = function() {
+    $.fn.select2.defaults.set("theme", "bootstrap");
+    $('.select2').select2();
 }
