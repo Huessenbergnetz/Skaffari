@@ -356,6 +356,8 @@ If enabled, usernames will be composed from the email local part and the domain 
 .I fqun
 to true.
 
+For domains, the prefix will automatically be the same as the domain name when enabling this option.
+
 Additionally,
 .I unixhierarchysep
 has to be set to

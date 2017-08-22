@@ -489,7 +489,8 @@ int Setup::exec() const
             domainAsPrefix = readBool(tr("Domain as prefix"),
                                       domainAsPrefix,
                                       QStringList({
-                                                      tr("If you want to use email addresses with dots in them such as john.doe@example.com you can activate this option."),
+                                                      tr("If enabled, usernames will be composed from the email local part and the domain name, separated by a dot instead of an @ sign. Like user.example.com. If you want to use real email addresses (fully qualified user names aka. fqun) like user@example.com as user names, you also have to set fqun to true in the next step."),
+                                                      tr("For domains, the prefix will automatically be the same as the domain name when enabling this option."),
                                                       tr("NOTE: you have to set the following line in your imapd.conf file:"),
                                                       QStringLiteral("unixhierarchysep: yes")
                                                   }));
@@ -500,7 +501,7 @@ int Setup::exec() const
             fqun = readBool(tr("Fully qualified user name"),
                             fqun,
                             QStringList({
-                                            tr("If you wish to use user names like email addresses you can activate this option."),
+                                            tr("If you wish to use user names like email addresses (aka. fully qualified user name) you can activate this option."),
                                             tr("NOTE: you also have to add this lines to your imapd.conf file:"),
                                             QStringLiteral("unixhierarchysep: yes"),
                                             QStringLiteral("virtdomains: yes")
