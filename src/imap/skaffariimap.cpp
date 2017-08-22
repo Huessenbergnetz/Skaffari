@@ -43,7 +43,7 @@ SkaffariIMAP::SkaffariIMAP(Cutelyst::Context *context, QObject *parent) :
 {
     Q_ASSERT_X(m_c, "Skaffari IMAP", "invalid context");
 
-    if (SkaffariConfig::imapDomainasprefix() || SkaffariConfig::imapFqun()) {
+    if (SkaffariConfig::imapUnixhierarchysep()) {
         m_hierarchysep = QLatin1Char('/');
     }
 
