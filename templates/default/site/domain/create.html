@@ -2,7 +2,7 @@
     <div class="col"><h2><i class="fa fa-cube"></i> {{ _("Create new domain") }}</h2></div>
 </div>
 
-<form method="post">
+<form id="createDomainForm" method="post">
     <div class="row mt-1">
 
         <input type="hidden" id="domainAsPrefix" name="domainAsPrefix" value="{{ domainAsPrefix }}">
@@ -95,6 +95,17 @@
             <small id="freeAddressDesc" class="form-text text-muted">{{ help.freeAddress.text }}</small>
         </div>
 
+    </div>
+
+    <div class="row">
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.abuseAccount.count %} has-warning{% endif %}">
+            <label class="form-control-label" for="abuseAccount">{{ help.abuseAccount.title }}</label>
+            <select class="form-control select2-ajax" id="abuseAccount" name="abuseAccount" aria-describedby="abuseAccountDesc">
+                <option value="0"{% if abuseAccount == 0 %} selected{% endif %}>{{ _("None") }}</option>
+            </select>
+            {% if validationErrors.abuseAccount.count %}<div class="form-control-feedback"><small>{{ validationErrors.abuseAccount.0 }}</small></div>{% endif %}
+            <small id="abuseAccountDesc" class="form-text text-muted">{{ help.abuseAccount.text }}</small>
+        </div>
     </div>
 
     <div class="mt-1">

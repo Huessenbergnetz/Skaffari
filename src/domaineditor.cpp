@@ -363,7 +363,9 @@ void DomainEditor::create(Context* c)
                                    new ValidatorRegularExpression(QStringLiteral("humanQuota"), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption)),
                                    new ValidatorRegularExpression(QStringLiteral("humanDomainQuota"), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption)),
                                    new ValidatorInteger(QStringLiteral("parent")),
-                                   new ValidatorMin(QStringLiteral("parent"), QMetaType::UInt, 0)
+                                   new ValidatorMin(QStringLiteral("parent"), QMetaType::UInt, 0),
+                                   new ValidatorInteger(QStringLiteral("abuseAccount")),
+                                   new ValidatorMin(QStringLiteral("abuseAccount"), QMetaType::UInt, 0),
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
@@ -395,6 +397,7 @@ void DomainEditor::create(Context* c)
         help.insert(QStringLiteral("transport"), HelpEntry(c->translate("DomainEditor", "Transport"), c->translate("DomainEditor", "The transport mechanism for received emails for this domain. Defaults to Cyrus.")));
         help.insert(QStringLiteral("freeNames"), HelpEntry(c->translate("DomainEditor", "Allow free names"), c->translate("DomainEditor", "If enabled, account user names for this domain can be freely selected (if not in use already).")));
         help.insert(QStringLiteral("freeAddress"), HelpEntry(c->translate("DomainEditor", "Allow free addresses"), c->translate("DomainEditor", "If enabled, user accounts in this domain can have email addresses for all domains managed by Skaffari. If disabled, only email addresses for this domain can be added to user accounts in this domain.")));
+        help.insert(QStringLiteral("abuseAccount"), HelpEntry(c->translate("DomainEditor", "Abuse account"), c->translate("DomainEditor", "Used to report inappropriate public behavior. Will create abuse@domain.name address for the selected account.")));
 
         SkaffariError e(c);
         AuthenticationUser user = Authentication::user(c);
