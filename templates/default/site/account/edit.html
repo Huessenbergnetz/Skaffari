@@ -4,110 +4,120 @@
 
 <form method="post">
 
-    <div class="row mt-1">
-        
+    <fieldset class="row mt-1">
+
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="form-control-label" for="created">{{ help.created.title }}</label>
-            <p class="form-control-static" id="created" aria-describedby="createdDesc">{{ _(account.created) }}</p>
+            <label class="col-form-label" for="created">{{ help.created.title }}</label>
+            <input type="text" class="form-control" id="created" aria-describedby="createdDesc" value="{{ _(account.created) }}" readonly>
             <small id="createdDesc" class="form-text text-muted">{{ help.created.text }}</small>
         </div>
-        
+
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="form-control-label" for="updated">{{ help.updated.title }}</label>
-            <p class="form-control-static" id="updated" aria-describedby="updatedDesc">{{ _(account.updated) }}</p>
+            <label class="col-form-label" for="updated">{{ help.updated.title }}</label>
+            <input type="text" class="form-control" id="updated" aria-describedby="updatedDesc" value="{{ _(account.updated) }}" readonly>
             <small id="updatedDesc" class="form-text text-muted">{{ help.updated.text }}</small>
         </div>
-        
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.validUntil.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="validUntil">{{ help.validUntil.title }}</label>
-            <input type="text" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD hh:mm:ss") }}" value="{{ account.validUntil|time:"yyyy-MM-dd HH:mm:ss" }}" aria-describedby="validUntilDesc" required>
-            {% if validationErrors.validUntil.count %}<div class="form-control-feedback"><small>{{ validationErrors.validUntil.0 }}</small></div>{% endif %}
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="validUntil">{{ help.validUntil.title }}</label>
+            <input type="text" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} is-invalid{% endif %}" placeholder="{{ _("YYYY-MM-DD hh:mm:ss") }}" value="{{ account.validUntil|time:"yyyy-MM-dd HH:mm:ss" }}" aria-describedby="validUntilDesc" required>
+            {% if validationErrors.validUntil.count %}<div class="invalid-feedback"><small>{{ validationErrors.validUntil.0 }}</small></div>{% endif %}
             <small id="validUntilDesc" class="form-text text-muted">{{ help.validUntil.text }}</small>
         </div>
-        
-    </div>
-    
-    <div class="row">
-        
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.password.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="passsword">{{ help.password.title }}</label>
-            <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ _("Password") }}" aria-describedby="passwordDesc">
-            {% if validationErrors.password.count %}<div class="form-control-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
+
+    </fieldset>
+
+    <fieldset class="row">
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="passsword">{{ help.password.title }}</label>
+            <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ _("Password") }}" aria-describedby="passwordDesc">
+            {% if validationErrors.password.count %}<div class="invalid-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
             <small id="passwordDesc" class="form-text text-muted">{{ help.password.text }}</small>
         </div>
-        
+
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-             <label class="form-control-label" for="password_confirmation">{{ help.password_confirmation.title }}</label>
+             <label class="col-form-label" for="password_confirmation">{{ help.password_confirmation.title }}</label>
              <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ _("Password confirmation") }}" aria-describedby="passwordConfirmDesc">
              <small id="passwordConfirmDesc" class="form-text text-muted">{{ help.password_confirmation.text }}</small>
         </div>
-        
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.passwordExpires.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="passwordExpires">{{ help.passwordExpires.title }}</label>
-            <input type="text" id="passwordExpires" name="passwordExpires" class="form-control{% if validationErrors.passwordExpires.count %} form-control-warning{% endif %}" placeholder="{{ _("YYYY-MM-DD hh:mm:ss") }}" value="{{ account.passwordExpires|time:"yyyy-MM-dd HH:mm:ss" }}" aria-describedby="passwordExpiresDesc" required>
-            {% if validationErrors.passwordExpires.count %}<div class="form-control-feedback"><small>{{ validationErrors.passwordExpires.0 }}</small></div>{% endif %}
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="passwordExpires">{{ help.passwordExpires.title }}</label>
+            <input type="text" id="passwordExpires" name="passwordExpires" class="form-control{% if validationErrors.passwordExpires.count %} is-invalid{% endif %}" placeholder="{{ _("YYYY-MM-DD hh:mm:ss") }}" value="{{ account.passwordExpires|time:"yyyy-MM-dd HH:mm:ss" }}" aria-describedby="passwordExpiresDesc" required>
+            {% if validationErrors.passwordExpires.count %}<div class="invalid-feedback"><small>{{ validationErrors.passwordExpires.0 }}</small></div>{% endif %}
             <small id="passwordExpiresDesc" class="form-text text-muted">{{ help.passwordExpires.text }}</small>
         </div>
-               
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.humanQuota.count %} has-warning{% endif %}">
-            <label for="humanQuota" class="form-control-label">{{ help.humanQuota.title }}</label>
-            <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} form-control-warning{% endif %}" value="{% sk_fsf account.quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
-            {% if validationErrors.humanQuota.count %}<div class="form-control-feedback"><small>{{ validationErrors.humanQuota.0 }}</small></div>{% endif %}
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label for="humanQuota" class="col-form-label">{{ help.humanQuota.title }}</label>
+            <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} is-invalid{% endif %}" value="{% sk_fsf account.quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+            {% if validationErrors.humanQuota.count %}<div class="invalid-feedback"><small>{{ validationErrors.humanQuota.0 }}</small></div>{% endif %}
             <small id="humanQuotaDesc" class="form-text text-muted">{{ help.humanQuota.text }}</small>
         </div>
-    
-    </div>
-    
-    <div class="row">
-        
-        <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" id="imap" name="imap" value="1" aria-describedby="imapDesc"{% if account.imap %} checked{% endif %}>
-                {{ help.imap.title }}
-            </label>
-            <small id="imapDesc" class="form-text text-muted">{{ help.imap.text }}</small>
+
+    </fieldset>
+
+    <fieldset class="row">
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <div class="form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="imap" name="imap" value="1" aria-describedby="imapDesc"{% if account.imap %} checked{% endif %}>
+                    {{ help.imap.title }}
+                </label>
+                <small id="imapDesc" class="form-text text-muted">{{ help.imap.text }}</small>
+            </div>
         </div>
-        
-        <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" id="pop" name="pop" value="1" aria-describedby="popDesc"{% if account.pop %} checked{% endif %}>
-                {{ help.pop.title }}
-            </label>
-            <small id="popDesc" class="form-text text-muted">{{ help.pop.text }}</small>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <div class="form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="pop" name="pop" value="1" aria-describedby="popDesc"{% if account.pop %} checked{% endif %}>
+                    {{ help.pop.title }}
+                </label>
+                <small id="popDesc" class="form-text text-muted">{{ help.pop.text }}</small>
+            </div>
         </div>
-        
-        <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" id="sieve" name="sieve" value="1" aria-describedby="sieveDesc"{% if account.sieve %} checked{% endif %}>
-                {{ help.sieve.title }}
-            </label>
-            <small id="sieveDesc" class="form-text text-muted">{{ help.sieve.text }}</small>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <div class="form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="sieve" name="sieve" value="1" aria-describedby="sieveDesc"{% if account.sieve %} checked{% endif %}>
+                    {{ help.sieve.title }}
+                </label>
+                <small id="sieveDesc" class="form-text text-muted">{{ help.sieve.text }}</small>
+            </div>
         </div>
-        
-        <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" id="smtpauth" name="smtpauth" value="1" aria-describedby="smtpauthDesc"{% if account.smtpauth %} checked{% endif %}>
-                {{ help.smtpauth.title }}
-            </label>
-            <small id="smtpauthDesc" class="form-text text-muted">{{ help.smtpauth.text }}</small>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <div class="form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="smtpauth" name="smtpauth" value="1" aria-describedby="smtpauthDesc"{% if account.smtpauth %} checked{% endif %}>
+                    {{ help.smtpauth.title }}
+                </label>
+                <small id="smtpauthDesc" class="form-text text-muted">{{ help.smtpauth.text }}</small>
+            </div>
         </div>
-        
-        <div class="form-check col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" id="catchall" name="catchall" value="1" aria-describedby="catchall"{% if account.catchAll %} checked{% endif %}>
-                {{ help.catchall.title }}
-            </label>
-            <small id="catchallDesc" class="form-text text-muted">{{ help.catchall.text }}</small>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <div class="form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="catchall" name="catchall" value="1" aria-describedby="catchall"{% if account.catchAll %} checked{% endif %}>
+                    {{ help.catchall.title }}
+                </label>
+                <small id="catchallDesc" class="form-text text-muted">{{ help.catchall.text }}</small>
+            </div>
         </div>
-        
-    </div>
-    
+
+    </fieldset>
+
     <div class="mt-1">
         <a href="/domain/{{ domain.id }}/accounts" class="btn btn-outline-warning float-left" role="button"><i class="fa fa-times"></i> {{ _("Cancel") }}</a>
         <button type="submit" class="btn btn-outline-primary float-right"><i class="fa fa-save"></i> {{ _("Update") }}</button>
         <div class="clearfix"></div>
     </div>
-    
+
 </form>
 
 

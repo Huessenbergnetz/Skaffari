@@ -1,90 +1,81 @@
 <div class="row">
     <div class="col"><h2><i class="fa fa-user"></i> {{ _("My admin account") }} <small class="text-muted">{{ adminaccount.username }}</small></h2></div>
-</div> 
-
-<div class="row mt-1">
-    <div class="col-12 col-sm-12 col-md-6">
-    
-        <form method="post">
-        
-            <div class="form-group row">
-                <label class="col-12 col-lg-4 col-form-label">{{ _("Created") }}</label>
-                <div class="col-12 col-lg-8">
-                    <p class="form-control-static">{{ _(adminaccount.created) }}</p>
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label class="col-12 col-lg-4 col-form-label">{{ _("Updated") }}</label>
-                <div class="col-12 col-lg-8">
-                    <p class="form-control-static">{{ _(adminaccount.updated) }}</p>
-                </div>
-            </div>
-    
-            <div class="form-group row">
-                <label for="password" class="col-12 col-lg-4 col-form-label">{{ _("Password") }}</label>
-                <div class="col-12 col-lg-8{% if validationErrors.password.count %} has-warning{% endif %}">
-                    <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ _("Password") }}"{% if not adminaccount.isValid %} required{% endif %}>
-                    {% if validationErrors.password.count %}<div class="form-control-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="password_confirmation" class="col-12 col-lg-4 col-form-label">{{ _("Password confirmation") }}</label>
-                <div class="col-12 col-lg-8">
-                    <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ _("Password confirmation") }}"{% if not adminaccount.isValid %} required{% endif %}>
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="maxdisplay" class="col-12 col-lg-4 col-form-label">{{ _("Max display") }}</label>
-                <div class="col-12 col-lg-8">
-                    <input type="number" id="maxdisplay" name="maxdisplay" class="form-control" placeholder="{{ _("Max display") }}" min="15" max="255" step="1" value="{{ userMaxDisplay }}">
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="warnlevel" class="col-12 col-lg-4 col-form-label">{{ _("Warn level") }}</label>
-                <div class="col-12 col-lg-8">                
-                    <div class="input-group">
-                        <input type="number" id="warnlevel" name="warnlevel" class="form-control" placeholder="{{ _("Warn level") }}" min="0" max="100" step="1" value="{{ userWarnLevel }}" aria-describedby="warnPerc">
-                        <span class="input-group-addon" id="warnPerc">%</span>
-                    </div>
-                </div>
-            </div>
-                   
-            <div class="form-group row">
-                <label for="lang" class="col-12 col-lg-4 col-form-label">{{ _("Language") }}</label>
-                <div class="col-12 col-lg-8">
-                    <select class="form-control" id="lang" name="lang">
-                        {% for lng in langs %}
-                        <option value="{{ lng.code }}"{% if lang == lng.code %} selected{% endif %}>{{ lng.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="tz" class="col-12 col-lg-4 col-form-label">{{ _("Time zone") }}</label>
-                <div class="col-12 col-lg-8">
-                    <select class="form-control" id="tz" name="tz">
-                        {% for tz in timezones %}
-                        <option value="{{ tz }}"{% if adminaccount.tz == tz %} selected{% endif %}>{{ tz }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <div class="col">
-                    <a href="/domain" class="btn btn-outline-warning">{{ _("Cancel") }}</a>
-                    <button type="submit" class="btn btn-outline-primary">{{ _("Update") }}</button>
-                </div>
-            </div>
-        
-        </form>
-    </div>
-
-    <div class="col-12 col-sm-12 col-md-6">
-    </div>
 </div>
+
+<form method="post">
+    <fieldset class="row mt-1">
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="created">{{ _("Created") }}</label>
+            <input type="text" id="created" class="form-control" value="{{ _(adminaccount.created) }}" aria-describedby="createdDesc" readonly>
+            <small id="createdDesc" class="form-text text-muted">{{ help.created.text }}</small>
+        </div>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="updated">{{ _("Updated") }}</label>
+            <input type="text" id="updated" class="form-control" value="{{ _(adminaccount.updated) }}" aria-describedby="updatedDesc" readonly>
+            <small id="updatedDesc" class="form-text text-muted">{{ help.updated.text }}</small>
+        </div>
+    </fieldset>
+
+    <fieldset class="row">
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label for="password" class="col-form-label">{{ _("Password") }}</label>
+            <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ _("Password") }}" aria-describedby="passwordDesc" autocomplete="new-password"{% if not adminaccount.isValid %} required{% endif %}>
+            {% if validationErrors.password.count %}<div class="invalid-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
+            <small id="passwordDesc" class="form-text text-muted">{{ help.password.text }}</small>
+        </div>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label for="password_confirmation" class="col-form-label">{{ _("Password confirmation") }}</label>
+            <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ _("Password confirmation") }}" aria-describedby="passwordConfirmDesc"{% if not adminaccount.isValid %} required{% endif %}>
+            <small id="passwordConfirmDesc" class="form-text text-muted">{{ help.password_confirmation.text }}</small>
+        </div>
+    </fieldset>
+
+    <fieldset class="row">
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label for="maxdisplay" class="col-form-label">{{ _("Max display") }}</label>
+            <input type="number" id="maxdisplay" name="maxdisplay" class="form-control{% if validationErrors.maxdisplay.count %} is-invalid{% endif %}" placeholder="{{ _("Max display") }}" min="15" max="255" step="1" value="{{ userMaxDisplay }}" aria-describedby="maxdisplayDesc">
+            <small id="maxdisplayDesc" class="form-text text-muted">{{ help.maxdisplay.text }}</small>
+        </div>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label for="warnlevel" class="col-form-label">{{ _("Warn level") }}</label>
+            <div class="input-group">
+                <input type="number" id="warnlevel" name="warnlevel" class="form-control" placeholder="{{ _("Warn level") }}" min="0" max="100" step="1" value="{{ userWarnLevel }}" aria-describedby="warnlevelDesc">
+                <span class="input-group-addon" id="warnPerc">%</span>
+            </div>
+            <small id="warnlevelDesc" class="form-text text-muted">{{ help.warnlevel.text }}</small>
+        </div>
+    </fieldset>
+
+    <fieldset class="row">
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label for="lang" class="col-form-label">{{ _("Language") }}</label>
+            <select class="form-control select2" id="lang" name="lang" aria-describedby="langDesc">
+                {% for lng in langs %}
+                <option value="{{ lng.code }}"{% if lang == lng.code %} selected{% endif %}>{{ lng.name }}</option>
+                {% endfor %}
+            </select>
+            <small id="langDesc" class="form-text text-muted">{{ help.lang.text }}</small>
+        </div>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label for="tz" class="col-form-label">{{ _("Time zone") }}</label>
+            <select class="form-control" id="tz" name="tz" aria-describedby="tzDesc">
+                {% for tz in timezones %}
+                <option value="{{ tz }}"{% if adminaccount.tz == tz %} selected{% endif %}>{{ tz }}</option>
+                {% endfor %}
+            </select>
+            <small id="tzDesc" class="form-text text-muted">{{ help.tz.text }}</small>
+        </div>
+    </fieldset>
+
+    <div class="row">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-4">
+            <a href="/domain" class="btn btn-outline-warning float-left">{{ _("Cancel") }}</a>
+            <button type="submit" class="btn btn-outline-primary float-right">{{ _("Update") }}</button>
+        </div>
+    </div>
+</form>
+
