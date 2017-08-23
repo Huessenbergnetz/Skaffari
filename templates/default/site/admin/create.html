@@ -3,58 +3,62 @@
 </div>
 
 <form method="post">
-    
-    <div class="row mt-1">
-    
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.username.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="username">{{ help.username.title }}</label>
-            <input type="text" id="username" name="username" class="form-control{% if validationErrors.username.count %} form-control-warning{% endif %}" value="{{ username }}" placeholder="{{ _("User name") }}" required>
-            {% if validationErrors.username.count %}<div class="form-control-feedback"><small>{{ validationErrors.username.0 }}</small></div>{% endif %}
+
+    <fieldset class="row mt-1">
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="username">{{ help.username.title }}</label>
+            <input type="text" id="username" name="username" class="form-control{% if validationErrors.username.count %} is-invalid{% endif %}" value="{{ username }}" placeholder="{{ help.username.title }}" autocomplete="new-password" required>
+            {% if validationErrors.username.count %}<div class="invalid-feedback"><small>{{ validationErrors.username.0 }}</small></div>{% endif %}
             <small id="validUntilDesc" class="form-text text-muted">{{ help.username.text }}</small>
         </div>
-        
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.password.count %} has-warning{% endif %}">
-            <label class="form-control-label" for="passsword">{{ help.password.title }}</label>
-            <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} form-control-warning{% endif %}" placeholder="{{ _("Password") }}" aria-describedby="passwordDesc">
-            {% if validationErrors.password.count %}<div class="form-control-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="passsword">{{ help.password.title }}</label>
+            <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ help.password.title }}" aria-describedby="passwordDesc" autocomplete="new-password" required>
+            {% if validationErrors.password.count %}<div class="invalid-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
             <small id="passwordDesc" class="form-text text-muted">{{ help.password.text }}</small>
         </div>
-        
+
         <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-             <label class="form-control-label" for="password_confirmation">{{ help.password_confirmation.title }}</label>
-             <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ _("Password confirmation") }}" aria-describedby="passwordConfirmDesc">
+             <label class="col-form-label" for="password_confirmation">{{ help.password_confirmation.title }}</label>
+             <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ help.password_confirmation.title }}" aria-describedby="passwordConfirmDesc" required>
              <small id="passwordConfirmDesc" class="form-text text-muted">{{ help.password_confirmation.text }}</small>
         </div>
-        
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.type.count %} has-warning{% endif %}">
-            <label for="type" class="col-12 col-lg-4 form-control-label">{{ help.type.title }}</label>
-            <select class="form-control" id="type" name="type" aria-describedby="typeDesc">
+
+    </fieldset>
+
+    <fieldset class="row">
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label for="type" class="col-form-label">{{ help.type.title }}</label>
+            <select class="form-control{% if validationErrors.type.count %} is-invalid{% endif %}" id="type" name="type" aria-describedby="typeDesc">
                 <option value="1"{% if type == 1 %} selected{% endif %}>{{ _("Domain master") }}</option>
                 <option value="0"{% if type == 0 %} selected{% endif %}>{{ _("Super user") }}</option>
             </select>
-            {% if validationErrors.type.count %}<div class="form-control-feedback"><small>{{ validationErrors.type.0 }}</small></div>{% endif %}
+            {% if validationErrors.type.count %}<div class="invalid-feedback"><small>{{ validationErrors.type.0 }}</small></div>{% endif %}
             <small id="typeDesc" class="form-text text-muted">{{ help.type.text }}</small>
         </div>
-        
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4{% if validationErrors.assocdomains.count %} has-warning{% endif %}">
-            <label for="assocdomains" class="col-12 col-lg-4 form-control-label">{{ help.assocdomains.title }}</label>
-            <select class="form-control" id="assocdomains" name="assocdomains" multiple{% if not domains.size %} disabled{% endif %}>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label for="assocdomains" class="col-form-label">{{ help.assocdomains.title }}</label>
+            <select class="form-control{% if validationErrors.assocdomains.count %} is-invalid{% endif %} select2" id="assocdomains" name="assocdomains" multiple{% if not domains.size %} disabled{% endif %}>
                 {% for domain in domains %}
                 <option value="{{ domain.id }}"{% if domain.id in assocdomains %} selected{% endif %}>{{ domain.name }}</option>
                 {% endfor %}
             </select>
-            {% if validationErrors.assocdomains.count %}<div class="form-control-feedback"><small>{{ validationErrors.assocdomains.0 }}</small></div>{% endif %}
+            {% if validationErrors.assocdomains.count %}<div class="invalid-feedback"><small>{{ validationErrors.assocdomains.0 }}</small></div>{% endif %}
             <small id="typeDesc" class="form-text text-muted">{{ help.assocdomains.text }}</small>
         </div>
-        
-    </div>
-    
+
+    </fieldset>
+
     <div class="mt-1">
         <a href="/admin" class="btn btn-outline-warning float-left" role="button"><i class="fa fa-times"></i> {{ _("Cancel") }}</a>
         <button type="submit" class="btn btn-outline-primary float-right"><i class="fa fa-save"></i> {{ _("Create") }}</button>
         <div class="clearfix"></div>
     </div>
-    
+
 </form>
-    
-    
+
+
