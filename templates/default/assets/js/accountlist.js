@@ -326,7 +326,7 @@ Skaffari.DefaultTmpl.AccountList.load = function(loadMore) {
         } else {
             al.currentPage.val(parseInt(al.currentPage.val()) + 1);
         }
-        al.emptyListInfo.hide();
+        al.emptyListInfo.css('display', 'none')
         var formData = aff.serialize();
         al.loadingActive.show();
         al.searchString.prop('disabled', true);
@@ -362,7 +362,7 @@ Skaffari.DefaultTmpl.AccountList.load = function(loadMore) {
                     al.tbody.append(tr);
                 }
             } else {
-                al.emptyListInfo.show();
+                al.emptyListInfo.css('display', 'flex');
             }
 
             if (data.currentPage < data.lastPage) {
@@ -417,7 +417,7 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
     if (aff.length > 0) {
 
         al.emptyListInfo = $('#emptyListInfo');
-        al.emptyListInfo.hide();
+        al.emptyListInfo.css('dislay', 'none')
         al.searchString = $('#searchString');
         al.searchRole = $('#searchRole');
         al.submitBtn = $('#accountFilterFormSubmit');
