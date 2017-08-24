@@ -3,21 +3,22 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="robots" content="noindex,nofollow">
 
         <title>{{ site_title }}{% if site_subtitle %} - {{ site_subtitle }}{% endif %} - Skaffari</title>
 
 
         <link href="/css/style.css" rel="stylesheet">
     </head>
-    
+
     <body>
         <nav class="navbar fixed-top navbar-expand-md navbar-dark bg-dark bg-faded">
             <a class="navbar-brand" href="/">Skaffari</a>
-        
+
             <button class="navbar-toggler" type="button" data-toggle="collapse"  data-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="{{ _("Toggle navigation") }}">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="mainNav">
                 <div class="navbar-nav mr-auto">
                     {% ifequal userType 0 %}
@@ -35,7 +36,7 @@
                         <a class="nav-link" href="/domain"><i class="fa fa-cubes"></i> {{ _("Domains") }}</a>
                     </div>
                     {% endifequal %}
-                    
+
                     {% if domain.isValid %}
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="mainNavCurrentDomain" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -52,7 +53,7 @@
                         </div>
                     </div>
                     {% endif %}
-                    
+
                     {% if account.isValid %}
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="mainNavCurrentAccount" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -68,7 +69,7 @@
                     </div>
                     {% endif %}
                 </div>
-                
+
                 <div class="navbar-nav">
                     {% ifequal userType 0 %}
                     <div class="nav-item dropdown">
@@ -80,7 +81,7 @@
                         </div>
                     </div>
                     {% endifequal %}
-                    
+
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="mainNavUserMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fa fa-user"></i> {{ userName }}
@@ -93,10 +94,10 @@
                 </div>
             </div>
         </nav>
-        
+
         {# if error_msg or status_msg #}
         <div id="messages-container" class="container-fluid">
-        
+
             {% if error_msg %}
             <div class="row">
                 <div class="col">
@@ -109,7 +110,7 @@
                 </div>
             </div>
             {% endif %}
-            
+
             {% if status_msg %}
             <div class="row">
                 <div class="col">
@@ -122,17 +123,17 @@
                 </div>
             </div>
             {% endif %}
-        
+
         </div>
         {# endif #}
-        
+
         <div id="ajaxMessages" class="container-fluid">
         </div>
-        
+
         <main class="container-fluid mt-3">
             {% include template %}
         </main>
-        
+
         <script src="/js/scripts.js"></script>
     </body>
 </html>
