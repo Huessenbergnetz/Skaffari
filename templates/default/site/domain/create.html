@@ -110,6 +110,42 @@
             {% if validationErrors.abuseAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.abuseAccount.0 }}</small></div>{% endif %}
             <small id="abuseAccountDesc" class="form-text text-muted">{{ help.abuseAccount.text }}</small>
         </div>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="nocAccount">{{ help.nocAccount.title }}</label>
+            <select class="form-control{% if validationErrors.nocAccount.count %} is-invalid{% endif %} select2-ajax" id="nocAccount" name="nocAccount" aria-describedby="nocAccountDesc">
+                <option value="0"{% if not nocAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
+            </select>
+            {% if validationErrors.nocAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.nocAccount.0 }}</small></div>{% endif %}
+            <small id="nocAccountDesc" class="form-text text-muted">{{ help.nocAccount.text }}</small>
+        </div>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="postmasterAccount">{{ help.postmasterAccount.title }}</label>
+            <select class="form-control{% if validationErrors.postmasterAccount.count %} is-invalid{% endif %} select2-ajax" id="postmasterAccount" name="postmasterAccount" aria-describedby="postmasterAccountDesc">
+                <option value="0"{% if not postmasterAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
+            </select>
+            {% if validationErrors.postmasterAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.postmasterAccount.0 }}</small></div>{% endif %}
+            <small id="postmasterAccountDesc" class="form-text text-muted">{{ help.postmasterAccount.text }}</small>
+        </div>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="hostmasterAccount">{{ help.hostmasterAccount.title }}</label>
+            <select class="form-control{% if validationErrors.hostmasterAccount.count %} is-invalid{% endif %} select2-ajax" id="hostmasterAccount" name="hostmasterAccount" aria-describedby="hostmasterAccountDesc">
+                <option value="0"{% if not hostmasterAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
+            </select>
+            {% if validationErrors.hostmasterAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.hostmasterAccount.0 }}</small></div>{% endif %}
+            <small id="hostmasterAccountDesc" class="form-text text-muted">{{ help.hostmasterAccount.text }}</small>
+        </div>
+
+        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+            <label class="col-form-label" for="webmasterAccount">{{ help.webmasterAccount.title }}</label>
+            <select class="form-control{% if validationErrors.webmasterAccount.count %} is-invalid{% endif %} select2-ajax" id="webmasterAccount" name="webmasterAccount" aria-describedby="webmasterAccountDesc">
+                <option value="0"{% if not webmasterAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
+            </select>
+            {% if validationErrors.webmasterAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.webmasterAccount.0 }}</small></div>{% endif %}
+            <small id="webmasterAccountDesc" class="form-text text-muted">{{ help.webmasterAccount.text }}</small>
+        </div>
     </fieldset>
 
     <div class="mt-1">

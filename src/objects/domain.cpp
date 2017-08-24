@@ -476,7 +476,11 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
     }
 
     static const QHash<QString,QString> roleAccounts({
-                                                         {QStringLiteral("abuseAccount"), QStringLiteral("abuse")}
+                                                         {QStringLiteral("abuseAccount"), QStringLiteral("abuse")},
+                                                         {QStringLiteral("nocAccount"), QStringLiteral("noc")},
+                                                         {QStringLiteral("postmasterAccount"), QStringLiteral("postmaster")},
+                                                         {QStringLiteral("hostmasterAccount"), QStringLiteral("hostmaster")},
+                                                         {QStringLiteral("webmasterAccount"), QStringLiteral("webmaster")}
                                                      });
     QHash<QString,QString>::const_iterator i = roleAccounts.constBegin();
     while (i != roleAccounts.constEnd()) {
