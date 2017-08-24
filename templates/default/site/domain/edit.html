@@ -3,107 +3,112 @@
 </div>
 
 <form method="post">
-    <fieldset class="row mt-1">
+    <fieldset>
+        <div class="row mt-1">
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="col-form-label" for="prefix">{{ help.prefix.title }}</label>
-            <input type="text" readonly class="form-control" id="prefix" value="{{ domain.prefix }}" aria-describedby="prefixDesc">
-            <small id="prefixDesc" class="form-text text-muted">{{ help.prefix.text }}</small>
-        </div>
-
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="col-form-label" for="created">{{ help.created.title }}</label>
-            <input type="text" readonly class="form-control" id="created" value="{{ _(domain.created) }}" aria-describedby="createdDesc">
-            <small id="createdDesc" class="form-text text-muted">{{ help.created.text }}</small>
-        </div>
-
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="col-form-label" for="updated">{{ help.updated.title }}</label>
-            <input type="text" readonly class="form-control" id="updated" value="{{ _(domain.updated) }}" aria-describedby="updatedDesc">
-            <small id="updatedDesc" class="form-text text-muted">{{ help.updated.text }}</small>
-        </div>
-
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="col-form-label" for="maxAccounts">{{ help.maxAccounts.title }}</label>
-            <div class="input-group">
-                <span class="input-group-addon">{{ domain.accounts }} /</span>
-                <input type="{% ifequal userType 0 %}number{% else %}text{% endifequal %}"{% ifnotequal userType 0 %} readonly{% endifnotequal %} id="maxAccounts" name="maxAccounts" class="form-control{% if validationErrors.maxAccounts.count %} is-invalid{% endif %}" value="{% if domain.maxAccounts > 0 %}{{ domain.maxAccounts }}{% else %}{% ifequal userType 0 %}0{% else %}{{ _("unlimited") }}{% endifequal %}{% endif %}" min="0" aria-describedby="maxAccountsDesc" required>
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="prefix">{{ help.prefix.title }}</label>
+                <input type="text" readonly class="form-control" id="prefix" value="{{ domain.prefix }}" aria-describedby="prefixDesc">
+                <small id="prefixDesc" class="form-text text-muted">{{ help.prefix.text }}</small>
             </div>
-            {% if validationErrors.maxAccounts.count %}<div class="invalid-feedback"><small>{{ validationErrors.maxAccounts.0 }}</small></div>{% endif %}
-            <small id="maxAccountsDesc" class="form-text text-muted">{{ help.maxAccounts.text }}</small>
-        </div>
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <label for="humanDomainQuota" class="col-form-label">{{ help.humanDomainQuota.title }}</label>
-            <input type="text"{% ifnotequal userType 0 %} readonly{% endifnotequal %} id="humanDomainQuota" name="humanDomainQuota" class="form-control{% if validationErrors.humanDomainQuota.count %} is-invalid{% endif %}" value="{% ifequal userType 0 %}{% sk_fsf domain.domainQuota 2 2 1024 %}{% else %}{% if domain.domainQuota > 0 %}{% sk_fsf domain.domainQuota 2 2 1024 %}{% else %}{{ _("unlimited") }}{% endif %}{% endifequal %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanDomainQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
-            {% if validationErrors.humanDomainQuota.count %}<div class="invalid-feedback"><small>{{ validationErrors.humanDomainQuota.0 }}</small></div>{% endif %}
-            <small id="humanDomainQuotaDesc" class="form-text text-muted">{{ help.humanDomainQuota.text }}</small>
-        </div>
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="created">{{ help.created.title }}</label>
+                <input type="text" readonly class="form-control" id="created" value="{{ _(domain.created) }}" aria-describedby="createdDesc">
+                <small id="createdDesc" class="form-text text-muted">{{ help.created.text }}</small>
+            </div>
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <label for="humanQuota" class="col-form-label">{{ help.humanQuota.title }}</label>
-            <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} is-invalid{% endif %}" value="{% sk_fsf domain.quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
-            {% if validationErrors.humanQuota.count %}<div class="invalid-feedback"><small>{{ validationErrors.humanQuota.0 }}</small></div>{% endif %}
-            <small id="humanQuotaDesc" class="form-text text-muted">{{ help.humanQuota.text }}</small>
-        </div>
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="updated">{{ help.updated.title }}</label>
+                <input type="text" readonly class="form-control" id="updated" value="{{ _(domain.updated) }}" aria-describedby="updatedDesc">
+                <small id="updatedDesc" class="form-text text-muted">{{ help.updated.text }}</small>
+            </div>
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="col-form-label" for="folders">{{ help.folders.title }}</label>
-            <input type="text" id="folders" name="folders" class="form-control{% if validationErrors.folders.count %} is-invalid{% endif %}" value="{% for folder in domain.folders %}{{ folder.name }}{% if not forloop.last %},{% endif %}{% endfor %}" placeholder="{{ _("e.g. Trash,Spam,Drafts,Sent Messages") }}" aria-describedby="quotaDesc">
-            {% if validationErrors.folders.count %}<div class="invalid-feedback"><small>{{ validationErrors.folders.0 }}</small></div>{% endif %}
-            <small id="quotaDesc" class="form-text text-muted">{{ help.folders.text }}</small>
-        </div>
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="maxAccounts">{{ help.maxAccounts.title }}</label>
+                <div class="input-group">
+                    <span class="input-group-addon">{{ domain.accounts }} /</span>
+                    <input type="{% ifequal userType 0 %}number{% else %}text{% endifequal %}"{% ifnotequal userType 0 %} readonly{% endifnotequal %} id="maxAccounts" name="maxAccounts" class="form-control{% if validationErrors.maxAccounts.count %} is-invalid{% endif %}" value="{% if domain.maxAccounts > 0 %}{{ domain.maxAccounts }}{% else %}{% ifequal userType 0 %}0{% else %}{{ _("unlimited") }}{% endifequal %}{% endif %}" min="0" aria-describedby="maxAccountsDesc" required>
+                </div>
+                {% if validationErrors.maxAccounts.count %}<div class="invalid-feedback"><small>{{ validationErrors.maxAccounts.0 }}</small></div>{% endif %}
+                <small id="maxAccountsDesc" class="form-text text-muted">{{ help.maxAccounts.text }}</small>
+            </div>
 
-        {% if domain.children.count == 0 %}
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="col-form-label" for="parent">{{ help.parent.title }}</label>
-            {% ifequal userType 0 %}
-            <select id="parent" name="parent" class="form-control{% if validationErrors.parent.count %} is-invalid{% endif %} select2" aria-describedby="parentDesc">
-                <option value="0"{% if domain.parent.id == 0 %} selected{% endif %}>{{ _("none") }}</option>
-                {% for dom in domains %}
-                {% if dom.id != domain.id %}
-                <option value="{{ dom.id }}"{% if domain.parent.id == dom.id %} selected{% endif %}>{{ dom.name }}</option>
-                {% endif %}
-                {% endfor %}
-            </select>
-            {% if validationErrors.parent.count %}<div class="invalid-feedback"><small>{{ validationErrors.parent.0 }}</small></div>{% endif %}
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label for="humanDomainQuota" class="col-form-label">{{ help.humanDomainQuota.title }}</label>
+                <input type="text"{% ifnotequal userType 0 %} readonly{% endifnotequal %} id="humanDomainQuota" name="humanDomainQuota" class="form-control{% if validationErrors.humanDomainQuota.count %} is-invalid{% endif %}" value="{% ifequal userType 0 %}{% sk_fsf domain.domainQuota 2 2 1024 %}{% else %}{% if domain.domainQuota > 0 %}{% sk_fsf domain.domainQuota 2 2 1024 %}{% else %}{{ _("unlimited") }}{% endif %}{% endifequal %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanDomainQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+                {% if validationErrors.humanDomainQuota.count %}<div class="invalid-feedback"><small>{{ validationErrors.humanDomainQuota.0 }}</small></div>{% endif %}
+                <small id="humanDomainQuotaDesc" class="form-text text-muted">{{ help.humanDomainQuota.text }}</small>
+            </div>
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label for="humanQuota" class="col-form-label">{{ help.humanQuota.title }}</label>
+                <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} is-invalid{% endif %}" value="{% sk_fsf domain.quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+                {% if validationErrors.humanQuota.count %}<div class="invalid-feedback"><small>{{ validationErrors.humanQuota.0 }}</small></div>{% endif %}
+                <small id="humanQuotaDesc" class="form-text text-muted">{{ help.humanQuota.text }}</small>
+            </div>
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="folders">{{ help.folders.title }}</label>
+                <input type="text" id="folders" name="folders" class="form-control{% if validationErrors.folders.count %} is-invalid{% endif %}" value="{% for folder in domain.folders %}{{ folder.name }}{% if not forloop.last %},{% endif %}{% endfor %}" placeholder="{{ _("e.g. Trash,Spam,Drafts,Sent Messages") }}" aria-describedby="quotaDesc">
+                {% if validationErrors.folders.count %}<div class="invalid-feedback"><small>{{ validationErrors.folders.0 }}</small></div>{% endif %}
+                <small id="quotaDesc" class="form-text text-muted">{{ help.folders.text }}</small>
+            </div>
+
+            {% if domain.children.count == 0 %}
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="parent">{{ help.parent.title }}</label>
+                {% ifequal userType 0 %}
+                <select id="parent" name="parent" class="form-control{% if validationErrors.parent.count %} is-invalid{% endif %} select2" aria-describedby="parentDesc">
+                    <option value="0"{% if domain.parent.id == 0 %} selected{% endif %}>{{ _("none") }}</option>
+                    {% for dom in domains %}
+                    {% if dom.id != domain.id %}
+                    <option value="{{ dom.id }}"{% if domain.parent.id == dom.id %} selected{% endif %}>{{ dom.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+                {% if validationErrors.parent.count %}<div class="invalid-feedback"><small>{{ validationErrors.parent.0 }}</small></div>{% endif %}
+                {% else %}
+                <p id="parent" class="form-control-static" aria-describedby="parentDesc">{% if domain.parent %}{{ domain.parent.name }}{% else %}{{ _("none") }}{% endif %}</p>
+                {% endifequal %}
+                <small id="parentDesc" class="form-text text-muted">{{ help.parent.text }}</small>
+            </div>
             {% else %}
-            <p id="parent" class="form-control-static" aria-describedby="parentDesc">{% if domain.parent %}{{ domain.parent.name }}{% else %}{{ _("none") }}{% endif %}</p>
-            {% endifequal %}
-            <small id="parentDesc" class="form-text text-muted">{{ help.parent.text }}</small>
-        </div>
-        {% else %}
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <label class="col-form-label" for="children">{{ help.children.title }}</label>
-            <p id="children" class="form-control-static" ariad-describedby="childrenDesc">{% for child in domain.children %}<a href="/domain/{{ child.id }}/accounts">{{ child.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
-            <small id="childrenDesc" class="form-text text-muted">{{ help.children.text }}</small>
-        </div>
-        {% endif %}
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="children">{{ help.children.title }}</label>
+                <p id="children" class="form-control-static" ariad-describedby="childrenDesc">{% for child in domain.children %}<a href="/domain/{{ child.id }}/accounts">{{ child.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                <small id="childrenDesc" class="form-text text-muted">{{ help.children.text }}</small>
+            </div>
+            {% endif %}
 
+        </div>
     </fieldset>
 
-    <fieldset class="row">
+    <fieldset>
+        <legend>{{ _("User name and address constraints" )}}</legend>
+        <div class="row">
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <div class="form-check">
-                <label class="form-check-label">
-                    <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if domain.freeNames %} checked{% endif %}{% if userType != 0 %} disabled{% endif %}>
-                    {{ help.freeNames.title }}
-                </label>
-                <small id="freeNamesDesc" class="form-text text-muted">{{ help.freeNames.text }}</small>
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <div class="form-check">
+                    <label class="form-check-label">
+                        <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if domain.freeNames %} checked{% endif %}{% if userType != 0 %} disabled{% endif %}>
+                        {{ help.freeNames.title }}
+                    </label>
+                    <small id="freeNamesDesc" class="form-text text-muted">{{ help.freeNames.text }}</small>
+                </div>
             </div>
-        </div>
 
-        <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-            <div class="form-check">
-                <label class="form-check-label">
-                    <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if domain.freeAddress %} checked{% endif %}{% if userType != 0 %} disabled{% endif %}>
-                    {{ help.freeAddress.title }}
-                </label>
-                <small id="freeAddressDesc" class="form-text text-muted">{{ help.freeAddress.text }}</small>
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <div class="form-check">
+                    <label class="form-check-label">
+                        <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if domain.freeAddress %} checked{% endif %}{% if userType != 0 %} disabled{% endif %}>
+                        {{ help.freeAddress.title }}
+                    </label>
+                    <small id="freeAddressDesc" class="form-text text-muted">{{ help.freeAddress.text }}</small>
+                </div>
             </div>
-        </div>
 
+        </div>
     </fieldset>
 
     <div class="mt-1">
