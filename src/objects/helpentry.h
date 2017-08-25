@@ -53,4 +53,7 @@ if (property == QLatin1String("title")) {
 return var;
 GRANTLEE_END_LOOKUP
 
+typedef QHash<QString, HelpEntry> HelpHash;
+Q_DECLARE_METATYPE(HelpHash)
+
 #endif // HELPENTRY_H
