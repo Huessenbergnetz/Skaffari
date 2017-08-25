@@ -46,6 +46,8 @@ set(skaffari_SRCS
     authstoresql.h
     domaineditor.cpp
     domaineditor.h
+    settingseditor.cpp
+    settingseditor.h
     login.cpp
     login.h
     logout.cpp

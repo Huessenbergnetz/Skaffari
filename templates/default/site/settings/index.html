@@ -1,0 +1,42 @@
+<div class="row">
+    <div class="col"><h2><i class="fa fa-sliders"></i> {{ _("Settings") }}</h2></div>
+</div>
+
+<form method="post">
+    <ul class="nav nav-tabs mt-1" id="settingsTabs" role="tablist">
+        <li clas="nav-item">
+            <a class="nav-link active" id="defaultsTab" data-toggle="tab" href="#defaults" role="tab" aria-controls="defaultsTab" aria-expanded="true">{{ _("Default values") }}</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="settingsTabsContent">
+        <div class="tab-pane fade show active" id="defaults" role="tabpanel" aria-labelledby="defaultsTab">
+
+            <fieldset>
+                <div class="row">
+
+                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                        <label for="defaultLanguage" class="col-form-label">{{ help.defaultLanguage.title }}</label>
+                        <select class="form-control select2" id="defaultLanguage" name="defaultLanguage" aria-describedby="defaultLanguageDesc">
+                            {% for lng in langs %}
+                            <option value="{{ lng.code }}"{% if defaultLanguage == lng.code %} selected{% endif %}>{{ lng.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <small id="defaultLanguageDesc" class="form-text text-muted">{{ help.defaultLanguage.text }}</small>
+                    </div>
+
+                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                        <label for="defaultTimezone" class="col-form-label">{{ help.defaultTimezone.title }}</label>
+                        <select class="form-control select2" id="defaultTimezone" name="defaultTimezone" aria-describedby="defaultTimezoneDesc">
+                            {% for tz in timezones %}
+                            <option value="{{ tz }}"{% if defaultTimezone == tz %} selected{% endif %}>{{ tz }}</option>
+                            {% endfor %}
+                        </select>
+                        <small id="defaultTimezoneDesc" class="form-text text-muted">{{ help.defaultTimezone.text }}</small>
+                    </div>
+
+                </div>
+            </fieldset>
+
+        </div>
+    </div>
+</form>

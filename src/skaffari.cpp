@@ -62,6 +62,7 @@
 #include "accounteditor.h"
 #include "admineditor.h"
 #include "myaccount.h"
+#include "settingseditor.h"
 
 Q_LOGGING_CATEGORY(SK_CORE, "skaffari.core")
 
@@ -93,6 +94,7 @@ bool Skaffari::init()
     qRegisterMetaType<Language>();
     qRegisterMetaType<Account>();
     qRegisterMetaType<HelpEntry>();
+    qRegisterMetaType<HelpHash>("HelpHash");
 
     Grantlee::registerMetaType<Folder>();
     Grantlee::registerMetaType<Domain>();
@@ -200,7 +202,7 @@ bool Skaffari::init()
 	new AccountEditor(this);
     new AdminEditor(this);
     new MyAccount(this);
-
+    new SettingsEditor(this);
 
     auto staticSimple = new StaticSimple(this);
     QString staticPath = tmplBasePath + QLatin1String("/static");
