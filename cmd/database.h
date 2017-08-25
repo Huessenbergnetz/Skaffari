@@ -25,6 +25,7 @@
 #include <QSqlError>
 #include <QFileInfoList>
 #include <QVersionNumber>
+#include <QVariantHash>
 
 class Database
 {
@@ -49,6 +50,9 @@ public:
     QSqlError lastDbError() const;
     QSqlDatabase getDb() const;
     void deleteAll();
+
+    QVariantHash loadOptions();
+    void saveOptions(const QVariantHash &options);
 
 private:
     QSqlDatabase m_db;

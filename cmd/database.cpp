@@ -417,3 +417,46 @@ void Database::deleteAll()
         q.exec(QStringLiteral("DROP TABLE %1").arg(table));
     }
 }
+
+
+QVariantHash Database::loadOptions()
+{
+    QVariantHash options;
+
+    QSqlQuery q(m_db);
+
+
+    if (Q_LIKELY(q.exec(QStringLiteral("SELECT option_name, option_value FROM options")))) {
+        while (q.next()) {
+            options.insert(q.value(0).toString(), q.value(1));
+        }
+    } else {
+        m_lastError = q.lastError();
+    }
+
+    return options;
+}
+
+void Database::saveOptions(const QVariantHash &options)
+{
+    if (!options.empty()) {
+        QSqlQuery q(m_db);
+        QHash<QString,QVariant>::const_iterator i = options.constBegin();
+        while (i != options.constEnd()) {
+            if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO options (option_name, option_value) "
+                                                     "VALUES (:option_name, :option_value) "
+                                                     "ON DUPLICATE KEY UPDATE "
+                                                     "option_value = :option_value")))) {
+                m_lastError = q.lastError();
+                break;
+            }
+            q.bindValue(QStringLiteral(":option_name"), i.key());
+            q.bindValue(QStringLiteral(":option_value"), i.value());
+            if (Q_UNLIKELY(!q.exec())) {
+                m_lastError = q.lastError();
+                break;
+            }
+            ++i;
+        }
+    }
+}

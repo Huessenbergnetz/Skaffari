@@ -130,7 +130,6 @@ bool Skaffari::init()
         qCDebug(SK_CORE) << "Initializing configuration.";
         SkaffariConfig::load(engine()->config(QStringLiteral("Accounts")),
                              engine()->config(QStringLiteral("Admins")),
-                             engine()->config(QStringLiteral("Defaults")),
                              engine()->config(QStringLiteral("IMAP")),
                              tmplConfig);
 
@@ -148,6 +147,8 @@ bool Skaffari::init()
         if (!initDb()) {
             return false;
         }
+
+        SkaffariConfig::loadSettingsFromDB();
 
         isInitialized = true;
     }

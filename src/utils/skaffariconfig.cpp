@@ -18,6 +18,11 @@
 
 #include "skaffariconfig.h"
 #include "../common/config.h"
+#include <Cutelyst/Plugins/Utils/Sql>
+#include <QSqlQuery>
+#include <QSqlError>
+
+Q_LOGGING_CATEGORY(SK_CONFIG, "skaffari.config")
 
 Password::Method SkaffariConfig::m_accPwMethod = static_cast<Password::Method>(SK_DEF_ACC_PWMETHOD);
 Password::Algorithm SkaffariConfig::m_accPwAlgorithm = static_cast<Password::Algorithm>(SK_DEF_ACC_PWALGORITHM);
@@ -55,7 +60,7 @@ SkaffariConfig::SkaffariConfig()
 
 }
 
-void SkaffariConfig::load(const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &defaults, const QVariantMap &imap, const QVariantMap &tmpl)
+void SkaffariConfig::load(const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &imap, const QVariantMap &tmpl)
 {
     SkaffariConfig::m_accPwMethod = static_cast<Password::Method>(accounts.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
     SkaffariConfig::m_accPwAlgorithm = static_cast<Password::Algorithm>(accounts.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>());
@@ -65,14 +70,6 @@ void SkaffariConfig::load(const QVariantMap &accounts, const QVariantMap &admins
     SkaffariConfig::m_admPwAlgorithm = static_cast<QCryptographicHash::Algorithm>(admins.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM).value<quint8>());
     SkaffariConfig::m_admPwRounds = admins.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>();
     SkaffariConfig::m_admPwMinlength = admins.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>();
-
-    SkaffariConfig::m_defDomainquota = defaults.value(QStringLiteral("domainquota"), SK_DEF_DEF_DOMAINQUOTA).value<quota_size_t>();
-    SkaffariConfig::m_defQuota = defaults.value(QStringLiteral("quota"), SK_DEF_DEF_QUOTA).value<quota_size_t>();
-    SkaffariConfig::m_defMaxaccounts = defaults.value(QStringLiteral("maxaccounts"), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
-    SkaffariConfig::m_defLanguage = defaults.value(QStringLiteral("language"), QLatin1String(SK_DEF_DEF_LANGUAGE)).toString();
-    SkaffariConfig::m_defTimezone = defaults.value(QStringLiteral("timezone"), QLatin1String(SK_DEF_DEF_TIMEZONE)).toString();
-    SkaffariConfig::m_defMaxdisplay = defaults.value(QStringLiteral("maxdisplay"), SK_DEF_DEF_MAXDISPLAY).value<quint8>();
-    SkaffariConfig::m_defWarnlevel = defaults.value(QStringLiteral("warnlevel"), SK_DEF_DEF_WARNLEVEL).value<quint8>();
 
     SkaffariConfig::m_imapHost = imap.value(QStringLiteral("host")).toString();
     SkaffariConfig::m_imapUser = imap.value(QStringLiteral("user")).toString();
@@ -87,6 +84,49 @@ void SkaffariConfig::load(const QVariantMap &accounts, const QVariantMap &admins
     SkaffariConfig::m_imapFqun = imap.value(QStringLiteral("fqun"), SK_DEF_IMAP_FQUN).toBool();
 
     SkaffariConfig::m_tmplAsyncAccountList = tmpl.value(QStringLiteral("asyncaccountlist"), SK_DEF_TMPL_ASYNCACCOUNTLIST).toBool();
+}
+
+void SkaffariConfig::loadSettingsFromDB()
+{
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT option_value FROM options WHERE option_name = :option_name"));
+
+    SkaffariConfig::m_defDomainquota = loadDbOption(q, QStringLiteral("default_domainquota"), SK_DEF_DEF_DOMAINQUOTA).value<quota_size_t>();
+    SkaffariConfig::m_defQuota = loadDbOption(q, QStringLiteral("default_quota"), SK_DEF_DEF_QUOTA).value<quota_size_t>();
+    SkaffariConfig::m_defMaxaccounts = loadDbOption(q, QStringLiteral("default_maxaccounts"), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
+    SkaffariConfig::m_defLanguage = loadDbOption(q, QStringLiteral("default_language"), QLatin1String(SK_DEF_DEF_LANGUAGE)).toString();
+    SkaffariConfig::m_defTimezone = loadDbOption(q, QStringLiteral("default_timezone"), QLatin1String(SK_DEF_DEF_TIMEZONE)).toString();
+    SkaffariConfig::m_defMaxdisplay = loadDbOption(q, QStringLiteral("default_maxdisplay"), SK_DEF_DEF_MAXDISPLAY).value<quint8>();
+    SkaffariConfig::m_defWarnlevel = loadDbOption(q, QStringLiteral("default_warnlevel"), SK_DEF_DEF_WARNLEVEL).value<quint8>();
+}
+
+void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
+{
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO options (option_name, option_value) "
+                                                         "VALUES (:option_name, :option_value) "
+                                                         "ON DUPLICATE KEY UPDATE "
+                                                         "option_value = :option_value"));
+    if (!options.empty()) {
+        QVariantHash::const_iterator i = options.constBegin();
+        while (i != options.constEnd()) {
+            if (!i.value().isNull() && i.value().isValid()) {
+                q.bindValue(QStringLiteral(":option_name"), i.key());
+                q.bindValue(QStringLiteral(":option_value"), i.value());
+                if (Q_UNLIKELY(!q.exec())) {
+                    qCWarning(SK_CONFIG, "Failed to save value %s for option %s in database: %s", qUtf8Printable(i.value().toString()), qUtf8Printable(i.key()), qUtf8Printable(q.lastError().text()));
+                }
+            } else {
+                qCWarning(SK_CONFIG, "Can not save invalid value for option %s.", qUtf8Printable(i.key()));
+            }
+        }
+    }
+
+    SkaffariConfig::m_defDomainquota = options.value(QStringLiteral("default_domainquota"), SkaffariConfig::m_defDomainquota).value<quota_size_t>();
+    SkaffariConfig::m_defQuota = options.value(QStringLiteral("default_quota"), SkaffariConfig::m_defQuota).value<quota_size_t>();
+    SkaffariConfig::m_defMaxaccounts = options.value(QStringLiteral("default_maxaccounts"), SkaffariConfig::m_defMaxaccounts).value<quint32>();
+    SkaffariConfig::m_defLanguage = options.value(QStringLiteral("default_language"), SkaffariConfig::m_defLanguage).toString();
+    SkaffariConfig::m_defTimezone = options.value(QStringLiteral("default_timezone"), SkaffariConfig::m_defTimezone).toString();
+    SkaffariConfig::m_defMaxdisplay = options.value(QStringLiteral("default_maxdisplay"), SkaffariConfig::m_defMaxdisplay).value<quint8>();
+    SkaffariConfig::m_defWarnlevel = options.value(QStringLiteral("default_warnlevel"), SkaffariConfig::m_defWarnlevel).value<quint8>();
 }
 
 Password::Method SkaffariConfig::accPwMethod() { return m_accPwMethod; }
@@ -119,3 +159,22 @@ bool SkaffariConfig::imapDomainasprefix() { return (SkaffariConfig::m_imapUnixhi
 bool SkaffariConfig::imapFqun() { return (SkaffariConfig::m_imapUnixhierarchysep && SkaffariConfig::m_imapDomainasprefix && SkaffariConfig::m_imapFqun); }
 
 bool SkaffariConfig::tmplAsyncAccountList() { return SkaffariConfig::m_tmplAsyncAccountList; }
+
+QVariant SkaffariConfig::loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal)
+{
+    QVariant var;
+
+    query.bindValue(QStringLiteral(":option_name"), option);
+
+    if (Q_LIKELY(query.exec())) {
+        if (query.next()) {
+            var.setValue(query.value(0));
+        } else {
+            qCWarning(SK_CONFIG, "Can not find option %s in database, using default value %s.", qUtf8Printable(option), qUtf8Printable(defVal.toString()));
+        }
+    } else {
+        qCCritical(SK_CONFIG, "Failed to query option %s from database, using default value %s: %s", qUtf8Printable(option), qUtf8Printable(defVal.toString()), qUtf8Printable(query.lastError().text()));
+    }
+
+    return var;
+}

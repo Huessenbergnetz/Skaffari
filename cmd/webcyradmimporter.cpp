@@ -867,13 +867,14 @@ int WebCyradmImporter::exec() const
     settings.setValue(QStringLiteral("peername"), imappeername);
     settings.endGroup();
 
-    settings.beginGroup(QStringLiteral("Defaults"));
-    settings.setValue(QStringLiteral("domainquota"), defaultDomainQuota);
-    settings.setValue(QStringLiteral("quota"), defaultQuota);
-    settings.setValue(QStringLiteral("maxaccounts"), defaultMaxAccounts);
-    settings.setValue(QStringLiteral("language"), defaultLang);
-    settings.setValue(QStringLiteral("timezone"), defaultTimezone);
-    settings.endGroup();
+    QVariantHash defOpts({
+                             {QStringLiteral("default_domainquota"), defaultDomainQuota},
+                             {QStringLiteral("default_quota"), defaultQuota},
+                             {QStringLiteral("default_maxaccounts"), defaultMaxAccounts},
+                             {QStringLiteral("default_language"), defaultLang},
+                             {QStringLiteral("default_timezone"), defaultTimezone}
+                         });
+    sdb.saveOptions(defOpts);
 
     settings.sync();
 

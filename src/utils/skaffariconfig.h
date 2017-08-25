@@ -21,10 +21,15 @@
 
 #include <QCryptographicHash>
 #include <QAbstractSocket>
+#include <QLoggingCategory>
 #include "../../common/password.h"
 #include "../../common/global.h"
 #include "../imap/skaffariimap.h"
 #include "../objects/account.h"
+
+Q_DECLARE_LOGGING_CATEGORY(SK_CONFIG)
+
+class QSqlQuery;
 
 /*!
  * \brief Static interface to access Skaffari and template settings in read only mode.
@@ -50,7 +55,26 @@ public:
      * \param imap      Entries from the \a IMAP section.
      * \param tmpl      Entrief from the current template.
      */
-    static void load(const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &defaults, const QVariantMap &imap, const QVariantMap &tmpl);
+    static void load(const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &imap, const QVariantMap &tmpl);
+
+    /*!
+     * \brief Loads specific settings from the database options table.
+     */
+    static void loadSettingsFromDB();
+
+    /*!
+     * \brief Saves specific settings into the database options table.
+     *
+     * \par Currently supported keys
+     * \li default_domainquota
+     * \li default_quota
+     * \li default_maxaccounts
+     * \li default_language
+     * \li default_timezone
+     * \li default_maxdisplay
+     * \li default_warnlevel
+     */
+    static void saveSettingsToDB(const QVariantHash &options);
 
     /*!
      * \brief Password encryption method for the user accounts.
@@ -134,12 +158,54 @@ public:
      */
     static quint8 admPwMinlength();
 
+    /*!
+     * \brief The default domain quota for new domains.
+     *
+     * \par Database options table key
+     * default_domainquota
+     */
     static quota_size_t defDomainquota();
+    /*!
+     * \brief The default quota for new accounts
+     *
+     * \par Database options table key
+     * default_quota
+     */
     static quota_size_t defQuota();
+    /*!
+     * \brief The default maximum accounts value for new domains.
+     *
+     * \par Database options table key
+     * default_maxaccounts
+     */
     static quint32 defMaxaccounts();
+    /*!
+     * \brief The default language if user has no language set.
+     *
+     * \par Database options table key
+     * default_language
+     */
     static QString defLanguage();
+    /*!
+     * \brief The default time zone if user has no time zone set.
+     *
+     * \par Database options table key
+     * default_timezone
+     */
     static QString defTimezone();
+    /*!
+     * \brief The default maximum display value for paginated lists.
+     *
+     * \par Database options table key
+     * default_maxdisplay
+     */
     static quint8 defMaxdisplay();
+    /*!
+     * \brief The default warn level for quota and account limits.
+     *
+     * \par Database options table key
+     * default_warnlevel
+     */
     static quint8 defWarnlevel();
 
     /*!
@@ -289,6 +355,8 @@ private:
     static bool m_imapFqun;
 
     static bool m_tmplAsyncAccountList;
+
+    static QVariant loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal = QVariant());
 };
 
 #endif // SKAFFARICONFIG_H

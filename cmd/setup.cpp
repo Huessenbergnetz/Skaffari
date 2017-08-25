@@ -529,35 +529,6 @@ int Setup::exec() const
         os.sync();
     }
 
-
-    if (!configExists || readBool(tr("Do you want to set the default values?"), false)) {
-
-        os.beginGroup(QStringLiteral("Defaults"));
-        QString defaultLang = os.value(QStringLiteral("language"), QStringLiteral(SK_DEF_DEF_LANGUAGE)).toString();
-        quota_size_t defaultQuota = os.value(QStringLiteral("quota"), SK_DEF_DEF_QUOTA).value<quota_size_t>();
-        quota_size_t defaultDomainQuota = os.value(QStringLiteral("domainquota"), SK_DEF_DEF_DOMAINQUOTA).value<quota_size_t>();
-        quint32 defaultMaxAccounts = os.value(QStringLiteral("maxaccounts"), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
-        QString defaultTimezone = os.value(QStringLiteral("timezone"), QStringLiteral(SK_DEF_DEF_TIMEZONE)).toString();
-        os.endGroup();
-
-        defaultLang = readString(tr("Default language"), defaultLang, QStringList({tr("The default language will be used as fallback language if the user's language is not set or can not be determined."), tr("Currently supported languages: %1").arg(QStringList(SKAFFARI_SUPPORTED_LANGS).join(QChar(QChar::Space)))}), QStringList(SKAFFARI_SUPPORTED_LANGS));
-        defaultTimezone = readString(tr("Default timezone"), defaultTimezone, QStringList(tr("Default timezone for newly created administrators and as fallback option. The timezone will be used to show localized date and time values. Please enter a valid IANA timezone ID.")));
-        while (!QTimeZone::isTimeZoneIdAvailable(defaultTimezone.toUtf8())) {
-            defaultTimezone = readString(tr("Default timezone"), QStringLiteral(SK_DEF_DEF_TIMEZONE), QStringList(tr("Default timezone for newly created administrators and as fallback option. The timezone will be used to show localized date and time values. Please enter a valid IANA timezone ID.")));
-        }
-        defaultQuota = readInt(tr("Default quota"), defaultQuota, QStringList(tr("The default quota in KiB for new accounts when creating a new domain. This can be changed when creating a new domain or editing an exisiting one.")));
-        defaultDomainQuota = readInt(tr("Default domain quota"), defaultDomainQuota, QStringList(tr("The default domain quota in KiB when creating new domains. This can be changed when creating a new domain or editing an exisiting one.")));
-        defaultMaxAccounts = readInt(tr("Default max accounts"), defaultMaxAccounts, QStringList(tr("The default number of maximum accounts for creating new domains. This can be changed when creating a new domain or editing an exisiting one.")));
-
-        os.beginGroup(QStringLiteral("Defaults"));
-        os.setValue(QStringLiteral("language"), defaultLang);
-        os.setValue(QStringLiteral("quota"), defaultQuota);
-        os.setValue(QStringLiteral("domainquota"), defaultDomainQuota);
-        os.setValue(QStringLiteral("maxaccounts"), defaultMaxAccounts);
-        os.endGroup();
-        os.sync();
-    }
-
     printSuccess(tr("Skaffari setup was successful."));
 
     return 0;
