@@ -117,6 +117,13 @@ CREATE TABLE IF NOT EXISTS systeminfo (
   val longtext NOT NULL
 ) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS options (
+  option_id int(11) NOT NULL AUTO_INCREMENT,
+  option_name varchar(127) NOT NULL,
+  option_value longtext NOT NULL,
+  PRIMARY KEY (optin_id),
+  UNIQUE KEY option_name (option_name)
+) ENGINE = MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO systeminfo (name, val) VALUES ('skaffari_db_version', '0.0.1');
 
