@@ -35,7 +35,7 @@ class QSqlQuery;
  * \brief Static interface to access Skaffari and template settings in read only mode.
  *
  * This class contains the settings from the Skaffari configuration file as well as the settings
- * from the current template.
+ * from the current template and specific settings stored in the database.
  *
  * All configuration values are saved static to be accessible globally.
  */
@@ -75,6 +75,20 @@ public:
      * \li default_warnlevel
      */
     static void saveSettingsToDB(const QVariantHash &options);
+
+    /*!
+     * \brief Returns specific settings stored in the database.
+     *
+     * \par Currently supported keys
+     * \li default_domainquota
+     * \li default_quota
+     * \li default_maxaccounts
+     * \li default_language
+     * \li default_timezone
+     * \li default_maxdisplay
+     * \li default_warnlevel
+     */
+    static QVariantHash getSettingsFromDB();
 
     /*!
      * \brief Password encryption method for the user accounts.

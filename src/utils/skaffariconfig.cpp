@@ -55,6 +55,15 @@ bool SkaffariConfig::m_imapFqun = SK_DEF_IMAP_FQUN;
 
 bool SkaffariConfig::m_tmplAsyncAccountList = SK_DEF_TMPL_ASYNCACCOUNTLIST;
 
+
+#define SK_CONF_KEY_DEF_DOMAINQUOTA "default_domainquota"
+#define SK_CONF_KEY_DEF_QUOTA "default_quota"
+#define SK_CONF_KEY_DEF_MAXACCOUNTS "default_maxaccounts"
+#define SK_CONF_KEY_DEF_LANGUAGE "default_language"
+#define SK_CONF_KEY_DEF_TIMEZONE "default_timezone"
+#define SK_CONF_KEY_DEF_MAXDISPLAY "default_maxdisplay"
+#define SK_CONF_KEY_DEF_WARNLEVEL "default_warnlevel"
+
 SkaffariConfig::SkaffariConfig()
 {
 
@@ -90,13 +99,13 @@ void SkaffariConfig::loadSettingsFromDB()
 {
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT option_value FROM options WHERE option_name = :option_name"));
 
-    SkaffariConfig::m_defDomainquota = loadDbOption(q, QStringLiteral("default_domainquota"), SK_DEF_DEF_DOMAINQUOTA).value<quota_size_t>();
-    SkaffariConfig::m_defQuota = loadDbOption(q, QStringLiteral("default_quota"), SK_DEF_DEF_QUOTA).value<quota_size_t>();
-    SkaffariConfig::m_defMaxaccounts = loadDbOption(q, QStringLiteral("default_maxaccounts"), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
-    SkaffariConfig::m_defLanguage = loadDbOption(q, QStringLiteral("default_language"), QLatin1String(SK_DEF_DEF_LANGUAGE)).toString();
-    SkaffariConfig::m_defTimezone = loadDbOption(q, QStringLiteral("default_timezone"), QLatin1String(SK_DEF_DEF_TIMEZONE)).toString();
-    SkaffariConfig::m_defMaxdisplay = loadDbOption(q, QStringLiteral("default_maxdisplay"), SK_DEF_DEF_MAXDISPLAY).value<quint8>();
-    SkaffariConfig::m_defWarnlevel = loadDbOption(q, QStringLiteral("default_warnlevel"), SK_DEF_DEF_WARNLEVEL).value<quint8>();
+    SkaffariConfig::m_defDomainquota = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), SK_DEF_DEF_DOMAINQUOTA).value<quota_size_t>();
+    SkaffariConfig::m_defQuota = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_QUOTA), SK_DEF_DEF_QUOTA).value<quota_size_t>();
+    SkaffariConfig::m_defMaxaccounts = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
+    SkaffariConfig::m_defLanguage = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), QLatin1String(SK_DEF_DEF_LANGUAGE)).toString();
+    SkaffariConfig::m_defTimezone = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QLatin1String(SK_DEF_DEF_TIMEZONE)).toString();
+    SkaffariConfig::m_defMaxdisplay = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SK_DEF_DEF_MAXDISPLAY).value<quint8>();
+    SkaffariConfig::m_defWarnlevel = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SK_DEF_DEF_WARNLEVEL).value<quint8>();
 }
 
 void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
@@ -120,13 +129,28 @@ void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
         }
     }
 
-    SkaffariConfig::m_defDomainquota = options.value(QStringLiteral("default_domainquota"), SkaffariConfig::m_defDomainquota).value<quota_size_t>();
-    SkaffariConfig::m_defQuota = options.value(QStringLiteral("default_quota"), SkaffariConfig::m_defQuota).value<quota_size_t>();
-    SkaffariConfig::m_defMaxaccounts = options.value(QStringLiteral("default_maxaccounts"), SkaffariConfig::m_defMaxaccounts).value<quint32>();
-    SkaffariConfig::m_defLanguage = options.value(QStringLiteral("default_language"), SkaffariConfig::m_defLanguage).toString();
-    SkaffariConfig::m_defTimezone = options.value(QStringLiteral("default_timezone"), SkaffariConfig::m_defTimezone).toString();
-    SkaffariConfig::m_defMaxdisplay = options.value(QStringLiteral("default_maxdisplay"), SkaffariConfig::m_defMaxdisplay).value<quint8>();
-    SkaffariConfig::m_defWarnlevel = options.value(QStringLiteral("default_warnlevel"), SkaffariConfig::m_defWarnlevel).value<quint8>();
+    SkaffariConfig::m_defDomainquota = options.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), SkaffariConfig::m_defDomainquota).value<quota_size_t>();
+    SkaffariConfig::m_defQuota = options.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), SkaffariConfig::m_defQuota).value<quota_size_t>();
+    SkaffariConfig::m_defMaxaccounts = options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), SkaffariConfig::m_defMaxaccounts).value<quint32>();
+    SkaffariConfig::m_defLanguage = options.value(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), SkaffariConfig::m_defLanguage).toString();
+    SkaffariConfig::m_defTimezone = options.value(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), SkaffariConfig::m_defTimezone).toString();
+    SkaffariConfig::m_defMaxdisplay = options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SkaffariConfig::m_defMaxdisplay).value<quint8>();
+    SkaffariConfig::m_defWarnlevel = options.value(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SkaffariConfig::m_defWarnlevel).value<quint8>();
+}
+
+QVariantHash SkaffariConfig::getSettingsFromDB()
+{
+    QVariantHash s;
+
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), SkaffariConfig::m_defDomainquota);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), SkaffariConfig::m_defQuota);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), SkaffariConfig::m_defMaxaccounts);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), SkaffariConfig::m_defLanguage);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), SkaffariConfig::m_defTimezone);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SkaffariConfig::m_defMaxdisplay);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SkaffariConfig::m_defWarnlevel);
+
+    return s;
 }
 
 Password::Method SkaffariConfig::accPwMethod() { return m_accPwMethod; }
