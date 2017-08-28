@@ -206,7 +206,7 @@ public:
      * \par Database options table key
      * default_timezone
      */
-    static QString defTimezone();
+    static QByteArray defTimezone();
     /*!
      * \brief The default maximum display value for paginated lists.
      *
@@ -352,7 +352,7 @@ private:
     static quota_size_t m_defQuota;
     static quint32 m_defMaxaccounts;
     static QString m_defLanguage;
-    static QString m_defTimezone;
+    static QByteArray m_defTimezone;
     static quint8 m_defMaxdisplay;
     static quint8 m_defWarnlevel;
 

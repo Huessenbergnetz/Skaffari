@@ -37,7 +37,7 @@ quota_size_t SkaffariConfig::m_defDomainquota = SK_DEF_DEF_DOMAINQUOTA;
 quota_size_t SkaffariConfig::m_defQuota = SK_DEF_DEF_QUOTA;
 quint32 SkaffariConfig::m_defMaxaccounts = SK_DEF_DEF_MAXACCOUNTS;
 QString SkaffariConfig::m_defLanguage = QLatin1String(SK_DEF_DEF_LANGUAGE);
-QString SkaffariConfig::m_defTimezone = QLatin1String(SK_DEF_DEF_TIMEZONE);
+QByteArray SkaffariConfig::m_defTimezone = QByteArrayLiteral(SK_DEF_DEF_TIMEZONE);
 quint8 SkaffariConfig::m_defMaxdisplay = SK_DEF_DEF_MAXDISPLAY;
 quint8 SkaffariConfig::m_defWarnlevel = SK_DEF_DEF_WARNLEVEL;
 
@@ -103,7 +103,7 @@ void SkaffariConfig::loadSettingsFromDB()
     SkaffariConfig::m_defQuota = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_QUOTA), SK_DEF_DEF_QUOTA).value<quota_size_t>();
     SkaffariConfig::m_defMaxaccounts = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
     SkaffariConfig::m_defLanguage = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), QLatin1String(SK_DEF_DEF_LANGUAGE)).toString();
-    SkaffariConfig::m_defTimezone = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QLatin1String(SK_DEF_DEF_TIMEZONE)).toString();
+    SkaffariConfig::m_defTimezone = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QLatin1String(SK_DEF_DEF_TIMEZONE)).toByteArray();
     SkaffariConfig::m_defMaxdisplay = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SK_DEF_DEF_MAXDISPLAY).value<quint8>();
     SkaffariConfig::m_defWarnlevel = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SK_DEF_DEF_WARNLEVEL).value<quint8>();
 }
@@ -133,7 +133,7 @@ void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
     SkaffariConfig::m_defQuota = options.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), SkaffariConfig::m_defQuota).value<quota_size_t>();
     SkaffariConfig::m_defMaxaccounts = options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), SkaffariConfig::m_defMaxaccounts).value<quint32>();
     SkaffariConfig::m_defLanguage = options.value(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), SkaffariConfig::m_defLanguage).toString();
-    SkaffariConfig::m_defTimezone = options.value(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), SkaffariConfig::m_defTimezone).toString();
+    SkaffariConfig::m_defTimezone = options.value(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), SkaffariConfig::m_defTimezone).toByteArray();
     SkaffariConfig::m_defMaxdisplay = options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SkaffariConfig::m_defMaxdisplay).value<quint8>();
     SkaffariConfig::m_defWarnlevel = options.value(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SkaffariConfig::m_defWarnlevel).value<quint8>();
 }
@@ -166,7 +166,7 @@ quota_size_t SkaffariConfig::defDomainquota() { return SkaffariConfig::m_defDoma
 quota_size_t SkaffariConfig::defQuota() { return SkaffariConfig::m_defQuota; }
 quint32 SkaffariConfig::defMaxaccounts() { return SkaffariConfig::m_defMaxaccounts; }
 QString SkaffariConfig::defLanguage() { return SkaffariConfig::m_defLanguage; }
-QString SkaffariConfig::defTimezone() { return SkaffariConfig::m_defTimezone; }
+QByteArray SkaffariConfig::defTimezone() { return SkaffariConfig::m_defTimezone; }
 quint8 SkaffariConfig::defMaxdisplay() { return SkaffariConfig::m_defMaxdisplay; }
 quint8 SkaffariConfig::defWarnlevel() { return SkaffariConfig::m_defWarnlevel; }
 
@@ -195,6 +195,7 @@ QVariant SkaffariConfig::loadDbOption(QSqlQuery &query, const QString &option, c
             var.setValue(query.value(0));
         } else {
             qCWarning(SK_CONFIG, "Can not find option %s in database, using default value %s.", qUtf8Printable(option), qUtf8Printable(defVal.toString()));
+            var.setValue(defVal);
         }
     } else {
         qCCritical(SK_CONFIG, "Failed to query option %s from database, using default value %s: %s", qUtf8Printable(option), qUtf8Printable(defVal.toString()), qUtf8Printable(query.lastError().text()));
