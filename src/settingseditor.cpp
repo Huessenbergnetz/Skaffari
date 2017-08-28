@@ -45,7 +45,7 @@ void SettingsEditor::index(Context *c)
 
         HelpHash help;
         help.insert(QStringLiteral("default_language"), HelpEntry(c->translate("SettingsEditor", "Default language"), c->translate("SettingsEditor", "Default fallback language that will be used if user has no language set and if the language reported by the browser is not supported.")));
-        help.insert(QStringLiteral("default_timezone"), HelpEntry(c->translate("SettingsEditor", "Default time zone"), c->translate("SettingsEditor", "Default time zone as fallback taht will be used to display localized dates and times if the user has not set one.")));
+        help.insert(QStringLiteral("default_timezone"), HelpEntry(c->translate("SettingsEditor", "Default time zone"), c->translate("SettingsEditor", "Default time zone as fallback that will be used to display localized dates and times if the user has not set one.")));
 
         c->stash(SkaffariConfig::getSettingsFromDB());
         c->stash({
