@@ -15,23 +15,23 @@
                 <div class="row">
 
                     <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label for="defaultLanguage" class="col-form-label">{{ help.defaultLanguage.title }}</label>
-                        <select class="form-control select2" id="defaultLanguage" name="defaultLanguage" aria-describedby="defaultLanguageDesc">
+                        <label for="default_language" class="col-form-label">{{ help.default_language.title }}</label>
+                        <select class="form-control select2" id="default_language" name="default_language" aria-describedby="default_languageDesc">
                             {% for lng in langs %}
-                            <option value="{{ lng.code }}"{% if defaultLanguage == lng.code %} selected{% endif %}>{{ lng.name }}</option>
+                            <option value="{{ lng.code }}"{% if default_language == lng.code %} selected{% endif %}>{{ lng.name }}</option>
                             {% endfor %}
                         </select>
-                        <small id="defaultLanguageDesc" class="form-text text-muted">{{ help.defaultLanguage.text }}</small>
+                        <small id="default_languageDesc" class="form-text text-muted">{{ help.default_language.text }}</small>
                     </div>
 
                     <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label for="defaultTimezone" class="col-form-label">{{ help.defaultTimezone.title }}</label>
-                        <select class="form-control select2" id="defaultTimezone" name="defaultTimezone" aria-describedby="defaultTimezoneDesc">
+                        <label for="default_timezone" class="col-form-label">{{ help.default_timezone.title }}</label>
+                        <select class="form-control select2" id="default_timezone" name="default_timezone" aria-describedby="default_timezoneDesc">
                             {% for tz in timezones %}
-                            <option value="{{ tz }}"{% if defaultTimezone == tz %} selected{% endif %}>{{ tz }}</option>
+                            <option value="{{ tz }}"{% if default_timezone == tz %} selected{% endif %}>{{ tz }}</option>
                             {% endfor %}
                         </select>
-                        <small id="defaultTimezoneDesc" class="form-text text-muted">{{ help.defaultTimezone.text }}</small>
+                        <small id="default_timezoneDesc" class="form-text text-muted">{{ help.default_timezone.text }}</small>
                     </div>
 
                 </div>
