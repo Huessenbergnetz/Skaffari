@@ -16,27 +16,73 @@
 
                     <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                         <label for="default_language" class="col-form-label">{{ help.default_language.title }}</label>
-                        <select class="form-control select2" id="default_language" name="default_language" aria-describedby="default_languageDesc">
+                        <select class="form-control select2{% if validationErrors.default_language.count %} is-invalid{% endif %}" id="default_language" name="default_language" aria-describedby="default_languageDesc">
                             {% for lng in langs %}
                             <option value="{{ lng.code }}"{% if default_language == lng.code %} selected{% endif %}>{{ lng.name }}</option>
                             {% endfor %}
                         </select>
+                        {% if validationErrors.default_language.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_language.0 }}</small></div>{% endif %}
                         <small id="default_languageDesc" class="form-text text-muted">{{ help.default_language.text }}</small>
                     </div>
 
                     <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                         <label for="default_timezone" class="col-form-label">{{ help.default_timezone.title }}</label>
-                        <select class="form-control select2" id="default_timezone" name="default_timezone" aria-describedby="default_timezoneDesc">
+                        <select class="form-control select2{% if validationErrors.default_timezone.count %} is-invalid{% endif %}" id="default_timezone" name="default_timezone" aria-describedby="default_timezoneDesc">
                             {% for tz in timezones %}
                             <option value="{{ tz }}"{% if default_timezone == tz %} selected{% endif %}>{{ tz }}</option>
                             {% endfor %}
                         </select>
+                        {% if validationErrors.default_timezone.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_timezone.0 }}</small></div>{% endif %}
                         <small id="default_timezoneDesc" class="form-text text-muted">{{ help.default_timezone.text }}</small>
+                    </div>
+
+                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                        <label for="default_warnlevel" class="col-form-label">{{ help.default_warnlevel.title }}</label>
+                        <div class="input-group">
+                            <input type="number" id="default_warnlevel" name="default_warnlevel" class="form-control{% if validationErrors.default_warnlevel.count %} is-invalid{% endif %}" placeholder="{{ help.default_warnlevel.title }}" min="0" max="100" step="1" value="{{ default_warnlevel }}" aria-describedby="default_warnlevelDesc">
+                            <span class="input-group-addon" id="warnPerc">%</span>
+                        </div>
+                        {% if validationErrors.default_warnlevel.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_warnlevel.0 }}</small></div>{% endif %}
+                        <small id="default_warnlevelDesc" class="form-text text-muted">{{ help.default_warnlevel.text }}</small>
+                    </div>
+
+                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                        <label for="default_maxdisplay" class="col-form-label">{{ help.default_maxdisplay.title }}</label>
+                        <input type="number" id="default_maxdisplay" name="default_maxdisplay" class="form-control{% if validationErrors.default_maxdisplay.count %} is-invalid{% endif %}" placeholder="{{ help.default_maxdisplay.title }}" min="15" max="255" step="1" value="{{ default_maxdisplay }}" aria-describedby="default_maxdisplayDesc">
+                        {% if validationErrors.default_maxdisplay.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_maxdisplay.0 }}</small></div>{% endif %}
+                        <small id="default_maxdisplayDesc" class="form-text text-muted">{{ help.default_maxdisplay.text }}</small>
+                    </div>
+
+                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                        <label for="default_maxaccounts" class="col-form-label">{{ help.default_maxaccounts.title }}</label>
+                        <input type="number" id="default_maxaccounts" name="default_maxaccounts" class="form-control{% if validationErrors.default_maxaccounts.count %} is-invalid{% endif %}" placeholder="{{ help.default_maxaccounts.title }}" min="0" step="1" value="{{ default_maxaccounts }}" aria-describedby="default_maxaccountsDesc">
+                        {% if validationErrors.default_maxaccounts.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_maxaccounts.0 }}</small></div>{% endif %}
+                        <small id="default_maxaccountsDesc" class="form-text text-muted">{{ help.default_maxaccounts.text }}</small>
+                    </div>
+
+                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                        <label for="default_domainquota" class="col-form-label">{{ help.default_domainquota.title }}</label>
+                        <input type="text" id="default_domainquota" name="default_domainquota" class="form-control{% if validationErrors.default_domainquota.count %} is-invalid{% endif %}" value="{% sk_fsf default_domainquota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="default_domainquotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+                        {% if validationErrors.default_domainquota.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_domainquota.0 }}</small></div>{% endif %}
+                        <small id="default_domainquotaDesc" class="form-text text-muted">{{ help.default_domainquota.text }}</small>
+                    </div>
+
+                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                        <label for="default_quota" class="col-form-label">{{ help.default_quota.title }}</label>
+                        <input type="text" id="default_quota" name="default_quota" class="form-control{% if validationErrors.default_quota.count %} is-invalid{% endif %}" value="{% sk_fsf default_quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="default_quotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+                        {% if validationErrors.default_quota.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_quota.0 }}</small></div>{% endif %}
+                        <small id="default_quotaDesc" class="form-text text-muted">{{ help.default_quota.text }}</small>
                     </div>
 
                 </div>
             </fieldset>
 
         </div>
+    </div>
+
+    <div class="mt-1">
+        <a href="/" class="btn btn-outline-warning float-left" role="button"><i class="fa fa-times"></i> {{ _("Cancel") }}</a>
+        <button type="submit" class="btn btn-outline-primary float-right"><i class="fa fa-save"></i> {{ _("Save") }}</button>
+        <div class="clearfix"></div>
     </div>
 </form>
