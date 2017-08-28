@@ -29,6 +29,14 @@
 
 Q_DECLARE_LOGGING_CATEGORY(SK_CONFIG)
 
+#define SK_CONF_KEY_DEF_DOMAINQUOTA "default_domainquota"
+#define SK_CONF_KEY_DEF_QUOTA "default_quota"
+#define SK_CONF_KEY_DEF_MAXACCOUNTS "default_maxaccounts"
+#define SK_CONF_KEY_DEF_LANGUAGE "default_language"
+#define SK_CONF_KEY_DEF_TIMEZONE "default_timezone"
+#define SK_CONF_KEY_DEF_MAXDISPLAY "default_maxdisplay"
+#define SK_CONF_KEY_DEF_WARNLEVEL "default_warnlevel"
+
 class QSqlQuery;
 
 /*!

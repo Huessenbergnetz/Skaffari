@@ -56,14 +56,6 @@ bool SkaffariConfig::m_imapFqun = SK_DEF_IMAP_FQUN;
 bool SkaffariConfig::m_tmplAsyncAccountList = SK_DEF_TMPL_ASYNCACCOUNTLIST;
 
 
-#define SK_CONF_KEY_DEF_DOMAINQUOTA "default_domainquota"
-#define SK_CONF_KEY_DEF_QUOTA "default_quota"
-#define SK_CONF_KEY_DEF_MAXACCOUNTS "default_maxaccounts"
-#define SK_CONF_KEY_DEF_LANGUAGE "default_language"
-#define SK_CONF_KEY_DEF_TIMEZONE "default_timezone"
-#define SK_CONF_KEY_DEF_MAXDISPLAY "default_maxdisplay"
-#define SK_CONF_KEY_DEF_WARNLEVEL "default_warnlevel"
-
 SkaffariConfig::SkaffariConfig()
 {
 
@@ -126,6 +118,7 @@ void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
             } else {
                 qCWarning(SK_CONFIG, "Can not save invalid value for option %s.", qUtf8Printable(i.key()));
             }
+            ++i;
         }
     }
 
