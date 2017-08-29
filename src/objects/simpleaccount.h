@@ -174,7 +174,9 @@ if (property == QLatin1String("id")) {
     var.setValue(object.id());
 } else if (property == QLatin1String("username")) {
     var.setValue(object.username());
-} else if (property == QLatin1String("domainname"))
+} else if (property == QLatin1String("domainname")) {
+    var.setValue(object.domainname());
+}
 return var;
 GRANTLEE_END_LOOKUP
 
