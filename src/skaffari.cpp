@@ -169,8 +169,7 @@ bool Skaffari::init()
     const QString tmplTransFileName = QLatin1String("tmpl_") + tmplName;
     const QString tmplTransFilePath = tmplBasePath + QLatin1String("/l10n");
 
-    const QStringList supportedLangs = SKAFFARI_SUPPORTED_LANGS;
-    for (const QString &lang : supportedLangs) {
+    for (const QString &lang : SKAFFARI_SUPPORTED_LANGS) {
         if (Q_LIKELY(lang != QLatin1String("en"))) {
             qCDebug(SK_CORE, "Loading translations for language %s.", qUtf8Printable(lang));
             const QLocale locale(lang);
