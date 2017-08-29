@@ -2,6 +2,8 @@
     <div class="col"><h2><i class="fa fa-user"></i> {{ _("Edit admin") }} <small class="text-muted">{{ adminaccount.username }}</small></h2></div>
 </div>
 
+{% i18nc_var "Datetime format string to display created and updated times on edit pages" "MMMM d, yyyy hh:mmap" as dtFormatString %}
+
 <form method="post">
 
     <fieldset>
@@ -15,13 +17,13 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="created">{{ help.created.title }}</label>
-                <input type="text" class="form-control" id="created" aria-describedby="createdDesc" value="{{ _(adminaccount.created) }}" readonly>
+                <input type="text" class="form-control" id="created" aria-describedby="createdDesc" value="{% sk_tzc adminaccount.created dtFormatString %}" readonly>
                 <small id="createdDesc" class="form-text text-muted">{{ help.created.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="updated">{{ help.updated.title }}</label>
-                <input type="text" class="form-control" id="updated" aria-describedby="updatedDesc" value="{{ _(adminaccount.updated) }}" readonly>
+                <input type="text" class="form-control" id="updated" aria-describedby="updatedDesc" value="{% sk_tzc adminaccount.updated dtFormatString %}" readonly>
                 <small id="updatedDesc" class="form-text text-muted">{{ help.updated.text }}</small>
             </div>
 

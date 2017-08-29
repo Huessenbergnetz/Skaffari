@@ -2,6 +2,8 @@
     <div class="col"><h2><i class="fa fa-cube"></i> {{ _("Edit domain") }} <small class="text-muted">{{ domain.name }}</small></h2></div>
 </div>
 
+{% i18nc_var "Datetime format string to display created and updated times on edit pages" "MMMM d, yyyy hh:mmap" as dtFormatString %}
+
 <form method="post">
     <fieldset>
         <div class="row mt-1">
@@ -14,13 +16,13 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="created">{{ help.created.title }}</label>
-                <input type="text" readonly class="form-control" id="created" value="{{ _(domain.created) }}" aria-describedby="createdDesc">
+                <input type="text" readonly class="form-control" id="created" value="{% sk_tzc domain.created dtFormatString %}" aria-describedby="createdDesc">
                 <small id="createdDesc" class="form-text text-muted">{{ help.created.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="updated">{{ help.updated.title }}</label>
-                <input type="text" readonly class="form-control" id="updated" value="{{ _(domain.updated) }}" aria-describedby="updatedDesc">
+                <input type="text" readonly class="form-control" id="updated" value="{% sk_tzc domain.updated dtFormatString %}" aria-describedby="updatedDesc">
                 <small id="updatedDesc" class="form-text text-muted">{{ help.updated.text }}</small>
             </div>
 
