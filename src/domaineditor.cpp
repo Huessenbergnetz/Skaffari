@@ -433,13 +433,8 @@ void DomainEditor::create(Context* c)
 
         c->stash(SkaffariConfig::getSettingsFromDB());
         c->stash({
-                     {QStringLiteral("defQuota"), SkaffariConfig::defQuota()},
-                     {QStringLiteral("defHumanQuota"), Utils::humanBinarySize(c, SkaffariConfig::defQuota() * Q_UINT64_C(1024))},
-                     {QStringLiteral("defDomainQuota"), SkaffariConfig::defDomainquota()},
-                     {QStringLiteral("defHumanDomainQuota"), Utils::humanBinarySize(c, SkaffariConfig::defDomainquota() * Q_UINT64_C(1024))},
                      {QStringLiteral("template"), QStringLiteral("domain/create.html")},
                      {QStringLiteral("domainAsPrefix"), SkaffariConfig::imapDomainasprefix()},
-                     {QStringLiteral("edit"), false},
                      {QStringLiteral("site_title"), c->translate("DomainEditor", "Create domain")},
                      {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)},
                      {QStringLiteral("domains"), QVariant::fromValue<std::vector<SimpleDomain>>(doms)}
