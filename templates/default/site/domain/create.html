@@ -9,7 +9,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="domainName">{{ help.domainName.title }}</label>
-                <input type="text" id="domainName" name="domainName" class="form-control{% if validationErrors.domainName.count %} is-invalid{% endif %}" value="{{ domain.name|default_if_none:domainName }}" placeholder="example.com" pattern="^\S*\.\S{2,}$" aria-describedby="domainNameDesc" required>
+                <input type="text" id="domainName" name="domainName" class="form-control{% if validationErrors.domainName.count %} is-invalid{% endif %}" value="{{ domainName }}" placeholder="example.com" pattern="^\S*\.\S{2,}$" aria-describedby="domainNameDesc" required>
                 {% if validationErrors.domainName.count %}<div class="invalid-feedback"><small>{{ validationErrors.domainName.0 }}</small></div>{% endif %}
                 <small id="domainNameDesc" class="form-text text-muted">{{ help.domainName.text }}</small>
             </div>
@@ -17,7 +17,7 @@
             {% if not domainAsPrefix %}
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="prefix">{{ help.prefix.title }}</label>
-                <input type="text" id="prefix" name="prefix" class="form-control{% if validationErrors.prefix.count %} is-invalid{% endif %}" value="{{ domain.prefix|default_if_none:prefix }}" placeholder="{{ help.prefix.title }}" aria-describedby="prefixDesc" required>
+                <input type="text" id="prefix" name="prefix" class="form-control{% if validationErrors.prefix.count %} is-invalid{% endif %}" value="{{ prefix }}" placeholder="{{ help.prefix.title }}" aria-describedby="prefixDesc" required>
                 {% if validationErrors.prefix.count %}<div class="invalid-feedback"><small>{{ validationErrors.prefix.0 }}</small></div>{% endif %}
                 <small id="prefixDesc" class="form-text text-muted">{{ help.prefix.text }}</small>
             </div>
@@ -25,7 +25,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="maxAccounts">{{ help.maxAccounts.title }}</label>
-                <input type="number" id="maxAccounts" name="maxAccounts" class="form-control{% if validationErrors.maxAccounts.count %} is-invalid{% endif %}" value="{{ domain.maxAccounts|default:defMaxAccounts}}" min="0" aria-describedby="maxAccountsDesc" required>
+                <input type="number" id="maxAccounts" name="maxAccounts" class="form-control{% if validationErrors.maxAccounts.count %} is-invalid{% endif %}" value="{{ maxAccounts|default_if_none:default_maxaccounts}}" min="0" aria-describedby="maxAccountsDesc" required>
                 {% if validationErrors.maxAccounts.count %}<div class="invalid-feedback"><small>{{ validationErrors.maxAccounts.0 }}</small></div>{% endif %}
                 <small id="maxAccountsDesc" class="form-text text-muted">{{ help.maxAccounts.text }}</small>
             </div>
@@ -46,7 +46,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="folders">{{ help.folders.title }}</label>
-                <input type="text" id="folders" name="folders" class="form-control" value="{{ domain.folders|join:"," }}" placeholder="{{ _("e.g. Trash,Spam,Drafts,Sent Messages") }}" aria-describedby="foldersDesc">
+                <input type="text" id="folders" name="folders" class="form-control" value="{{ folders }}" placeholder="{{ _("e.g. Trash,Spam,Drafts,Sent Messages") }}" aria-describedby="foldersDesc">
                 {% if validationErrors.folders.count %}<div class="invalid-feedback"><small>{{ validationErrors.folders.0 }}</small></div>{% endif %}
                 <small id="foldersDesc" class="form-text text-muted">{{ help.folders.text }}</small>
             </div>
@@ -85,7 +85,7 @@
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
                     <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if domain.freeNames %} checked{% endif %}>
+                        <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if freeNames %} checked{% endif %}>
                         {{ help.freeNames.title }}
                     </label>
                     <small id="freeNamesDesc" class="form-text text-muted">{{ help.freeNames.text }}</small>
@@ -95,7 +95,7 @@
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
                     <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if domain.freeAddress %} checked{% endif %}>
+                        <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if freeAddress %} checked{% endif %}>
                         {{ help.freeAddress.title }}
                     </label>
                     <small id="freeAddressDesc" class="form-text text-muted">{{ help.freeAddress.text }}</small>
@@ -108,10 +108,16 @@
     <fieldset>
         <legend>{{ _("Role accounts") }}</legend>
         <div class="row">
+        {% i18n_var "Select an account" as s2ph %}
+
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="abuseAccount">{{ help.abuseAccount.title }}</label>
-                <select class="form-control{% if validationErrors.abuseAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="abuseAccount" name="abuseAccount" aria-describedby="abuseAccountDesc">
-                    <option value="0"{% if not abuseAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
+                <select class="form-control{% if validationErrors.abuseAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="abuseAccount" name="abuseAccount" aria-describedby="abuseAccountDesc" data-placeholder="{{ s2ph }}">
+                    {% if abuseAccount.id > 0 %}
+                    <option value="{{ abuseAccount.id }}" selected="selected">{{ abuseAccount.username }} ({{ abuseAccount.domainname }})</option>
+                    {% elif default_abuse_account.id > 0 %}
+                    <option value="{{ default_abuse_account.id }}" selected="selected">{{ default_abuse_account.username }} ({{ default_abuse_account.domainname }})</option>
+                    {% endif %}
                 </select>
                 {% if validationErrors.abuseAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.abuseAccount.0 }}</small></div>{% endif %}
                 <small id="abuseAccountDesc" class="form-text text-muted">{{ help.abuseAccount.text }}</small>
@@ -119,17 +125,38 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="nocAccount">{{ help.nocAccount.title }}</label>
-                <select class="form-control{% if validationErrors.nocAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="nocAccount" name="nocAccount" aria-describedby="nocAccountDesc">
-                    <option value="0"{% if not nocAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
+                <select class="form-control{% if validationErrors.nocAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="nocAccount" name="nocAccount" aria-describedby="nocAccountDesc" data-placeholder="{{ s2ph }}">
+                    {% if nocAccount.id > 0 %}
+                    <option value="{{ nocAccount.id }}" selected="selected">{{ nocAccount.username }} ({{ nocAccount.domainname }})</option>
+                    {% elif default_noc_account.id > 0 %}
+                    <option value="{{ default_noc_account.id }}" selected="selected">{{ default_noc_account.username }} ({{ default_noc_account.domainname }})</option>
+                    {% endif %}
                 </select>
                 {% if validationErrors.nocAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.nocAccount.0 }}</small></div>{% endif %}
                 <small id="nocAccountDesc" class="form-text text-muted">{{ help.nocAccount.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="securityAccount">{{ help.securityAccount.title }}</label>
+                <select class="form-control{% if validationErrors.securityAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="securityAccount" name="securityAccount" aria-describedby="securityAccountDesc" data-placeholder="{{ s2ph }}">
+                    {% if securityAccount.id > 0 %}
+                    <option value="{{ securityAccount.id }}" selected="selected">{{ securityAccount.username }} ({{ securityAccount.domainname }})</option>
+                    {% elif default_security_account.id > 0 %}
+                    <option value="{{ default_security_account.id }}" selected="selected">{{ default_security_account.username }} ({{ default_security_account.domainname }})</option>
+                    {% endif %}
+                </select>
+                {% if validationErrors.securityAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.securityAccount.0 }}</small></div>{% endif %}
+                <small id="securityAccountDesc" class="form-text text-muted">{{ help.securityAccount.text }}</small>
+            </div>
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="postmasterAccount">{{ help.postmasterAccount.title }}</label>
-                <select class="form-control{% if validationErrors.postmasterAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="postmasterAccount" name="postmasterAccount" aria-describedby="postmasterAccountDesc">
-                    <option value="0"{% if not postmasterAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
+                <select class="form-control{% if validationErrors.postmasterAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="postmasterAccount" name="postmasterAccount" aria-describedby="postmasterAccountDesc" data-placeholder="{{ s2ph }}">
+                    {% if postmasterAccount.id > 0 %}
+                    <option value="{{ postmasterAccount.id }}" selected="selected">{{ postmasterAccount.username }} ({{ postmasterAccount.domainname }})</option>
+                    {% elif default_postmaster_account.id > 0 %}
+                    <option value="{{ default_postmaster_account.id }}" selected="selected">{{ default_postmaster_account.username }} ({{ default_postmaster_account.domainname }})</option>
+                    {% endif %}
                 </select>
                 {% if validationErrors.postmasterAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.postmasterAccount.0 }}</small></div>{% endif %}
                 <small id="postmasterAccountDesc" class="form-text text-muted">{{ help.postmasterAccount.text }}</small>
@@ -137,8 +164,12 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="hostmasterAccount">{{ help.hostmasterAccount.title }}</label>
-                <select class="form-control{% if validationErrors.hostmasterAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="hostmasterAccount" name="hostmasterAccount" aria-describedby="hostmasterAccountDesc">
-                    <option value="0"{% if not hostmasterAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
+                <select class="form-control{% if validationErrors.hostmasterAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="hostmasterAccount" name="hostmasterAccount" aria-describedby="hostmasterAccountDesc" data-placeholder="{{ s2ph }}">
+                    {% if hostmasterAccount.id > 0 %}
+                    <option value="{{ hostmasterAccount.id }}" selected="selected">{{ hostmasterAccount.username }} ({{ hostmasterAccount.domainname }})</option>
+                    {% elif default_hostmaster_account.id > 0 %}
+                    <option value="{{ default_hostmaster_account.id }}" selected="selected">{{ default_hostmaster_account.username }} ({{ default_hostmaster_account.domainname }})</option>
+                    {% endif %}
                 </select>
                 {% if validationErrors.hostmasterAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.hostmasterAccount.0 }}</small></div>{% endif %}
                 <small id="hostmasterAccountDesc" class="form-text text-muted">{{ help.hostmasterAccount.text }}</small>
@@ -146,8 +177,12 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="webmasterAccount">{{ help.webmasterAccount.title }}</label>
-                <select class="form-control{% if validationErrors.webmasterAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="webmasterAccount" name="webmasterAccount" aria-describedby="webmasterAccountDesc">
-                    <option value="0"{% if not webmasterAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
+                <select class="form-control{% if validationErrors.webmasterAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="webmasterAccount" name="webmasterAccount" aria-describedby="webmasterAccountDesc" data-placeholder="{{ s2ph }}">
+                    {% if webmasterAccount.id > 0 %}
+                    <option value="{{ webmasterAccount.id }}" selected="selected">{{ webmasterAccount.username }} ({{ webmasterAccount.domainname }})</option>
+                    {% elif default_webmaster_account.id > 0 %}
+                    <option value="{{ default_webmaster_account.id }}" selected="selected">{{ default_webmaster_account.username }} ({{ default_webmaster_account.domainname }})</option>
+                    {% endif %}
                 </select>
                 {% if validationErrors.webmasterAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.webmasterAccount.0 }}</small></div>{% endif %}
                 <small id="webmasterAccountDesc" class="form-text text-muted">{{ help.webmasterAccount.text }}</small>

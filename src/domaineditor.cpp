@@ -377,13 +377,22 @@ void DomainEditor::create(Context* c)
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            const auto params = r->bodyParams();
             if (vr) {
                 SkaffariError e(c);
-                auto dom = Domain::create(c, r->params(), &e);
+                auto dom = Domain::create(c, params, &e);
                 if (dom.isValid()) {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/domain/edit"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, c->translate("DomainEditor", "Successfully created new domain %1").arg(dom.getName()))));
+                    return;
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
+                }
+            }
+            SkaffariError getAccountsErrors(c);
+            for (const QString &a : {QStringLiteral("abuseAccount"), QStringLiteral("nocAccount"), QStringLiteral("securityAccount"), QStringLiteral("postmasterAccount"), QStringLiteral("hostmasterAccount"), QStringLiteral("webmasterAccount")}) {
+                const dbid_t aId = SKAFFARI_STRING_TO_DBID(params.value(a, QStringLiteral("0")));
+                if (aId > 0) {
+                    c->setStash(a, QVariant::fromValue<SimpleAccount>(SimpleAccount::get(c, &getAccountsErrors, aId)));
                 }
             }
         }
@@ -407,6 +416,7 @@ void DomainEditor::create(Context* c)
         help.insert(QStringLiteral("freeAddress"), HelpEntry(c->translate("DomainEditor", "Allow free addresses"), c->translate("DomainEditor", "If enabled, user accounts in this domain can have email addresses for all domains managed by Skaffari. If disabled, only email addresses for this domain can be added to user accounts in this domain.")));
         help.insert(QStringLiteral("abuseAccount"), HelpEntry(c->translate("DomainEditor", "Abuse account"), c->translate("DomainEditor", "Used to report inappropriate public behavior. Will create abuse@domain.name address for the selected account.")));
         help.insert(QStringLiteral("nocAccount"), HelpEntry(c->translate("DomainEditor", "NOC account"), c->translate("DomainEditor", "Contact address for the network operations center, responsible for operating the network infrastructure. Will create noc@domain.name for the selected account.")));
+        help.insert(QStringLiteral("securityAccount"), HelpEntry(c->translate("DomainEditor", "Security account"), c->translate("DomainEditor", "Contact address for the network security, responsible to handle security bulletins or queries. Will create security@domain.name for the selected account")));
         help.insert(QStringLiteral("postmasterAccount"), HelpEntry(c->translate("DomainEditor", "Postmaster account"), c->translate("DomainEditor", "Used to report issues with sending and receiving emails from and to ths domain. Will create postmaster@domain.name address for the selected account.")));
         help.insert(QStringLiteral("hostmasterAccount"), HelpEntry(c->translate("DomainEditor", "Hostmaster account"), c->translate("DomainEditor", "Used to report issues with the domain name system (DNS) of this domain. Will create hostmaster@domain.name address for the selected account.")));
         help.insert(QStringLiteral("webmasterAccount"), HelpEntry(c->translate("DomainEditor", "Webmaster account"), c->translate("DomainEditor", "Used to contact the operator of the website(s) running on this domain. Will create webmaster@domain.name address for the selected account.")));
@@ -418,12 +428,12 @@ void DomainEditor::create(Context* c)
             c->setStash(QStringLiteral("error_msg"), e.errorText());
         }
 
+        c->stash(SkaffariConfig::getSettingsFromDB());
         c->stash({
                      {QStringLiteral("defQuota"), SkaffariConfig::defQuota()},
                      {QStringLiteral("defHumanQuota"), Utils::humanBinarySize(c, SkaffariConfig::defQuota() * Q_UINT64_C(1024))},
                      {QStringLiteral("defDomainQuota"), SkaffariConfig::defDomainquota()},
                      {QStringLiteral("defHumanDomainQuota"), Utils::humanBinarySize(c, SkaffariConfig::defDomainquota() * Q_UINT64_C(1024))},
-                     {QStringLiteral("defMaxAccounts"), SkaffariConfig::defMaxaccounts()},
                      {QStringLiteral("template"), QStringLiteral("domain/create.html")},
                      {QStringLiteral("domainAsPrefix"), SkaffariConfig::imapDomainasprefix()},
                      {QStringLiteral("edit"), false},
