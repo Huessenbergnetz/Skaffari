@@ -19,7 +19,7 @@
 // domain table sort and filter
 $(function() {
     Skaffari.DefaultTmpl.init();
-    Skaffari.DefaultTmpl.CreateDomain.init();
+    Skaffari.DefaultTmpl.initSelect2AjaxAccounts();
 
     var domainTable = $('#domainTable').stupidtable();
     if (domainTable.length > 0) {

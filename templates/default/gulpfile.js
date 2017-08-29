@@ -23,7 +23,7 @@ elixir(function(mix) {
         'removeaccount.js',
         'removeadmin.js',
         'accountlist.js',
-        'createdomain.js',
+        'select2ajaxaccounts.js',
         'general.js'
     ], 'static/js/scripts.js');
 
