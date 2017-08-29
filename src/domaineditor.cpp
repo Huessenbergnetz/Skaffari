@@ -23,6 +23,7 @@
 #include "objects/helpentry.h"
 #include "utils/skaffariconfig.h"
 #include "utils/utils.h"
+#include "validators/skvalidatoruniquedb.h"
 #include "../common/global.h"
 
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
@@ -350,7 +351,9 @@ void DomainEditor::create(Context* c)
             static Validator v({
                                    new ValidatorRequiredIf(QStringLiteral("prefix"), QStringLiteral("domainAsPrefix"), QStringList(QStringLiteral("false"))),
                                    new ValidatorAlphaDash(QStringLiteral("prefix")),
+                                   new SkValidatorUniqueDb(QStringLiteral("prefix"), QStringLiteral("domain"), QStringLiteral("prefix")),
                                    new ValidatorRequired(QStringLiteral("domainName")),
+                                   new SkValidatorUniqueDb(QStringLiteral("domainName"), QStringLiteral("domain"), QStringLiteral("domain_name"), SkValidatorUniqueDb::DomainName),
                                    new ValidatorIn(QStringLiteral("transport"), QStringList({QStringLiteral("cyrus"), QStringLiteral("lmtp"), QStringLiteral("smtp"), QStringLiteral("uucp")})),
                                    new ValidatorInteger(QStringLiteral("maxAccounts")),
                                    new ValidatorMin(QStringLiteral("maxAccounts"), QMetaType::UInt, 0),
@@ -373,7 +376,7 @@ void DomainEditor::create(Context* c)
                                    new ValidatorInteger(QStringLiteral("hostmasterAccount")),
                                    new ValidatorMin(QStringLiteral("hostmasterAccount"), QMetaType::UInt, 0),
                                    new ValidatorInteger(QStringLiteral("webmasterAccount")),
-                                   new ValidatorMin(QStringLiteral("webmasterAccount"), QMetaType::UInt, 0),
+                                   new ValidatorMin(QStringLiteral("webmasterAccount"), QMetaType::UInt, 0)
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
