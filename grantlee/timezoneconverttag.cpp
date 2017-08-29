@@ -58,9 +58,18 @@ TimeZoneConvert::TimeZoneConvert(const Grantlee::FilterExpression &dateTime, con
 void TimeZoneConvert::render(Grantlee::OutputStream *stream, Grantlee::Context *gc) const
 {
     const QVariant dtVar = m_dateTime.resolve(gc);
-    if (dtVar.userType() != QVariant::DateTime) {
-        qWarning("%s", "sk_tzc can only operate on QDateTime values.");
+    const int dtVarType = dtVar.userType();
+    if (dtVarType == qMetaTypeId<Grantlee::SafeString>()) {
+        *stream << dtVar.value<Grantlee::SafeString>().get();
         return;
+    } else if (dtVarType == QVariant::String) {
+        *stream << dtVar.toString();
+        return;
+    } else {
+        if (dtVar.userType() != QVariant::DateTime) {
+            qWarning("%s", "sk_tzc can only operate on QDateTime values.");
+            return;
+        }
     }
 
     auto c = gc->lookup(m_cutelystContext).value<Cutelyst::Context *>();
