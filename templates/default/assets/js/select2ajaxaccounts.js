@@ -51,7 +51,7 @@ Skaffari.DefaultTmpl.initSelect2AjaxAccounts = function() {
             return account.username + ' (' + account.domainname + ')';
         },
         templateSelection: function(account) {
-            return account.username + ' (' + account.domainname + ')';
+            return account.text || account.username + ' (' + account.domainname + ')';
         }
     });
 }
