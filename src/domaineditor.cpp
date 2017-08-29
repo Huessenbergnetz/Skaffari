@@ -177,7 +177,6 @@ void DomainEditor::edit(Context *c)
 
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("domain/edit.html")},
-                     {QStringLiteral("edit"), true},
                      {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Edit")},
                      {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)},
                      {QStringLiteral("domains"), QVariant::fromValue<std::vector<SimpleDomain>>(doms)}
