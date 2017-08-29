@@ -21,6 +21,7 @@
 #include "utils/skaffariconfig.h"
 #include "utils/language.h"
 #include "objects/helpentry.h"
+#include "../common/global.h"
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QTimeZone>
@@ -55,6 +56,11 @@ void SettingsEditor::index(Context *c)
                                    new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), QMetaType::UInt, 0.0),
                                    new ValidatorRegularExpression(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption)),
                                    new ValidatorRegularExpression(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption)),
+                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC)),
+                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC)),
+                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC)),
+                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC)),
+                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC))
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
@@ -65,25 +71,37 @@ void SettingsEditor::index(Context *c)
                 settings.insert(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), p.value(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), settings.value(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL)).toString()).toUInt());
                 settings.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), p.value(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), settings.value(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY)).toString()).toUInt());
                 settings.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), QVariant::fromValue<ulong>(p.value(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), settings.value(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS)).toString()).toULong()));
+
                 bool convertQuotas = true;
                 settings.insert(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), Utils::humanToIntSize(c, p.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), Utils::humanBinarySize(c, settings.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA)).value<quota_size_t>())), &convertQuotas));
                 settings.insert(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), Utils::humanToIntSize(c, p.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), Utils::humanBinarySize(c, settings.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA)).value<quota_size_t>())), &convertQuotas));
 
+                for (const QString &role : {QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC)}) {
+                    settings.insert(role, QVariant::fromValue<ulong>(SKAFFARI_STRING_TO_DBID(p.value(role, QStringLiteral("0")))));
+                }
+
                 SkaffariConfig::saveSettingsToDB(settings);
                 c->setStash(QStringLiteral("status_msg"), c->translate("SettingsEditor", "Settings successfully saved."));
+                settings = SkaffariConfig::getSettingsFromDB();
             }
         }
 
         HelpHash help;
-        help.insert(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), HelpEntry(c->translate("SettingsEditor", "Default language"), c->translate("SettingsEditor", "Default fallback language that will be used if user has no language set and if the language reported by the browser is not supported.")));
-        help.insert(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), HelpEntry(c->translate("SettingsEditor", "Default time zone"), c->translate("SettingsEditor", "Default time zone as fallback that will be used to display localized dates and times if the user has not set one.")));
-        help.insert(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), HelpEntry(c->translate("SettingsEditor", "Default warn level"), c->translate("SettingsEditor", "Default warn level for account number and quota storage limits if the user has not set one.")));
-        help.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), HelpEntry(c->translate("SettingsEditor", "Default maximum display"), c->translate("SettingsEditor", "Default maximum display numer of items per page for paginated result lists.")));
-        help.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), HelpEntry(c->translate("SettingsEditor", "Default maximum accounts"), c->translate("SettingsEditor", "Default number of maximum accounts for new domains.")));
-        help.insert(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), HelpEntry(c->translate("SettingsEditor", "Default domain quota"), c->translate("SettingsEditor", "Default amount of domain quota for new domains. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));
-        help.insert(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), HelpEntry(c->translate("SettingsEditor", "Default account quota"), c->translate("SettingsEditor", "Default amount of default account storage quota for new domains. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), HelpEntry(c->translate("SettingsEditor", "Language"), c->translate("SettingsEditor", "Default fallback language that will be used if user has no language set and if the language reported by the browser is not supported.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), HelpEntry(c->translate("SettingsEditor", "Time zone"), c->translate("SettingsEditor", "Default time zone as fallback that will be used to display localized dates and times if the user has not set one.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), HelpEntry(c->translate("SettingsEditor", "Warn level"), c->translate("SettingsEditor", "Default warn level for account number and quota storage limits if the user has not set one.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), HelpEntry(c->translate("SettingsEditor", "Maximum display"), c->translate("SettingsEditor", "Default maximum display number of items per page for paginated result lists.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), HelpEntry(c->translate("SettingsEditor", "Maximum accounts"), c->translate("SettingsEditor", "Default number of maximum accounts for new domains.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), HelpEntry(c->translate("SettingsEditor", "Domain quota"), c->translate("SettingsEditor", "Default amount of domain quota for new domains. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), HelpEntry(c->translate("SettingsEditor", "Account quota"), c->translate("SettingsEditor", "Default amount of default account storage quota for new domains. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), HelpEntry(c->translate("SettingsEditor", "Abuse account"), c->translate("SettingsEditor", "Used as default account for abuse role email address when creating new domains.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), HelpEntry(c->translate("SettingsEditor", "NOC account"), c->translate("SettingsEditor", "Used as default account for NOC role email address when creating new domains.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), HelpEntry(c->translate("SettingsEditor", "Security account"), c->translate("SettingsEditor", "Used as default account for security role amail address when creating new domains.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), HelpEntry(c->translate("SettingsEditor", "Postmaster account"), c->translate("SettingsEditor", "Used as default account for postmaster role email address when creating new domains.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), HelpEntry(c->translate("SettingsEditor", "Hostmaster account"), c->translate("SettingsEditor", "Used as default account for hostmaster role email address when creating new domains.")));
+        help.insert(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), HelpEntry(c->translate("SettingsEditor", "Webmaster account"), c->translate("SettingsEditor", "Used as default account for webmaster role email address when creating new domains.")));
 
-        c->stash(settings);
+        c->stash(settings);        
         c->stash({
                      {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)},
                      {QStringLiteral("timezones"), QVariant::fromValue<QList<QByteArray>>(QTimeZone::availableTimeZoneIds())},

@@ -26,6 +26,7 @@
 #include "../../common/global.h"
 #include "../imap/skaffariimap.h"
 #include "../objects/account.h"
+#include "../objects/simpleaccount.h"
 
 Q_DECLARE_LOGGING_CATEGORY(SK_CONFIG)
 
@@ -36,6 +37,12 @@ Q_DECLARE_LOGGING_CATEGORY(SK_CONFIG)
 #define SK_CONF_KEY_DEF_TIMEZONE "default_timezone"
 #define SK_CONF_KEY_DEF_MAXDISPLAY "default_maxdisplay"
 #define SK_CONF_KEY_DEF_WARNLEVEL "default_warnlevel"
+#define SK_CONF_KEY_DEF_ABUSE_ACC "default_abuse_account"
+#define SK_CONF_KEY_DEF_NOC_ACC "default_noc_account"
+#define SK_CONF_KEY_DEF_SECURITY_ACC "default_security_account"
+#define SK_CONF_KEY_DEF_POSTMASTER_ACC "default_postmaster_account"
+#define SK_CONF_KEY_DEF_HOSTMASTER_ACC "default_hostmaster_account"
+#define SK_CONF_KEY_DEF_WEBMASTER_ACC "default_webmaster_account"
 
 class QSqlQuery;
 
@@ -229,6 +236,45 @@ public:
      * default_warnlevel
      */
     static quint8 defWarnlevel();
+    /*!
+     * \brief The default account for the abuse role address.
+     *
+     * \par Database options table key
+     * default_abuse_account
+     */
+    static SimpleAccount defAbuseAccount();
+    /*!
+     * \brief The default account for the NOC role address.
+     *
+     * \par Database options table key
+     * default_noc_account
+     */
+    static SimpleAccount defNocAccount();
+    /*!
+     * \brief The default account for the security role address.
+     */
+    static SimpleAccount defSecurityAccount();
+    /*!
+     * \brief The default account for the postmaster role address.
+     *
+     * \par Database options table key
+     * default_postmaster_account
+     */
+    static SimpleAccount defPostmasterAccount();
+    /*!
+     * \brief The default account for the hostmaster role address.
+     *
+     * \par Database options table key
+     * default_hostmaster_account
+     */
+    static SimpleAccount defHostmasterAccount();
+    /*!
+     * \brief The default account for the webmaster role address.
+     *
+     * \par Database options table key
+     * default_webmaster_account
+     */
+    static SimpleAccount defWebmasterAccount();
 
     /*!
      * \brief IMAP server address.
@@ -363,6 +409,12 @@ private:
     static QByteArray m_defTimezone;
     static quint8 m_defMaxdisplay;
     static quint8 m_defWarnlevel;
+    static SimpleAccount m_defAbuseAccount;
+    static SimpleAccount m_defNocAccount;
+    static SimpleAccount m_defSecurityAccount;
+    static SimpleAccount m_defPostmasterAccount;
+    static SimpleAccount m_defHostmasterAccount;
+    static SimpleAccount m_defWebmasterAccount;
 
     static QString m_imapHost;
     static quint16 m_imapPort;
@@ -379,6 +431,8 @@ private:
     static bool m_tmplAsyncAccountList;
 
     static QVariant loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal = QVariant());
+    static SimpleAccount loadDefaultAccount(const QString &optionName);
+    static SimpleAccount loadDefaultAccount(dbid_t accountId);
 };
 
 #endif // SKAFFARICONFIG_H

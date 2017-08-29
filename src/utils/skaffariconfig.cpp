@@ -40,6 +40,12 @@ QString SkaffariConfig::m_defLanguage = QLatin1String(SK_DEF_DEF_LANGUAGE);
 QByteArray SkaffariConfig::m_defTimezone = QByteArrayLiteral(SK_DEF_DEF_TIMEZONE);
 quint8 SkaffariConfig::m_defMaxdisplay = SK_DEF_DEF_MAXDISPLAY;
 quint8 SkaffariConfig::m_defWarnlevel = SK_DEF_DEF_WARNLEVEL;
+SimpleAccount SkaffariConfig::m_defAbuseAccount;
+SimpleAccount SkaffariConfig::m_defNocAccount;
+SimpleAccount SkaffariConfig::m_defPostmasterAccount;
+SimpleAccount SkaffariConfig::m_defHostmasterAccount;
+SimpleAccount SkaffariConfig::m_defWebmasterAccount;
+SimpleAccount SkaffariConfig::m_defSecurityAccount;
 
 QString SkaffariConfig::m_imapHost;
 QString SkaffariConfig::m_imapUser;
@@ -98,6 +104,13 @@ void SkaffariConfig::loadSettingsFromDB()
     SkaffariConfig::m_defTimezone = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QLatin1String(SK_DEF_DEF_TIMEZONE)).toByteArray();
     SkaffariConfig::m_defMaxdisplay = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SK_DEF_DEF_MAXDISPLAY).value<quint8>();
     SkaffariConfig::m_defWarnlevel = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SK_DEF_DEF_WARNLEVEL).value<quint8>();
+
+    SkaffariConfig::m_defAbuseAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC));
+    SkaffariConfig::m_defNocAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC));
+    SkaffariConfig::m_defSecurityAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC));
+    SkaffariConfig::m_defPostmasterAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC));
+    SkaffariConfig::m_defHostmasterAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC));
+    SkaffariConfig::m_defWebmasterAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC));
 }
 
 void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
@@ -129,6 +142,13 @@ void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
     SkaffariConfig::m_defTimezone = options.value(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), SkaffariConfig::m_defTimezone).toByteArray();
     SkaffariConfig::m_defMaxdisplay = options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SkaffariConfig::m_defMaxdisplay).value<quint8>();
     SkaffariConfig::m_defWarnlevel = options.value(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SkaffariConfig::m_defWarnlevel).value<quint8>();
+
+    SkaffariConfig::m_defAbuseAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), SkaffariConfig::m_defAbuseAccount.id()).value<dbid_t>());
+    SkaffariConfig::m_defNocAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), SkaffariConfig::m_defNocAccount.id()).value<dbid_t>());
+    SkaffariConfig::m_defSecurityAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), SkaffariConfig::m_defSecurityAccount.id()).value<dbid_t>());
+    SkaffariConfig::m_defPostmasterAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), SkaffariConfig::m_defPostmasterAccount.id()).value<dbid_t>());
+    SkaffariConfig::m_defHostmasterAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), SkaffariConfig::m_defHostmasterAccount.id()).value<dbid_t>());
+    SkaffariConfig::m_defWebmasterAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), SkaffariConfig::m_defWebmasterAccount.id()).value<dbid_t>());
 }
 
 QVariantHash SkaffariConfig::getSettingsFromDB()
@@ -142,6 +162,13 @@ QVariantHash SkaffariConfig::getSettingsFromDB()
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), SkaffariConfig::m_defTimezone);
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SkaffariConfig::m_defMaxdisplay);
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SkaffariConfig::m_defWarnlevel);
+
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), QVariant::fromValue<SimpleAccount>(SkaffariConfig::m_defAbuseAccount));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), QVariant::fromValue<SimpleAccount>(SkaffariConfig::m_defNocAccount));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), QVariant::fromValue<SimpleAccount>(SkaffariConfig::m_defSecurityAccount));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), QVariant::fromValue<SimpleAccount>(SkaffariConfig::m_defPostmasterAccount));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), QVariant::fromValue<SimpleAccount>(SkaffariConfig::m_defHostmasterAccount));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), QVariant::fromValue<SimpleAccount>(SkaffariConfig::m_defWebmasterAccount));
 
     return s;
 }
@@ -162,6 +189,11 @@ QString SkaffariConfig::defLanguage() { return SkaffariConfig::m_defLanguage; }
 QByteArray SkaffariConfig::defTimezone() { return SkaffariConfig::m_defTimezone; }
 quint8 SkaffariConfig::defMaxdisplay() { return SkaffariConfig::m_defMaxdisplay; }
 quint8 SkaffariConfig::defWarnlevel() { return SkaffariConfig::m_defWarnlevel; }
+SimpleAccount SkaffariConfig::defAbuseAccount() { return SkaffariConfig::m_defAbuseAccount; }
+SimpleAccount SkaffariConfig::defNocAccount() { return SkaffariConfig::m_defNocAccount; }
+SimpleAccount SkaffariConfig::defPostmasterAccount() { return SkaffariConfig::m_defPostmasterAccount; }
+SimpleAccount SkaffariConfig::defHostmasterAccount() { return SkaffariConfig::m_defHostmasterAccount; }
+SimpleAccount SkaffariConfig::defWebmasterAccount() { return SkaffariConfig::m_defWebmasterAccount; }
 
 QString SkaffariConfig::imapHost() { return SkaffariConfig::m_imapHost; }
 quint16 SkaffariConfig::imapPort() { return SkaffariConfig::m_imapPort; }
@@ -191,8 +223,47 @@ QVariant SkaffariConfig::loadDbOption(QSqlQuery &query, const QString &option, c
             var.setValue(defVal);
         }
     } else {
-        qCCritical(SK_CONFIG, "Failed to query option %s from database, using default value %s: %s", qUtf8Printable(option), qUtf8Printable(defVal.toString()), qUtf8Printable(query.lastError().text()));
+        qCWarning(SK_CONFIG, "Failed to query option %s from database, using default value %s: %s", qUtf8Printable(option), qUtf8Printable(defVal.toString()), qUtf8Printable(query.lastError().text()));
     }
 
     return var;
+}
+
+SimpleAccount SkaffariConfig::loadDefaultAccount(const QString &optionName)
+{
+    SimpleAccount acc;
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id, au.username, au.domain_name FROM accountuser au LEFT JOIN options op ON op.option_value = au.id WHERE op.option_name = :option_name"));
+    q.bindValue(QStringLiteral(":option_name"), optionName);
+
+    if (Q_LIKELY(q.exec())) {
+        if (q.next()) {
+            acc.setData(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
+        }
+    } else {
+        qCWarning(SK_CONFIG, "Failed to query database for %s: %s", qUtf8Printable(optionName), qUtf8Printable(q.lastError().text()));
+    }
+
+    return acc;
+}
+
+
+SimpleAccount SkaffariConfig::loadDefaultAccount(dbid_t accountId)
+{
+    SimpleAccount acc;
+
+    if (accountId > 0) {
+        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, domain_name FROM accountuser WHERE id = :id"));
+        q.bindValue(QStringLiteral(":id"), accountId);
+
+        if (Q_LIKELY(q.exec())) {
+            if (q.next()) {
+                acc.setData(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
+            }
+        } else {
+            qCWarning(SK_CONFIG, "Failed to query database for accountID %u: %s", accountId, qUtf8Printable(q.lastError().text()));
+        }
+    }
+
+    return acc;
 }
