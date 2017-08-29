@@ -110,7 +110,7 @@
         <div class="row">
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="abuseAccount">{{ help.abuseAccount.title }}</label>
-                <select class="form-control{% if validationErrors.abuseAccount.count %} is-invalid{% endif %} select2-ajax" id="abuseAccount" name="abuseAccount" aria-describedby="abuseAccountDesc">
+                <select class="form-control{% if validationErrors.abuseAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="abuseAccount" name="abuseAccount" aria-describedby="abuseAccountDesc">
                     <option value="0"{% if not abuseAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
                 </select>
                 {% if validationErrors.abuseAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.abuseAccount.0 }}</small></div>{% endif %}
@@ -119,7 +119,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="nocAccount">{{ help.nocAccount.title }}</label>
-                <select class="form-control{% if validationErrors.nocAccount.count %} is-invalid{% endif %} select2-ajax" id="nocAccount" name="nocAccount" aria-describedby="nocAccountDesc">
+                <select class="form-control{% if validationErrors.nocAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="nocAccount" name="nocAccount" aria-describedby="nocAccountDesc">
                     <option value="0"{% if not nocAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
                 </select>
                 {% if validationErrors.nocAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.nocAccount.0 }}</small></div>{% endif %}
@@ -128,7 +128,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="postmasterAccount">{{ help.postmasterAccount.title }}</label>
-                <select class="form-control{% if validationErrors.postmasterAccount.count %} is-invalid{% endif %} select2-ajax" id="postmasterAccount" name="postmasterAccount" aria-describedby="postmasterAccountDesc">
+                <select class="form-control{% if validationErrors.postmasterAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="postmasterAccount" name="postmasterAccount" aria-describedby="postmasterAccountDesc">
                     <option value="0"{% if not postmasterAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
                 </select>
                 {% if validationErrors.postmasterAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.postmasterAccount.0 }}</small></div>{% endif %}
@@ -137,7 +137,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="hostmasterAccount">{{ help.hostmasterAccount.title }}</label>
-                <select class="form-control{% if validationErrors.hostmasterAccount.count %} is-invalid{% endif %} select2-ajax" id="hostmasterAccount" name="hostmasterAccount" aria-describedby="hostmasterAccountDesc">
+                <select class="form-control{% if validationErrors.hostmasterAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="hostmasterAccount" name="hostmasterAccount" aria-describedby="hostmasterAccountDesc">
                     <option value="0"{% if not hostmasterAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
                 </select>
                 {% if validationErrors.hostmasterAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.hostmasterAccount.0 }}</small></div>{% endif %}
@@ -146,7 +146,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="webmasterAccount">{{ help.webmasterAccount.title }}</label>
-                <select class="form-control{% if validationErrors.webmasterAccount.count %} is-invalid{% endif %} select2-ajax" id="webmasterAccount" name="webmasterAccount" aria-describedby="webmasterAccountDesc">
+                <select class="form-control{% if validationErrors.webmasterAccount.count %} is-invalid{% endif %} select2-ajax-accounts" id="webmasterAccount" name="webmasterAccount" aria-describedby="webmasterAccountDesc">
                     <option value="0"{% if not webmasterAccount > 0 %} selected{% endif %}>{{ _("None") }}</option>
                 </select>
                 {% if validationErrors.webmasterAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.webmasterAccount.0 }}</small></div>{% endif %}
