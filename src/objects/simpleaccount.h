@@ -25,7 +25,10 @@
 #include <QVariant>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QLoggingCategory>
 #include "../../common/global.h"
+
+Q_DECLARE_LOGGING_CATEGORY(SK_SIMPLEACCOUNT)
 
 namespace Cutelyst {
 class Context;
@@ -160,6 +163,15 @@ public:
      * \return          JSON array containing objects with account ID, user name and domain name.
      */
     static QJsonArray listJson(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
+
+    /*!
+     * \brief Returns the account with the specified database \a id.
+     * \param c         Poiner to the current context, used for localization.
+     * \param e         Pointer to an object taking occuring errors.
+     * \param id        The database ID of the accout to get.
+     * \return          Single account.
+     */
+    static SimpleAccount get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
 
 private:
     QSharedDataPointer<SimpleAccountData> d;

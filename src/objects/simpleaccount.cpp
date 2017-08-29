@@ -26,6 +26,8 @@
 #include <QSqlError>
 #include <QJsonValue>
 
+Q_LOGGING_CATEGORY(SK_SIMPLEACCOUNT, "skaffari.simpleaccount")
+
 SimpleAccount::SimpleAccount() : d(new SimpleAccountData)
 {
 
@@ -190,4 +192,32 @@ QJsonArray SimpleAccount::listJson(Cutelyst::Context *c, SkaffariError *e, qint1
     }
 
     return lst;
+}
+
+
+SimpleAccount SimpleAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
+{
+    SimpleAccount a;
+
+    Q_ASSERT_X(c, "get simple account", "invalid context object");
+    Q_ASSERT_X(e, "get simple account", "invalid error object");
+
+    if (id > 0) {
+
+        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, domain_name FROM accountuser WHERE id = :id"));
+        q.bindValue(QStringLiteral(":id"), id);
+
+        if (Q_LIKELY(q.exec())) {
+            if (q.next()) {
+                a.setData(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
+            } else {
+                qCWarning(SK_SIMPLEACCOUNT, "Can not find account with ID %u in database.", id);
+            }
+        } else {
+            e->setSqlError(q.lastError(), c->translate("SimpleAccount", "Failed to query account from database."));
+            qCWarning(SK_SIMPLEACCOUNT, "Failed to query account with ID %u from database: %s", id, qUtf8Printable(q.lastError().text()));
+        }
+    }
+
+    return a;
 }
