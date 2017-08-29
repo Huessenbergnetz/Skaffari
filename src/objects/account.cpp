@@ -473,8 +473,8 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
 
     // start converting the entered valid until time into UTC
     QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), QStringLiteral("UTC")).toByteArray());
-    QDateTime validUntil = QDateTime::fromString(p.value(QStringLiteral("validUntil"), QStringLiteral("2998-12-31 23:59:59")), QStringLiteral("yyyy-MM-dd HH:mm:ss"));
-    QDateTime pwExpires = QDateTime::fromString(p.value(QStringLiteral("passwordExpires"), QStringLiteral("2998-12-31 23:59:59")), QStringLiteral("yyyy-MM-dd HH:mm:ss"));
+    QDateTime validUntil = QDateTime::fromString(p.value(QStringLiteral("validUntil"), QStringLiteral("2998-12-31T23:59")), QStringLiteral("yyyy-MM-ddTHH:mm"));
+    QDateTime pwExpires = QDateTime::fromString(p.value(QStringLiteral("passwordExpires"), QStringLiteral("2998-12-31T23:59")), QStringLiteral("yyyy-MM-ddTHH:mm"));
     if (userTz == QTimeZone::utc()) {
         validUntil.setTimeSpec(Qt::UTC);
         pwExpires.setTimeSpec(Qt::UTC);
@@ -1025,7 +1025,14 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
             }
         }
 
-
+        QDateTime accountCreated = q.value(7).toDateTime();
+        accountCreated.setTimeSpec(Qt::UTC);
+        QDateTime accountUpdated = q.value(8).toDateTime();
+        accountUpdated.setTimeSpec(Qt::UTC);
+        QDateTime accountValidUntil = q.value(9).toDateTime();
+        accountValidUntil.setTimeSpec(Qt::UTC);
+        QDateTime accountPwExpires = q.value(10).toDateTime();
+        accountPwExpires.setTimeSpec(Qt::UTC);
         Account a(q.value(0).value<dbid_t>(),
                   d.id(),
                   q.value(1).toString(),
@@ -1039,10 +1046,10 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
                   aliases,
                   q.value(6).value<quota_size_t>(),
                   0,
-                  q.value(7).toDateTime(),
-                  q.value(8).toDateTime(),
-                  q.value(9).toDateTime(),
-                  q.value(10).toDateTime(),
+                  accountCreated,
+                  accountUpdated,
+                  accountValidUntil,
+                  accountPwExpires,
                   _keepLocal,
                   _catchAll,
                   q.value(11).value<quint8>());
@@ -1093,10 +1100,18 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
     a.setSieveEnabled(q.value(4).toBool());
     a.setSmtpauthEnabled(q.value(5).toBool());
     a.setQuota(q.value(6).value<quota_size_t>());
-    a.setCreated(q.value(7).toDateTime());
-    a.setUpdated(q.value(8).toDateTime());
-    a.setValidUntil(q.value(9).toDateTime());
-    a.setPasswordExpires(q.value(10).toDateTime());
+    QDateTime accCreated = q.value(7).toDateTime();
+    accCreated.setTimeSpec(Qt::UTC);
+    a.setCreated(accCreated);
+    QDateTime accUpdated = q.value(8).toDateTime();
+    accUpdated.setTimeSpec(Qt::UTC);
+    a.setUpdated(accUpdated);
+    QDateTime accValidUntil = q.value(9).toDateTime();
+    accValidUntil.setTimeSpec(Qt::UTC);
+    a.setValidUntil(accValidUntil);
+    QDateTime accPwdExpires = q.value(10).toDateTime();
+    accPwdExpires.setTimeSpec(Qt::UTC);
+    a.setPasswordExpires(accPwdExpires);
     a.setStatus(q.value(11).value<quint8>());
     a.setDomainId(q.value(12).value<dbid_t>());
     a.setPrefix(q.value(13).toString());
@@ -1480,18 +1495,16 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
     imap.logout();
 
     const QDateTime now = QDateTime::currentDateTimeUtc();
-    const QDateTime validUntil = d->validUntil.toUTC();
-    const QDateTime pwdExpires = d->passwordExpires.toUTC();
 
     quint8 newStatus = 0;
     bool newAccExpired = false;
-    if (validUntil < now) {
+    if (d->validUntil < now) {
         newStatus |= PAM_ACCT_EXPIRED;
         newAccExpired = true;
     }
 
     bool newPwExpired = false;
-    if (pwdExpires < now) {
+    if (d->passwordExpires < now) {
         newStatus |= PAM_NEW_AUTHTOK_REQD;
         newPwExpired = true;
     }

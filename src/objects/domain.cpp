@@ -537,8 +537,13 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
         dom.setFreeNamesEnabled(q.value(7).toBool());
         dom.setFreeAddressEnabled(q.value(8).toBool());
         dom.setAccounts(q.value(9).value<quint32>());
-        dom.setCreated(q.value(10).toDateTime());
-        dom.setUpdated(q.value(11).toDateTime());
+        QDateTime createdTime = q.value(10).toDateTime();
+        createdTime.setTimeSpec(Qt::UTC);
+        dom.setCreated(createdTime);
+        QDateTime updatedTime = q.value(11).toDateTime();
+        updatedTime.setTimeSpec(Qt::UTC);
+        dom.setUpdated(updatedTime);
+        QDateTime::fromTime_t(1);
 
         parentId = q.value(12).value<dbid_t>();
 
@@ -626,6 +631,10 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
     if (Q_LIKELY(q.exec())) {
         lst.reserve(q.size());
         while (q.next()) {
+            QDateTime createdTime = q.value(11).toDateTime();
+            createdTime.setTimeSpec(Qt::UTC);
+            QDateTime updatedTime = q.value(12).toDateTime();
+            updatedTime.setTimeSpec(Qt::UTC);
             Domain dom(q.value(0).value<dbid_t>(),
                        QUrl::fromAce(q.value(1).toByteArray()),
                        q.value(2).toString(),
@@ -638,8 +647,8 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                        q.value(9).toBool(),
                        QVector<Folder>(),
                        q.value(10).value<quint32>(),
-                       q.value(11).toDateTime(),
-                       q.value(12).toDateTime());
+                       createdTime,
+                       updatedTime);
 
             const dbid_t parentId = q.value(13).value<dbid_t>();
             if (parentId > 0) {

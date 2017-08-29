@@ -352,8 +352,12 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
     acc.setTemplate(q.value(4).toString());
     acc.setMaxDisplay(q.value(5).value<quint8>());
     acc.setWarnLevel(q.value(6).value<quint8>());
-    acc.setCreated(q.value(7).toDateTime());
-    acc.setUpdated(q.value(8).toDateTime());
+    QDateTime createdTime = q.value(7).toDateTime();
+    createdTime.setTimeSpec(Qt::UTC);
+    acc.setCreated(createdTime);
+    QDateTime updatedTime = q.value(8).toDateTime();
+    updatedTime.setTimeSpec(Qt::UTC);
+    acc.setUpdated(updatedTime);
 
     if (acc.getType() != AdminAccountType::SuperUser) {
 
