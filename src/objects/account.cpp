@@ -750,11 +750,10 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     a.setSmtpauthEnabled(smtpauth);
     a.setQuota(quota);
     a.setAddresses(QStringList(email));
-    const QDateTime currentUserTime = Utils::toUserTZ(c, currentUtc);
-    a.setCreated(currentUserTime);
-    a.setUpdated(currentUserTime);
-    a.setValidUntil(Utils::toUserTZ(c, validUntil));
-    a.setPasswordExpires(Utils::toUserTZ(c, pwExpires));
+    a.setCreated(currentUtc);
+    a.setUpdated(currentUtc);
+    a.setValidUntil(validUntilUTC);
+    a.setPasswordExpires(pwExpiresUTC);
     a.setCatchAll(_catchAll);
 
     qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "created a new account" << username << "for domain" << d.getName();
@@ -1040,10 +1039,10 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
                   aliases,
                   q.value(6).value<quota_size_t>(),
                   0,
-                  Utils::toUserTZ(c, q.value(7).toDateTime()),
-                  Utils::toUserTZ(c, q.value(8).toDateTime()),
-                  Utils::toUserTZ(c, q.value(9).toDateTime()),
-                  Utils::toUserTZ(c, q.value(10).toDateTime()),
+                  q.value(7).toDateTime(),
+                  q.value(8).toDateTime(),
+                  q.value(9).toDateTime(),
+                  q.value(10).toDateTime(),
                   _keepLocal,
                   _catchAll,
                   q.value(11).value<quint8>());
@@ -1094,10 +1093,10 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
     a.setSieveEnabled(q.value(4).toBool());
     a.setSmtpauthEnabled(q.value(5).toBool());
     a.setQuota(q.value(6).value<quota_size_t>());
-    a.setCreated(Utils::toUserTZ(c, q.value(7).toDateTime()));
-    a.setUpdated(Utils::toUserTZ(c, q.value(8).toDateTime()));
-    a.setValidUntil(Utils::toUserTZ(c, q.value(9).toDateTime()));
-    a.setPasswordExpires(Utils::toUserTZ(c, q.value(10).toDateTime()));
+    a.setCreated(q.value(7).toDateTime());
+    a.setUpdated(q.value(8).toDateTime());
+    a.setValidUntil(q.value(9).toDateTime());
+    a.setPasswordExpires(q.value(10).toDateTime());
     a.setStatus(q.value(11).value<quint8>());
     a.setDomainId(q.value(12).value<dbid_t>());
     a.setPrefix(q.value(13).toString());
@@ -1353,10 +1352,10 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
         qCWarning(SK_ACCOUNT, "Failed to update used domain quota for domain ID %u: %s", a->getDomainId(), qUtf8Printable(q.lastError().text()));
     }
 
-    a->setValidUntil(Utils::toUserTZ(c, validUntil));
-    a->setPasswordExpires(Utils::toUserTZ(c, pwExpires));
+    a->setValidUntil(validUntil);
+    a->setPasswordExpires(pwExpires);
     a->setQuota(quota);
-    a->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
+    a->setUpdated(currentTimeUtc);
     a->setImapEnabled(imap);
     a->setPopEnabled(pop);
     a->setSieveEnabled(sieve);

@@ -456,8 +456,8 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
         dom.setFreeAddressEnabled(freeAddress);
         dom.setFolders(foldersVect);
         dom.setTransport(transport);
-        dom.setCreated(Utils::toUserTZ(c, currentTimeUtc));
-        dom.setUpdated(Utils::toUserTZ(c, currentTimeUtc));
+        dom.setCreated(currentTimeUtc);
+        dom.setUpdated(currentTimeUtc);
 
         if (parentId > 0) {
             dom.setParent(SimpleDomain::get(c, errorData, parentId));
@@ -537,8 +537,8 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
         dom.setFreeNamesEnabled(q.value(7).toBool());
         dom.setFreeAddressEnabled(q.value(8).toBool());
         dom.setAccounts(q.value(9).value<quint32>());
-        dom.setCreated(Utils::toUserTZ(c, q.value(10).toDateTime()));
-        dom.setUpdated(Utils::toUserTZ(c, q.value(11).toDateTime()));
+        dom.setCreated(q.value(10).toDateTime());
+        dom.setUpdated(q.value(11).toDateTime());
 
         parentId = q.value(12).value<dbid_t>();
 
@@ -638,8 +638,8 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                        q.value(9).toBool(),
                        QVector<Folder>(),
                        q.value(10).value<quint32>(),
-                       Utils::toUserTZ(c, q.value(11).toDateTime()),
-                       Utils::toUserTZ(c, q.value(12).toDateTime()));
+                       q.value(11).toDateTime(),
+                       q.value(12).toDateTime());
 
             const dbid_t parentId = q.value(13).value<dbid_t>();
             if (parentId > 0) {
@@ -873,7 +873,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         d->setFreeNamesEnabled(freeNames);
         d->setFreeAddressEnabled(freeAddress);
         d->setTransport(transport);
-        d->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
+        d->setUpdated(currentTimeUtc);
 
         if (parentId != d->parent().id()) {
             if (parentId > 0) {
@@ -902,7 +902,7 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         }
 
         d->setQuota(quota);
-        d->setUpdated(Utils::toUserTZ(c, currentTimeUtc));
+        d->setUpdated(currentTimeUtc);
 
         ret = true;
     } else {

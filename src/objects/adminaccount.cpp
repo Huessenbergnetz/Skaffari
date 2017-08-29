@@ -247,6 +247,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMu
 
     const qint16 type = params.value(QStringLiteral("type")).toShort();
 
+    const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
     const dbid_t id = AdminAccount::setAdminAccount(c, error, params.value(QStringLiteral("username")), password, type);
     if (id <= 0) {
         return aa;
@@ -269,8 +270,6 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMu
         return aa;
     }
 
-    const QDateTime userTime = Utils::toUserTZ(c, QDateTime::currentDateTimeUtc());
-
     aa.setId(id);
     aa.setUsername(username);
     aa.setType(type);
@@ -280,8 +279,8 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMu
     aa.setTemplate(QStringLiteral("default"));
     aa.setMaxDisplay(25);
     aa.setWarnLevel(90);
-    aa.setCreated(userTime);
-    aa.setUpdated(userTime);
+    aa.setCreated(currentUtc);
+    aa.setUpdated(currentUtc);
 
     if (type == 0) {
         qCInfo(SK_ADMIN, "%s created a new super user account: %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(username));
@@ -353,8 +352,8 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
     acc.setTemplate(q.value(4).toString());
     acc.setMaxDisplay(q.value(5).value<quint8>());
     acc.setWarnLevel(q.value(6).value<quint8>());
-    acc.setCreated(Utils::toUserTZ(c, q.value(7).toDateTime()));
-    acc.setUpdated(Utils::toUserTZ(c, q.value(8).toDateTime()));
+    acc.setCreated(q.value(7).toDateTime());
+    acc.setUpdated(q.value(8).toDateTime());
 
     if (acc.getType() != AdminAccountType::SuperUser) {
 
@@ -451,7 +450,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     }
 
     a->setType(type);
-    a->setUpdated(Utils::toUserTZ(c, currentUtc));
+    a->setUpdated(currentUtc);
 
     QStringList domains;
     if (a->getType() != AdminAccount::SuperUser) {
@@ -574,7 +573,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     a->setWarnLevel(warnlevel);
     a->setLang(lang);
     a->setTz(tz);
-    a->setUpdated(Utils::toUserTZ(c, currentUtc));
+    a->setUpdated(currentUtc);
 
     c->stash({
                  {QStringLiteral("userMaxDisplay"), maxdisplay},
