@@ -207,55 +207,6 @@ The password of the database user.
 .RE
 .RE
 
-.B [Defaults]
-This section contains configuration options that set default values for Skaffari.
-
-.RS 4
-.B domainquota
-= @DEFVAL_DEF_DOMAINQUOTA@
-.RS 4
-Default domain quota in KiB for new domains. This value can freely be changed by super administrators when creating new or editing existing domains. The default value is only there for comfort purposes.
-.RE
-
-.B language
-= @DEFVAL_DEF_LANGUAGE@
-.RS 4
-Default language as fallback. Administrators can change their language in the settings.
-
-Currently supported languages: de, en
-.RE
-
-.B maxaccounts
-= @DEFVAL_DEF_MAXACCOUNTS@
-.RS 4
-Default maximum accounts for new domains. This value can freely be changed by super administrators when creating new or editing existing domains. The default value is only there for comfort purposes.
-.RE
-
-.B maxdisplay
-= @DEFVAL_DEF_MAXDISPLAY@
-.RS 4
-Default value for the number of list entries in lists like domain or accounts. This value can freely be changed by administrators in their settings. The default value is only there for comfort purposes.
-.RE
-
-.B quota
-= @DEFVAL_DEF_QUOTA@
-.RS 4
-Default quota in KiB for new accounts. This value can freely be changed by administrators when creating new or editing existing accounts. The default value is only there for comfort purposes.
-.RE
-
-.B timezonte
-= @DEFVAL_DEF_TIMEZONE@
-.RS 4
-Default timezone as fallback. The timezone setting is used to display localized dates and times. It can be changed by administrators in their settings.
-.RE
-
-.B warnlevel
-= @DEFVAL_DEF_WARNLEVEL@
-.RS 4
-Default warnlevel in percent to highlight accounts reaching their quoa limit. This value can freely be changed by administrators in their settings. The default value is only there for comfort purposes.
-.RE
-.RE
-
 .B [IMAP]
 This section contains configuration options for the IMAP connection and account creation.
 
