@@ -19,6 +19,7 @@
 #include "skaffarigrantlee.h"
 
 #include "filesizeformattag.h"
+#include "timezoneconverttag.h"
 
 SkaffariGrantlee::SkaffariGrantlee(QObject *parent) : QObject(parent)
 {
@@ -33,6 +34,7 @@ QHash<QString, Grantlee::AbstractNodeFactory *> SkaffariGrantlee::nodeFactories(
     QHash<QString, Grantlee::AbstractNodeFactory *> ret;
 
     ret.insert(QStringLiteral("sk_fsf"), new FileSizeFormatTag());
+    ret.insert(QStringLiteral("sk_tzc"), new TimeZoneConvertTag());
 
     return ret;
 }
