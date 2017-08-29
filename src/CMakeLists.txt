@@ -61,6 +61,8 @@ set(skaffari_SRCS
     ../common/password.cpp
     ../common/password.h
     ../common/global.h
+    validators/skvalidatoruniquedb.cpp
+    validators/skvalidatoruniquedb.h
 )
 
 # Create the application
