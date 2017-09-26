@@ -96,7 +96,7 @@ void TimeZoneConvert::render(Grantlee::OutputStream *stream, Grantlee::Context *
     QDateTime dtVal = dtVar.toDateTime();
     QDateTime retVal;
 
-    QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), QStringLiteral("UTZ")).toByteArray());
+    QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), QStringLiteral("UTC")).toByteArray());
     if (Q_UNLIKELY(!userTz.isValid())) {
         userTz = QTimeZone::utc();
     }
