@@ -1280,8 +1280,8 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
     }
 
     QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), QStringLiteral("UTC")).toByteArray());
-    QDateTime validUntil = QDateTime::fromString(p.value(QStringLiteral("validUntil"), QStringLiteral("2998-12-31 23:59:59")), QStringLiteral("yyyy-MM-dd HH:mm:ss"));
-    QDateTime pwExpires = QDateTime::fromString(p.value(QStringLiteral("passwordExpires"), QStringLiteral("2998-12-31 23:59:59")), QStringLiteral("yyyy-MM-dd HH:mm:ss"));
+    QDateTime validUntil = QDateTime::fromString(p.value(QStringLiteral("validUntil"), QStringLiteral("2998-12-31 23:59:59")), QStringLiteral("yyyy-MM-ddTHH:mm"));
+    QDateTime pwExpires = QDateTime::fromString(p.value(QStringLiteral("passwordExpires"), QStringLiteral("2998-12-31 23:59:59")), QStringLiteral("yyyy-MM-ddTHH:mm"));
     if (userTz == QTimeZone::utc()) {
         validUntil.setTimeSpec(Qt::UTC);
         pwExpires.setTimeSpec(Qt::UTC);
