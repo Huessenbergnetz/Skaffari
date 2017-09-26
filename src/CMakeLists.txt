@@ -89,4 +89,18 @@ target_link_libraries(skaffari
     ${ICU_LIBRARIES}
 )
 
+find_package(PkgConfig QUIET)
+if (PKG_CONFIG_FOUND)
+    pkg_search_module(SYSTEMD QUIET systemd libsystemd)
+    if (SYSTEMD_FOUND)
+        message(STATUS "Found systemd version ${SYSTEMD_VERSION}. Enabling systemd journal support.")
+        add_definitions("-DWITH_SYSTEMD")
+        target_link_libraries(skaffari systemd)
+    else(SYSTEMD_FOUND)
+        message(STATUS "Can not find systemd. Disabling systemd journal support.")
+    endif(SYSTEMD_FOUND)
+else(PKG_CONFIG_FOUND)
+    message(STATUS "Can not find pkg-config. Disabling systemd journal support.")
+endif(PKG_CONFIG_FOUND)
+
 install(TARGETS skaffari DESTINATION ${CMAKE_INSTALL_LIBDIR}/cutelyst-apps)

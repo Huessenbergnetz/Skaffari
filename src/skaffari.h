@@ -41,6 +41,7 @@ public:
 private:
     bool initDb() const;
     static bool isInitialized;
+    static bool messageHandlerInstalled;
 };
 
 #endif //SKAFFARI_H

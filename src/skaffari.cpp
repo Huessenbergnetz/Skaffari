@@ -40,6 +40,16 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+extern "C"
+{
+#ifdef WITH_SYSTEMD
+#define SD_JOURNAL_SUPPRESS_LOCATION
+#include <systemd/sd-journal.h>
+#endif
+
+#include <syslog.h>
+}
+
 #include "objects/domain.h"
 #include "objects/simpleadmin.h"
 #include "objects/simpledomain.h"
@@ -69,6 +79,71 @@ Q_LOGGING_CATEGORY(SK_CORE, "skaffari.core")
 using namespace Cutelyst;
 
 bool Skaffari::isInitialized = false;
+bool Skaffari::messageHandlerInstalled = false;
+
+#ifdef WITH_SYSTEMD
+void journaldMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    int prio = LOG_INFO;
+    switch (type) {
+    case QtDebugMsg:
+        prio = LOG_DEBUG;
+        break;
+    case QtInfoMsg:
+        prio = LOG_INFO;
+        break;
+    case QtWarningMsg:
+        prio = LOG_WARNING;
+        break;
+    case QtCriticalMsg:
+        prio = LOG_CRIT;
+        break;
+    case QtFatalMsg:
+        prio = LOG_ALERT;
+        break;
+    }
+
+#ifdef QT_DEBUG
+    sd_journal_send("PRIORITY=%i", prio, "SYSLOG_FACILITY=1", "SYSLOG_IDENTIFIER=%s", context.category, "SYSLOG_PID=%lli", QCoreApplication::applicationPid(), "MESSAGE=%s", qFormatLogMessage(type, context, msg).toUtf8().constData(), "CODE_FILE=%s", context.file, "CODE_LINE=%s", context.line, "CODE_FUNC=%s", context.function, NULL);
+#else
+    sd_journal_send("PRIORITY=%i", prio, "SYSLOG_FACILITY=1", "SYSLOG_IDENTIFIER=%s", context.category, "SYSLOG_PID=%lli", QCoreApplication::applicationPid(), "MESSAGE=%s", qFormatLogMessage(type, context, msg).toUtf8().constData(), NULL);
+#endif
+
+    if (prio == 0) {
+        abort();
+    }
+}
+#endif
+
+void syslogMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    int prio = LOG_INFO;
+    switch (type) {
+    case QtDebugMsg:
+        prio = LOG_DEBUG;
+        break;
+    case QtInfoMsg:
+        prio = LOG_INFO;
+        break;
+    case QtWarningMsg:
+        prio = LOG_WARNING;
+        break;
+    case QtCriticalMsg:
+        prio = LOG_CRIT;
+        break;
+    case QtFatalMsg:
+        prio = LOG_ALERT;
+        break;
+    }
+
+    openlog(context.category, LOG_PID, LOG_USER);
+    syslog(prio, "%s", qFormatLogMessage(type, context, msg).toUtf8().constData());
+    closelog();
+
+    if (prio == 0) {
+        abort();
+    }
+}
 
 Skaffari::Skaffari(QObject *parent) : Application(parent)
 {
@@ -80,6 +155,26 @@ Skaffari::~Skaffari()
 
 bool Skaffari::init()
 {
+    if (!messageHandlerInstalled) {
+        const QString backend = QString::fromLocal8Bit(qgetenv("SKAFFARI_LOG_BACKEND"));
+        if (backend.compare(QLatin1String("syslog"), Qt::CaseInsensitive) == 0) {
+            qSetMessagePattern(QStringLiteral("%{message}"));
+            qInstallMessageHandler(syslogMessageOutput);
+            qCInfo(SK_CORE, "Using syslog logging backend.");
+        }
+#ifdef WITH_SYSTEMD
+        else if (backend.compare(QLatin1String("systemd"), Qt::CaseInsensitive) == 0) {
+            qSetMessagePattern(QStringLiteral("%{message}"));
+            qInstallMessageHandler(journaldMessageOutput);
+            qCInfo(SK_CORE, "Using systemd logging backend.");
+        }
+#endif
+        else {
+            qCInfo(SK_CORE, "Using stdout logging backend.");
+        }
+        messageHandlerInstalled = true;
+    }
+
     QCoreApplication::setApplicationName(QStringLiteral("Skaffari"));
     QCoreApplication::setApplicationVersion(QStringLiteral(SKAFFARI_VERSION));
 
