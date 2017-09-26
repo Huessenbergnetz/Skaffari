@@ -831,3 +831,5 @@ AdminAccount AdminAccount::fromStash(Cutelyst::Context *c)
 
     return a;
 }
+
+#include "moc_adminaccount.cpp"
