@@ -19,6 +19,7 @@
 #include "logout.h"
 
 #include <Cutelyst/Plugins/Authentication/authentication.h>
+#include <Cutelyst/Plugins/Authentication/authenticationuser.h>
 
 using namespace Cutelyst;
 
@@ -34,7 +35,10 @@ void Logout::index(Context *c)
 {
     Authentication *auth = c->plugin<Authentication*>();
     
+    const QString userName = auth->user(c).value(QStringLiteral("username")).toString();
     auth->logout(c);
+
+    qCInfo(SK_LOGIN, "User %s logged out.", qUtf8Printable(userName));
     
     c->response()->redirect(c->uriFor(QLatin1String("/login")));
 }

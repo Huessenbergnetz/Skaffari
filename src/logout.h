@@ -20,6 +20,9 @@
 #define LOGOUT_H
 
 #include <Cutelyst/Controller>
+#include <QLoggingCategory>
+
+Q_DECLARE_LOGGING_CATEGORY(SK_LOGIN)
 
 using namespace Cutelyst;
 
