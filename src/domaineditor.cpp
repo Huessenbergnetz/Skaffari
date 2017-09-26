@@ -834,4 +834,4 @@ QStringList DomainEditor::trimFolderStrings(const QStringList& folders)
     return trimmed;
 }
 
-
+#include "moc_domaineditor.cpp"

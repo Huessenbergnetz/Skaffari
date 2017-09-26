@@ -173,3 +173,5 @@ void FileSizeFormat::render(Grantlee::OutputStream *stream, Grantlee::Context *g
 
     *stream << sizeStr;
 }
+
+#include "moc_filesizeformattag.cpp"

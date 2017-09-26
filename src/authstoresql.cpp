@@ -66,3 +66,5 @@ AuthenticationUser AuthStoreSql::findUser(Context *c, const ParamsMultiMap &user
 
     return user;
 }
+
+#include "moc_authstoresql.cpp"

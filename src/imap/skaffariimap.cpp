@@ -760,3 +760,5 @@ bool SkaffariIMAP::sendCommand(const QString &command)
 
     return true;
 }
+
+#include "moc_skaffariimap.cpp"

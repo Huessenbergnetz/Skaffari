@@ -74,3 +74,4 @@ void Login::index(Context *c)
              });
 }
 
+#include "moc_login.cpp"

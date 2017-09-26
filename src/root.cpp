@@ -113,4 +113,4 @@ bool Root::Auto(Context* c)
     return true;
 }
 
-
+#include "moc_root.cpp"

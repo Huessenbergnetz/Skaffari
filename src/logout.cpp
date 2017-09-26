@@ -43,3 +43,4 @@ void Logout::index(Context *c)
     c->response()->redirect(c->uriFor(QLatin1String("/login")));
 }
 
+#include "moc_logout.cpp"

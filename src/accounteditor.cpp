@@ -819,3 +819,5 @@ void AccountEditor::list(Context *c)
     QJsonDocument json(o);
     c->res()->setJsonBody(json);
 }
+
+#include "moc_accounteditor.cpp"

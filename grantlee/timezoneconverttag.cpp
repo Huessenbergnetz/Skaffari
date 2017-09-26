@@ -125,3 +125,5 @@ void TimeZoneConvert::render(Grantlee::OutputStream *stream, Grantlee::Context *
         *stream << c->locale().toString(retVal, formatString);
     }
 }
+
+#include "moc_timezoneconverttag.cpp"

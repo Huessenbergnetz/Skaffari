@@ -99,3 +99,5 @@ void MyAccount::index(Context *c)
         c->res()->setStatus(404);
     }
 }
+
+#include "moc_myaccount.cpp"

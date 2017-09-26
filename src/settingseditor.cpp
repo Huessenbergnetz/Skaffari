@@ -139,3 +139,5 @@ bool SettingsEditor::accessGranted(Context *c)
     const quint16 status = c->res()->status();
     return ((status != 404) && (status != 403));
 }
+
+#include "moc_settingseditor.cpp"
