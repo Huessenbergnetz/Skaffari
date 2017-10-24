@@ -24,7 +24,7 @@ compasset() {
     zopfli -i30 $FILE
     chown ${FUG} ${FILE}.gz
     chmod ${FM} ${FILE}.gz
-    bro --force --quality 99 --input $FILE --output ${FILE}.br
+    brotli -f -Z -k $FILE
     chown ${FUG} ${FILE}.br
     chmod ${FM} ${FILE}.br
 }
