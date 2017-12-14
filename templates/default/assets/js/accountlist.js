@@ -42,9 +42,6 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     actionBtns[0].setAttribute('href', '/account/' + a.domainId + '/' + a.id + '/edit');
     actionBtns[1].setAttribute('href', '/account/' + a.domainId + '/' + a.id + '/addresses');
     actionBtns[2].setAttribute('href', '/account/' + a.domainId + '/' + a.id + '/forwards');
-    actionBtns[4].dataset.domainid = a.domainId;
-    actionBtns[4].dataset.accountid = a.id;
-    actionBtns[4].dataset.username = a.username;
     // end action buttons
 
     // start column for username and id
@@ -218,6 +215,38 @@ Skaffari.DefaultTmpl.AccountList.checkAccount = function() {
     });
 }
 
+Skaffari.DefaultTmpl.AccountList.removeAccount = function() {
+    $('#removeAccountForm #accountName').blur();
+    $('#remove-account-message-container .alert').alert('close');
+    var removeAccountSubmit = $('#removeAccountSubmit');
+    removeAccountSubmit.prop('disabled', true);
+    var removeAccountIcon = $('#removeAccountIcon');
+    removeAccountIcon.removeClass('fa-trash');
+    removeAccountIcon.addClass('fa-circle-o-notch fa-spin');
+    var removeAccountForm = $('#removeAccountForm');
+
+    $.ajax({
+        method: 'post',
+        url: removeAccountForm.attr('action'),
+        data: removeAccountForm.serialize(),
+        dataType: 'json'
+    }).always(function() {
+        removeAccountIcon.removeClass('fa-circle-o-notch fa-spin');
+        removeAccountIcon.addClass('fa-trash');
+        removeAccountSubmit.prop('disabled', false);
+    }).done(function(data) {
+        Skaffari.DefaultTmpl.AccountList.removeAccountModal.modal('hide');
+        var row = $('#account-' + data.domain_id + '-' + data.account_id);
+        row.hide(300, function() {
+            row.remove();
+        });
+    }).fail(function(jqXHR) {
+        if (jqXHR.responseJSON.error_msg) {
+            Skaffari.DefaultTmpl.createAlert('warning', jqXHR.responseJSON.error_msg, '#remove-account-message-container', 'mt-1');
+        }
+    });
+}
+
 Skaffari.DefaultTmpl.AccountList.load = function(loadMore) {
 
     if (Skaffari.DefaultTmpl.templateSupport) {
@@ -336,6 +365,7 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
         al.currentPage = $('#currentPage');
         al.accountsPerPage = $('#accountsPerPage');
         al.checkAccountModal = $('#checkAccountModal');
+        al.removeAccountModal = $('#removeAccountModal');
         al.accountRowTemplate = document.getElementById('account-template');
 
         al.l10n = JSON.parse(document.getElementById('translationStrings').innerHTML);
@@ -412,6 +442,27 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
 
             al.checkAccountModal.on('hide.bs.modal', function() {
                 $('.check-account-btn').prop('disabled', false);
+            });
+        }
+
+        if (al.removeAccountModal.length > 0) {
+            al.removeAccountModal.on('show.bs.modal', function(e) {
+                $('.remove-account-btn').prop('disabled', true);
+                var btn = $(e.relatedTarget);
+                var accountRow = btn.parents('.account-row').first();
+                $('#removeAccountName').text(accountRow.data('username'));
+                $('#removeAccountForm').attr('action', '/account/' + accountRow.data('domainid') + '/' + accountRow.data('accountid') + '/remove');
+                $('#removeAccountForm #accountName').val('');
+                $('#remove-account-message-container').empty();
+            });
+
+            al.removeAccountModal.on('hide.bs.modal', function() {
+                $('.remove-account-btn').prop('disabled', false);
+            });
+
+            $('#removeAccountForm').submit(function(e) {
+                Skaffari.DefaultTmpl.AccountList.removeAccount();
+                e.preventDefault();
             });
         }
     }

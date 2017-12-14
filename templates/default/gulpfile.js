@@ -20,7 +20,6 @@ elixir(function(mix) {
         'checkdomain.js',
         'manageemailaddresses.js',
         'removedomain.js',
-        'removeaccount.js',
         'removeadmin.js',
         'accountlist.js',
         'select2ajaxaccounts.js',
