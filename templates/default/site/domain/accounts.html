@@ -53,11 +53,37 @@
                     <th>{{ _("Services") }}</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="accountsTableBody">
             </tbody>
         </table>
     </div>
 </div>
+
+<template id="account-template">
+    <tr class="account-row">
+        <td>
+            <div class="btn-group">
+                <a class="btn btn-sm btn-light" title="{{ _("Edit account") }}" role="buton"><i class="fa fa-edit fa-fw"></i></a>
+                <button class="btn btn-sm btn-light dropdown-toggle dropdown-toggle-split" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="sr-only">{{ _("Toggle dropdown") }}</span></button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item"><i class="fa fa-envelope-o fa-fw"></i> {{ _("Email addresses") }}</a>
+                    <a class="dropdown-item"><i class="fa fa-mail-forward fa-fw"></i> {{ _("Forwards") }}</a>
+                    <a class="dropdown-item check-account-btn" href="#" data-target="#checkAccountModal" data-toggle="modal"><i class="fa fa-stethoscope fa-fw"></i> {{ _("Check account") }}</a>
+                    <a class="dropdown-item remove-account-btn text-danger" href="#" data-target="#removeAccountModal" data-toggle="modal"><i class="fa fa-trash fa-fw"></i> {{ _("Delete account") }}</a>
+                </div>
+            </div>
+        </td>
+        <td><a title="{{ _("Email addresses") }}"></a><br><small class="text-muted">{{ _("ID:") }}</small></td>
+        <td></td>
+        <td></td>
+        <td>
+            <div class="progress"><div role="progressbar" aria-valuemin="0"></div></div>
+            <p class="text-right"><small></small></p>
+        </td>
+        <td></td>
+        <td><i></i> IMAP<br><i></i> POP<br><i></i> Sieve<br><i></i> SMTP-Auth</td>
+    </tr>
+</template>
 
 <div id="loadingActive" class="row mt-3">
     <div class="col-12 text-center">
@@ -165,6 +191,7 @@
         "catchAll": "{{ _("Catches all undefined email addresses for this domain.") }}",
         "keepLocal": "{{ _("keep local copy") }}",
         "loadMore": "{{ _("Load more") }}",
-        "id": "{{ _("ID:") }}"
+        "id": "{{ _("ID:") }}",
+        "htmlTemplatesNotAvailable": "{{ _("Your browser does not support the HTML template tag.") }}"
     }
 </script>

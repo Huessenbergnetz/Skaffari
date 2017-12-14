@@ -25,193 +25,101 @@ Skaffari.DefaultTmpl.AccountList = Skaffari.DefaultTmpl.AccountList || {};
 Skaffari.DefaultTmpl.AccountList.filterForm = $('#accountFilterForm');
 
 Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
+
     var l10n = Skaffari.DefaultTmpl.AccountList.l10n;
-    var tr = $('<tr>');
-    tr.addClass('account-row');
-    tr.attr({
-        id: 'account-' + a.domainId + '-' + a.id,
-        "data-domainid": a.domainId,
-        "data-accountid": a.id,
-        "data-username": a.username
-    });
-    tr.data({
-        domainid: a.domainId,
-        accountid: a.id,
-        username: a.username
-    });
 
-    /* Start action button dropdown */
+    var tr = Skaffari.DefaultTmpl.AccountList.accountRowTemplate.content.querySelector("tr");
+    tr.id = 'account-' + a.domainId + '-' + a.id;
+    tr.dataset.domainid = a.domainId;
+    tr.dataset.accountid = a.id;
+    tr.dataset.username = a.username;
 
-    var actions = $('<td>');
+    var td = Skaffari.DefaultTmpl.AccountList.accountRowTemplate.content.querySelectorAll("td");
 
-    var btnGroup = $('<div>');
-    btnGroup.addClass('btn-group');
+    // start action buttons
+    var actionBtns = td[0].querySelectorAll("a");
 
-    var mainBtn = $('<a>');
-    mainBtn.addClass('btn btn-sm btn-light');
-    mainBtn.attr({
-        href: '/account/' + a.domainId + '/' + a.id + '/edit',
-        title: l10n.editAccount,
-        role: 'button'
-    });
-    var mainBtnIcon = $('<i>');
-    mainBtnIcon.addClass('fa fa-edit fa-fw');
-    mainBtn.append(mainBtnIcon);
+    actionBtns[0].setAttribute('href', '/account/' + a.domainId + '/' + a.id + '/edit');
+    actionBtns[1].setAttribute('href', '/account/' + a.domainId + '/' + a.id + '/addresses');
+    actionBtns[2].setAttribute('href', '/account/' + a.domainId + '/' + a.id + '/forwards');
+    actionBtns[4].dataset.domainid = a.domainId;
+    actionBtns[4].dataset.accountid = a.id;
+    actionBtns[4].dataset.username = a.username;
+    // end action buttons
 
-    btnGroup.append(mainBtn);
+    // start column for username and id
+    var unLink = td[1].querySelector("a");
+    unLink.setAttribute('href', '/account/' + a.domainId + '/' + a.id + '/addresses');
+    unLink.textContent = a.username;
+    td[1].querySelector("small").textContent = l10n.id + ' ' + a.id;
+    // end column for username and id
 
-    var toggleBtn = $('<button>');
-    toggleBtn.addClass('btn btn-sm btn-light dropdown-toggle dropdown-toggle-split');
-    toggleBtn.attr({
-        type: "button",
-        "data-toggle": "dropdown",
-        "aria-haspopup": "true",
-        "aria-expanded": "false"
-    });
-    toggleBtn.data('toggle', 'dropdown');
-    var toggleBtnDesc = $('<span>');
-    toggleBtnDesc.addClass('sr-only');
-    toggleBtnDesc.text(l10n.toggleDropdown);
-    toggleBtn.append(toggleBtnDesc);
 
-    btnGroup.append(toggleBtn);
-
-    var dropdownMenu = $('<div>');
-    dropdownMenu.addClass('dropdown-menu');
-
-    var addressesBtn = $('<a>');
-    addressesBtn.addClass('dropdown-item');
-    addressesBtn.attr('href', '/account/' + a.domainId + '/' + a.id + '/addresses');
-    var addressesBtnIcon = $('<i>');
-    addressesBtnIcon.addClass('fa fa-envelope-o fa-fw');
-    addressesBtn.append(addressesBtnIcon);
-    addressesBtn.append(' ' + l10n.emailAddresses);
-    dropdownMenu.append(addressesBtn);
-
-    var forwardsBtn = $('<a>');
-    forwardsBtn.addClass('dropdown-item');
-    forwardsBtn.attr('href', '/account/' + a.domainId + '/' + a.id + '/forwards');
-    var forwardsBtnIcon = $('<i>');
-    forwardsBtnIcon.addClass('fa fa-mail-forward fa-fw');
-    forwardsBtn.append(forwardsBtnIcon);
-    forwardsBtn.append(' ' + l10n.forwards);
-    dropdownMenu.append(forwardsBtn);
-
-    var checkBtn = $('<a>');
-    checkBtn.addClass('dropdown-item check-account-btn');
-    checkBtn.attr({href: '#', 'data-target': '#checkAccountModal', 'data-toggle': 'modal'});
-    checkBtn.data({
-        target: '#checkAccountModal',
-        toggle: 'modal'
-    })
-    var checkBtnIcon = $('<i>');
-    checkBtnIcon.addClass('fa fa-stethoscope fa-fw');
-    checkBtn.append(checkBtnIcon);
-    checkBtn.append(' ' + l10n.checkAccount);
-    dropdownMenu.append(checkBtn);
-
-    var removeBtn = $('<a>');
-    removeBtn.addClass('dropdown-item remove-account-btn text-danger');
-    removeBtn.attr({
-        href: '#',
-        'data-target': '#removeAccountModal',
-        'data-toggle': 'modal',
-        'data-domainid': a.domainId,
-        'data-accountid': a.id,
-        'data-username': a.username
-    });
-    removeBtn.data({
-        target: '#removeAccountModal',
-        toggle: 'modal',
-        domainid: a.domainId,
-        accountid: a.id,
-        username: a.username
-    });
-    var removeBtnIcon = $('<i>');
-    removeBtnIcon.addClass('fa fa-trash fa-fw');
-    removeBtn.append(removeBtnIcon);
-    removeBtn.append(' ' + l10n.deleteAccount);
-    dropdownMenu.append(removeBtn);
-
-    btnGroup.append(dropdownMenu);
-
-    actions.append(btnGroup);
-
-    tr.append(actions);
-
-    /* End action button dropdown */
-
-    var username = $('<td>');
-    var unLink = $('<a>');
-    unLink.attr('href', '/account/' + a.domainId + '/' + a.id + '/addresses');
-    unLink.attr('title', l10n.emailAddresses);
-    unLink.text(a.username);
-    username.append(unLink);
-    username.append('<br>');
-    var idsmall = $('<small>');
-    idsmall.addClass('text-muted')
-    idsmall.text(l10n.id + ' ' + a.id);
-    username.append(idsmall);
-    tr.append(username);
-
-    var addresses = $('<td>');
-    if (a.catchAll) {
-        addresses.append('<span class="text-warning">' + l10n.catchAll + '</span><br>')
+    // start setting the addresses
+    // at first remove the old content
+    while (td[2].firstChild) {
+        td[2].removeChild(td[2].firstChild);
     }
-    addresses.append(a.addresses.join('<br>'));
-    tr.append(addresses);
-
-    var forwards = $('<td>');
-    forwards.append(a.forwards.join('<br>'));
-    if (a.forwards.length > 0) {
-        forwards.append('<br>');
-        if (a.keepLocal) {
-            var klIcon = $('<i>');
-            klIcon.addClass('fa fa-copy');
-            forwards.append(klIcon);
-            forwards.append(' ' + l10n.keepLocal)
+    var addressesLength = a.addresses.length;
+    if (a.catchAll) {
+        var warnSpan = document.createElement('span');
+        warnSpan.textContent = l10n.catchAll;
+        warnSpan.className = "text-warning";
+        td[2].appendChild(warnSpan);
+        if (addressesLength > 0) {
+            td[2].appendChild(document.createElement('br'));
         }
     }
-    tr.append(forwards);
+    for (var i = 0; i < addressesLength; i++) {
+        td[2].appendChild(document.createTextNode(a.addresses[i]));
+        if (i < (addressesLength - 1)) {
+            td[2].appendChild(document.createElement('br'));
+        }
+    }
+    // end setting the addresses
 
-    var progress = $('<td>');
+    // start setting forwards
+    // at first remove the old content
+    while (td[3].firstChild) {
+        td[3].removeChild(td[3].firstChild);
+    }
+    var forwardsLength = a.forwards.length;
+    for (var i = 0; i < forwardsLength; i++) {
+        td[3].appendChild(document.createTextNode(a.forwards[i]));
+        if (i < (forwardsLength - 1)) {
+            td[3].appendChild(document.createElement('br'));
+        }
+    }
+    if (a.keepLocal) {
+        var klIcon = document.createElement('i');
+        klIcon.className = "fa fa-copy";
+        td[3].appendChild(document.createElement('br'));
+        td[3].appendChild(klIcon);
+        td[3].appendChild(document.createTextNode(' ' + l10n.keepLocal));
+    }
+    // end setting forwards
+
+    // start setting contingent
+    var progDivs = td[4].querySelectorAll('div');
     var usagePercent = 0;
     if ((a.quota != 0) && (a.usage != 0)) {
         usagePercent = (a.usage / a.quota) * 100;
     }
-    var progDiv = $('<div>');
-    progDiv.addClass('progress');
-    progDiv.attr('title', usagePercent.toFixed(2) + '%');
+    var usagePercentStr = usagePercent.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2}) + '%';
+    progDivs[0].setAttribute('title', usagePercentStr);
+    progDivs[1].className = 'progress-bar bg-info pb-w-' + Math.round(usagePercent).toString();
+    progDivs[1].setAttribute('title', usagePercentStr);
+    progDivs[1].setAttribute('aria-valuenow', a.usage);
+    progDivs[1].setAttribute('aria-valuemax', a.quota);
+    progDivs[1].textContent = usagePercentStr;
+    td[4].querySelector('small').textContent = Skaffari.DefaultTmpl.humanBinarySize(a.usage * 1024) + '/' + Skaffari.DefaultTmpl.humanBinarySize(a.quota * 1024);
+    // end setting contingent
 
-    var barDiv = $('<div>');
-    barDiv.addClass('progress-bar bg-info pb-w-' + Math.round(usagePercent).toString());
-    barDiv.attr({
-        role: "progressbar",
-        "aria-valuenow": a.usage,
-        "aria-valuemin": 0,
-        "aria-valuemax": a.quota,
-        title: usagePercent.toFixed(2) + '%'
-    });
-    barDiv.text(usagePercent.toFixed(2) + '%');
-    progDiv.append(barDiv);
-    progress.append(progDiv);
-
-    var humanUsage = Skaffari.DefaultTmpl.humanBinarySize(a.usage * 1024);
-    var humanQuota = Skaffari.DefaultTmpl.humanBinarySize(a.quota * 1024);
-    var progText = $('<p>');
-    progText.addClass('text-right');
-    var progTextSmall = $('<small>');
-    progTextSmall.text(humanUsage + '/' + humanQuota);
-    progText.append(progTextSmall);
-    progress.append(progText);
-
-    tr.append(progress);
-
-    var times = $('<td>');
-    var created = new Date(a.created);
-    var updated = new Date(a.updated);
-    var validUntil = new Date(a.validUntil);
-    var passwordExpires = new Date(a.passwordExpires)
+    // start settings account times
+    // at first remove the old content
+    while (td[5].firstChild) {
+        td[5].removeChild(td[5].firstChild);
+    }
     var dateOptions = {
         year: "2-digit",
         month: "2-digit",
@@ -220,53 +128,48 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
         minute: "2-digit",
         second: "2-digit"
     };
-    times.append(created.toLocaleString(undefined, dateOptions) + '<br>');
-    times.append(updated.toLocaleString(undefined, dateOptions) + '<br>');
-    var validUntilSpan = $('<span>')
+    var created = new Date(a.created);
+    td[5].appendChild(document.createTextNode(created.toLocaleString(undefined, dateOptions)));
+    td[5].appendChild(document.createElement('br'));
+    var updated = new Date(a.updated);
+    td[5].appendChild(document.createTextNode(updated.toLocaleString(undefined, dateOptions)));
+    td[5].appendChild(document.createElement('br'));
+    var validUntil = new Date(a.validUntil);
     if (a.expired) {
-        validUntilSpan.addClass('text-danger');
+        var validUntilSpan = document.createElement('span');
+        validUntilSpan.className = "text-danger";
+        validUntilSpan.appendChild(document.createTextNode(validUntil.toLocaleString(undefined, dateOptions)));
+        td[5].appendChild(validUntilSpan);
+    } else {
+        td[5].appendChild(document.createTextNode(validUntil.toLocaleString(undefined, dateOptions)));
     }
-    validUntilSpan.append(validUntil.toLocaleString(undefined, dateOptions) + '<br>');
-    times.append(validUntilSpan);
-    var pwExpirationSpan = $('<span>');
+    td[5].appendChild(document.createElement('br'));
+    var passwordExpires = new Date(a.passwordExpires);
     if (a.passwordExpired) {
-        pwExpirationSpan.addClass('text-danger');
+        var passwordExpiresSpan = document.createElement('span');
+        passwordExpiresSpan.className = "text-danger";
+        passwordExpiresSpan.appendChild(document.createTextNode(passwordExpires.toLocaleString(undefined, dateOptions)));
+    } else {
+        td[5].appendChild(document.createTextNode(passwordExpires.toLocaleString(undefined, dateOptions)));
     }
-    pwExpirationSpan.append(passwordExpires.toLocaleString(undefined, dateOptions))
-    times.append(pwExpirationSpan);
-    tr.append(times);
+    // end setting account times
 
-    var services = $('<td>');
-    var slist = ['imap', 'pop', 'sieve', 'smtpauth'];
-    for (var i = 0; i < 4; i++) {
-        var service = slist[i];
-        var sOn = a[service];
-        var sicon = $('<i>');
-        sicon.addClass('fa fa-fw');
-        if (sOn) {
-            sicon.addClass('fa-check-square-o text-success');
-        } else {
-            sicon.addClass('fa-square-o text-danger');
-        }
-                services.append(sicon);
-                switch(service) {
-                    case "imap":
-                        services.append(' IMAP<br>');
-                        break;
-                    case "pop":
-                        services.append(' POP<br>');
-                        break;
-                    case "sieve":
-                        services.append(' Sieve<br>');
-                        break;
-                    case "smtpauth":
-                        services.append(' SMTP-Auth');
-                        break;
-                }
-    }
-    tr.append(services);
+    // start setting account services
+    var baseClass = 'fa fa-fw ';
+    var enabledClass = 'fa-check-square-o text-success';
+    var disabledClass = 'fa-square-o text-danger';
 
-    return tr;
+    var serviceIcons = td[6].querySelectorAll('i');
+    serviceIcons[0].className = baseClass + (a.imap ? enabledClass : disabledClass);
+    serviceIcons[1].className = baseClass + (a.pop ? enabledClass : disabledClass);
+    serviceIcons[2].className = baseClass + (a.sieve ? enabledClass : disabledClass);
+    serviceIcons[3].className = baseClass + (a.smtpauth ? enabledClass : disabledClass);
+
+    // end setting account services
+
+    var clone = document.importNode(Skaffari.DefaultTmpl.AccountList.accountRowTemplate.content, true);
+
+    return clone;
 };
 
 Skaffari.DefaultTmpl.AccountList.checkAccount = function() {
@@ -306,100 +209,106 @@ Skaffari.DefaultTmpl.AccountList.checkAccount = function() {
             var row = Skaffari.DefaultTmpl.AccountList.createRow(a);
             $('#account-' + a.domainId + '-' + a.id).replaceWith(row);
         } else {
-            skaffariCreateAlert('success', data.status_msg, '#check-account-message-container');
+            Skaffari.DefaultTmpl.createAlert('success', data.status_msg, '#check-account-message-container');
         }
     }).fail(function(jqXHR) {
         if (jqXHR.responseJSON.error_msg) {
-            skaffariCreateAlert('warning', jqXHR.responseJSON.error_msg, '#check-account-message-container');
+            Skaffari.DefaultTmpl.createAlert('warning', jqXHR.responseJSON.error_msg, '#check-account-message-container');
         }
     });
 }
 
 Skaffari.DefaultTmpl.AccountList.load = function(loadMore) {
-    var aff = Skaffari.DefaultTmpl.AccountList.filterForm;
-    if (aff.data('loading') == "0") {
-        Skaffari.DefaultTmpl.clearMessages();
-        var al = Skaffari.DefaultTmpl.AccountList;
-        aff.data('loading', '1');
-        if (!loadMore) {
-            al.tbody.empty();
-        } else {
-            al.currentPage.val(parseInt(al.currentPage.val()) + 1);
-        }
-        al.emptyListInfo.css('display', 'none')
-        var formData = aff.serialize();
-        al.loadingActive.show();
-        al.searchString.prop('disabled', true);
-        al.searchRole.prop('disabled', true);
-        al.submitBtn.prop('disabled', true);
-        al.resetBtn.prop('disabled', true);
-        var loadMoreBtn = $('#loadMoreBtn');
-        if (loadMoreBtn.length > 0) {
-            loadMoreBtn.hide();
-        }
 
-        // the number of table rows will be the index
-        // of the next newly added row
-        var newStartIdx = al.tbody.children().length;
+    if (Skaffari.DefaultTmpl.templateSupport) {
 
-        $.ajax({
-            url: '/domain/' + aff.data('domainid') + '/accounts',
-            data: formData,
-            dataType: 'json'
-        }).always(function() {
-            al.loadingActive.hide();
-            al.searchString.prop('disabled', false);
-            al.searchRole.prop('disabled', false);
-            al.submitBtn.prop('disabled', false);
-            al.resetBtn.prop('disabled', false);
-            aff.data('loading', '0');
-        }).done(function(data) {
-            var accounts = data.accounts;
-            var accountsLength = accounts.length;
-            if (accountsLength > 0) {
-                for (var i = 0; i < accountsLength; i++) {
-                    var tr = Skaffari.DefaultTmpl.AccountList.createRow(accounts[i]);
-                    al.tbody.append(tr);
-                }
+        var aff = Skaffari.DefaultTmpl.AccountList.filterForm;
+        if (aff.data('loading') == "0") {
+            Skaffari.DefaultTmpl.clearMessages();
+            var al = Skaffari.DefaultTmpl.AccountList;
+            aff.data('loading', '1');
+            if (!loadMore) {
+                al.tbody.empty();
             } else {
-                al.emptyListInfo.css('display', 'flex');
+                al.currentPage.val(parseInt(al.currentPage.val()) + 1);
+            }
+            al.emptyListInfo.css('display', 'none')
+            var formData = aff.serialize();
+            al.loadingActive.show();
+            al.searchString.prop('disabled', true);
+            al.searchRole.prop('disabled', true);
+            al.submitBtn.prop('disabled', true);
+            al.resetBtn.prop('disabled', true);
+            var loadMoreBtn = $('#loadMoreBtn');
+            if (loadMoreBtn.length > 0) {
+                loadMoreBtn.hide();
             }
 
-            if (data.currentPage < data.lastPage) {
-                if (loadMoreBtn.length > 0) {
-                    loadMoreBtn.show();
+            // the number of table rows will be the index
+            // of the next newly added row
+            var newStartIdx = al.tbody.children().length;
+
+            $.ajax({
+                url: '/domain/' + aff.data('domainid') + '/accounts',
+                data: formData,
+                dataType: 'json'
+            }).always(function() {
+                al.loadingActive.hide();
+                al.searchString.prop('disabled', false);
+                al.searchRole.prop('disabled', false);
+                al.submitBtn.prop('disabled', false);
+                al.resetBtn.prop('disabled', false);
+                aff.data('loading', '0');
+            }).done(function(data) {
+                var accounts = data.accounts;
+                var accountsLength = accounts.length;
+                if (accountsLength > 0) {
+                    for (var i = 0; i < accountsLength; i++) {
+                        var tr = Skaffari.DefaultTmpl.AccountList.createRow(accounts[i]);
+                        al.tbody.append(tr);
+                    }
                 } else {
-                    loadMoreBtn = $('<div>');
-                    loadMoreBtn.attr('id', 'loadMoreBtn');
-                    loadMoreBtn.addClass('row mt-4');
-                    var lmbCol = $('<div>');
-                    lmbCol.addClass('col-12');
-                    var lmbtn = $('<button>');
-                    lmbtn.attr('type', 'button');
-                    lmbtn.addClass('btn btn-light btn-lg btn-block');
-                    lmbtn.text(al.l10n.loadMore);
-                    lmbtn.click(function() {
-                        al.load(true);
-                    });
-                    lmbCol.append(lmbtn);
-                    loadMoreBtn.append(lmbCol);
-                    al.loadingActive.after(loadMoreBtn);
+                    al.emptyListInfo.css('display', 'flex');
                 }
-            }
 
-            if (loadMore) {
-                // calculate the offset to the top
-                // if we do not take the fixed top navabar into account,
-                // scroll target will be behind it, 15 is an extra margin
-                var dist = al.tbody.children().eq(newStartIdx).offset().top - $('nav.fixed-top').height() - 15;
-                $('html, body').animate({
-                    scrollTop: dist
-                }, 400);
-            }
+                if (data.currentPage < data.lastPage) {
+                    if (loadMoreBtn.length > 0) {
+                        loadMoreBtn.show();
+                    } else {
+                        loadMoreBtn = $('<div>');
+                        loadMoreBtn.attr('id', 'loadMoreBtn');
+                        loadMoreBtn.addClass('row mt-4');
+                        var lmbCol = $('<div>');
+                        lmbCol.addClass('col-12');
+                        var lmbtn = $('<button>');
+                        lmbtn.attr('type', 'button');
+                        lmbtn.addClass('btn btn-light btn-lg btn-block');
+                        lmbtn.text(al.l10n.loadMore);
+                        lmbtn.click(function() {
+                            al.load(true);
+                        });
+                        lmbCol.append(lmbtn);
+                        loadMoreBtn.append(lmbCol);
+                        al.loadingActive.after(loadMoreBtn);
+                    }
+                }
 
-        }).fail(function(jqXHR) {
-            Skaffari.DefaultTmpl.createAlert('warning', jqXHR.responseJSON.error_msg, Skaffari.DefaultTmpl.messageContainer, 'mt-1')
-        });
+                if (loadMore) {
+                    // calculate the offset to the top
+                    // if we do not take the fixed top navabar into account,
+                    // scroll target will be behind it, 15 is an extra margin
+                    var dist = al.tbody.children().eq(newStartIdx).offset().top - $('nav.fixed-top').height() - 15;
+                    $('html, body').animate({
+                        scrollTop: dist
+                    }, 400);
+                }
+
+            }).fail(function(jqXHR) {
+                Skaffari.DefaultTmpl.createAlert('warning', jqXHR.responseJSON.error_msg, Skaffari.DefaultTmpl.messageContainer, 'mt-1');
+            });
+        }
+    } else {
+        Skaffari.DefaultTmpl.createAlert('warning', Skaffari.DefaultTmpl.AccountList.l10n.htmlTemplatesNotAvailable, Skaffari.DefaultTmpl.messageContainer, 'mt-1');
     }
 }
 
@@ -427,6 +336,7 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
         al.currentPage = $('#currentPage');
         al.accountsPerPage = $('#accountsPerPage');
         al.checkAccountModal = $('#checkAccountModal');
+        al.accountRowTemplate = document.getElementById('account-template');
 
         al.l10n = JSON.parse(document.getElementById('translationStrings').innerHTML);
 

@@ -22,6 +22,8 @@ Skaffari.DefaultTmpl = Skaffari.DefaultTmpl || {};
 
 Skaffari.DefaultTmpl.messageContainer = $('#ajaxMessages');
 
+Skaffari.DefaultTmpl.templateSupport = ('content' in document.createElement('template'));
+
 Skaffari.DefaultTmpl.clearMessages = function() {
     if (Skaffari.DefaultTmpl.messageContainer.length > 0) {
         Skaffari.DefaultTmpl.messageContainer.empty();
