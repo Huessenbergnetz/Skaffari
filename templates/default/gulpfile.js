@@ -14,7 +14,7 @@ elixir(function(mix) {
         '../../node_modules/queuejax/jquery.qjax.js',
         '../../node_modules/stupid-table-plugin/stupidtable.js',
         'jquery.filtertable.js',
-        'defaulttmpl.js',
+        'general.js',
         'createalert.js',
         'forwards.js',
         'checkdomain.js',
@@ -24,7 +24,7 @@ elixir(function(mix) {
         'accountlist.js',
         'domainlist.js',
         'select2ajaxaccounts.js',
-        'general.js'
+        'defaulttmpl.js'
     ], 'static/js/scripts.js');
 
     mix.copy('node_modules/font-awesome/fonts', 'static/fonts');
