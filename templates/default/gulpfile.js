@@ -19,9 +19,9 @@ elixir(function(mix) {
         'forwards.js',
         'checkdomain.js',
         'manageemailaddresses.js',
-        'removeadmin.js',
         'accountlist.js',
         'domainlist.js',
+        'adminlist.js',
         'select2ajaxaccounts.js',
         'defaulttmpl.js'
     ], 'static/js/scripts.js');
