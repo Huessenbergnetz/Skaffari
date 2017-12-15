@@ -16,71 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var Skaffari = Skaffari || {};
-
-Skaffari.DefaultTmpl = Skaffari.DefaultTmpl || {};
-
-Skaffari.DefaultTmpl.messageContainer = $('#ajaxMessages');
-
-Skaffari.DefaultTmpl.templateSupport = ('content' in document.createElement('template'));
-
-Skaffari.DefaultTmpl.clearMessages = function() {
-    if (Skaffari.DefaultTmpl.messageContainer.length > 0) {
-        Skaffari.DefaultTmpl.messageContainer.empty();
-    }
-}
-
-Skaffari.DefaultTmpl.humanBinarySize = function(size) {
-    var ret = '';
-    var _size = 0.0;
-    var multi = 'KiB';
-    if (size < 1048576) {
-        _size = size/1024.0;
-        multi = 'KiB';
-    } else if (size < 1073741824) {
-        _size = size/1048576.0;
-        multi = 'MiB';
-    } else if (size < 1099511627776) {
-        _size = size/1073741824.0;
-        multi = 'GiB';
-    } else {
-        _size = size/1099511627776.0;
-        multi = 'TiB';
-    }
-
-    ret = _size.toFixed(2) + ' ' + multi;
-
-    return ret;
-}
-
-Skaffari.DefaultTmpl.createAlert = function(type, text, target, classes) {
-    var warnDiv = $('<div>');
-    warnDiv.addClass('alert');
-    warnDiv.addClass('alert-' + type);
-    warnDiv.addClass('alert-dismissible fade show');
-    if (classes) {
-        warnDiv.addClass(classes);
-    }
-    warnDiv.attr('role', 'alert');
-    var warnDivCb = $('<button>');
-    warnDivCb.attr({type: "button", "aria-label": "Close"});
-    warnDivCb.addClass('close');
-    warnDivCb.data('dismiss', 'alert');
-    warnDivCb.click(function() {
-        warnDiv.alert('close');
-    });
-    var warnDivSpan = $('<span>');
-    warnDivSpan.attr('aria-hidden', 'true');
-    warnDivSpan.html('&times;')
-    warnDivCb.append(warnDivSpan);
-    warnDiv.append(warnDivCb);
-    warnDiv.append(text);
-    warnDiv.hide();
-    $(target).append(warnDiv);
-    warnDiv.show(300);
-}
-
-Skaffari.DefaultTmpl.init = function() {
-    $.fn.select2.defaults.set("theme", "bootstrap");
-    $('.select2').select2();
-}
+$(function() {
+    Skaffari.DefaultTmpl.init();
+    Skaffari.DefaultTmpl.initSelect2AjaxAccounts();
+});
