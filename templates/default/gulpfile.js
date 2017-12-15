@@ -19,7 +19,6 @@ elixir(function(mix) {
         'forwards.js',
         'checkdomain.js',
         'manageemailaddresses.js',
-        'removedomain.js',
         'removeadmin.js',
         'accountlist.js',
         'domainlist.js',

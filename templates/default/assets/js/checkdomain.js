@@ -16,71 +16,86 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-$(function() {
-    var checkDomainRunning = false;
-    $('#checkdomain').click(function() {
-        var checkDom = $('#checkdomain');
-        var domainId = checkDom.data('domainid');
-        var accountIds = checkDom.data('accountids');
-        if (typeof accountIds === 'string') {
-            accountIds = checkDom.data('accountids').split(',');
-        } else {
-            accountIds = [accountIds];
-        }
-        var baseUrl = checkDom.data('baseurl');
-        var ntdStr = checkDom.data('ntdstr');
-        var idCount = accountIds.length;
-        var infoBlock = $('#checkdomaininfo');
-        var checkOptions = $('#checkDomainForm').serialize();
+var Skaffari = Skaffari || {};
 
-        if ((idCount > 0) && !checkDomainRunning) {
-            checkDomainRunning = true;
-            checkDom.prop('disabled', true);
-            $('input[name="checkChildAddresses"]').prop('disabled', true);
-            infoBlock.empty();
+Skaffari.DefaultTmpl = Skaffari.DefaultTmpl || {};
 
-            var _qjax = new $.qjax({
-                timeout: 10000,
-                ajaxSettings: {
-                    dataType: "json",
-                    data: checkOptions
-                },
-                onQueueChange: function(length) {
-                    var finishedCount = idCount - length;
-                    var percentFinished = (finishedCount / idCount) * 100;
-                    var cdp = $('#checkdomainprogress');
-                    cdp.attr('aria-valuenow', finishedCount);
-                    cdp.css('width', percentFinished + '%');
-                    cdp.text(finishedCount + '/' + idCount);
-                    if (length === 0) {
-                        checkDom.prop('disabled', false);
-                        $('input[name="checkChildAddresses"]').prop('disabled', false);
-                        checkDomainRunning = false;
-                    }
+Skaffari.DefaultTmpl.checkDomain = Skaffari.DefaultTmpl.checkDomain || {};
+
+Skaffari.DefaultTmpl.checkDomain.button = $('#checkdomain');
+
+Skaffari.DefaultTmpl.checkDomain.running = false;
+
+Skaffari.DefaultTmpl.checkDomain.run = function() {
+    var domainId = Skaffari.DefaultTmpl.checkDomain.button.data('domainid');
+    var accountIds = Skaffari.DefaultTmpl.checkDomain.button.data('accountids');
+    if (typeof accountIds === 'string') {
+        accountIds = Skaffari.DefaultTmpl.checkDomain.button.data('accountids').split(',');
+    } else {
+        accountIds = [accountIds];
+    }
+    var idCount = accountIds.length;
+    var infoBlock = $('#checkdomaininfo');
+    var checkChildAddressesSwitch = $('input[name="checkChildAddresses"]');
+    var cdp = $('#checkdomainprogress');
+    var ntdStr = Skaffari.DefaultTmpl.checkDomain.button.data('ntdstr');
+
+    if ((idCount > 0) && !Skaffari.DefaultTmpl.checkDomain.running) {
+        Skaffari.DefaultTmpl.checkDomain.running = true;
+        Skaffari.DefaultTmpl.checkDomain.button.prop('disabled', true);
+        checkChildAddressesSwitch.prop('disabled', true);
+        infoBlock.empty();
+
+        var _qjax = new $.qjax({
+            timeout: 10000,
+            ajaxSettings: {
+                dataType: "json",
+                data: $('#checkDomainForm').serialize()
+            },
+            onQueueChange: function(length) {
+                var finishedCount = idCount - length;
+                var percentFinished = (finishedCount / idCount) * 100;
+                cdp.attr('aria-valuenow', finishedCount);
+                cdp.css('width', percentFinished + '%');
+                cdp.text(finishedCount + '/' + idCount);
+                if (length === 0) {
+                    Skaffari.DefaultTmpl.checkDomain.button.prop('disabled', false);
+                    checkChildAddressesSwitch.prop('disabled', false);
+                    Skaffari.DefaultTmpl.checkDomain.running = false;
                 }
-            });
-
-            for (i = 0; i < idCount; ++i) {
-                var ret = _qjax.Queue({
-                    url: '/account/' + domainId +'/' + accountIds[i] + '/check',
-                });
-                ret.done(function(e) {
-                    var info = '<div class="mt-3"><h3>' + e.username + '</h3>';
-                    var actions = e.actions;
-                    if (actions) {
-                        var al = actions.length;
-                        info += '<ul>';
-                        for (i = 0; i < al; ++i) {
-                            info += '<li>' + actions[i] + '</li>';
-                        }
-                        info += '</ul>';
-                    } else {
-                        info += '<p>' + ntdStr + '</p>';
-                    }
-                    info += '</div>';
-                    infoBlock.append(info);
-                });
             }
+        });
+
+        for (i = 0; i < idCount; ++i) {
+            var ret = _qjax.Queue({
+                url: '/account/' + domainId +'/' + accountIds[i] + '/check',
+            });
+            ret.done(function(e) {
+                var info = '<div class="mt-3"><h3>' + e.username + '</h3>';
+                var actions = e.actions;
+                if (actions) {
+                    var al = actions.length;
+                    info += '<ul>';
+                    for (i = 0; i < al; ++i) {
+                        info += '<li>' + actions[i] + '</li>';
+                    }
+                    info += '</ul>';
+                } else {
+                    info += '<p>' + ntdStr + '</p>';
+                }
+                info += '</div>';
+                infoBlock.append(info);
+            });
         }
-    });
+    }
+}
+
+Skaffari.DefaultTmpl.checkDomain.init = function() {
+    if (Skaffari.DefaultTmpl.checkDomain.button.length > 0) {
+        Skaffari.DefaultTmpl.checkDomain.button.click(Skaffari.DefaultTmpl.checkDomain.run);
+    }
+}
+
+$(function() {
+    Skaffari.DefaultTmpl.checkDomain.init();
 });
