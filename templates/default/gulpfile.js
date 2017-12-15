@@ -12,7 +12,7 @@ elixir(function(mix) {
         '../../node_modules/bootstrap/dist/js/bootstrap.js',
         '../../node_modules/select2/dist/js/select2.js',
         '../../node_modules/queuejax/jquery.qjax.js',
-        'stupidtable.js',
+        '../../node_modules/stupid-table-plugin/stupidtable.js',
         'jquery.filtertable.js',
         'defaulttmpl.js',
         'createalert.js',
@@ -22,6 +22,7 @@ elixir(function(mix) {
         'removedomain.js',
         'removeadmin.js',
         'accountlist.js',
+        'domainlist.js',
         'select2ajaxaccounts.js',
         'general.js'
     ], 'static/js/scripts.js');
