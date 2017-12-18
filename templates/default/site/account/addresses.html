@@ -9,7 +9,7 @@
 
 <div class="row mt-1">
     <section class="col">
-    
+
         <table id="addressesTable" class="table table-responsive" data-removequestion="{{ _("Are you sure you want to delete the email address “$1” from this account?") }}">
             <thead>
                 <tr>
@@ -31,8 +31,8 @@
                 {% endfor %}
             </tbody>
         </table>
-        
-    </section>    
+
+    </section>
 </div>
 
 <div class="modal fade" id="addressModal" tabindex="-1" role="dialog" aria-describedby="addressModalLabel" aria-hidden="true">
@@ -53,7 +53,7 @@
                                 <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" placeholder="{{ _("Local part") }}" required>
                             </div>
                             <div class="col-12 col-md-6">
-                                <select class="form-control" id="newmaildomain" name="newmaildomain" class="form-control">
+                                <select class="form-control" id="newmaildomain" name="newmaildomain">
                                     {% for dom in maildomains %}
                                     <option value="{{ dom.name }}"{% if dom.name == newmaildomain|default:domain.name %} selected{% endif %}>@{{ dom.name }}</option>
                                     {% endfor %}
