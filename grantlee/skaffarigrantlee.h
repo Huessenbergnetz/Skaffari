@@ -30,6 +30,8 @@ public:
     explicit SkaffariGrantlee(QObject *parent = nullptr);
 
     virtual QHash<QString, Grantlee::AbstractNodeFactory *> nodeFactories(const QString &name = QString())  override;
+
+    virtual QHash<QString, Grantlee::Filter *> filters(const QString &name = QString()) override;
 };
 
 #endif // SKAFFARIGRANTLEE_H

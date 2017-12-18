@@ -16,38 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "skaffarigrantlee.h"
+#ifndef URLENCODEFILTER_H
+#define URLENCODEFILTER_H
 
-#include "filesizeformattag.h"
-#include "timezoneconverttag.h"
-#include "urlencodefilter.h"
+#include <grantlee5/grantlee/filter.h>
 
-SkaffariGrantlee::SkaffariGrantlee(QObject *parent) : QObject(parent)
+class UrlEncodeFilter : public Grantlee::Filter
 {
+public:
+    bool isSafe() const override { return true; }
 
-}
+    QVariant doFilter(const QVariant &input, const QVariant &argument, bool autoescape) const override;
+};
 
-
-QHash<QString, Grantlee::AbstractNodeFactory *> SkaffariGrantlee::nodeFactories(const QString &name)
-{
-    Q_UNUSED(name);
-
-    QHash<QString, Grantlee::AbstractNodeFactory *> ret;
-
-    ret.insert(QStringLiteral("sk_fsf"), new FileSizeFormatTag());
-    ret.insert(QStringLiteral("sk_tzc"), new TimeZoneConvertTag());
-
-    return ret;
-}
-
-
-QHash<QString, Grantlee::Filter *> SkaffariGrantlee::filters(const QString &name)
-{
-    Q_UNUSED(name);
-
-    QHash<QString, Grantlee::Filter *> ret;
-
-    ret.insert(QStringLiteral("sk_urlencode"), new UrlEncodeFilter());
-
-    return ret;
-}
+#endif // URLENCODEFILTER_H

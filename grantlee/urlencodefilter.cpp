@@ -16,38 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "skaffarigrantlee.h"
-
-#include "filesizeformattag.h"
-#include "timezoneconverttag.h"
 #include "urlencodefilter.h"
+#include <QUrl>
+#include <grantlee5/grantlee/util.h>
 
-SkaffariGrantlee::SkaffariGrantlee(QObject *parent) : QObject(parent)
+QVariant UrlEncodeFilter::doFilter(const QVariant &input, const QVariant &argument, bool autoescape) const
 {
+    QVariant ret;
 
-}
+    Q_UNUSED(argument)
+    Q_UNUSED(autoescape)
 
+    const QByteArray ba = QUrl::toPercentEncoding(Grantlee::getSafeString(input).get(), QByteArray(), QByteArrayLiteral("."));
 
-QHash<QString, Grantlee::AbstractNodeFactory *> SkaffariGrantlee::nodeFactories(const QString &name)
-{
-    Q_UNUSED(name);
-
-    QHash<QString, Grantlee::AbstractNodeFactory *> ret;
-
-    ret.insert(QStringLiteral("sk_fsf"), new FileSizeFormatTag());
-    ret.insert(QStringLiteral("sk_tzc"), new TimeZoneConvertTag());
-
-    return ret;
-}
-
-
-QHash<QString, Grantlee::Filter *> SkaffariGrantlee::filters(const QString &name)
-{
-    Q_UNUSED(name);
-
-    QHash<QString, Grantlee::Filter *> ret;
-
-    ret.insert(QStringLiteral("sk_urlencode"), new UrlEncodeFilter());
+    ret.setValue<Grantlee::SafeString>(Grantlee::SafeString(QString::fromUtf8(ba), true));
 
     return ret;
 }

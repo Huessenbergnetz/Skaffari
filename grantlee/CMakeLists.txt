@@ -3,6 +3,8 @@ add_library(grantlee_skaffari MODULE
     filesizeformattag.h
     timezoneconverttag.cpp
     timezoneconverttag.h
+    urlencodefilter.cpp
+    urlencodefilter.h
     skaffarigrantlee.cpp
 )
 
