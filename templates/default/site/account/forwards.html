@@ -1,43 +1,49 @@
 <div class="row">
-    <div class="col"><h2><i class="fa fa-mail-forward"></i> {{ _("Forwards") }} <small class="text-muted">{{ account.username }}</small></h2></div>
+    <div class="col-12 col-sm-9">
+        <h2><i class="fa fa-mail-forward"></i> {{ _("Forwards") }} <small class="text-muted">{{ account.username }}</small></h2>
+    </div>
+    <div class="col-12 col-sm-3">
+        <a href="/account/{{ domain.id }}/{{ account.id }}/add_forward" class="btn btn-outline-primary float-sm-right d-none d-sm-block" role="button"><i class="fa fa-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></a>
+        <a href="/account/{{ domain.id }}/{{ account.id }}/add_forward" class="btn btn-outline-primary btn-block d-block d-sm-none" role="button"><i class="fa fa-plus"></i> {{ _("Add") }}</a>
+    </div>
 </div>
 
 <div class="row mt-1">
-    <section class="col-12 col-sm-12 col-md-6">
+    <section class="col-12 col-sm-12 col-md-7">
 
-        <form method="post">
-            <div id="forwards" data-count="{{ account.forwards.count }}">
+        <table id="forwardsTable" class="table table-responsive" data-removequestion="{{ _("Are you sure you want to delete the forward email address “$1” from this account?") }}">
+            <thead>
+                <tr>
+                    <th>{{ _("Actions") }}</th>
+                    <th>{{ _("Forward address") }}</th>
+                </tr>
+            </thead>
+            <tbody id="forwardsTableBody">
                 {% for forward in account.forwards %}
-                <div id="forward{{ forloop.counter }}" class="form-group">
-                    <div class="input-group">
-                        <input type="email" class="form-control" name="forward" value="{{ forward }}">
-                        <span class="input-group-btn">
-                            <button class="btn btn-danger forward-delete-btn" type="button" data-target="#forward{{ forloop.counter }}"><i class="fa fa-trash"></i></button>
-                        </span>
-                    </div>
-                </div>
+                <tr>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Forward address actions") }}">
+                            <!-- <button type="button" class="btn btn-primary edit-forward-btn" title="{{ _("Edit forward") }}"><i class="fa fa-edit fa-fw"></i></button>
+                            <button type="button" class="btn btn-danger remove-forward-btn" title="{{ _("Delete forward") }}"><i class="fa fa-trash fa-fw"></i></button> -->
+                            <a href="/account/{{ domain.id }}/{{ account.id }}/edit_forward/{{ forward|sk_urlencode }}" class="btn btn-primary" title="{{ _("Edit forward") }}"><i class="fa fa-edit fa-fw"></i></a>
+                            <a href="/account/{{ domain.id }}/{{ account.id }}/remove_forward/{{ forward|sk_urlencode }}" class="btn btn-danger" title="{{ _("Remove forward") }}"><i class="fa fa-trash fa-fw"></i></a>
+                        </div>
+                    </td>
+                    <td>{{ forward }}</td>
+                </tr>
                 {% endfor %}
-            </div>
+            </tbody>
+        </table>
 
-            <div class="form-check">
-                <label class="form-check-label">
-                    <input type="checkbox" id="keeplocal" name="keeplocal" value="1" class="form-check-input"{% if account.keepLocal %} checked{% endif %}>
-                    {{ _("Keep a copy in the user's mailbox") }}
-                </label>
-            </div>
-
-            <div class="form-group row">
-                <div class="col">
-                    <a href="/domain/{{ domain.id }}/accounts" class="btn btn-outline-warning"><i class="fa fa-arrow-circle-o-left"></i> {{ _("Cancel") }}</a>
-                    <button type="button" class="btn btn-outline-primary" id="addforward"><i class="fa fa-plus"></i> {{ _("Add forward") }}</button>
-                    <button type="submit" class="btn btn-outline-primary"><i class="fa fa-save"></i> {{ _("Update") }}</button>
-                </div>
-            </div>
-        </form>
+        {% if account.forwards.count > 0 %}
+        <div>
+            <i class="fa fa-{% if account.keepLocal %}check-square-o{% else %}square-o{% endif %}"></i> <a href="/account/{{ domain.id }}/{{ account.id }}/keep_local">{% if account.keepLocal %}{{ _("keep forwarded emails in the local mailbox") }}{% else %}{{ _("do not keep forwarded emails in the local mailbox") }}{% endif %}</a>
+        </div>
+        {% endif %}
 
     </section>
 
-    <section class="col-12 col-sm-12 col-md-6">
+    <section class="col-12 col-sm-12 col-md-5">
         <div class="card">
             <div class="card-header"><i class="fa fa-life-ring"></i> {{ _("Help") }}</div>
             <div class="card-body">

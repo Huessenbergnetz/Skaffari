@@ -1,0 +1,26 @@
+<div class="row justify-content-center">
+    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
+        <h2><i class="fa fa-envelope"></i> {{ _("Keep forwarded mails") }} <small class="text-muted">{{ account.username }}</small></h2>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-2">
+    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
+        <form id="changeKeepLocalForm" method="post">
+            <div class="form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" name="keeplocal" class="form-check-input" {% if account.keepLocal %} checked="checked"{% endif %}>
+                    {{ _("keep forwarded emails in the local mailbox of this account") }}
+                </label>
+            </div>
+            <small class="form-text text-muted">{{ _("You can additionally store incoming e-mails that are to be forwarded to other addresses in the local mailbox of the account.") }}</small>
+        </form>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-2">
+    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
+        <a class="btn btn-outline-warning float-left" href="/account/{{ domain.id }}/{{ account.id }}/forwards" role="button"><i class="fa fa-times"></i> {{ _("Cancel") }}</a>
+        <button type="submit" form="changeKeepLocalForm" class="btn btn-outline-primary float-right"><i class="fa fa-save"></i> {{ _("Save") }}</button>
+    </div>
+</div>

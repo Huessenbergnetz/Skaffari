@@ -576,6 +576,51 @@ public:
     static bool updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p);
 
     /*!
+     * \brief Adds a new forward address to the account pointed to by \a a.
+     *
+     * If adding the forward email address fails, the SkaffariError object pointed to by \a e will contain information
+     * about occured errors.
+     *
+     * \param c Pointer to the current context, used for string translation and user authentication.
+     * \param e Pointer to an object taking information about occuring errors.
+     * \param a Pointer to the Account object the new forward address should be added to.
+     * \param p INput parameters containing the new forward email address.
+     * \return \c true on success.
+     */
+    static bool addForward(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p);
+
+    /*!
+     * \brief Removes an forward email address from the account pointed to by \a a.
+     * \param c         Pointer to the current context, used for string translation and user authentication.
+     * \param e         Pointer to an object taking information about occuring errors.
+     * \param a         Pointer to the Account object the forward address should be deleted from.
+     * \param forward   The forward address that should be removed.
+     * \return \c true on success
+     */
+    static bool removeForward(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &forward);
+
+    /*!
+     * \brief Edits a forward address on the account pointer to by \a a.
+     * \param c             Pointer to the current context, used for string translation and user authentication.
+     * \param e             Pointer to an object taking information about occuring errors.
+     * \param a             Pointer to the Account object the forward address should edited on.
+     * \param oldForward    Old forward address that should be changed.
+     * \param newForward    New forward address the old one should be changed to.
+     * \return              \c true on succes
+     */
+    static bool editForward(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &oldForward, const QString &newForward);
+
+    /*!
+     * \brief Changes the keeping of forwarded mails of account \a to \a keepLocal.
+     * \param c         Pointer to the current context, used for string translation and user authentication.
+     * \param e         Pointer to an object taking information about occuring errors.
+     * \param a         Pointer to the Account object the keepLocal setting should changed on.
+     * \param keepLocal Set to \c true if forwarded mails should be kept in local mail box, to \c false otherwise.
+     * \return          \c true on success
+     */
+    static bool changeKeepLocal(Cutelyst::Context *c, SkaffariError *e, Account *a, bool keepLocal);
+
+    /*!
      * \brief Converts an email address from ACE into UTF-8.
      */
     static QString addressFromACE(const QString &address);

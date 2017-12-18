@@ -43,17 +43,29 @@ public:
     C_ATTR(addresses, :Chained("base") :PathPart("addresses") :Args(0))
     void addresses(Context *c);
 
-    C_ATTR(email, :Chained("base") :PathPart("email") :Args(1))
-    void email(Context *c, const QString &address);
+    C_ATTR(edit_address, :Chained("base") :PathPart("edit_address") :Args(1))
+    void edit_address(Context *c, const QString &address);
 
-    C_ATTR(remove_email, :Chained("base") :PathPart("remove_email") :Args(1))
-    void remove_email(Context *c, const QString &address);
+    C_ATTR(remove_address, :Chained("base") :PathPart("remove_address") :Args(1))
+    void remove_address(Context *c, const QString &address);
 
-    C_ATTR(new_email, :Chained("base") :PathPart("new_email") :Args(0))
-    void new_email(Context *c);
+    C_ATTR(add_address, :Chained("base") :PathPart("add_address") :Args(0))
+    void add_address(Context *c);
 
     C_ATTR(forwards, :Chained("base") :PathPart("forwards") :Args(0))
     void forwards(Context *c);
+
+    C_ATTR(remove_forward, :Chained("base") :PathPart("remove_forward") :Args(1))
+    void remove_forward(Context *c, const QString &forward);
+
+    C_ATTR(add_forward, :Chained("base") :PathPart("add_forward") :Args(0))
+    void add_forward(Context *c);
+
+    C_ATTR(edit_forward, :Chained("base") :PathPart("edit_forward") :Args(1))
+    void edit_forward(Context *c, const QString &oldForward);
+
+    C_ATTR(keep_local, :Chained("base") :PathPart("keep_local") :Args(0))
+    void keep_local(Context *c);
 
     C_ATTR(check, :Chained("base") :PathPart("check") :Args(0))
     void check(Context *c);

@@ -1,0 +1,25 @@
+<div class="row justify-content-center">
+    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
+        <h2><i class="fa fa-envelope"></i> {{ _("Add forward address") }} <small class="text-muted">{{ account.username }}</small></h2>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-2">
+    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
+        <form id="createForwardForm" method="post">
+            <div class="form-group">
+                <input type="email" id="newforward" name="newforward" class="form-control{% if validationErrors.newforward.count %} is-invalid{% endif %}" value="{{ newforward }}" aria-describedby="newforwardDesc" placeholder="name@example.com" required>
+                {% if validationErrors.newforward.count %}<div class="invalid-feedback"><small>{{ validationErrors.newforward.0 }}</small></div>{% endif %}
+                <small id="newforwardDesc" class="form-text text-muted">{{ help.newforward.text }}</small>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-2">
+    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
+        <a class="btn btn-outline-warning float-left" href="/account/{{ domain.id }}/{{ account.id }}/forwards"><i class="fa fa-times"></i> {{ _("Cancel") }}</a>
+        <button type="submit" form="createForwardForm" class="btn btn-outline-primary float-right"><i class="fa fa-plus"></i> {{ _("Add") }}</button>
+    </div>
+</div>
+

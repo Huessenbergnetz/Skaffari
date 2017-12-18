@@ -1,0 +1,24 @@
+<div class="row justify-content-center">
+    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
+        <h2><i class="fa fa-envelope"></i> {{ _("Edit forward address") }} <small class="text-muted">{{ account.username }}</small></h2>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-2">
+    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
+        <form id="editForwardForm" method="post">
+            <div class="form-group">
+                <input type="email" id="editforward" name="editforward" class="form-control{% if validationErrors.editforward.count %} is-invalid{% endif %}" aria-describedby="editforwardDesc" placeholder="name@example.com" value="{{ editforward|default_if_none:oldforward }}">
+                {% if validationErrors.editforward.count %}<div class="invalid-feedback"><small>{{ validationErrors.editforward.0 }}</small></div>{% endif %}
+                <small id="editforwardDesc" class="form-text text-muted">{{ help.editforward.text }}</small>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-2">
+    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
+        <a class="btn btn-outline-warning float-left" href="/account/{{ domain.id }}/{{ account.id }}/forwards" role="button"><i class="fa fa-times"></i> {{ _("Cancel") }}</a>
+        <button type="submit" form="editForwardForm" class="btn btn-outline-primary float-right"><i class="fa fa-save"></i> {{ _("Save") }}</button>
+    </div>
+</div>
