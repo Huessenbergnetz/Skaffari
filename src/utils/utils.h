@@ -47,6 +47,15 @@ public:
      */
     static quota_size_t humanToIntSize(Cutelyst::Context *c, const QString &size, bool *ok);
 
+    /*!
+     * \brief Returns \c true if the current request is made via AJAX.
+     *
+     * The request will be considered as AJAX request if the \a Accept HTTP header
+     * contains \c application/json.
+     *
+     * \param c Pointer to the current context.
+     * \return  \c true if the request is made via AJAX.
+     */
     static bool isAjax(Cutelyst::Context *c);
 };
 
