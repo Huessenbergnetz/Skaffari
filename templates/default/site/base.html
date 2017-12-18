@@ -73,7 +73,7 @@
                     {% ifequal userType 0 %}
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="mainNavSettingsMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fa fa-sliders"></i> {{ _("Settings") }}
+                            <i class="fa fa-sliders"></i><span class="d-md-none"> {{ _("Settings") }}</span>
                         </a>
                         <div class="dropdown-menu" aria-labelledby="mainNavSettingsMenu">
                             <a class="dropdown-item" href="/settings"><i class="fa fa-sliders fa-fw"></i> {{ _("Settings") }}</a>
@@ -84,9 +84,10 @@
 
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="mainNavUserMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fa fa-user"></i> {{ userName }}
+                            <i class="fa fa-user"></i><span class="d-md-none"> {{ userName }}</span>
                         </a>
                         <div class="dropdown-menu" aria-labelledby="mainNavUserMenu">
+                            <h6 class="dropdown-header d-none d-sm-none d-md-block">{{ userName }}</h6>
                             <a class="dropdown-item" href="/myaccount"><i class="fa fa-user fa-fw"></i> {{ _("Account") }}</a>
                             <a class="dropdown-item" href="/logout"><i class="fa fa-sign-out fa-fw"></i> {{ _("Log out") }}</a>
                         </div>
