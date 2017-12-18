@@ -1,13 +1,18 @@
 <div class="row">
-    <div class="col">
-        <a class="btn btn-outline-primary pull-right" href="/admin/create"><i class="fa fa-user-plus"></i> Add admin</a>
+    <div class="col-12 col-sm-9">
         <h2><i class="fa fa-users"></i> {{ _("Administrators") }}</h2>
+    </div>
+    <div class="col-12 col-sm-3">
+        {% ifequal userType 0 %}
+        <a class="btn btn-outline-primary float-sm-right d-none d-sm-block" href="/admin/create" role="button"><i class="fa fa-user-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></a>
+        <a class="btn btn-outline-primary btn-block d-block d-sm-none" href="/admin/create" role="button"><i class="fa fa-user-plus"></i> {{ _("Add") }}</a>
+        {% endifequal %}
     </div>
 </div>
 
 <div class="row mt-1">
     <div class="col">
-        <table id="adminsTable" class="table table-responsive table-striped">
+        <table id="adminsTable" class="table table-responsive">
             <thead>
                 <tr>
                     <th>{{ _("Actions") }}</th>
@@ -20,8 +25,8 @@
                 <tr id="admin-{{ admin.id }}">
                     <td>
                         <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Admin actions") }}">
-                            <a href="/admin/{{ admin.id }}/edit" class="btn btn-primary" title='{{ _("Edit admin") }}' role="button"><i class="fa fa-edit fa-fw"></i></a>
-                            <button type="button" class="btn btn-danger remove-admin-btn" title="{{ _("Delete admin") }}" data-toggle="modal" data-target="#removeAdminModal" data-adminid="{{ admin.id }}" data-username="{{ admin.username }}"><i class="fa fa-trash fa-fw"></i></button>
+                            <a href="/admin/{{ admin.id }}/edit" class="btn btn-outline-primary" title='{{ _("Edit admin") }}' role="button"><i class="fa fa-edit fa-fw"></i></a>
+                            <button type="button" class="btn btn-outline-danger remove-admin-btn" title="{{ _("Delete admin") }}" data-toggle="modal" data-target="#removeAdminModal" data-adminid="{{ admin.id }}" data-username="{{ admin.username }}"><i class="fa fa-trash fa-fw"></i></button>
                         </div>
                     </td>
                     <td><a href="/admin/{{ admin.id }}/edit">{{ admin.username }}</a></td>

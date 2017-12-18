@@ -23,10 +23,10 @@
                 <tr data-domainid="{{ domain.id }}" data-accountid="{{ account.id }}" data-address="{{ address }}">
                     <td>
                         <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Email address actions") }}">
-                            <!-- <button type="button" class="btn btn-primary edit-address-btn" title="{{ _("Edit address") }}"><i class="fa fa-edit fa-fw"></i></button>
-                            <button type="button" class="btn btn-danger remove-address-btn" title="{{ _("Delete address") }}" {%if account.addresses.count <= 1 %} disabled{% endif %}><i class="fa fa-trash fa-fw"></i></button> -->
-                            <a href="/account/{{ domain.id }}/{{ account.id }}/edit_address/{{ address|sk_urlencode }}" class="btn btn-primary" title="{{ _("Edit address") }}"><i class="fa fa-edit fa-fw"></i></a>
-                            <a href="/account/{{ domain.id }}/{{ account.id }}/remove_address/{{ address|sk_urlencode }}" class="btn btn-danger{%if account.addresses.count <= 1 %} disabled{% endif %}" title="{{ _("Remove address") }}"{%if account.addresses.count <= 1 %} aria-disabled="true"{% endif %}><i class="fa fa-trash fa-fw"></i></a>
+                            <!-- <button type="button" class="btn btn-outline-primary edit-address-btn" title="{{ _("Edit address") }}"><i class="fa fa-edit fa-fw"></i></button>
+                            <button type="button" class="btn btn-outline-danger remove-address-btn" title="{{ _("Delete address") }}" {%if account.addresses.count <= 1 %} disabled{% endif %}><i class="fa fa-trash fa-fw"></i></button> -->
+                            <a href="/account/{{ domain.id }}/{{ account.id }}/edit_address/{{ address|sk_urlencode }}" class="btn btn-outline-primary" title="{{ _("Edit address") }}"><i class="fa fa-edit fa-fw"></i></a>
+                            <a href="/account/{{ domain.id }}/{{ account.id }}/remove_address/{{ address|sk_urlencode }}" class="btn btn-outline-danger{%if account.addresses.count <= 1 %} disabled{% endif %}" title="{{ _("Remove address") }}"{%if account.addresses.count <= 1 %} aria-disabled="true"{% endif %}><i class="fa fa-trash fa-fw"></i></a>
                         </div>
                     </td>
                     <td>{{ address }}</td>

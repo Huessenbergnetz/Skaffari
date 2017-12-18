@@ -11,10 +11,10 @@
     </head>
 
     <body>
-        <nav class="navbar fixed-top navbar-expand-md navbar-dark bg-dark bg-faded">
+        <nav class="navbar fixed-top navbar-expand-md navbar-dark bg-dark">
             <a class="navbar-brand" href="/">Skaffari</a>
 
-            <button class="navbar-toggler" type="button" data-toggle="collapse"  data-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="{{ _("Toggle navigation") }}">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="{{ _("Toggle navigation") }}">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -23,7 +23,7 @@
                     {% ifequal userType 0 %}
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="mainNavDomainMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fa fa-cubes"></i> {{ _("Domains") }}
+                            <i class="fa fa-cubes fa-fw"></i> {{ _("Domains") }}
                         </a>
                         <div class="dropdown-menu" aria-labelledby="mainNavDomainMenu">
                             <a class="dropdown-item" href="/domain"><i class="fa fa-cubes fa-fw"></i> {{ _("Show all") }}</a>
@@ -39,7 +39,7 @@
                     {% if domain.isValid %}
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="mainNavCurrentDomain" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fa fa-cube"></i> {{ domain.name }}
+                            <i class="fa fa-cube fa-fw"></i> {{ domain.name }}
                         </a>
                         <div class="dropdown-menu" aria-labelledby="mainNavCurrentDomain">
                             <a class="dropdown-item" href="/domain/{{ domain.id }}/accounts"><i class="fa fa-users fa-fw"></i> {{ _("Accounts") }}</a>
@@ -47,7 +47,7 @@
                             <a class="dropdown-item" href="/domain/{{ domain.id }}/edit"><i class="fa fa-edit fa-fw"></i> {{ _("Edit domain") }}</a>
                             <a class="dropdown-item" href="/domain/{{ domain.id }}/check"><i class="fa fa-stethoscope fa-fw"></i> {{ _("Check domain") }}</a>
                             {% ifequal userType 0 %}
-                            <a class="dropdown-item" href="/domain/{{ domain.id }}/remove"><i class="fa fa-trash fa-fw"></i> {{ _("Delete domain") }}</a>
+                            <a class="dropdown-item text-danger" href="/domain/{{ domain.id }}/remove"><i class="fa fa-trash fa-fw"></i> {{ _("Delete domain") }}</a>
                             {% endifequal %}
                         </div>
                     </div>
@@ -56,14 +56,14 @@
                     {% if account.isValid %}
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="mainNavCurrentAccount" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fa fa-user"></i> {{ account.username }}
+                            <i class="fa fa-user fa-fw"></i> {{ account.username }}
                         </a>
                         <div class="dropdown-menu" aria-labelledby="mainNavCurrentAccount">
                             <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/edit"><i class="fa fa-edit fa-fw"></i> {{ _("Edit accout") }}</a>
                             <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/addresses"><i class="fa fa-envelope-o fa-fw"></i> {{ _("Email addresses") }}</a>
                             <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/forwards"><i class="fa fa-mail-forward fa-fw"></i> {{ _("Forwards") }}</a>
-                            <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/check"><i class="fa fa-stethoscope"></i> {{ _("Check account") }}</a>
-                            <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/remove"><i class="fa fa-trash fa-fw"></i> {{ _("Delete account") }}</a>
+                            <a class="dropdown-item" href="/account/{{ domain.id }}/{{ account.id }}/check"><i class="fa fa-stethoscope fa-fw"></i> {{ _("Check account") }}</a>
+                            <a class="dropdown-item text-danger" href="/account/{{ domain.id }}/{{ account.id }}/remove"><i class="fa fa-trash fa-fw"></i> {{ _("Delete account") }}</a>
                         </div>
                     </div>
                     {% endif %}
@@ -73,9 +73,9 @@
                     {% ifequal userType 0 %}
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="mainNavSettingsMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fa fa-sliders"></i><span class="d-md-none"> {{ _("Settings") }}</span>
+                            <i class="fa fa-sliders fa-fw"></i><span class="d-md-none"> {{ _("Settings") }}</span>
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="mainNavSettingsMenu">
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="mainNavSettingsMenu">
                             <a class="dropdown-item" href="/settings"><i class="fa fa-sliders fa-fw"></i> {{ _("Settings") }}</a>
                             <a class="dropdown-item" href="/admin"><i class="fa fa-users fa-fw"></i> {{ _("Admin users") }}</a>
                         </div>
@@ -84,9 +84,9 @@
 
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="mainNavUserMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fa fa-user-circle"></i><span class="d-md-none"> {{ userName }}</span>
+                            <i class="fa fa-user-circle fa-fw"></i><span class="d-md-none"> {{ userName }}</span>
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="mainNavUserMenu">
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="mainNavUserMenu">
                             <h6 class="dropdown-header d-none d-sm-none d-md-block">{{ userName }}</h6>
                             <a class="dropdown-item" href="/myaccount"><i class="fa fa-user fa-fw"></i> {{ _("Account") }}</a>
                             <a class="dropdown-item" href="/logout"><i class="fa fa-sign-out fa-fw"></i> {{ _("Log out") }}</a>

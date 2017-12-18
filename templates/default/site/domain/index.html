@@ -1,10 +1,11 @@
 <div class="row">
-    <div class="col-12 col-lg-6">
+    <div class="col-12 col-sm-9">
         <h2><i class="fa fa-cubes"></i> {{ _("Domains") }}</h2>
     </div>
-    <div class="col-12 col-lg-6">
+    <div class="col-12 col-sm-3">
         {% ifequal userType 0 %}
-        <a class="btn btn-outline-primary pull-right" href="/domain/create"><i class="fa fa-plus"></i> {{ _("Add domain") }}</a>
+        <a class="btn btn-outline-primary float-sm-right d-none d-sm-block" href="/domain/create" role="button"><i class="fa fa-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></a>
+        <a class="btn btn-outline-primary btn-block d-block d-sm-none" href="/domain/create" role="button"><i class="fa fa-plus"></i> {{ _("Add") }}</a>
         {% endifequal %}
     </div>
 </div>
