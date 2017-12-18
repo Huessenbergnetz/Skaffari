@@ -1,13 +1,10 @@
 <div class="row">
-    <div class="col-12 col-lg-6">
+    <div class="col-12 col-sm-9">
         <h2><i class="fa fa-users"></i> {{ _("Accounts") }} <small class="text-muted">{{ domain.name }}</small></h2>
     </div>
-    <div class="col-12 col-lg-6">
-        {% ifequal userType 0 %}
-        <a class="btn btn-outline-danger float-right ml-1" href="/domain/{{ domain.id }}/remove" role="button"><i class="fa fa-trash"></i> {{ _("Delete") }}</a>
-        {% endifequal %}
-        <a class="btn btn-outline-info float-right ml-1" href="/domain/{{ domain.id }}/edit" role="button"><i class="fa fa-edit"></i> {{ _("Edit") }}</a>
-        <a class="btn btn-outline-primary float-right" href="/domain/{{ domain.id }}/add_account" role="button"><i class="fa fa-plus"></i> {{ _("Add account") }}</a>
+    <div class="col-12 col-sm-3">
+        <a class="btn btn-outline-primary float-sm-right d-none d-sm-block" href="/domain/{{ domain.id }}/add_account" role="button"><i class="fa fa-user-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></a>
+        <a class="btn btn-outline-primary btn-block d-block d-sm-none" href="/domain/{{ domain.id }}/add_account" role="button"><i class="fa fa-user-plus"></i> {{ _("Add") }}</a>
     </div>
 </div>
 
