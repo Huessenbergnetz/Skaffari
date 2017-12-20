@@ -918,8 +918,8 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
         if (c->req()->isPost()) {
 
             static Validator v({
-                                   new ValidatorRequired(QStringLiteral("editforward")),
-                                   new ValidatorEmail(QStringLiteral("editforward"))
+                                   new ValidatorRequired(QStringLiteral("newforward")),
+                                   new ValidatorEmail(QStringLiteral("newforward"))
                                });
 
             const ValidatorResult vr = isAjax ? v.validate(c) : v.validate(c, Validator::FillStashOnError);
@@ -927,7 +927,7 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
             if (vr) {
 
                 SkaffariError e(c);
-                const QString newForward = c->req()->bodyParam(QStringLiteral("editforward"));
+                const QString newForward = c->req()->bodyParam(QStringLiteral("newforward"));
                 if (Account::editForward(c, &e, &a, oldForward, newForward)) {
 
                     const QString statusMsg = c->translate("AccountEditor", "Successfully changed forward %1 into %2 for account %3.").arg(oldForward, newForward, a.getUsername());
@@ -991,7 +991,7 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
         }
 
         QHash<QString,HelpEntry> help;
-        help.insert(QStringLiteral("editforward"), HelpEntry(c->translate("AccountEditor", "Edit forward"), c->translate("AccountEditor", "Change the forward email address to a different valid email address to which you want to forward emails received for account %1.").arg(a.getUsername())));
+        help.insert(QStringLiteral("newforward"), HelpEntry(c->translate("AccountEditor", "Edit forward"), c->translate("AccountEditor", "Change the forward email address to a different valid email address to which you want to forward emails received for account %1.").arg(a.getUsername())));
 
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("account/edit_forward.html")},

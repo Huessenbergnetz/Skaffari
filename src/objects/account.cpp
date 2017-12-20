@@ -2053,7 +2053,7 @@ bool Account::editForward(Cutelyst::Context *c, SkaffariError *e, Account *a, co
     if (Q_UNLIKELY(forwards.contains(newForward, Qt::CaseInsensitive))) {
         e->setErrorType(SkaffariError::InputError);
         e->setErrorText(c->translate("Account", "Can not change forward email address to %1 in account %2. The forward already exists.").arg(newForward, a->getUsername()));
-        qCWarning(SK_ACCOUNT, "%s tried to change forward email address %s to already existing forward %s on account %s (ID: %u).", qPrintable(c->stash(QStringLiteral("username")).toString()), qPrintable(oldForward), qPrintable(newForward), qPrintable(a->getUsername()), a->getId());
+        qCWarning(SK_ACCOUNT, "%s tried to change forward email address %s to already existing forward %s on account %s (ID: %u).", qPrintable(c->stash(QStringLiteral("userName")).toString()), qPrintable(oldForward), qPrintable(newForward), qPrintable(a->getUsername()), a->getId());
         return ret;
     }
 

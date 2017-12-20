@@ -8,9 +8,9 @@
     <div class="col-12 col-sm-12 col-md-8 col-lg-6">
         <form id="editForwardForm" method="post">
             <div class="form-group">
-                <input type="email" id="editforward" name="editforward" class="form-control{% if validationErrors.editforward.count %} is-invalid{% endif %}" aria-describedby="editforwardDesc" placeholder="name@example.com" value="{{ editforward|default_if_none:oldforward }}">
-                {% if validationErrors.editforward.count %}<div class="invalid-feedback"><small>{{ validationErrors.editforward.0 }}</small></div>{% endif %}
-                <small id="editforwardDesc" class="form-text text-muted">{{ help.editforward.text }}</small>
+                <input type="email" id="newforward" name="newforward" class="form-control{% if validationErrors.newforward.count %} is-invalid{% endif %}" aria-describedby="newforwardDesc" placeholder="name@example.com" value="{{ newforward|default_if_none:oldforward }}">
+                {% if validationErrors.newforward.count %}<div class="invalid-feedback"><small>{{ validationErrors.newforward.0 }}</small></div>{% endif %}
+                <small id="newforwardDesc" class="form-text text-muted">{{ help.newforward.text }}</small>
             </div>
         </form>
     </div>

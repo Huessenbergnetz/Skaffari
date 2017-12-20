@@ -24,7 +24,7 @@ elixir(function(mix) {
         'jquery.filtertable.js',
         'general.js',
         'createalert.js',
-        'forwards.js',
+        'forwardlist.js',
         'checkdomain.js',
         'addresslist.js',
         'accountlist.js',
