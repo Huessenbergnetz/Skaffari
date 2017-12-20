@@ -22,7 +22,7 @@
             </thead>
             <tbody id="addressesTableBody">
                 {% for address in account.addresses %}
-                <tr data-address="{{ address }}">
+                <tr class="address-row" data-address="{{ address }}">
                     <td>
                         <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Email address actions") }}">
                             <button type="button" class="btn btn-outline-primary edit-address-btn" title="{{ _("Edit address") }}" data-toggle="modal" data-target="#addressModal" data-actiontype="edit"><i class="fa fa-edit fa-fw"></i></button>
