@@ -2,16 +2,18 @@
     <div class="col-12 col-sm-9">
         <h2><i class="fa fa-envelope"></i> {{ _("Email addresses") }} <small class="text-muted">{{ account.username }}</small></h2>
     </div>
-    <div class="col-12 col-sm-3">
-        <a href="/account/{{ domain.id }}/{{ account.id }}/add_address" class="btn btn-outline-primary float-sm-right d-none d-sm-block" role="button"><i class="fa fa-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></a>
-        <a href="/account/{{ domain.id }}/{{ account.id }}/add_address" class="btn btn-outline-primary btn-block d-block d-sm-none" role="button"><i class="fa fa-plus"></i> {{ _("Add") }}</a>
+    <div id="addbuttons" class="col-12 col-sm-3">
+        <button type="button" class="btn btn-outline-primary float-sm-right d-none d-sm-block" data-toggle="modal" data-target="#addressModal" data-actiontype="add"><i class="fa fa-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></button>
+        <button type="button" class="btn btn-outline-primary btn-block d-block d-sm-none" data-toggle="modal" data-target="#addressModal" data-actiontype="add"><i class="fa fa-plus"></i> {{ _("Add") }}</button>
+        {# <a href="/account/{{ domain.id }}/{{ account.id }}/add_address" class="btn btn-outline-primary float-sm-right d-none d-sm-block" role="button"><i class="fa fa-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></a> #}
+        {# <a href="/account/{{ domain.id }}/{{ account.id }}/add_address" class="btn btn-outline-primary btn-block d-block d-sm-none" role="button"><i class="fa fa-plus"></i> {{ _("Add") }}</a> #}
     </div>
 </div>
 
 <div class="row mt-1">
     <section class="col-12 col-sm-12 col-md-7">
 
-        <table id="addressesTable" class="table table-responsive" data-removequestion="{{ _("Are you sure you want to delete the email address “$1” from this account?") }}">
+        <table id="addressesTable" class="table table-responsive" data-domainid="{{ domain.id }}" data-accountid="{{ account.id }}" data-removequestion="{{ _("Are you sure you want to delete the email address “$1” from this account?") }}">
             <thead>
                 <tr>
                     <th>{{ _("Actions") }}</th>
@@ -20,13 +22,13 @@
             </thead>
             <tbody id="addressesTableBody">
                 {% for address in account.addresses %}
-                <tr data-domainid="{{ domain.id }}" data-accountid="{{ account.id }}" data-address="{{ address }}">
+                <tr data-address="{{ address }}">
                     <td>
                         <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Email address actions") }}">
-                            <!-- <button type="button" class="btn btn-outline-primary edit-address-btn" title="{{ _("Edit address") }}"><i class="fa fa-edit fa-fw"></i></button>
-                            <button type="button" class="btn btn-outline-danger remove-address-btn" title="{{ _("Delete address") }}" {%if account.addresses.count <= 1 %} disabled{% endif %}><i class="fa fa-trash fa-fw"></i></button> -->
-                            <a href="/account/{{ domain.id }}/{{ account.id }}/edit_address/{{ address|sk_urlencode }}" class="btn btn-outline-primary" title="{{ _("Edit address") }}"><i class="fa fa-edit fa-fw"></i></a>
-                            <a href="/account/{{ domain.id }}/{{ account.id }}/remove_address/{{ address|sk_urlencode }}" class="btn btn-outline-danger{%if account.addresses.count <= 1 %} disabled{% endif %}" title="{{ _("Remove address") }}"{%if account.addresses.count <= 1 %} aria-disabled="true"{% endif %}><i class="fa fa-trash fa-fw"></i></a>
+                            <button type="button" class="btn btn-outline-primary edit-address-btn" title="{{ _("Edit address") }}" data-toggle="modal" data-target="#addressModal" data-actiontype="edit"><i class="fa fa-edit fa-fw"></i></button>
+                            <button type="button" class="btn btn-outline-danger remove-address-btn" title="{{ _("Delete address") }}" {%if account.addresses.count <= 1 %} disabled{% endif %}><i class="fa fa-trash fa-fw"></i></button>
+                            {# <a href="/account/{{ domain.id }}/{{ account.id }}/edit_address/{{ address|sk_urlencode }}" class="btn btn-outline-primary" title="{{ _("Edit address") }}"><i class="fa fa-edit fa-fw"></i></a> #}
+                            {# <a href="/account/{{ domain.id }}/{{ account.id }}/remove_address/{{ address|sk_urlencode }}" class="btn btn-outline-danger{%if account.addresses.count <= 1 %} disabled{% endif %}" title="{{ _("Remove address") }}"{%if account.addresses.count <= 1 %} aria-disabled="true"{% endif %}><i class="fa fa-trash fa-fw"></i></a> #}
                         </div>
                     </td>
                     <td>{{ address }}</td>
@@ -48,6 +50,18 @@
     </section>
 </div>
 
+<template id="address-template">
+    <tr class="address-row">
+        <td>
+            <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Email address actions") }}">
+                <button type="button" class="btn btn-outline-primary edit-address-btn" title="{{ _("Edit address") }}" data-toggle="modal" data-target="#addressModal" data-actiontype="edit"><i class="fa fa-edit fa-fw"></i></button>
+                <button type="button" class="btn btn-outline-danger remove-address-btn" title="{{ _("Delete address") }}"><i class="fa fa-trash fa-fw"></i></button>
+            </div>
+        </td>
+        <td></td>
+    </tr>
+</template>
+
 <div class="modal fade" id="addressModal" tabindex="-1" role="dialog" aria-describedby="addressModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -58,7 +72,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="addressForm">
+                <form id="addressForm" data-addaction="/account/{{ domain.id }}/{{ account.id }}/add_address">
                     <div class="container-fluid">
                         <div class="row">
                             {% if domain.freeAddress %}

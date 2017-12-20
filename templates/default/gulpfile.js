@@ -26,7 +26,7 @@ elixir(function(mix) {
         'createalert.js',
         'forwards.js',
         'checkdomain.js',
-        'manageemailaddresses.js',
+        'addresslist.js',
         'accountlist.js',
         'domainlist.js',
         'adminlist.js',

@@ -533,6 +533,8 @@ void AccountEditor::remove_address(Context *c, const QString &address)
                     if (isAjax) {
 
                         json.insert(QStringLiteral("status_msg"), QJsonValue(statusMsg));
+                        json.insert(QStringLiteral("address_count"), a.getAddresses().size());
+                        json.insert(QStringLiteral("address"), address);
 
                     } else {
                         c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"),
@@ -637,6 +639,7 @@ void AccountEditor::add_address(Context *c)
                             json.insert(QStringLiteral("address"), QJsonValue(newEmailAddress));
                             json.insert(QStringLiteral("account_id"), QJsonValue(static_cast<qint64>(a.getId())));
                             json.insert(QStringLiteral("domain_id"), QJsonValue(static_cast<qint64>(d.id())));
+                            json.insert(QStringLiteral("address_count"), QJsonValue(a.getAddresses().size()));
 
                         } else {
                             c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"),
@@ -684,8 +687,7 @@ void AccountEditor::add_address(Context *c)
                 c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
             }
 
-            const QJsonDocument jsonDoc(json);
-            c->response()->setJsonBody(jsonDoc);
+            c->response()->setJsonBody(json);
 
             return;
         }
