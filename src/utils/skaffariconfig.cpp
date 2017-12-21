@@ -182,7 +182,7 @@ QVariantHash SkaffariConfig::getSettingsFromDB()
 
 QString SkaffariConfig::tmpl() { return m_template; }
 bool SkaffariConfig::useMemcached() { return m_useMemcached; }
-bool SkaffariConfig::useMemcachedSession() { return m_useMemcachedSession; }
+bool SkaffariConfig::useMemcachedSession() { return (m_useMemcached && m_useMemcachedSession); }
 
 Password::Method SkaffariConfig::accPwMethod() { return m_accPwMethod; }
 Password::Algorithm SkaffariConfig::accPwAlgorithm() { return m_accPwAlgorithm; }
