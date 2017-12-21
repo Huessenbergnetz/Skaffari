@@ -23,7 +23,6 @@ elixir(function(mix) {
         '../../node_modules/stupid-table-plugin/stupidtable.js',
         'jquery.filtertable.js',
         'general.js',
-        'createalert.js',
         'forwardlist.js',
         'checkdomain.js',
         'addresslist.js',
