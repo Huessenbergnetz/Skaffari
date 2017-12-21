@@ -206,7 +206,7 @@ bool Skaffari::init()
 
     if (!isInitialized) {
         QVariantMap tmplConfig;
-        QFile tmplConfigFile(tmplBasePath + QLatin1String("/config.json"));
+        QFile tmplConfigFile(tmplBasePath + QLatin1String("/metadata.json"));
         if (tmplConfigFile.exists()) {
             qCDebug(SK_CORE, "Found template configuration file.");
             if (tmplConfigFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
