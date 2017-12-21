@@ -62,6 +62,8 @@ bool SkaffariConfig::m_imapFqun = SK_DEF_IMAP_FQUN;
 QString SkaffariConfig::m_template = QStringLiteral("default");
 bool SkaffariConfig::m_tmplAsyncAccountList = SK_DEF_TMPL_ASYNCACCOUNTLIST;
 
+bool SkaffariConfig::m_useMemcached = false;
+bool SkaffariConfig::m_useMemcachedSession = false;
 
 SkaffariConfig::SkaffariConfig()
 {
@@ -71,6 +73,8 @@ SkaffariConfig::SkaffariConfig()
 void SkaffariConfig::load(const QVariantMap &general, const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &imap, const QVariantMap &tmpl)
 {
     SkaffariConfig::m_template = general.value(QStringLiteral("template"), QStringLiteral("default")).toString();
+    SkaffariConfig::m_useMemcached = general.value(QStringLiteral("usememcached"), false).toBool();
+    SkaffariConfig::m_useMemcachedSession = general.value(QStringLiteral("usememcachedsession"), false).toBool();
 
     SkaffariConfig::m_accPwMethod = static_cast<Password::Method>(accounts.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
     SkaffariConfig::m_accPwAlgorithm = static_cast<Password::Algorithm>(accounts.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>());
@@ -175,6 +179,10 @@ QVariantHash SkaffariConfig::getSettingsFromDB()
 
     return s;
 }
+
+QString SkaffariConfig::tmpl() { return m_template; }
+bool SkaffariConfig::useMemcached() { return m_useMemcached; }
+bool SkaffariConfig::useMemcachedSession() { return m_useMemcachedSession; }
 
 Password::Method SkaffariConfig::accPwMethod() { return m_accPwMethod; }
 Password::Algorithm SkaffariConfig::accPwAlgorithm() { return m_accPwAlgorithm; }

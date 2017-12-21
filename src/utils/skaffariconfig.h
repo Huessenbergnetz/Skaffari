@@ -398,6 +398,16 @@ public:
      */
     static bool tmplAsyncAccountList();
 
+    /*!
+     * \brief Returns \c true if Memcached should be used to cache database and IMAP queries.
+     */
+    static bool useMemcached();
+
+    /*!
+     * \brief Returns \c true if Memcached should be used to store session data for logged in users.
+     */
+    static bool useMemcachedSession();
+
 private:
     static Password::Method m_accPwMethod;
     static Password::Algorithm m_accPwAlgorithm;
@@ -436,6 +446,9 @@ private:
 
     static QString m_template;
     static bool m_tmplAsyncAccountList;
+
+    static bool m_useMemcached;
+    static bool m_useMemcachedSession;
 
     static QVariant loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal = QVariant());
     static SimpleAccount loadDefaultAccount(const QString &optionName);

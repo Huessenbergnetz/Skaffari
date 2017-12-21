@@ -1,4 +1,4 @@
-.TH skaffari.ini 5 "2017-05-08" "Skaffari @SKAFFARI_VERSION@"
+.TH skaffari.ini 5 "2017-12-21" "Skaffari @SKAFFARI_VERSION@"
 
 .SH "NAME"
 skaffari.ini - Skaffari configuration file
@@ -41,6 +41,37 @@ Below you find the different configuration sections and entries used by Skaffari
 .B @CMAKE_INSTALL_SYSCONFDIR@/skaffari.ini.
 Every entry shows the key name and the option's default value. Some options have no default value, these are listed with ``<no default>''. Some options default to the empty string, these are listed with ``<none>''.
 
+.B [General]
+This section contains general configuration options.
+
+.RS 4
+.B template
+= default
+.RS 4
+The Grantlee template that should be used to render the web user interface. The value has to be the name of the template folder in
+.I @TEMPLATES_INSTALL_DIR@
+.RE
+
+.B usememcached
+= false
+.RS 4
+Set this to
+.I true
+to enable the use of a Memcached server to cache database and IMAP server queries for faster loading. See man 5 cutelyst_memcached_plugin
+to learn more about how to configure the Memcached plugin of Cutelyst.
+.RE
+
+.B usememcachedsession
+= false
+.RS 4
+Set this to
+.I true
+to use a Memcached server to store the session data for logged in users.
+.B usememcached
+has to be enabled for this. See man 5 cutelyst_memcachedsessionstore_plugin to learn more about possible plugin configuration options.
+.RE
+.RE
+
 .B [Accounts]
 This section contains configuration options for user account creation.
 
@@ -49,7 +80,7 @@ This section contains configuration options for user account creation.
 = @DEFVAL_ACC_PWMETHOD@
 .RS 4
 The basic method to encrypt the user's password. Some methods support further settings that are defined in
-.B pwmethod.
+.B pwalgorithm.
 If it is possible to use for you, the recommended type is to use the crypt(3) function, because it supports modern hashing algorithms together with salts and an extensible storage format. The other encryption methods are there for backwards compatibility.
 
 Supported methods:
@@ -103,7 +134,7 @@ and
 .I SHA-512
 you can choose values from 1000 to 999999999 - the default is @DEFVAL_ACC_PWROUNDS@. The iteration count passed to the crypt(3) function when using
 .I bcrypt
-is the base-2 logarithm of the acutal iteration count. Supported values for bcrypt are between 4 and 32, the default is 12.
+is the base-2 logarithm of the actual iteration count. Supported values for bcrypt are between 4 and 32, the default is 12.
 .RE
 
 .B pwminlength
