@@ -37,11 +37,13 @@
             </tbody>
         </table>
 
-        {% if account.forwards.count > 0 %}
-        <div class="mb-3">
-            <i class="fa fa-{% if account.keepLocal %}check-square-o{% else %}square-o{% endif %}"></i> <a href="/account/{{ domain.id }}/{{ account.id }}/keep_local">{% if account.keepLocal %}{{ _("keep forwarded emails in the local mailbox") }}{% else %}{{ _("do not keep forwarded emails in the local mailbox") }}{% endif %}</a>
-        </div>
-        {% endif %}
+        {# {% if account.forwards.count > 0 %} #}
+        {# <div class="mb-3"> #}
+            {# <i class="fa fa-{% if account.keepLocal %}check-square-o{% else %}square-o{% endif %}"></i> <a href="/account/{{ domain.id }}/{{ account.id }}/keep_local">{% if account.keepLocal %}{{ _("keep forwarded emails in the local mailbox") }}{% else %}{{ _("do not keep forwarded emails in the local mailbox") }}{% endif %}</a> #}
+        {# </div> #}
+        {# {% endif %} #}
+
+        <button type="button" id="keepLocalBtn" class="btn btn-primary{% if account.forwards.count == 0 %} d-none{% endif %}" data-keeplocal="{% if account.keepLocal %}true{% else %}false{% endif %}"><i id="keepLocalIcon" class="fa fa-{% if account.keepLocal %}check-square-o{% else %}square-o{% endif %}"></i> {{ _("keep forwarded emails in the local mailbox") }}</button>
 
     </section>
 

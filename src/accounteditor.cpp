@@ -778,6 +778,10 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
 
                     if (isAjax) {
                         json.insert(QStringLiteral("status_msg"), QJsonValue(statusMsg));
+                        json.insert(QStringLiteral("forward"), QJsonValue(forward));
+                        json.insert(QStringLiteral("account_id"), QJsonValue(static_cast<qint64>(a.getId())));
+                        json.insert(QStringLiteral("domain_id"), QJsonValue(static_cast<qint64>(a.getDomainId())));
+                        json.insert(QStringLiteral("forward_count"), QJsonValue(a.getForwards().size()));
                         json.insert(QStringLiteral("keep_local"), QJsonValue(a.keepLocal()));
                     } else {
                         c->res()->redirect(c->uriForAction(QStringLiteral("/account/forwards"),
@@ -819,7 +823,6 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
 void AccountEditor::add_forward(Context *c)
 {
     if (Domain::accessGranted(c)) {
-        auto d = Domain::fromStash(c);
         auto a = Account::fromStash(c);
         const bool isAjax = Utils::isAjax(c);
         QJsonObject json;
@@ -848,10 +851,12 @@ void AccountEditor::add_forward(Context *c)
                         json.insert(QStringLiteral("status_msg"), QJsonValue(statusMsg));
                         json.insert(QStringLiteral("forward"), QJsonValue(newForward));
                         json.insert(QStringLiteral("account_id"), QJsonValue(static_cast<qint64>(a.getId())));
-                        json.insert(QStringLiteral("domain_id"), QJsonValue(static_cast<qint64>(d.id())));
+                        json.insert(QStringLiteral("domain_id"), QJsonValue(static_cast<qint64>(a.getDomainId())));
+                        json.insert(QStringLiteral("forward_count"), QJsonValue(a.getForwards().size()));
+                        json.insert(QStringLiteral("keep_local"), QJsonValue(a.keepLocal()));
                     } else {
                         c->res()->redirect(c->uriForAction(QStringLiteral("/account/forwards"),
-                                                           QStringList({QString::number(d.id()), QString::number(a.getId())}),
+                                                           QStringList({QString::number(a.getDomainId()), QString::number(a.getId())}),
                                                            QStringList(),
                                                            StatusMessage::statusQuery(c, statusMsg)));
                         return;
@@ -1013,7 +1018,7 @@ void AccountEditor::keep_local(Context *c)
         QJsonObject json;
 
         if (c->req()->isPost()) {
-            const bool _keepLocal = c->req()->bodyParameters().contains(QStringLiteral("keeplocal"));
+            const bool _keepLocal = (c->req()->bodyParameter(QStringLiteral("keeplocal"), QStringLiteral("false")) == QLatin1String("true"));
 
             SkaffariError e(c);
             if (Account::changeKeepLocal(c, &e, &a, _keepLocal)) {
@@ -1021,15 +1026,15 @@ void AccountEditor::keep_local(Context *c)
                 const QString statusMsg = _keepLocal
                         ? c->translate("AccountEditor", "Successfully enabled the keeping of forwarded emails in the local mailbox of account %1.").arg(a.getUsername())
                         : c->translate("AccountEditor", "Successfully disabled the keeping of forwarded emails in the local mailbox of account %1.").arg(a.getUsername());
-                auto d = Domain::fromStash(c);
 
                 if (isAjax) {
                     json.insert(QStringLiteral("status_msg"), QJsonValue(statusMsg));
                     json.insert(QStringLiteral("account_id"), QJsonValue(static_cast<qint64>(a.getId())));
-                    json.insert(QStringLiteral("domain_id"), QJsonValue(static_cast<qint64>(d.id())));
+                    json.insert(QStringLiteral("domain_id"), QJsonValue(static_cast<qint64>(a.getDomainId())));
+                    json.insert(QStringLiteral("keep_local"), QJsonValue(a.keepLocal()));
                 } else {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/account/forwards"),
-                                                       QStringList({QString::number(d.id()), QString::number(a.getId())}),
+                                                       QStringList({QString::number(a.getDomainId()), QString::number(a.getId())}),
                                                        QStringList(),
                                                        StatusMessage::statusQuery(c, statusMsg)));
                     return;

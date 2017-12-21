@@ -9,7 +9,7 @@
         <form id="changeKeepLocalForm" method="post">
             <div class="form-check">
                 <label class="form-check-label">
-                    <input type="checkbox" name="keeplocal" class="form-check-input" {% if account.keepLocal %} checked="checked"{% endif %}>
+                    <input type="checkbox" name="keeplocal" value="true" class="form-check-input" {% if account.keepLocal %} checked="checked"{% endif %}>
                     {{ _("keep forwarded emails in the local mailbox of this account") }}
                 </label>
             </div>

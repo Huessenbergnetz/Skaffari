@@ -40,6 +40,46 @@ Skaffari.DefaultTmpl.ForwardList.addForwardRow = function(d) {
     removeButton[removeButton.length-1].addEventListener("click", Skaffari.DefaultTmpl.ForwardList.removeForwardRow);
 }
 
+Skaffari.DefaultTmpl.ForwardList.toggleKeepLocalBtn = function(show, keepLocal) {
+    var isHidden = Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.hasClass('d-none');
+    if (show && isHidden) {
+        Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.removeClass('d-none');
+    } else if (!show && !isHidden) {
+        Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.addClass('d-none');
+    }
+    if (keepLocal) {
+        Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.data('keeplocal', 'true');
+        $('#keepLocalIcon').removeClass().addClass('fa fa-check-square-o');
+    } else {
+        Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.data('keeplocal', 'false');
+        $('#keepLocalIcon').removeClass().addClass('fa fa-square-o');
+    }
+}
+
+Skaffari.DefaultTmpl.ForwardList.toggleKeepLocal = function() {
+    Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.prop('disabled', true);
+    var keepLocal = (Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.data('keeplocal') == 'true');
+    var icon = $('#keepLocalIcon');
+    icon.removeClass().addClass('fa fa-spinner fa-pulse');
+    var klstr = !keepLocal ? "true" : "false";
+
+    $.ajax({
+        type: 'post',
+        url: '/account/' + Skaffari.DefaultTmpl.ForwardList.domainId + '/' + Skaffari.DefaultTmpl.ForwardList.accountId + '/keep_local',
+        data: { keeplocal: klstr },
+        dataType: 'json'
+    }).always(function(data) {
+        Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.prop('disabled', false);
+    }).done(function(data) {
+        Skaffari.DefaultTmpl.ForwardList.toggleKeepLocalBtn(true, data.keep_local);
+    }).fail(function(jqXHR) {
+        Skaffari.DefaultTmpl.ForwardList.toggleKeepLocalBtn(true, keepLocal);
+        if (jqXHR.responseJSON.error_msg) {
+            Skaffari.DefaultTmpl.createAlert('warning', jqXHR.response.error_msg, '#messages-container', 'mt-1');
+        }
+    });
+}
+
 Skaffari.DefaultTmpl.ForwardList.removeForwardRow = function(e) {
     var btn = $(e.target);
     var row = btn.parents('tr').first();
@@ -61,6 +101,7 @@ Skaffari.DefaultTmpl.ForwardList.removeForwardRow = function(e) {
             row.hide(300, function()  {
                 row.remove();
             });
+            Skaffari.DefaultTmpl.ForwardList.toggleKeepLocalBtn(data.forward_count > 0, data.keep_local);
         }).fail(function(jqXHR) {
             icon.removeClass('fa-cog fa-spin').addClass('fa-trash');
             btn.prop('disabled', false);
@@ -86,9 +127,12 @@ Skaffari.DefaultTmpl.ForwardList.init = function() {
         Skaffari.DefaultTmpl.ForwardList.forwardForm = $('#forwardForm');
         Skaffari.DefaultTmpl.ForwardList.forwardInput = $('#newforward');
         Skaffari.DefaultTmpl.ForwardList.submitIcon = $('#forwardSubmitIcon');
+        Skaffari.DefaultTmpl.ForwardList.keepLocalBtn = $('#keepLocalBtn');
         Skaffari.DefaultTmpl.ForwardList.forwardRowTemplate = document.getElementById('forward-template');
 
         $('button.remove-forward-btn').click(Skaffari.DefaultTmpl.ForwardList.removeForwardRow);
+
+        Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.click(Skaffari.DefaultTmpl.ForwardList.toggleKeepLocal);
 
         Skaffari.DefaultTmpl.ForwardList.forwardModal.on('show.bs.modal', function(e) {
             var btn = $(e.relatedTarget);
@@ -134,6 +178,7 @@ Skaffari.DefaultTmpl.ForwardList.init = function() {
                 Skaffari.DefaultTmpl.ForwardList.forwardModal.modal('hide');
                 if (Skaffari.DefaultTmpl.ForwardList.action == "add") {
                     Skaffari.DefaultTmpl.ForwardList.addForwardRow(data);
+                    Skaffari.DefaultTmpl.ForwardList.toggleKeepLocalBtn(data.forward_count > 0, data.keep_local);
                 } else {
                     Skaffari.DefaultTmpl.ForwardList.editForwardRow(data);
                 }
