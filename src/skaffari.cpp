@@ -209,18 +209,18 @@ bool Skaffari::init()
         QVariantMap tmplConfig;
         QFile tmplConfigFile(tmplBasePath + QLatin1String("/metadata.json"));
         if (tmplConfigFile.exists()) {
-            qCDebug(SK_CORE, "Found template configuration file.");
+            qCDebug(SK_CORE, "Found template metadata file.");
             if (tmplConfigFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
                 QJsonParseError jpe;
                 QJsonDocument tmplJsonConfig(QJsonDocument::fromJson(tmplConfigFile.readAll(), &jpe));
                 if (jpe.error != QJsonParseError::NoError) {
-                    qCCritical(SK_CORE, "Failed to parse template configuration file: %s", qUtf8Printable(jpe.errorString()));
+                    qCCritical(SK_CORE, "Failed to parse template metadata file: %s", qUtf8Printable(jpe.errorString()));
                     return false;
                 }
 
                 tmplConfig = tmplJsonConfig.object().value(QStringLiteral("config")).toObject().toVariantMap();
             } else {
-                qCCritical(SK_CORE, "Failed to open template configuration file %s.", qUtf8Printable(tmplConfigFile.fileName()));
+                qCCritical(SK_CORE, "Failed to open template metadata file %s.", qUtf8Printable(tmplConfigFile.fileName()));
                 return false;
             }
         }
