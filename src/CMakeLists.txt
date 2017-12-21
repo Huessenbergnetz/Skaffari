@@ -81,6 +81,8 @@ target_link_libraries(skaffari
     Cutelyst::Authentication
     Cutelyst::StatusMessage
     Cutelyst::Utils::Pagination
+    Cutelyst::Memcached
+    Cutelyst::MemcachedSessionStore
     Grantlee5::Templates
     Qt5::Core
     Qt5::Network

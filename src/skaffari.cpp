@@ -27,6 +27,8 @@
 #include <Cutelyst/Plugins/Authentication/authenticationrealm.h>
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <Cutelyst/Plugins/StatusMessage>
+#include <Cutelyst/Plugins/Memcached/Memcached>
+#include <Cutelyst/Plugins/MemcachedSessionStore/MemcachedSessionStore>
 #include <Cutelyst/Engine>
 #include <grantlee5/grantlee/metatype.h>
 #include <grantlee5/grantlee/engine.h>
@@ -201,7 +203,7 @@ bool Skaffari::init()
     Grantlee::registerMetaType<Account>();
     Grantlee::registerMetaType<HelpEntry>();
 
-    const QVariantMap generalConfig = engine()->config(QStringLiteral("General"));
+    const QVariantMap generalConfig = engine()->config(QStringLiteral("Skaffari"));
     const QString tmplName = generalConfig.value(QStringLiteral("template"), QStringLiteral("default")).toString();
     const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + tmplName;
 
@@ -304,7 +306,18 @@ bool Skaffari::init()
     QString staticPath = tmplBasePath + QLatin1String("/static");
     staticSimple->setIncludePaths({staticPath});
 
-	new Session(this);
+    if (SkaffariConfig::useMemcached()) {
+        auto memc = new Memcached(this);
+        memc->setDefaultConfig({
+                                   {QStringLiteral("binary_protocol"), true}
+                               });
+    }
+
+    auto sess = new Session(this);
+
+    if (SkaffariConfig::useMemcachedSession()) {
+        sess->setStorage(new MemcachedSessionStore(this, this));
+    }
 
     new StatusMessage(this);
 
