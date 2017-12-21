@@ -59,6 +59,7 @@ bool SkaffariConfig::m_imapUnixhierarchysep = SK_DEF_IMAP_UNIXHIERARCHYSEP;
 bool SkaffariConfig::m_imapDomainasprefix = SK_DEF_IMAP_DOMAINASPREFIX;
 bool SkaffariConfig::m_imapFqun = SK_DEF_IMAP_FQUN;
 
+QString SkaffariConfig::m_template = QStringLiteral("default");
 bool SkaffariConfig::m_tmplAsyncAccountList = SK_DEF_TMPL_ASYNCACCOUNTLIST;
 
 
@@ -67,8 +68,10 @@ SkaffariConfig::SkaffariConfig()
 
 }
 
-void SkaffariConfig::load(const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &imap, const QVariantMap &tmpl)
+void SkaffariConfig::load(const QVariantMap &general, const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &imap, const QVariantMap &tmpl)
 {
+    SkaffariConfig::m_template = general.value(QStringLiteral("template"), QStringLiteral("default")).toString();
+
     SkaffariConfig::m_accPwMethod = static_cast<Password::Method>(accounts.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
     SkaffariConfig::m_accPwAlgorithm = static_cast<Password::Algorithm>(accounts.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>());
     SkaffariConfig::m_accPwRounds = accounts.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>();

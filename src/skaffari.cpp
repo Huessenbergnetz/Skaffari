@@ -201,10 +201,11 @@ bool Skaffari::init()
     Grantlee::registerMetaType<Account>();
     Grantlee::registerMetaType<HelpEntry>();
 
-    const QString tmplName = QStringLiteral("default");
+    const QVariantMap generalConfig = engine()->config(QStringLiteral("General"));
+    const QString tmplName = generalConfig.value(QStringLiteral("template"), QStringLiteral("default")).toString();
     const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + tmplName;
 
-    if (!isInitialized) {
+    if (!isInitialized) {        
         QVariantMap tmplConfig;
         QFile tmplConfigFile(tmplBasePath + QLatin1String("/metadata.json"));
         if (tmplConfigFile.exists()) {
@@ -217,7 +218,7 @@ bool Skaffari::init()
                     return false;
                 }
 
-                tmplConfig = tmplJsonConfig.object().toVariantMap();
+                tmplConfig = tmplJsonConfig.object().value(QStringLiteral("config")).toObject().toVariantMap();
             } else {
                 qCCritical(SK_CORE, "Failed to open template configuration file %s.", qUtf8Printable(tmplConfigFile.fileName()));
                 return false;
@@ -225,7 +226,8 @@ bool Skaffari::init()
         }
 
         qCDebug(SK_CORE) << "Initializing configuration.";
-        SkaffariConfig::load(engine()->config(QStringLiteral("Accounts")),
+        SkaffariConfig::load(generalConfig,
+                             engine()->config(QStringLiteral("Accounts")),
                              engine()->config(QStringLiteral("Admins")),
                              engine()->config(QStringLiteral("IMAP")),
                              tmplConfig);

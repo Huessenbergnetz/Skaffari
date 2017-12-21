@@ -64,13 +64,14 @@ public:
 
     /*!
      * \brief Loads the different configuration areas.
+     * \param general   Entries from the \a General section.
      * \param accounts  Entries from the \a Accounts section.
      * \param admins    Entries from the \a Admins section.
      * \param defaults  Entries from the \a Defaults section.
      * \param imap      Entries from the \a IMAP section.
      * \param tmpl      Entrief from the current template.
      */
-    static void load(const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &imap, const QVariantMap &tmpl);
+    static void load(const QVariantMap &general, const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &imap, const QVariantMap &tmpl);
 
     /*!
      * \brief Loads specific settings from the database options table.
@@ -388,6 +389,11 @@ public:
     static bool imapFqun();
 
     /*!
+     * \brief Returns the directory name of the template currently in use.
+     */
+    static QString tmpl();
+
+    /*!
      * \brief Returns \c true if the current template uses asynchronous/AJAX requests to load the list of accounts.
      */
     static bool tmplAsyncAccountList();
@@ -428,6 +434,7 @@ private:
     static bool m_imapDomainasprefix;
     static bool m_imapFqun;
 
+    static QString m_template;
     static bool m_tmplAsyncAccountList;
 
     static QVariant loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal = QVariant());
