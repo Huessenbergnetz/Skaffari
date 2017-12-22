@@ -18,6 +18,10 @@
 
 #include "language_p.h"
 #include "../common/config.h"
+#include "skaffariconfig.h"
+#include <Cutelyst/Context>
+#include <Cutelyst/Plugins/Session/Session>
+#include <QLocale>
 
 Language::Language() :
     d(new LanguageData)
@@ -25,13 +29,11 @@ Language::Language() :
 
 }
 
-
 Language::Language(const QString &langCode) :
     d(new LanguageData(langCode))
 {
 
 }
-
 
 Language::Language(const Language &other) :
     d(other.d)
@@ -39,33 +41,26 @@ Language::Language(const Language &other) :
 
 }
 
-
 Language& Language::operator=(const Language &other)
 {
     d = other.d;
     return *this;
 }
 
-
 Language::~Language()
 {
 
 }
-
-
 
 QString Language::code() const
 {
     return d->code;
 }
 
-
-
 QString Language::name() const
 {
     return d->name;
 }
-
 
 QStringList Language::supportedLangsList()
 {
@@ -73,8 +68,6 @@ QStringList Language::supportedLangsList()
 
     return list;
 }
-
-
 
 QVector<Language> Language::supportedLangs()
 {
@@ -86,4 +79,27 @@ QVector<Language> Language::supportedLangs()
     }
 
     return langs;
+}
+
+void Language::setLang(Cutelyst::Context *c)
+{
+    QString lang = Cutelyst::Session::value(c, QStringLiteral("lang")).toString();
+    if (Q_UNLIKELY(lang.isEmpty())) {
+        const QStringList acceptedLangs = c->req()->header(QStringLiteral("Accept-Language")).split(QLatin1Char(','), QString::SkipEmptyParts);
+        if (Q_LIKELY(!acceptedLangs.empty())) {
+            for (const QString &al : acceptedLangs) {
+                const QString langPart = al.section(QLatin1Char(';'), 0, 0);
+                if (Language::supportedLangsList().contains(langPart)) {
+                    lang = langPart;
+                    break;
+                }
+            }
+        }
+        if (lang.isEmpty()) {
+            lang = SkaffariConfig::defLanguage();
+        }
+    }
+
+    c->setLocale(QLocale(lang));
+    c->setStash(QStringLiteral("lang"), lang);
 }
