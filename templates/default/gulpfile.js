@@ -21,6 +21,7 @@ elixir(function(mix) {
         '../../node_modules/select2/dist/js/select2.js',
         '../../node_modules/queuejax/jquery.qjax.js',
         '../../node_modules/stupid-table-plugin/stupidtable.js',
+        '../../node_modules/js-cookie/src/js.cookie.js',
         'jquery.filtertable.js',
         'general.js',
         'forwardlist.js',
