@@ -80,7 +80,19 @@ Skaffari.DefaultTmpl.createAlert = function(type, text, target, classes) {
     warnDiv.show(300);
 }
 
+Skaffari.DefaultTmpl.csrfSafeMethod = function(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
 Skaffari.DefaultTmpl.init = function() {
     $.fn.select2.defaults.set("theme", "bootstrap");
     $('.select2').select2();
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!Skaffari.DefaultTmpl.csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFTOKEN", Cookies.get('csrftoken'));
+            }
+        }
+    });
 }
