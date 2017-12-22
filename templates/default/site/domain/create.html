@@ -3,6 +3,7 @@
 </div>
 
 <form id="createDomainForm" method="post">
+    {% c_csrf_token %}
     <fieldset>
         <div class="row">
             <input type="hidden" id="domainAsPrefix" name="domainAsPrefix" value="{{ domainAsPrefix }}">

@@ -3,6 +3,7 @@
 </div>
 
 <form method="post">
+    {% c_csrf_token %}
     <ul class="nav nav-tabs mt-1" id="settingsTabs" role="tablist">
         <li clas="nav-item">
             <a class="nav-link active" id="defaultsTab" data-toggle="tab" href="#defaults" role="tab" aria-controls="defaultsTab" aria-expanded="true">{{ _("Default values") }}</a>

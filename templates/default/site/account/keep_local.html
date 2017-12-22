@@ -7,6 +7,7 @@
 <div class="row justify-content-center mt-2">
     <div class="col-12 col-sm-12 col-md-8 col-lg-6">
         <form id="changeKeepLocalForm" method="post">
+            {% c_csrf_token %}
             <div class="form-check">
                 <label class="form-check-label">
                     <input type="checkbox" name="keeplocal" value="true" class="form-check-input" {% if account.keepLocal %} checked="checked"{% endif %}>
