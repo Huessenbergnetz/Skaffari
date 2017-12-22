@@ -1,0 +1,31 @@
+<div class="row">
+    <div class="col">
+        <h2><i class="fa fa-info-circle"></i> {{ _("About Skaffari") }}</h2>
+    </div>
+</div>
+
+<section class="row">
+    <div class="col">
+        <h3>{{ _("Core components") }}</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{{ _("Name") }}</th>
+                    <th>{{ _("Version") }}</th>
+                    <th>{{ _("License") }}</th>
+                    <th>{{ _("Author") }}<th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for component in core_components %}
+                <tr>
+                    <td><a href="{{ component.url }}" target="_blank">{{ component.name }}</a></td>
+                    <td>{{ component.version }}</td>
+                    <td><a href="{{ component.licenseUrl }}" target="_blank">{{ component.license }}</a></td>
+                    <td><a href="{{ component.authorUrl }}" target="_blank">{{ component.author }}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>

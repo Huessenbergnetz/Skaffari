@@ -21,10 +21,12 @@
 #include "utils/utils.h"
 #include "utils/language.h"
 #include "utils/skaffariconfig.h"
+#include "../common/config.h"
 
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Session/Session>
+#include <Cutelyst/Application>
 
 #include <QLocale>
 #include <QJsonDocument>
@@ -51,6 +53,45 @@ void Root::index(Context *c)
              });
 }
 
+void Root::about(Context *c)
+{
+    QVariantList coreComponents;
+    coreComponents.push_back(QVariantMap({
+                                             {QStringLiteral("name"), QStringLiteral("Skaffari")},
+                                             {QStringLiteral("version"), QStringLiteral(SKAFFARI_VERSION)},
+                                             {QStringLiteral("url"), QStringLiteral("https://github.com/Huessenbergnetz/Skaffari")},
+                                             {QStringLiteral("author"), QStringLiteral("Matthias Fehring")},
+                                             {QStringLiteral("authorUrl"), QStringLiteral("https://www.buschmann23.de")},
+                                             {QStringLiteral("license"), QStringLiteral("GNU Affero General Public License 3.0")},
+                                             {QStringLiteral("licenseUrl"), QStringLiteral("https://www.gnu.org/licenses/agpl-3.0.en.html")}
+                                         }));
+
+    coreComponents.push_back(QVariantMap({
+                                             {QStringLiteral("name"), QStringLiteral("Cutelyst")},
+                                             {QStringLiteral("version"), QString::fromLatin1(Application::cutelystVersion())},
+                                             {QStringLiteral("url"), QStringLiteral("https://www.cutelyst.org")},
+                                             {QStringLiteral("author"), QStringLiteral("Daniel Nicoletti")},
+                                             {QStringLiteral("authorUrl"), QStringLiteral("https://dantti.wordpress.com/")},
+                                             {QStringLiteral("license"), QStringLiteral("GNU Lesser General Public License 2.1")},
+                                             {QStringLiteral("licenseUrl"), QStringLiteral("https://www.gnu.org/licenses/lgpl-2.1.en.html")}
+                                         }));
+    coreComponents.push_back(QVariantMap({
+                                             {QStringLiteral("name"), QStringLiteral("Qt")},
+                                             {QStringLiteral("version"), QString::fromLatin1(qVersion())},
+                                             {QStringLiteral("url"), QStringLiteral("https://www.qt.io/")},
+                                             {QStringLiteral("author"), QStringLiteral("The Qt Company")},
+                                             {QStringLiteral("authorUrl"), QStringLiteral("https://www.qt.io")},
+                                             {QStringLiteral("license"), QStringLiteral("GNU Lesser General Public License 2.1")},
+                                             {QStringLiteral("licenseUrl"), QStringLiteral("https://www.gnu.org/licenses/lgpl-2.1.en.html")}
+                                         }));
+
+    c->stash({
+                 {QStringLiteral("template"), QStringLiteral("about.html")},
+                 {QStringLiteral("site_title"), c->translate("Root", "About")},
+                 {QStringLiteral("core_components"), coreComponents}
+             });
+}
+
 void Root::defaultPage(Context *c)
 {
     c->stash({
@@ -63,12 +104,12 @@ void Root::defaultPage(Context *c)
 void Root::csrfdenied(Context *c)
 {
     c->res()->setStatus(403);
+    Language::setLang(c);
     if (Utils::isAjax(c)) {
         c->res()->setJsonBody(QJsonObject({
                                               {QStringLiteral("error_msg"), QJsonValue(c->stash(QStringLiteral("error_msg")).toString())}
                                           }));
     } else {
-        Language::setLang(c);
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("csrfdenied.html")},
                      {QStringLiteral("no_wrapper"), QStringLiteral("1")}

@@ -34,6 +34,9 @@ public:
     C_ATTR(index, :Path :Args(0))
     void index(Context *c);
 
+    C_ATTR(about, :Global :Args(0))
+    void about(Context *c);
+
     C_ATTR(defaultPage, :Path)
     void defaultPage(Context *c);
 
