@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <title>Skaffari</title>
+        <title>Skaffari - {{ _("Login") }}</title>
 
         <link href="/css/style.css" rel="stylesheet">
     </head>
@@ -19,6 +19,7 @@
                         <div class="card-header">{{ _("Skaffari login") }}</div>
                         <div class="card-body">
                             <form method="post" autocomplete="on">
+                                {% c_csrf_token %}
                                 <div class="form-group">
                                     <label class="sr-only" for="username">{{ _("Username") }}</label>
                                     <div class="input-group">
