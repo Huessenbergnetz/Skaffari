@@ -18,6 +18,7 @@
 
 #include "root.h"
 #include "objects/domain.h"
+#include "utils/utils.h"
 #include "utils/language.h"
 #include "utils/skaffariconfig.h"
 
@@ -59,37 +60,34 @@ void Root::defaultPage(Context *c)
     c->res()->setStatus(404);
 }
 
+void Root::csrfdenied(Context *c)
+{
+    c->res()->setStatus(403);
+    if (Utils::isAjax(c)) {
+        c->res()->setJsonBody(QJsonObject({
+                                              {QStringLiteral("error_msg"), QJsonValue(c->stash(QStringLiteral("error_msg")).toString())}
+                                          }));
+    } else {
+        Language::setLang(c);
+        c->stash({
+                     {QStringLiteral("template"), QStringLiteral("csrfdenied.html")},
+                     {QStringLiteral("no_wrapper"), QStringLiteral("1")}
+                 });
+    }
+}
 
 bool Root::Auto(Context* c)
 {
     AuthenticationUser user = Authentication::user(c);
 
-    QString lang = Session::value(c, QStringLiteral("lang")).toString();
-    if (Q_UNLIKELY(lang.isEmpty())) {
-        const QStringList acceptedLangs = c->req()->header(QStringLiteral("Accept-Language")).split(QLatin1Char(','), QString::SkipEmptyParts);
-        if (Q_LIKELY(!acceptedLangs.empty())) {
-            for (const QString &al : acceptedLangs) {
-                const QString langPart = al.section(QLatin1Char(';'), 0, 0);
-                if (Language::supportedLangsList().contains(langPart)) {
-                    lang = langPart;
-                    break;
-                }
-            }
-        }
-        if (lang.isEmpty()) {
-            lang = SkaffariConfig::defLanguage();
-        }
-    }
-
-    c->setLocale(QLocale(lang));
-    c->setStash(QStringLiteral("lang"), lang);
+    Language::setLang(c);
 
     if (c->controller() == c->controller(QStringLiteral("Login"))) {
         return true;
     }
 
     if (Q_UNLIKELY(user.isNull())) {
-        if (c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive)) {
+        if (Utils::isAjax(c)) {
             c->res()->setStatus(Response::Unauthorized);
             c->res()->setJsonBody(QJsonDocument(QJsonObject({
                                                                 {QStringLiteral("error_msg"), QJsonValue(c->translate("Root", "You have to login at first."))}

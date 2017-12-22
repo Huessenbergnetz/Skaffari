@@ -30,6 +30,7 @@
 #include <Cutelyst/Plugins/Memcached/Memcached>
 #include <Cutelyst/Plugins/MemcachedSessionStore/MemcachedSessionStore>
 #include <Cutelyst/Engine>
+#include <Cutelyst/Plugins/CSRFProtection/CSRFProtection>
 #include <grantlee5/grantlee/metatype.h>
 #include <grantlee5/grantlee/engine.h>
 #include <QSqlDatabase>
@@ -318,6 +319,9 @@ bool Skaffari::init()
     if (SkaffariConfig::useMemcachedSession()) {
         sess->setStorage(new MemcachedSessionStore(this, this));
     }
+
+    auto csrf = new CSRFProtection(this);
+    csrf->setDefaultDetachTo(QStringLiteral("/csrfdenied"));
 
     new StatusMessage(this);
 

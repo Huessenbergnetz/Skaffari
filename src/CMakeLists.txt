@@ -83,6 +83,7 @@ target_link_libraries(skaffari
     Cutelyst::Utils::Pagination
     Cutelyst::Memcached
     Cutelyst::MemcachedSessionStore
+    Cutelyst::CSRFProtection
     Grantlee5::Templates
     Qt5::Core
     Qt5::Network

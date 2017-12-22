@@ -37,6 +37,9 @@ public:
     C_ATTR(defaultPage, :Path)
     void defaultPage(Context *c);
 
+    C_ATTR(csrfdenied, :Local :Private :AutoArgs :ActionClass("RenderView"))
+    void csrfdenied(Context *c);
+
 private:
     C_ATTR(End, :ActionClass("RenderView"))
     void End(Context *c) { Q_UNUSED(c); }
