@@ -279,6 +279,7 @@ bool Skaffari::init()
                     addTranslator(locale, coreTrans);
                 } else {
                     qCWarning(SK_CORE, "Failed to load core translation file for language %s from %s.", qUtf8Printable(locale.bcp47Name()), SKAFFARI_L10NDIR);
+                    delete coreTrans;
                 }
 
                 auto tmplTrans = new QTranslator(this);
@@ -286,6 +287,7 @@ bool Skaffari::init()
                     view->addTranslator(locale, tmplTrans);
                 } else {
                     qCWarning(SK_CORE, "Failed to load template translation file for language %s from %s.", qUtf8Printable(locale.bcp47Name()), qUtf8Printable(tmplTransFilePath));
+                    delete tmplTrans;
                 }
             } else {
                 qCWarning(SK_CORE, "Invalid language code: %s", qUtf8Printable(lang));
