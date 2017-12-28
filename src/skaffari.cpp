@@ -338,7 +338,7 @@ bool Skaffari::init()
     defaultHeaders().setHeader(QStringLiteral("X-Frame-Options"), QStringLiteral("DENY"));
     defaultHeaders().setHeader(QStringLiteral("X-Content-Type-Options"), QStringLiteral("nosniff"));
     defaultHeaders().setHeader(QStringLiteral("X-XSS-Protection"), QStringLiteral("1; mode=block"));
-    defaultHeaders().setHeader(QStringLiteral("Content-Security-Policy"), QStringLiteral("default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self';"));
+    defaultHeaders().setHeader(QStringLiteral("Content-Security-Policy"), QStringLiteral("default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action: 'self';"));
     defaultHeaders().setHeader(QStringLiteral("X-Robots-Tag"), QStringLiteral("none"));
     defaultHeaders().setHeader(QStringLiteral("Referrer-Policy"), QStringLiteral("no-referrer, strict-origin-when-cross-origin"));
 
