@@ -3,6 +3,7 @@
     "license": "GNU Affero General Public License 3.0",
     "licenseUrl": "https://www.gnu.org/licenses/agpl-3.0.en.html",
     "version": "1.0.0",
+    "url": "https://github.com/Huessenbergnetz/Skaffari",
     "config": {
         "asyncaccountlist": true
     }
