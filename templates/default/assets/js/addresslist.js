@@ -128,7 +128,7 @@ Skaffari.DefaultTmpl.AddressList.init = function() {
         Skaffari.DefaultTmpl.AddressList.addressForm.submit(function(e) {
             $('#addressSubmit').prop('disabled', true);
             $('#modal-message-container .alert').alert('close');
-            Skaffari.DefaultTmpl.AddressList.submitIcon.removeClass('fa-save').addClass('fa-circle-o-notch fa-spin');
+            Skaffari.DefaultTmpl.AddressList.submitIcon.removeClass('fa-save').addClass('fa-circle-notch fa-spin');
 
             $.ajax({
                 type: 'post',
@@ -136,7 +136,7 @@ Skaffari.DefaultTmpl.AddressList.init = function() {
                 data: Skaffari.DefaultTmpl.AddressList.addressForm.serialize(),
                 dataType: 'json'
             }).always(function(data) {
-                Skaffari.DefaultTmpl.AddressList.submitIcon.removeClass('fa-circle-o-notch fa-spin').addClass('fa-save');
+                Skaffari.DefaultTmpl.AddressList.submitIcon.removeClass('fa-circle-notch fa-spin').addClass('fa-save');
                 $('#addressSubmit').prop('disabled', false);
             }).done(function(data) {
                 Skaffari.DefaultTmpl.AddressList.addressModal.modal('hide');

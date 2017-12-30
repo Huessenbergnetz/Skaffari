@@ -49,10 +49,10 @@ Skaffari.DefaultTmpl.ForwardList.toggleKeepLocalBtn = function(show, keepLocal) 
     }
     if (keepLocal) {
         Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.data('keeplocal', 'true');
-        $('#keepLocalIcon').removeClass().addClass('fa fa-check-square-o');
+        $('#keepLocalIcon').removeClass().addClass('far fa-check-square');
     } else {
         Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.data('keeplocal', 'false');
-        $('#keepLocalIcon').removeClass().addClass('fa fa-square-o');
+        $('#keepLocalIcon').removeClass().addClass('far fa-square');
     }
 }
 
@@ -60,7 +60,7 @@ Skaffari.DefaultTmpl.ForwardList.toggleKeepLocal = function() {
     Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.prop('disabled', true);
     var keepLocal = (Skaffari.DefaultTmpl.ForwardList.keepLocalBtn.data('keeplocal') == 'true');
     var icon = $('#keepLocalIcon');
-    icon.removeClass().addClass('fa fa-spinner fa-pulse');
+    icon.removeClass().addClass('fas fa-spinner fa-pulse');
     var klstr = !keepLocal ? "true" : "false";
 
     $.ajax({
@@ -164,7 +164,7 @@ Skaffari.DefaultTmpl.ForwardList.init = function() {
         Skaffari.DefaultTmpl.ForwardList.forwardForm.submit(function(e) {
             $('#forwardSubmit').prop('disabled', true);
             $('#modal-message-container .alert').alert('close');
-            Skaffari.DefaultTmpl.ForwardList.submitIcon.removeClass('fa-save').addClass('fa-circle-o-notch fa-spin');
+            Skaffari.DefaultTmpl.ForwardList.submitIcon.removeClass('fa-save').addClass('fa-circle-notch fa-spin');
 
             $.ajax({
                 type: 'post',
@@ -172,7 +172,7 @@ Skaffari.DefaultTmpl.ForwardList.init = function() {
                 data: Skaffari.DefaultTmpl.ForwardList.forwardForm.serialize(),
                 dataType: 'json'
             }).always(function(data) {
-                Skaffari.DefaultTmpl.ForwardList.submitIcon.removeClass('fa-circle-o-notch fa-spin').addClass('fa-save');
+                Skaffari.DefaultTmpl.ForwardList.submitIcon.removeClass('fa-circle-notch fa-spin').addClass('fa-save');
                 $('#forwardSubmit').prop('disabled', false);
             }).done(function(data) {
                 Skaffari.DefaultTmpl.ForwardList.forwardModal.modal('hide');

@@ -32,7 +32,7 @@ Skaffari.DefaultTmpl.DomainList.removeDomain = function() {
     $('#remove-domain-message-container .alert').alert('close');
     removeDomainSubmit.prop('disabled', true);
     removeDomainIcon.removeClass('fa-trash');
-    removeDomainIcon.addClass('fa-circle-o-notch fa-spin');
+    removeDomainIcon.addClass('fa-circle-notch fa-spin');
 
     $.ajax({
         method: 'post',
@@ -40,7 +40,7 @@ Skaffari.DefaultTmpl.DomainList.removeDomain = function() {
         data: Skaffari.DefaultTmpl.DomainList.removeDomainForm.serialize(),
         dataType: 'json'
     }).always(function() {
-        removeDomainIcon.removeClass('fa-circle-o-notch fa-spin');
+        removeDomainIcon.removeClass('fa-circle-notch fa-spin');
         removeDomainIcon.addClass('fa-trash');
         removeDomainSubmit.prop('disabled', false);
     }).done(function(data) {
@@ -68,7 +68,8 @@ Skaffari.DefaultTmpl.DomainList.init = function() {
             } else {
                 sortType = "amount"
             }
-            data.$th.append(' <small><i class="fa fa-sort-' + sortType + '-' + data.direction + ' text-muted"></i></small>');
+            var _dir = (data.direction == "asc") ? "down" : "up";
+            data.$th.append(' <small><i class="fas fa-sort-' + sortType + '-' + _dir + ' text-muted"></i></small>');
         });
 
         Skaffari.DefaultTmpl.DomainList.domainTable.filterTable({inputSelector: "#domainTableFilter", ignoreClass: "no-filtering"});

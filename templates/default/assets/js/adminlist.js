@@ -31,7 +31,7 @@ Skaffari.DefaultTmpl.AdminList.removeAdmin = function() {
     $('#remove-admin-message-container .alert').alert('close');
     removeAdminSubmit.prop('disabled', true);
     removeAdminIcon.removeClass('fa-trash');
-    removeAdminIcon.addClass('fa-circle-o-notch fa-spin');
+    removeAdminIcon.addClass('fa-circle-notch fa-spin');
 
     $.ajax({
         method: 'post',
@@ -39,7 +39,7 @@ Skaffari.DefaultTmpl.AdminList.removeAdmin = function() {
         data: Skaffari.DefaultTmpl.AdminList.removeAdminForm.serialize(),
         dataType: 'json'
     }).always(function() {
-        removeAdminIcon.removeClass('fa-circle-o-notch fa-spin');
+        removeAdminIcon.removeClass('fa-circle-notch fa-spin');
         removeAdminIcon.addClass('fa-trash');
         removeAdminSubmit.prop('disabled', false);
     }).done(function(data) {

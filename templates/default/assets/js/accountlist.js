@@ -89,7 +89,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     }
     if (a.keepLocal) {
         var klIcon = document.createElement('i');
-        klIcon.className = "fa fa-copy";
+        klIcon.className = "fas fa-copy";
         td[3].appendChild(document.createElement('br'));
         td[3].appendChild(klIcon);
         td[3].appendChild(document.createTextNode(' ' + l10n.keepLocal));
@@ -152,9 +152,9 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     // end setting account times
 
     // start setting account services
-    var baseClass = 'fa fa-fw ';
-    var enabledClass = 'fa-check-square-o text-success';
-    var disabledClass = 'fa-square-o text-danger';
+    var baseClass = 'far fa-fw ';
+    var enabledClass = 'fa-check-square text-success';
+    var disabledClass = 'fa-square text-danger';
 
     var serviceIcons = td[6].querySelectorAll('i');
     serviceIcons[0].className = baseClass + (a.imap ? enabledClass : disabledClass);
@@ -222,7 +222,7 @@ Skaffari.DefaultTmpl.AccountList.removeAccount = function() {
     removeAccountSubmit.prop('disabled', true);
     var removeAccountIcon = $('#removeAccountIcon');
     removeAccountIcon.removeClass('fa-trash');
-    removeAccountIcon.addClass('fa-circle-o-notch fa-spin');
+    removeAccountIcon.addClass('fa-circle-notch fa-spin');
     var removeAccountForm = $('#removeAccountForm');
 
     $.ajax({
@@ -231,7 +231,7 @@ Skaffari.DefaultTmpl.AccountList.removeAccount = function() {
         data: removeAccountForm.serialize(),
         dataType: 'json'
     }).always(function() {
-        removeAccountIcon.removeClass('fa-circle-o-notch fa-spin');
+        removeAccountIcon.removeClass('fa-circle-notch fa-spin');
         removeAccountIcon.addClass('fa-trash');
         removeAccountSubmit.prop('disabled', false);
     }).done(function(data) {
@@ -393,7 +393,8 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
 
         // initialize icon on column header
         var currentCol = $('#accountsTable th[data-sortby="' + $('#sortBy').val() + '"]');
-        currentCol.append(' <small><i class="fa fa-sort-' + currentCol.data('sorttype') + '-' + $('#sortOrder').val() + ' text-muted"></i></small>');
+        var _sortOrder = ($('#sortOrder').val() == "asc") ? "down" : "up";
+        currentCol.append(' <small><i class="fas fa-sort-' + currentCol.data('sorttype') + '-' + _sortOrder + ' text-muted"></i></small>');
 
         $('#accountsTable th.sortable').click(function(e) {
             if (aff.data('loading') == "0") {
@@ -401,6 +402,7 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
                 var th = $(e.target);
                 var currentSortBy = $('#sortBy').val();
                 var currentSortOrder = $('#sortOrder').val();
+                var _sortOrder = (currentSortOrder == "asc") ? "down" : "up";
                 var sortBy = th.data('sortby');
                 var sortOrder = th.data('sortorder');
 
@@ -414,7 +416,7 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
                     $('#sortBy').val(sortBy);
                     $('#sortOrder').val(sortOrder);
                 }
-                th.append(' <small><i class="fa fa-sort-' + th.data('sorttype') + '-' + $('#sortOrder').val() + ' text-muted"></i></small>');
+                                th.append(' <small><i class="fas fa-sort-' + th.data('sorttype') + '-' + _sortOrder + ' text-muted"></i></small>');
                 al.load();
             }
         });
