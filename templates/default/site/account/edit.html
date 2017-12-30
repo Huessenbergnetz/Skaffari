@@ -72,50 +72,40 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" id="imap" name="imap" value="1" aria-describedby="imapDesc"{% if account.imap %} checked{% endif %}>
-                        {{ help.imap.title }}
-                    </label>
+                    <input type="checkbox" class="form-check-input" id="imap" name="imap" value="1" aria-describedby="imapDesc"{% if account.imap %} checked{% endif %}>
+                    <label class="form-check-label">{{ help.imap.title }}</label>
                     <small id="imapDesc" class="form-text text-muted">{{ help.imap.text }}</small>
                 </div>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" id="pop" name="pop" value="1" aria-describedby="popDesc"{% if account.pop %} checked{% endif %}>
-                        {{ help.pop.title }}
-                    </label>
+                    <input type="checkbox" class="form-check-input" id="pop" name="pop" value="1" aria-describedby="popDesc"{% if account.pop %} checked{% endif %}>
+                    <label class="form-check-label">{{ help.pop.title }}</label>
                     <small id="popDesc" class="form-text text-muted">{{ help.pop.text }}</small>
                 </div>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" id="sieve" name="sieve" value="1" aria-describedby="sieveDesc"{% if account.sieve %} checked{% endif %}>
-                        {{ help.sieve.title }}
-                    </label>
+                    <input type="checkbox" class="form-check-input" id="sieve" name="sieve" value="1" aria-describedby="sieveDesc"{% if account.sieve %} checked{% endif %}>
+                    <label class="form-check-label">{{ help.sieve.title }}</label>
                     <small id="sieveDesc" class="form-text text-muted">{{ help.sieve.text }}</small>
                 </div>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" id="smtpauth" name="smtpauth" value="1" aria-describedby="smtpauthDesc"{% if account.smtpauth %} checked{% endif %}>
-                        {{ help.smtpauth.title }}
-                    </label>
+                    <input type="checkbox" class="form-check-input" id="smtpauth" name="smtpauth" value="1" aria-describedby="smtpauthDesc"{% if account.smtpauth %} checked{% endif %}>
+                    <label class="form-check-label">{{ help.smtpauth.title }}</label>
                     <small id="smtpauthDesc" class="form-text text-muted">{{ help.smtpauth.text }}</small>
                 </div>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" id="catchall" name="catchall" value="1" aria-describedby="catchall"{% if account.catchAll %} checked{% endif %}>
-                        {{ help.catchall.title }}
-                    </label>
+                    <input type="checkbox" class="form-check-input" id="catchall" name="catchall" value="1" aria-describedby="catchall"{% if account.catchAll %} checked{% endif %}>
+                    <label class="form-check-label">{{ help.catchall.title }}</label>
                     <small id="catchallDesc" class="form-text text-muted">{{ help.catchall.text }}</small>
                 </div>
             </div>

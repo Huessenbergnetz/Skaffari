@@ -85,20 +85,16 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if freeNames %} checked{% endif %}>
-                        {{ help.freeNames.title }}
-                    </label>
+                    <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if freeNames %} checked{% endif %}>
+                    <label class="form-check-label">{{ help.freeNames.title }}</label>
                     <small id="freeNamesDesc" class="form-text text-muted">{{ help.freeNames.text }}</small>
                 </div>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if freeAddress %} checked{% endif %}>
-                        {{ help.freeAddress.title }}
-                    </label>
+                    <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if freeAddress %} checked{% endif %}>
+                    <label class="form-check-label">{{ help.freeAddress.title }}</label>
                     <small id="freeAddressDesc" class="form-text text-muted">{{ help.freeAddress.text }}</small>
                 </div>
             </div>

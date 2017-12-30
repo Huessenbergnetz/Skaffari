@@ -29,7 +29,7 @@
                     <label for="newlocalpart">{{ localpart}}@{{ maildomain }}</label>
                     <div class="input-group">
                         <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" value="{{ newlocalpart|default:localpart }} placeholder="{{ _("Local part") }}"">
-                        <span class="input-group-addon">@{{ maildomain }}</span>
+                        <div class="input-group-append"><span class="input-group-text">@{{ maildomain }}</span></div>
                     </div>
                 </div>
             </div>

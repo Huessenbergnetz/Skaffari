@@ -13,13 +13,10 @@
         <div class="col-12 col-sm-12 col-md-6 col-lg-6 mt-1">
             <div class="input-group">
                 <input type="search" id="searchString" name="searchString" class="form-control" value="{{ searchString }}" placeholder="{{ _("Filter accounts") }}">
-                <span class="input-group-btn">
-                    <button id="accountFilterFormSubmit" type="submit" class="btn btn-light" title="{{ _("Apply filters") }}"><i class="fa fa-filter"></i></button>
-                </span>
-                <span class="input-group-btn">
-                    <button id="accountFilterFormReset" type="button" class="btn btn-light" title="{{ _("Reset filters") }}"><i class="fa fa-undo"></i></button>
-                </span>
-
+                <div class="input-group-append">
+                    <button id="accountFilterFormSubmit" type="submit" class="btn btn-outline-secondary" title="{{ _("Apply filters") }}"><i class="fa fa-filter"></i></button>
+                    <button id="accountFilterFormReset" type="button" class="btn btn-outline-secondary" title="{{ _("Reset filters") }}"><i class="fa fa-undo"></i></button>
+                </div>
             </div>
         </div>
         <div class="col-12 col-sm-12 col-md-6 col-lg-6 mt-1">

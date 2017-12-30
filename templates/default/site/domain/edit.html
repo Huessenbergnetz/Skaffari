@@ -30,7 +30,7 @@
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="maxAccounts">{{ help.maxAccounts.title }}</label>
                 <div class="input-group">
-                    <span class="input-group-addon">{{ domain.accounts }} /</span>
+                    <div class="input-group-prepend"><span class="input-group-text">{{ domain.accounts }} /</span></div>
                     {% ifequal userType 0 %}
                     <input type="number" id="maxAccounts" name="maxAccounts" class="form-control{% if validationErrors.maxAccounts.count %} is-invalid{% endif %}" value="{{ maxAccounts|default_if_none:domain.maxAccounts }}" min="0" aria-describedby="maxAccountsDesc">
                     {% else %}
@@ -101,20 +101,16 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if freeNames|default_if_none:domain.freeNames %} checked{% endif %}{% if userType != 0 %} disabled{% endif %}>
-                        {{ help.freeNames.title }}
-                    </label>
+                    <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if freeNames|default_if_none:domain.freeNames %} checked{% endif %}{% if userType != 0 %} disabled{% endif %}>
+                    <label class="form-check-label">{{ help.freeNames.title }}</label>
                     <small id="freeNamesDesc" class="form-text text-muted">{{ help.freeNames.text }}</small>
                 </div>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if freeAddress|default_if_none:domain.freeAddress %} checked{% endif %}{% if userType != 0 %} disabled{% endif %}>
-                        {{ help.freeAddress.title }}
-                    </label>
+                    <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if freeAddress|default_if_none:domain.freeAddress %} checked{% endif %}{% if userType != 0 %} disabled{% endif %}>
+                    <label class="form-check-label">{{ help.freeAddress.title }}</label>
                     <small id="freeAddressDesc" class="form-text text-muted">{{ help.freeAddress.text }}</small>
                 </div>
             </div>

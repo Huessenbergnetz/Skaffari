@@ -42,7 +42,7 @@
                         <label for="default_warnlevel" class="col-form-label">{{ help.default_warnlevel.title }}</label>
                         <div class="input-group">
                             <input type="number" id="default_warnlevel" name="default_warnlevel" class="form-control{% if validationErrors.default_warnlevel.count %} is-invalid{% endif %}" placeholder="{{ help.default_warnlevel.title }}" min="0" max="100" step="1" value="{{ default_warnlevel }}" aria-describedby="default_warnlevelDesc">
-                            <span class="input-group-addon" id="warnPerc">%</span>
+                            <div class="input-group-append"><span class="input-group-text" id="warnPerc">%</span></div>
                         </div>
                         {% if validationErrors.default_warnlevel.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_warnlevel.0 }}</small></div>{% endif %}
                         <small id="default_warnlevelDesc" class="form-text text-muted">{{ help.default_warnlevel.text }}</small>

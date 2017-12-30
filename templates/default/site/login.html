@@ -20,21 +20,17 @@
                         <div class="card-body">
                             <form method="post" autocomplete="on">
                                 {% c_csrf_token %}
-                                <div class="form-group">
-                                    <label class="sr-only" for="username">{{ _("Username") }}</label>
-                                    <div class="input-group">
-                                        <div class="input-group-addon"><i class="fa fa-user fa-fw"></i></div>
-                                        <input type="text" class="form-control" id="username" name="username" value="{{ username }}" placeholder='{{ _("Username") }}' required>
-                                    </div>
+                                <label class="sr-only" for="username">{{ _("Username") }}</label>
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend"><span class="input-group-text"><i class="fa fa-user fa-fw"></i></span></div>
+                                    <input type="text" class="form-control" id="username" name="username" value="{{ username }}" placeholder='{{ _("Username") }}' required>
                                 </div>
-                                <div class="form-group">
-                                    <label class="sr-only" for="password">{{ _("Password") }}</label>
-                                    <div class="input-group">
-                                        <div class="input-group-addon"><i class="fa fa-key fa-fw"></i></div>
-                                        <input type="password" class="form-control" id="password" name="password" placeholder='{{ _("Password") }}' required>
-                                    </div>
+                                <label class="sr-only" for="password">{{ _("Password") }}</label>
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend"><span class="input-group-text"><i class="fa fa-key fa-fw"></i></span></div>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder='{{ _("Password") }}' required>
                                 </div>
-                                <button type="submit" name="submit" value="Submit" class="btn btn-primary" id="submitSetupForm"><i class="fa fa-lock"></i> {{ _("Login") }}</button>
+                                <button type="submit" name="submit" value="Submit" class="btn btn-primary btn-block" id="submitSetupForm"><i class="fa fa-lock"></i> {{ _("Login") }}</button>
                             </form>
                         </div>
                     </div>
