@@ -9,7 +9,6 @@ elixir(function(mix) {
     mix.scripts([
         '../../node_modules/jquery/dist/jquery.js',
         '../../node_modules/popper.js/dist/umd/popper.js',
-//         '../../node_modules/bootstrap/dist/js/bootstrap.js',
         '../../node_modules/bootstrap/js/dist/util.js',
         '../../node_modules/bootstrap/js/dist/index.js',
         '../../node_modules/bootstrap/js/dist/alert.js',
@@ -34,5 +33,5 @@ elixir(function(mix) {
         'defaulttmpl.js'
     ], 'static/js/scripts.js');
 
-    mix.copy('node_modules/font-awesome/fonts', 'static/fonts');
+    mix.copy('node_modules/@fortawesome/fontawesome-free-webfonts/webfonts', 'static/fonts');
 });
