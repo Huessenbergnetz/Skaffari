@@ -63,7 +63,7 @@ do
     cp -r $SRCDIR $DIR
 done
 
-for SRCFILE in CMakeLists.txt LICENSE CHANGELOG
+for SRCFILE in CMakeLists.txt LICENSE CHANGELOG contribute.json
 do
     cp $SRCFILE $DIR
 done

@@ -1,0 +1,20 @@
+{
+    "name": "Skaffari",
+    "description": "Skaffari is a web based email account management application based on Cutelyst that plays together with Postfix, Cyrus and pam_mysql.",
+    "repository": {
+        "url": "https://github.com/Huessenbergnetz/Skaffari",
+        "license": "AGPL-3.0"
+    },
+    "bugs": {
+        "list": "https://github.com/Huessenbergnetz/Skaffari/issues?q=is%3Aopen+is%3Aissue",
+        "report": "https://github.com/Huessenbergnetz/Skaffari/issues/new"
+    },
+    "keywords": [
+        "cutelyst",
+        "c++",
+        "qt",
+        "mysql",
+        "postfix",
+        "cyrus"
+    ]
+}

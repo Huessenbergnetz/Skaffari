@@ -24,6 +24,7 @@
 #define SKAFFARI_TMPLDIR "@TEMPLATES_INSTALL_DIR@"
 #define SKAFFARI_CONFDIR "@CMAKE_INSTALL_SYSCONFDIR@"
 #define SKAFFARI_SQLDIR "@SQL_INSTALL_DIR@"
+#define SKAFFARI_STATICDIR "@APPDIR@/static"
 #define SKAFFARI_SUPPORTED_LANGS {QStringLiteral("en"), QStringLiteral("de")}
 
 // default values for Accounts

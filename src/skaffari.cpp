@@ -307,7 +307,7 @@ bool Skaffari::init()
 
     auto staticSimple = new StaticSimple(this);
     QString staticPath = tmplBasePath + QLatin1String("/static");
-    staticSimple->setIncludePaths({staticPath});
+    staticSimple->setIncludePaths({staticPath, QStringLiteral(SKAFFARI_STATICDIR)});
 
     if (SkaffariConfig::useMemcached()) {
         auto memc = new Memcached(this);

@@ -98,6 +98,8 @@ else(LRELEASE_CMD)
     message(WARNING "Translations are disabled")
 endif(LRELEASE_CMD)
 
+install(FILES contribute.json DESTINATION ${APPDIR}/static)
+
 add_subdirectory(src)
 add_subdirectory(sql)
 add_subdirectory(cmd)
