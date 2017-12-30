@@ -12,67 +12,71 @@
 
 {% if domains.size %}
 <div class="row mt-1">
-    <div class="col-12">
+    <div class="col">
         <input type="search" id="domainTableFilter" class="form-control" placeholder="{{ _("Filter domain names") }}">
     </div>
-    <div class="col-12">
-        <table id="domainTable" class="table table-responsive">
-            <thead>
-                <tr>
-                    <th>{{ _("Actions") }}</th>
-                    <th class="sortable" data-sort="string-ins" data-sort-default="asc" data-sort-onload=yes>{{ _("Domain name") }} <small><i class="fa fa-sort-alpha-asc text-muted"></i></small></th>
-                    <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Accounts") }}</th>
-                    <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Max. Accounts")}}</th>
-                    <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Default quota") }}</th>
-                    <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Domain quota") }}</th>
-                    <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Quota usage") }}</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% i18nc_var "Button text on the domain list page" "Edit domain" as edtDomTxt %}
-            {% i18nc_var "Text for screen readers on dropdown menu" "Toggle dropdown" as togDrpTxt %}
-            {% i18nc_var "Button text on the domain list page" "Add account" as addAccTxt %}
-            {% i18nc_var "Button text on the domain list page" "Manage accounts" as mngAccTxt %}
-            {% i18nc_var "Button text on the domain list page" "Alias addresses" as aliAdrTxt %}
-            {% i18nc_var "Button text on the domain list page" "Check domain" as chkDomTxt %}
-            {% i18nc_var "Button text on the domain list page" "Delete domain" as delDomTxt %}
-            {% i18nc_var "Used for unlimited accounts and domain quota on domain list page" "unlimited" as unlimitedTxt %}
-            {% for domain in domains %}
-                <tr id="domain-{{ domain.id }}">
-                    <td class="no-filtering">
-                        <div class="btn-group">
-                            <a href="/domain/{{ domain.id }}/edit" class="btn btn-sm btn-light" title='{{ edtDomTxt }}' role="button"><i class="fa fa-edit fa-fw"></i></a>
-                            <button type="button" class="btn btn-sm btn-light dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="sr-only">{{ togDrpTxt }}</span>
-                            </button>
-                            <div class="dropdown-menu">
-                                <a href="/domain/{{ domain.id }}/add_account" class="dropdown-item"><i class="fa fa-user-plus fa-fw"></i> {{ addAccTxt }}</a>
-                                <a href="/domain/{{ domain.id }}/accounts" class="dropdown-item"><i class="fa fa-users fa-fw"></i> {{ mngAccTxt }}</a>
-                                <a href="#" class="dropdown-item disabled"><i class="fa fa-mail-forward fa-fw"></i> {{ aliAdrTxt }}</a>
-                                <a href="/domain/{{  domain.id }}/check" class="dropdown-item"><i class="fa fa-stethoscope fa-fw"></i> {{ chkDomTxt }}</a>
-                                {% ifequal userType 0 %}
-                                <a href="#" class="dropdown-item remove-domain-btn text-danger" data-toggle="modal" data-target="#removeDomainModal" data-name="{{ domain.name }}" data-domainid="{{ domain.id }}" data-accountcount="{{ domain.accounts }}"><i class="fa fa-trash fa-fw"></i> {{ delDomTxt }}</a>
-                                {% endifequal %}
+</div>
+<div class="row mt-1">
+    <div class="col">
+        <div class="table-responsive">
+            <table id="domainTable" class="table">
+                <thead>
+                    <tr>
+                        <th>{{ _("Actions") }}</th>
+                        <th class="sortable" data-sort="string-ins" data-sort-default="asc" data-sort-onload=yes>{{ _("Domain name") }} <small><i class="fa fa-sort-alpha-asc text-muted"></i></small></th>
+                        <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Accounts") }}</th>
+                        <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Max. Accounts")}}</th>
+                        <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Default quota") }}</th>
+                        <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Domain quota") }}</th>
+                        <th class="sortable text-right" data-sort="int" data-sort-default="desc">{{ _("Quota usage") }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% i18nc_var "Button text on the domain list page" "Edit domain" as edtDomTxt %}
+                {% i18nc_var "Text for screen readers on dropdown menu" "Toggle dropdown" as togDrpTxt %}
+                {% i18nc_var "Button text on the domain list page" "Add account" as addAccTxt %}
+                {% i18nc_var "Button text on the domain list page" "Manage accounts" as mngAccTxt %}
+                {% i18nc_var "Button text on the domain list page" "Alias addresses" as aliAdrTxt %}
+                {% i18nc_var "Button text on the domain list page" "Check domain" as chkDomTxt %}
+                {% i18nc_var "Button text on the domain list page" "Delete domain" as delDomTxt %}
+                {% i18nc_var "Used for unlimited accounts and domain quota on domain list page" "unlimited" as unlimitedTxt %}
+                {% for domain in domains %}
+                    <tr id="domain-{{ domain.id }}">
+                        <td class="no-filtering">
+                            <div class="btn-group">
+                                <a href="/domain/{{ domain.id }}/edit" class="btn btn-sm btn-light" title='{{ edtDomTxt }}' role="button"><i class="fa fa-edit fa-fw"></i></a>
+                                <button type="button" class="btn btn-sm btn-light dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="sr-only">{{ togDrpTxt }}</span>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a href="/domain/{{ domain.id }}/add_account" class="dropdown-item"><i class="fa fa-user-plus fa-fw"></i> {{ addAccTxt }}</a>
+                                    <a href="/domain/{{ domain.id }}/accounts" class="dropdown-item"><i class="fa fa-users fa-fw"></i> {{ mngAccTxt }}</a>
+                                    <a href="#" class="dropdown-item disabled"><i class="fa fa-mail-forward fa-fw"></i> {{ aliAdrTxt }}</a>
+                                    <a href="/domain/{{  domain.id }}/check" class="dropdown-item"><i class="fa fa-stethoscope fa-fw"></i> {{ chkDomTxt }}</a>
+                                    {% ifequal userType 0 %}
+                                    <a href="#" class="dropdown-item remove-domain-btn text-danger" data-toggle="modal" data-target="#removeDomainModal" data-name="{{ domain.name }}" data-domainid="{{ domain.id }}" data-accountcount="{{ domain.accounts }}"><i class="fa fa-trash fa-fw"></i> {{ delDomTxt }}</a>
+                                    {% endifequal %}
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td data-sort-value="{{ domain.name }}"><a href="/domain/{{ domain.id }}/accounts" title="{{ _("Manage accounts") }}">{{ domain.name }}</a><br><small class="text-muted">{% i18n "ID: %1, Prefix: %2" domain.id domain.prefix %}{% if domain.parent.id > 0 %}, {{ _("Parent:") }} <a href="#domain-{{ domain.parent.id }}">{{ domain.parent.name }}</a>{% endif %}</small></td>
-                    <td class="no-filtering text-right">{{ _(domain.accounts) }}</td>
-                    <td class="no-filtering text-right" data-sort-value="{{ domain.maxAccounts }}">{% if domain.maxAccounts > 0 %}{{ _(domain.maxAccounts) }}{% else %}{{ unlimitedTxt }}{% endif %}</td>
-                    <td class="no-filtering text-right" data-sort-value="{{ domain.quota }}">{% if domain.quota > 0 %}{% sk_fsf domain.quota 2 2 1024 %}{% else %}{{ _("not set") }}{% endif %}</td>
-                    <td class="no-filtering text-right" data-sort-value="{{ domain.domainQuota }}">{% if domain.domainQuota > 0 %}{% sk_fsf domain.domainQuota 2 2 1024 %}{% else %}{{ unlimitedTxt }}{% endif %}</td>
-                    <td class="no-filtering text-right" data-sort-value="{{ domain.domainQuotaUsed }}">
-                        {% sk_fsf domain.domainQuotaUsed 2 2 1024 %}
-                        {% if domain.domainQuota > 0 %}
-                        <div class="progress" title="{{ domain.domainQuotaUsagePercent|floatformat:2 }}%">
-                            <div class="progress-bar bg-info pb-w-{{ domain.domainQuotaUsagePercent|floatformat:0 }}" role="progressbar" aria-valuenow="{{ domain.domainQuotaUsed }}" aria-valuemin="0" aria-valuemax="{{ domain.domainQuota }}">{{ domain.domainQuotaUsagePercent|floatformat:2 }}%</div>
-                        </div>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                        </td>
+                        <td data-sort-value="{{ domain.name }}"><a href="/domain/{{ domain.id }}/accounts" title="{{ _("Manage accounts") }}">{{ domain.name }}</a><br><small class="text-muted">{% i18n "ID: %1, Prefix: %2" domain.id domain.prefix %}{% if domain.parent.id > 0 %}, {{ _("Parent:") }} <a href="#domain-{{ domain.parent.id }}">{{ domain.parent.name }}</a>{% endif %}</small></td>
+                        <td class="no-filtering text-right">{{ _(domain.accounts) }}</td>
+                        <td class="no-filtering text-right" data-sort-value="{{ domain.maxAccounts }}">{% if domain.maxAccounts > 0 %}{{ _(domain.maxAccounts) }}{% else %}{{ unlimitedTxt }}{% endif %}</td>
+                        <td class="no-filtering text-right" data-sort-value="{{ domain.quota }}">{% if domain.quota > 0 %}{% sk_fsf domain.quota 2 2 1024 %}{% else %}{{ _("not set") }}{% endif %}</td>
+                        <td class="no-filtering text-right" data-sort-value="{{ domain.domainQuota }}">{% if domain.domainQuota > 0 %}{% sk_fsf domain.domainQuota 2 2 1024 %}{% else %}{{ unlimitedTxt }}{% endif %}</td>
+                        <td class="no-filtering text-right" data-sort-value="{{ domain.domainQuotaUsed }}">
+                            {% sk_fsf domain.domainQuotaUsed 2 2 1024 %}
+                            {% if domain.domainQuota > 0 %}
+                            <div class="progress" title="{{ domain.domainQuotaUsagePercent|floatformat:2 }}%">
+                                <div class="progress-bar bg-info pb-w-{{ domain.domainQuotaUsagePercent|floatformat:0 }}" role="progressbar" aria-valuenow="{{ domain.domainQuotaUsed }}" aria-valuemin="0" aria-valuemax="{{ domain.domainQuota }}">{{ domain.domainQuotaUsagePercent|floatformat:2 }}%</div>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

@@ -12,29 +12,31 @@
 
 <div class="row mt-1">
     <div class="col">
-        <table id="adminsTable" class="table table-responsive">
-            <thead>
-                <tr>
-                    <th>{{ _("Actions") }}</th>
-                    <th>{{ _("Name") }}</th>
-                    <th>{{ _("Type") }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for admin in adminaccounts %}
-                <tr id="admin-{{ admin.id }}">
-                    <td>
-                        <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Admin actions") }}">
-                            <a href="/admin/{{ admin.id }}/edit" class="btn btn-outline-primary" title='{{ _("Edit admin") }}' role="button"><i class="fa fa-edit fa-fw"></i></a>
-                            <button type="button" class="btn btn-outline-danger remove-admin-btn" title="{{ _("Delete admin") }}" data-toggle="modal" data-target="#removeAdminModal" data-adminid="{{ admin.id }}" data-username="{{ admin.username }}"><i class="fa fa-trash fa-fw"></i></button>
-                        </div>
-                    </td>
-                    <td><a href="/admin/{{ admin.id }}/edit">{{ admin.username }}</a></td>
-                    <td>{% if admin.isSuperUser %}{{ _("Super user") }}{% else %}{{ _("Domain master") }}{% endif %}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table id="adminsTable" class="table">
+                <thead>
+                    <tr>
+                        <th>{{ _("Actions") }}</th>
+                        <th>{{ _("Name") }}</th>
+                        <th>{{ _("Type") }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for admin in adminaccounts %}
+                    <tr id="admin-{{ admin.id }}">
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Admin actions") }}">
+                                <a href="/admin/{{ admin.id }}/edit" class="btn btn-outline-primary" title='{{ _("Edit admin") }}' role="button"><i class="fa fa-edit fa-fw"></i></a>
+                                <button type="button" class="btn btn-outline-danger remove-admin-btn" title="{{ _("Delete admin") }}" data-toggle="modal" data-target="#removeAdminModal" data-adminid="{{ admin.id }}" data-username="{{ admin.username }}"><i class="fa fa-trash fa-fw"></i></button>
+                            </div>
+                        </td>
+                        <td><a href="/admin/{{ admin.id }}/edit">{{ admin.username }}</a></td>
+                        <td>{% if admin.isSuperUser %}{{ _("Super user") }}{% else %}{{ _("Domain master") }}{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
