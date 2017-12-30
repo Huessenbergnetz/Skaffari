@@ -1,8 +1,8 @@
 <div class="row">
-    <div class="col-12 col-lg-6"><h2><i class="fa fa-stethoscope"></i> {{ _("Check domain") }} <small class="text-muted">{{ domain.name }}</small></h2></div>
+    <div class="col-12 col-lg-6"><h2><i class="fas fa-stethoscope"></i> {{ _("Check domain") }} <small class="text-muted">{{ domain.name }}</small></h2></div>
     <div class="col-12 col-lg-6">
-        <button type="button" id="checkdomain" data-accountids="{{ accountids }}" data-domainid="{{ domain.id }}" data-baseurl="{{ baseurl }}" data-ntdstr="{{ _("Nothing to do. Everything seems to be ok with this account.") }}" class="btn btn-outline-primary float-right ml-1"{% if domain.accounts == 0 %} disabled{% endif %}><i class="fa fa-stethoscope"></i> {{ _("Start check") }}</button>
-        <a href="/domain/{{ domain.id }}/accounts" class="btn btn-outline-secondary float-right" role="button"><i class="fa fa-arrow-circle-o-left"></i> {{ _("Back") }}</a>
+        <button type="button" id="checkdomain" data-accountids="{{ accountids }}" data-domainid="{{ domain.id }}" data-baseurl="{{ baseurl }}" data-ntdstr="{{ _("Nothing to do. Everything seems to be ok with this account.") }}" class="btn btn-outline-primary float-right ml-1"{% if domain.accounts == 0 %} disabled{% endif %}><i class="fas fa-stethoscope"></i> {{ _("Start check") }}</button>
+        <a href="/domain/{{ domain.id }}/accounts" class="btn btn-outline-secondary float-right" role="button"><i class="far fa-arrow-alt-circle-left"></i> {{ _("Back") }}</a>
     </div>
 </div>
 

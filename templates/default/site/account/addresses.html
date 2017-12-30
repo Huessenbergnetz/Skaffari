@@ -1,12 +1,12 @@
 <div class="row">
     <div class="col-12 col-sm-9">
-        <h2><i class="fa fa-envelope"></i> {{ _("Email addresses") }} <small class="text-muted">{{ account.username }}</small></h2>
+        <h2><i class="fas fa-envelope"></i> {{ _("Email addresses") }} <small class="text-muted">{{ account.username }}</small></h2>
     </div>
     <div id="addbuttons" class="col-12 col-sm-3">
-        <button type="button" class="btn btn-outline-primary float-sm-right d-none d-sm-block" data-toggle="modal" data-target="#addressModal" data-actiontype="add"><i class="fa fa-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></button>
-        <button type="button" class="btn btn-outline-primary btn-block d-block d-sm-none" data-toggle="modal" data-target="#addressModal" data-actiontype="add"><i class="fa fa-plus"></i> {{ _("Add") }}</button>
-        {# <a href="/account/{{ domain.id }}/{{ account.id }}/add_address" class="btn btn-outline-primary float-sm-right d-none d-sm-block" role="button"><i class="fa fa-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></a> #}
-        {# <a href="/account/{{ domain.id }}/{{ account.id }}/add_address" class="btn btn-outline-primary btn-block d-block d-sm-none" role="button"><i class="fa fa-plus"></i> {{ _("Add") }}</a> #}
+        <button type="button" class="btn btn-outline-primary float-sm-right d-none d-sm-block" data-toggle="modal" data-target="#addressModal" data-actiontype="add"><i class="fas fa-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></button>
+        <button type="button" class="btn btn-outline-primary btn-block d-block d-sm-none" data-toggle="modal" data-target="#addressModal" data-actiontype="add"><i class="fas fa-plus"></i> {{ _("Add") }}</button>
+        {# <a href="/account/{{ domain.id }}/{{ account.id }}/add_address" class="btn btn-outline-primary float-sm-right d-none d-sm-block" role="button"><i class="fas fa-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></a> #}
+        {# <a href="/account/{{ domain.id }}/{{ account.id }}/add_address" class="btn btn-outline-primary btn-block d-block d-sm-none" role="button"><i class="fas fa-plus"></i> {{ _("Add") }}</a> #}
     </div>
 </div>
 
@@ -26,10 +26,10 @@
                     <tr class="address-row" data-address="{{ address }}">
                         <td>
                             <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Email address actions") }}">
-                                <button type="button" class="btn btn-outline-primary edit-address-btn" title="{{ _("Edit address") }}" data-toggle="modal" data-target="#addressModal" data-actiontype="edit"><i class="fa fa-edit fa-fw"></i></button>
-                                <button type="button" class="btn btn-outline-danger remove-address-btn" title="{{ _("Delete address") }}" {%if account.addresses.count <= 1 %} disabled{% endif %}><i class="fa fa-trash fa-fw"></i></button>
-                                {# <a href="/account/{{ domain.id }}/{{ account.id }}/edit_address/{{ address|sk_urlencode }}" class="btn btn-outline-primary" title="{{ _("Edit address") }}"><i class="fa fa-edit fa-fw"></i></a> #}
-                                {# <a href="/account/{{ domain.id }}/{{ account.id }}/remove_address/{{ address|sk_urlencode }}" class="btn btn-outline-danger{%if account.addresses.count <= 1 %} disabled{% endif %}" title="{{ _("Remove address") }}"{%if account.addresses.count <= 1 %} aria-disabled="true"{% endif %}><i class="fa fa-trash fa-fw"></i></a> #}
+                                <button type="button" class="btn btn-outline-primary edit-address-btn" title="{{ _("Edit address") }}" data-toggle="modal" data-target="#addressModal" data-actiontype="edit"><i class="fas fa-edit fa-fw"></i></button>
+                                <button type="button" class="btn btn-outline-danger remove-address-btn" title="{{ _("Delete address") }}" {%if account.addresses.count <= 1 %} disabled{% endif %}><i class="fas fa-trash fa-fw"></i></button>
+                                {# <a href="/account/{{ domain.id }}/{{ account.id }}/edit_address/{{ address|sk_urlencode }}" class="btn btn-outline-primary" title="{{ _("Edit address") }}"><i class="fas fa-edit fa-fw"></i></a> #}
+                                {# <a href="/account/{{ domain.id }}/{{ account.id }}/remove_address/{{ address|sk_urlencode }}" class="btn btn-outline-danger{%if account.addresses.count <= 1 %} disabled{% endif %}" title="{{ _("Remove address") }}"{%if account.addresses.count <= 1 %} aria-disabled="true"{% endif %}><i class="fas fa-trash fa-fw"></i></a> #}
                             </div>
                         </td>
                         <td>{{ address }}</td>
@@ -43,7 +43,7 @@
 
     <section class="col-12 col-sm-12 col-md-5">
         <div class="card">
-            <div class="card-header"><i class="fa fa-life-ring"></i> {{ _("Help") }}</div>
+            <div class="card-header"><i class="fas fa-life-ring"></i> {{ _("Help") }}</div>
             <div class="card-body">
                 <p class="card-text">{{ _("Simply add new email addresses to an existing account. A single account can have multiple email addresses for which it receives emails.") }}</p>
                 <p class="card-text">{{ _("When deleting email addresses from an account, keep in mind that there has to be still one email address for the domain the account is connected to.") }}
@@ -56,8 +56,8 @@
     <tr class="address-row">
         <td>
             <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Email address actions") }}">
-                <button type="button" class="btn btn-outline-primary edit-address-btn" title="{{ _("Edit address") }}" data-toggle="modal" data-target="#addressModal" data-actiontype="edit"><i class="fa fa-edit fa-fw"></i></button>
-                <button type="button" class="btn btn-outline-danger remove-address-btn" title="{{ _("Delete address") }}"><i class="fa fa-trash fa-fw"></i></button>
+                <button type="button" class="btn btn-outline-primary edit-address-btn" title="{{ _("Edit address") }}" data-toggle="modal" data-target="#addressModal" data-actiontype="edit"><i class="fas fa-edit fa-fw"></i></button>
+                <button type="button" class="btn btn-outline-danger remove-address-btn" title="{{ _("Delete address") }}"><i class="fas fa-trash fa-fw"></i></button>
             </div>
         </td>
         <td></td>
@@ -105,8 +105,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fa fa-times"></i> {{ _("Cancel") }}</button>
-                <button type="submit" id="addressSubmit" form="addressForm" class="btn btn-primary"><i id="addressSubmitIcon" class="fa fa-save"></i> <span id="addressSubmitText" data-addlabel="{{ _("Add") }}" data-editlabel="{{ _("Change") }}">{{ _("Add") }}</span></button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> {{ _("Cancel") }}</button>
+                <button type="submit" id="addressSubmit" form="addressForm" class="btn btn-primary"><i id="addressSubmitIcon" class="fas fa-save"></i> <span id="addressSubmitText" data-addlabel="{{ _("Add") }}" data-editlabel="{{ _("Change") }}">{{ _("Add") }}</span></button>
             </div>
         </div>
     </div>

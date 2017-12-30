@@ -1,10 +1,10 @@
 <div class="row">
     <div class="col-12 col-sm-9">
-        <h2><i class="fa fa-users"></i> {{ _("Accounts") }} <small class="text-muted">{{ domain.name }}</small></h2>
+        <h2><i class="fas fa-users"></i> {{ _("Accounts") }} <small class="text-muted">{{ domain.name }}</small></h2>
     </div>
     <div class="col-12 col-sm-3">
-        <a class="btn btn-outline-primary float-sm-right d-none d-sm-block" href="/domain/{{ domain.id }}/add_account" role="button"><i class="fa fa-user-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></a>
-        <a class="btn btn-outline-primary btn-block d-block d-sm-none" href="/domain/{{ domain.id }}/add_account" role="button"><i class="fa fa-user-plus"></i> {{ _("Add") }}</a>
+        <a class="btn btn-outline-primary float-sm-right d-none d-sm-block" href="/domain/{{ domain.id }}/add_account" role="button"><i class="fas fa-user-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></a>
+        <a class="btn btn-outline-primary btn-block d-block d-sm-none" href="/domain/{{ domain.id }}/add_account" role="button"><i class="fas fa-user-plus"></i> {{ _("Add") }}</a>
     </div>
 </div>
 
@@ -14,8 +14,8 @@
             <div class="input-group">
                 <input type="search" id="searchString" name="searchString" class="form-control" value="{{ searchString }}" placeholder="{{ _("Filter accounts") }}">
                 <div class="input-group-append">
-                    <button id="accountFilterFormSubmit" type="submit" class="btn btn-outline-secondary" title="{{ _("Apply filters") }}"><i class="fa fa-filter"></i></button>
-                    <button id="accountFilterFormReset" type="button" class="btn btn-outline-secondary" title="{{ _("Reset filters") }}"><i class="fa fa-undo"></i></button>
+                    <button id="accountFilterFormSubmit" type="submit" class="btn btn-outline-secondary" title="{{ _("Apply filters") }}"><i class="fas fa-filter"></i></button>
+                    <button id="accountFilterFormReset" type="button" class="btn btn-outline-secondary" title="{{ _("Reset filters") }}"><i class="fas fa-undo"></i></button>
                 </div>
             </div>
         </div>
@@ -59,13 +59,13 @@
     <tr class="account-row">
         <td>
             <div class="btn-group">
-                <a class="btn btn-sm btn-light" title="{{ _("Edit account") }}" role="buton"><i class="fa fa-edit fa-fw"></i></a>
+                <a class="btn btn-sm btn-light" title="{{ _("Edit account") }}" role="buton"><i class="fas fa-edit fa-fw"></i></a>
                 <button class="btn btn-sm btn-light dropdown-toggle dropdown-toggle-split" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="sr-only">{{ _("Toggle dropdown") }}</span></button>
                 <div class="dropdown-menu">
-                    <a class="dropdown-item"><i class="fa fa-envelope-o fa-fw"></i> {{ _("Email addresses") }}</a>
-                    <a class="dropdown-item"><i class="fa fa-mail-forward fa-fw"></i> {{ _("Forwards") }}</a>
-                    <a class="dropdown-item check-account-btn" href="#" data-target="#checkAccountModal" data-toggle="modal"><i class="fa fa-stethoscope fa-fw"></i> {{ _("Check account") }}</a>
-                    <a class="dropdown-item remove-account-btn text-danger" href="#" data-target="#removeAccountModal" data-toggle="modal"><i class="fa fa-trash fa-fw"></i> {{ _("Delete account") }}</a>
+                    <a class="dropdown-item"><i class="far fa-envelope fa-fw"></i> {{ _("Email addresses") }}</a>
+                    <a class="dropdown-item"><i class="fas fa-share-square fa-fw"></i> {{ _("Forwards") }}</a>
+                    <a class="dropdown-item check-account-btn" href="#" data-target="#checkAccountModal" data-toggle="modal"><i class="fas fa-stethoscope fa-fw"></i> {{ _("Check account") }}</a>
+                    <a class="dropdown-item remove-account-btn text-danger" href="#" data-target="#removeAccountModal" data-toggle="modal"><i class="fas fa-trash fa-fw"></i> {{ _("Delete account") }}</a>
                 </div>
             </div>
         </td>
@@ -83,7 +83,7 @@
 
 <div id="loadingActive" class="row mt-3">
     <div class="col-12 text-center">
-        <i class="fa fa-refresh fa-spin fa-5x"></i>
+        <i class="fas fa-sync fa-spin fa-5x"></i>
     </div>
 </div>
 
@@ -94,7 +94,7 @@
             <div class="card-body">
                 <h2 class="card-title">{% i18n "No accounts for %1" domain.name %}</h2>
                 <p class="card-text">{{ _("There are no user accounts for this domain. Add new email accounts by hitting the button below or change your filter settings.") }}</p>
-                <a href="/domain/{{ domain.id }}/add_account" class="btn btn-primary"><i class="fa fa-plus"></i> {{ _("Add Account") }}</a>
+                <a href="/domain/{{ domain.id }}/add_account" class="btn btn-primary"><i class="fas fa-user-plus"></i> {{ _("Add Account") }}</a>
             </div>
         </div>
     </div>
@@ -115,15 +115,13 @@
                 <form id="checkAccountForm">
                     {% if domain.children.count > 0 %}
                     <div class="form-check">
-                        <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" name="checkChildAddresses" value="1">
-                            {{ _("Check for missing child domain addresses") }}
-                        </label>
+                        <input type="checkbox" class="form-check-input" name="checkChildAddresses" value="1">
+                        <label class="form-check-label">{{ _("Check for missing child domain addresses") }}</label>
                     </div>
                     {% endif %}
                 </form>
                 <div id="checkAccountActive" class="text-center">
-                    <i class="fa fa-circle-o-notch fa-5x fa-spin"></i>
+                    <i class="fas fa-cog fa-5x fa-spin"></i>
                 </div>
                 <ul id="checkAccountList">
                 </ul>
@@ -135,8 +133,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fa fa-times"></i> {{ _("Cancel") }}</button>
-                <button type="button" id="checkAccountSubmit" class="btn btn-danger"><i id="checkAccountIcon" class="fa fa-stethoscope"></i> {{ _("Check") }}</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> {{ _("Cancel") }}</button>
+                <button type="button" id="checkAccountSubmit" class="btn btn-danger"><i id="checkAccountIcon" class="fas fa-stethoscope"></i> {{ _("Check") }}</button>
             </div>
         </div>
     </div>
@@ -153,7 +151,7 @@
             </div>
             <div class="modal-body">
                 <div class="text-center">
-                    <i class="fa fa-warning fa-5x text-danger"></i>
+                    <i class="fas fa-exclamation-triangle fa-5x text-danger"></i>
                     <h3 id="removeAccountName"></h3>
                     <p class="text-warning">{{ _("Are you sure you want to delete this account?") }}</p>
                     <p>{{ _("To proceed, please enter the user name of the account you want to delete.") }}</p>
@@ -169,8 +167,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fa fa-times"></i> {{ _("Cancel") }}</button>
-                <button type="submit" id="removeAccountSubmit" form="removeAccountForm" class="btn btn-danger"><i id="removeAccountIcon" class="fa fa-trash"></i> {{ _("Delete") }}</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> {{ _("Cancel") }}</button>
+                <button type="submit" id="removeAccountSubmit" form="removeAccountForm" class="btn btn-danger"><i id="removeAccountIcon" class="fas fa-trash"></i> {{ _("Delete") }}</button>
             </div>
         </div>
     </div>
