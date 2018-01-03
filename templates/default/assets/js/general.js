@@ -16,6 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+$(function() {
+    $.i18n().load({
+        en: '/i18n/en.json',
+        de: '/i18n/de.json'
+    });
+});
+
 var Skaffari = Skaffari || {};
 
 Skaffari.DefaultTmpl = Skaffari.DefaultTmpl || {};
@@ -94,10 +101,5 @@ Skaffari.DefaultTmpl.init = function() {
                 xhr.setRequestHeader("X-CSRFTOKEN", Cookies.get('csrftoken'));
             }
         }
-    });
-
-    $.i18n().load({
-        en: '/i18n/en.json',
-        de: '/i18n/de.json'
     });
 }
