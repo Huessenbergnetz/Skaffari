@@ -87,6 +87,53 @@ Skaffari.DefaultTmpl.createAlert = function(type, text, target, classes) {
     warnDiv.show(300);
 }
 
+Skaffari.DefaultTmpl.relativeTime = function(datetime) {
+    var _dt = (typeof datetime === 'object') ? datetime : new Date(datetime);
+    var _msecs = _dt.getTime();
+    if ((typeof _dt === 'object') && (_msecs > 0)) {
+
+        var timeDiff = Date.now() - _msecs;
+        timeDiff = timeDiff/1000;
+        if (timeDiff > 0) {
+            if (timeDiff > 63072000) { // more than 2 years
+                return $.i18n('sk-def-tmpl-reltime-yearsago', Math.floor(timeDiff / 31536000));
+            } else if (timeDiff > 5270400) { // more than 61 days
+                return $.i18n('sk-def-tmpl-reltime-monthsago', Math.floor(timeDiff / 2635200))
+            } else if (timeDiff > 172800) { // more than 2 days
+                return $.i18n('sk-def-tmpl-reltime-daysago', Math.floor(timeDiff / 86400));
+            } else if (timeDiff > 7200) { // more than 2 hours
+                return $.i18n('sk-def-tmpl-reltime-hoursago', Math.floor(timeDiff / 3600));
+            } else if (timeDiff > 120) { // more than 2 minutes
+                return $.i18n('sk-def-tmpl-reltime-minutesago', Math.floor(timeDiff / 60));
+            } else {
+                return $.i18n('sk-def-tmpl-reltime-secondsago', Math.floor(timeDiff));
+            }
+        } else if (timeDiff < 0) {
+            timeDiff = timeDiff * -1;
+            if (timeDiff > 3153600000) { // in more than 100 years
+                return $.i18n('sk-def-tmpl-reltime-never');
+            } else if (timeDiff > 63072000) { // in more than 2 years
+                return $.i18n('sk-def-tmpl-reltime-inyears', Math.floor(timeDiff / 31536000));
+            } else if (timeDiff > 5270400) { // in more than 61 days
+                return $.i18n('sk-def-tmpl-reltime-inmonths', Math.floor(timeDiff / 2635200));
+            } else if (timeDiff > 172800) { // in more than 2 days
+                return $.i18n('sk-def-tmpl-reltime-indays', Math.floor(timeDiff / 86400));
+            } else if (timeDiff > 7200) { // in more than 2 hours
+                return $.i18n('sk-def-tmpl-reltime-inhours', Math.floor(timeDiff / 3600));
+            } else if (timeDiff > 120) { // in more than 2 minutes
+                return $.i18n('sk-def-tmpl-reltime-inminutes', Math.floor(timeDiff / 60));
+            } else {
+                return $.i18n('sk-def-tmpl-reltime-inseconds', Math.floor(timeDiff));
+            }
+        } else {
+            return $.i18n('sk-def-tmpl-reltime-justnow');
+        }
+
+    } else {
+        return $.i18n('sk-def-tmpl-undefined');
+    }
+}
+
 Skaffari.DefaultTmpl.csrfSafeMethod = function(method) {
     // these HTTP methods do not require CSRF protection
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));

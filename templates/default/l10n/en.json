@@ -4,6 +4,20 @@
             "Buschmann"
         ]
     },
+    "sk-def-tmpl-reltime-justnow": "just now",
+    "sk-def-tmpl-reltime-yearsago": "$1 {{PLURAL:$1|year|years}} ago",
+    "sk-def-tmpl-reltime-monthsago": "$1 {{PLURAL:$1|month|months}} ago",
+    "sk-def-tmpl-reltime-daysago": "$1 {{PLURAL:$1|day|days}} ago",
+    "sk-def-tmpl-reltime-hoursago": "$1 {{PLURAL:$1|hour|hours}} ago",
+    "sk-def-tmpl-reltime-minutesago": "$1 {{PLURAL:$1|minute|minutes}} ago",
+    "sk-def-tmpl-reltime-secondsago": "$1 {{PLURAL:$1|second|seconds}} ago",
+    "sk-def-tmpl-reltime-inyears": "in $1 {{PLURAL:$1|year|years}}",
+    "sk-def-tmpl-reltime-inmonths": "in $1 {{PLURAL:$1|month|months}}",
+    "sk-def-tmpl-reltime-indays": "in $1 {{PLURAL:$1|day|days}}",
+    "sk-def-tmpl-reltime-inhours": "in $1 {{PLURAL:$1|hour|hours}}",
+    "sk-def-tmpl-reltime-inminutes": "in $1 {{PLURAL:$1|minute|minutes}}",
+    "sk-def-tmpl-reltime-inseconds": "in $1 {{PLURAL:$1|second|seconds}}",
+    "sk-def-tmpl-reltime-never": "never",
     "sk-def-tmpl-forwardmodal-add": "Add new forward address",
     "sk-def-tmpl-forwardmodal-edit": "Edit forward address",
     "sk-def-tmpl-submitbtn-add": "Add",
@@ -13,9 +27,14 @@
     "sk-def-tmpl-accountlist-catchall": "Catches all undefined email addresses for this domain.",
     "sk-def-tmpl-accountlist-keeplocal": "keep local copy",
     "sk-def-tmpl-accountlist-loadmore": "Load more",
+    "sk-def-tmpl-accountlist-created": "Created on $1 at $2",
+    "sk-def-tmpl-accountlist-updated": "Updated on $1 at $2",
+    "sk-def-tmpl-accountlist-validuntil": "Valid until $1 $2",
+    "sk-def-tmpl-accountlist-passwordexpires": "Password expires on $1 at $2",
     "sk-def-tmpl-htmltemplatesnotavailable": "Your browser does not support the HTML template tag.",
     "sk-def-tmpl-addressmodal-add": "Add new email address",
     "sk-def-tmpl-addressmodal-edit": "Edit email address",
     "sk-def-tmpl-addressremove-question": "Are you sure you want to delete the email address “$1” from this account?",
-    "sk-def-tmpl-checkdomain-nothingtodo": "Nothing to do. Everything seems to be ok with this account."
+    "sk-def-tmpl-checkdomain-nothingtodo": "Nothing to do. Everything seems to be ok with this account.",
+    "sk-def-tmpl-undefined": "undefined"
 }

@@ -111,42 +111,27 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     // end setting contingent
 
     // start settings account times
-    // at first remove the old content
-    while (td[5].firstChild) {
-        td[5].removeChild(td[5].firstChild);
-    }
-    var dateOptions = {
-        year: "2-digit",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-    };
+    var times = td[5].querySelectorAll('time');
+
     var created = new Date(a.created);
-    td[5].appendChild(document.createTextNode(created.toLocaleString(undefined, dateOptions)));
-    td[5].appendChild(document.createElement('br'));
+    times[0].textContent = Skaffari.DefaultTmpl.relativeTime(created);
+    times[0].title = $.i18n('sk-def-tmpl-accountlist-created', created.toLocaleDateString(), created.toLocaleTimeString());
+    times[0].setAttribute('datetime', created.toISOString());
+
     var updated = new Date(a.updated);
-    td[5].appendChild(document.createTextNode(updated.toLocaleString(undefined, dateOptions)));
-    td[5].appendChild(document.createElement('br'));
+    times[1].textContent = Skaffari.DefaultTmpl.relativeTime(updated);
+    times[1].title = $.i18n('sk-def-tmpl-accountlist-updated', updated.toLocaleDateString(), updated.toLocaleTimeString());
+    times[1].setAttribute('datetime', updated.toISOString());
+
     var validUntil = new Date(a.validUntil);
-    if (a.expired) {
-        var validUntilSpan = document.createElement('span');
-        validUntilSpan.className = "text-danger";
-        validUntilSpan.appendChild(document.createTextNode(validUntil.toLocaleString(undefined, dateOptions)));
-        td[5].appendChild(validUntilSpan);
-    } else {
-        td[5].appendChild(document.createTextNode(validUntil.toLocaleString(undefined, dateOptions)));
-    }
-    td[5].appendChild(document.createElement('br'));
+    times[2].textContent = Skaffari.DefaultTmpl.relativeTime(validUntil);
+    times[2].title = $.i18n('sk-def-tmpl-accountlist-validuntil', validUntil.toLocaleDateString(), validUntil.toLocaleTimeString());
+    times[2].setAttribute('datetime', validUntil.toISOString());
+
     var passwordExpires = new Date(a.passwordExpires);
-    if (a.passwordExpired) {
-        var passwordExpiresSpan = document.createElement('span');
-        passwordExpiresSpan.className = "text-danger";
-        passwordExpiresSpan.appendChild(document.createTextNode(passwordExpires.toLocaleString(undefined, dateOptions)));
-    } else {
-        td[5].appendChild(document.createTextNode(passwordExpires.toLocaleString(undefined, dateOptions)));
-    }
+    times[3].textContent = Skaffari.DefaultTmpl.relativeTime(passwordExpires);
+    times[3].title = $.i18n('sk-def-tmpl-accountlist-passwordexpires', passwordExpires.toLocaleDateString(), passwordExpires.toLocaleTimeString());
+    times[3].setAttribute('datetime', passwordExpires.toISOString());
     // end setting account times
 
     // start setting account services
@@ -159,7 +144,6 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     serviceIcons[1].className = baseClass + (a.pop ? enabledClass : disabledClass);
     serviceIcons[2].className = baseClass + (a.sieve ? enabledClass : disabledClass);
     serviceIcons[3].className = baseClass + (a.smtpauth ? enabledClass : disabledClass);
-
     // end setting account services
 
     var clone = document.importNode(Skaffari.DefaultTmpl.AccountList.accountRowTemplate.content, true);

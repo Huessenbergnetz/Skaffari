@@ -4,6 +4,20 @@
             "Buschmann"
         ]
     },
+    "sk-def-tmpl-reltime-justnow": "gerade eben",
+    "sk-def-tmpl-reltime-yearsago": "vor $1 {{PLURAL:$1|Jahr|Jahren}}",
+    "sk-def-tmpl-reltime-monthsago": "vor $1 {{PLURAL:$1|Monat|Monaten}}",
+    "sk-def-tmpl-reltime-daysago": "vor $1 {{PLURAL:$1|Tag|Tagen}}",
+    "sk-def-tmpl-reltime-hoursago": "vor $1 {{PLURAL:$1|Stunde|Stunden}}",
+    "sk-def-tmpl-reltime-minutesago": "vor $1 {{PLURAL:$1|Minute|Minuten}}",
+    "sk-def-tmpl-reltime-secondsago": "vor $1 {{PLURAL:$1|Sekunde|Sekunden}}",
+    "sk-def-tmpl-reltime-inyears": "in $1 {{PLURAL:$1|Jahr|Jahren}}",
+    "sk-def-tmpl-reltime-inmonths": "in $1 {{PLURAL:$1|Monat|Monaten}}",
+    "sk-def-tmpl-reltime-indays": "in $1 {{PLURAL:$1|Tag|Tagen}}",
+    "sk-def-tmpl-reltime-inhours": "in $1 {{PLURAL:$1|Stunde|Stunden}}",
+    "sk-def-tmpl-reltime-inminutes": "in $1 {{PLURAL:$1|Minute|Minuten}}",
+    "sk-def-tmpl-reltime-inseconds": "in $1 {{PLURAL:$1|Sekunde|Sekunden}}",
+    "sk-def-tmpl-reltime-never": "niemals",
     "sk-def-tmpl-forwardmodal-add": "Neue Weiterleitung hinzufügen",
     "sk-def-tmpl-forwardmodal-edit": "Weiterleitung bearbeiten",
     "sk-def-tmpl-submitbtn-add": "Hinzufügen",
@@ -13,9 +27,14 @@
     "sk-def-tmpl-accountlist-catchall": "Erhält alle nicht definierten E-Mail-Adressen für diese Domäne.",
     "sk-def-tmpl-accountlist-keeplocal": "lokale Kopie behalten",
     "sk-def-tmpl-accountlist-loadmore": "Weitere laden",
+    "sk-def-tmpl-accountlist-created": "Erstellt am $1 um $2 Uhr",
+    "sk-def-tmpl-accountlist-updated": "Aktualisiert am $1 um $2 Uhr",
+    "sk-def-tmpl-accountlist-validuntil": "Gültig bis $1 um $2 Uhr",
+    "sk-def-tmpl-accountlist-passwordexpires": "Passwort gültig bis $1 um $2 Uhr",
     "sk-def-tmpl-htmltemplatesnotavailable": "Ihr Browser unterstützt das HTML-Template-Tag leider nicht.",
     "sk-def-tmpl-addressmodal-add": "Neue E-Mai-Adresse hinzufügen",
     "sk-def-tmpl-addressmodal-edit": "E-Mail-Adresse bearbeiten",
     "sk-def-tmpl-addressremove-question": "Wollen Sie die E-Mail-Adresse „$1“ wirklich von diesem Konto entfernen?",
-    "sk-def-tmpl-checkdomain-nothingtodo": "Nichts zu tun. Mit diesem Konto scheint alles in Ordnung zu sein."
+    "sk-def-tmpl-checkdomain-nothingtodo": "Nichts zu tun. Mit diesem Konto scheint alles in Ordnung zu sein.",
+    "sk-def-tmpl-undefined": "undefined"
 }
