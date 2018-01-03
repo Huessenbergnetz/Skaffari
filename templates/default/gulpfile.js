@@ -21,6 +21,13 @@ elixir(function(mix) {
         '../../node_modules/queuejax/jquery.qjax.js',
         '../../node_modules/stupid-table-plugin/stupidtable.js',
         '../../node_modules/js-cookie/src/js.cookie.js',
+        'jquery.i18n/CLDRPluralRuleParser.js',
+        'jquery.i18n/jquery.i18n.js',
+        'jquery.i18n/jquery.i18n.messagestore.js',
+        'jquery.i18n/jquery.i18n.fallbacks.js',
+        'jquery.i18n/jquery.i18n.parser.js',
+        'jquery.i18n/jquery.i18n.emitter.js',
+        'jquery.i18n/jquery.i18n.language.js',
         'jquery.filtertable.js',
         'general.js',
         'forwardlist.js',
@@ -34,4 +41,6 @@ elixir(function(mix) {
     ], 'static/js/scripts.js');
 
     mix.copy('node_modules/@fortawesome/fontawesome-free-webfonts/webfonts', 'static/fonts');
+
+    mix.copy('l10n/*.json', 'static/i18n')
 });
