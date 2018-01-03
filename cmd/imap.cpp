@@ -200,6 +200,12 @@ bool Imap::logout()
     const QString command = tag + QLatin1String(" LOGOUT\r\n");
     this->write(command.toLatin1());
 
+    if ((this->state() == ClosingState) || (this->state() == UnconnectedState)) {
+        m_loggedIn = false;
+        m_tagSequence = 0;
+        return true;
+    }
+
     this->waitForReadyRead();
 
     if (Q_UNLIKELY(!this->checkResponse(this->readAll(), tag))) {
@@ -219,12 +225,16 @@ bool Imap::logout()
 
     this->disconnectFromHost();
 
-    if (Q_LIKELY(this->waitForDisconnected())) {
-        return true;
+    if ((this->state() != ClosingState) && (this->state() != UnconnectedState)) {
+        if (Q_LIKELY(this->waitForDisconnected())) {
+            return true;
+        } else {
+            m_lastError = tr("Connection to IMAP server timed out while waiting for disconnection.");
+            this->abort();
+            return false;
+        }
     } else {
-        m_lastError = tr("Connection to IMAP server timed out while waiting for disconnection.");
-        this->abort();
-        return false;
+        return true;
     }
 }
 
