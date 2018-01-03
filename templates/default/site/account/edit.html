@@ -13,13 +13,13 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="created">{{ help.created.title }}</label>
-                <input type="text" class="form-control" id="created" aria-describedby="createdDesc" value="{% sk_tzc account.created dtFormatString %}" readonly>
+                <input type="text" class="form-control-plaintext" id="created" aria-describedby="createdDesc" value="{% sk_tzc account.created dtFormatString %}" readonly>
                 <small id="createdDesc" class="form-text text-muted">{{ help.created.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="updated">{{ help.updated.title }}</label>
-                <input type="text" class="form-control" id="updated" aria-describedby="updatedDesc" value="{% sk_tzc account.updated dtFormatString %}" readonly>
+                <input type="text" class="form-control-plaintext" id="updated" aria-describedby="updatedDesc" value="{% sk_tzc account.updated dtFormatString %}" readonly>
                 <small id="updatedDesc" class="form-text text-muted">{{ help.updated.text }}</small>
             </div>
 
