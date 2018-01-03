@@ -26,8 +26,6 @@ Skaffari.DefaultTmpl.AccountList.filterForm = $('#accountFilterForm');
 
 Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
 
-    var l10n = Skaffari.DefaultTmpl.AccountList.l10n;
-
     var tr = Skaffari.DefaultTmpl.AccountList.accountRowTemplate.content.querySelector("tr");
     tr.id = 'account-' + a.domainId + '-' + a.id;
     tr.dataset.domainid = a.domainId;
@@ -48,7 +46,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     var unLink = td[1].querySelector("a");
     unLink.setAttribute('href', '/account/' + a.domainId + '/' + a.id + '/addresses');
     unLink.textContent = a.username;
-    td[1].querySelector("small").textContent = l10n.id + ' ' + a.id;
+    td[1].querySelector("small").textContent = $.i18n('sk-def-tmpl-accountlist-id') + ' ' + a.id;
     // end column for username and id
 
 
@@ -60,7 +58,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
     var addressesLength = a.addresses.length;
     if (a.catchAll) {
         var warnSpan = document.createElement('span');
-        warnSpan.textContent = l10n.catchAll;
+        warnSpan.textContent = $.i18n('sk-def-tmpl-accountlist-catchall');
         warnSpan.className = "text-warning";
         td[2].appendChild(warnSpan);
         if (addressesLength > 0) {
@@ -92,7 +90,7 @@ Skaffari.DefaultTmpl.AccountList.createRow = function(a) {
         klIcon.className = "fas fa-copy";
         td[3].appendChild(document.createElement('br'));
         td[3].appendChild(klIcon);
-        td[3].appendChild(document.createTextNode(' ' + l10n.keepLocal));
+        td[3].appendChild(document.createTextNode(' ' + $.i18n('sk-def-tmpl-accountlist-keeplocal')));
     }
     // end setting forwards
 
@@ -312,7 +310,7 @@ Skaffari.DefaultTmpl.AccountList.load = function(loadMore) {
                         var lmbtn = $('<button>');
                         lmbtn.attr('type', 'button');
                         lmbtn.addClass('btn btn-light btn-lg btn-block');
-                        lmbtn.text(al.l10n.loadMore);
+                        lmbtn.text($.i18n('sk-def-tmpl-accountlist-loadmore'));
                         lmbtn.click(function() {
                             al.load(true);
                         });
@@ -337,7 +335,7 @@ Skaffari.DefaultTmpl.AccountList.load = function(loadMore) {
             });
         }
     } else {
-        Skaffari.DefaultTmpl.createAlert('warning', Skaffari.DefaultTmpl.AccountList.l10n.htmlTemplatesNotAvailable, Skaffari.DefaultTmpl.messageContainer, 'mt-1');
+        Skaffari.DefaultTmpl.createAlert('warning', $.i18n('sk-def-tmpl-htmltemplatesnotavailable'), Skaffari.DefaultTmpl.messageContainer, 'mt-1');
     }
 }
 
@@ -367,8 +365,6 @@ Skaffari.DefaultTmpl.AccountList.init = function() {
         al.checkAccountModal = $('#checkAccountModal');
         al.removeAccountModal = $('#removeAccountModal');
         al.accountRowTemplate = document.getElementById('account-template');
-
-        al.l10n = JSON.parse(document.getElementById('translationStrings').innerHTML);
 
         aff.data('loading', '0');
 

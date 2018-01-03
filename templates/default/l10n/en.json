@@ -6,7 +6,15 @@
     },
     "sk-def-tmpl-forwardmodal-add": "Add new forward address",
     "sk-def-tmpl-forwardmodal-edit": "Edit forward address",
-    "sk-def-tmpl-forwardsubmit-add": "Add",
-    "sk-def-tmpl-forwardsubmit-change": "Change",
-    "sk-def-tmpl-forwardremove-question": "Are you sure you want to delete the forward email address “$1” from this account?"
+    "sk-def-tmpl-submitbtn-add": "Add",
+    "sk-def-tmpl-submitbtn-change": "Change",
+    "sk-def-tmpl-forwardremove-question": "Are you sure you want to delete the forward email address “$1” from this account?",
+    "sk-def-tmpl-accountlist-id": "ID:",
+    "sk-def-tmpl-accountlist-catchall": "Catches all undefined email addresses for this domain.",
+    "sk-def-tmpl-accountlist-keeplocal": "keep local copy",
+    "sk-def-tmpl-accountlist-loadmore": "Load more",
+    "sk-def-tmpl-htmltemplatesnotavailable": "Your browser does not support the HTML template tag.",
+    "sk-def-tmpl-addressmodal-add": "Add new email address",
+    "sk-def-tmpl-addressmodal-edit": "Edit email address",
+    "sk-def-tmpl-addressremove-question": "Are you sure you want to delete the email address “$1” from this account?"
 }

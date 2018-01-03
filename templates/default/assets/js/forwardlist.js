@@ -141,12 +141,12 @@ Skaffari.DefaultTmpl.ForwardList.init = function() {
             $('.edit-forward-btn').prop('disabled', true);
             if (Skaffari.DefaultTmpl.ForwardList.action == "add") {
                 fml.text($.i18n('sk-def-tmpl-forwardmodal-add'));
-                fst.text($.i18n('sk-def-tmpl-forwardsubmit-add'));
+                fst.text($.i18n('sk-def-tmpl-submitbtn-add'));
                 Skaffari.DefaultTmpl.ForwardList.actionRoute = Skaffari.DefaultTmpl.ForwardList.forwardForm.data('addaction');
                 Skaffari.DefaultTmpl.ForwardList.forwardInput.val('');
             } else {
                 fml.text($.i18n('sk-def-tmpl-forwardmodal-edit'));
-                fst.text($.i18n('sk-def-tmpl-forwardsubmit-change'));
+                fst.text($.i18n('sk-def-tmpl-submitbtn-change'));
                 var forward = btn.parents('tr').first().data('forward');
                 Skaffari.DefaultTmpl.ForwardList.actionRoute = '/account/' + Skaffari.DefaultTmpl.ForwardList.domainId + '/' + Skaffari.DefaultTmpl.ForwardList.accountId + '/edit_forward/' + encodeURIComponent(forward).replace(".", "%2E");
                 Skaffari.DefaultTmpl.ForwardList.forwardInput.val(forward);

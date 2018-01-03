@@ -43,10 +43,8 @@ Skaffari.DefaultTmpl.AddressList.addAddressRow = function(d) {
 Skaffari.DefaultTmpl.AddressList.removeAddressRow = function(e) {
     var btn = $(e.target);
     var row = btn.parents('tr').first();
-    var quest = $('#addressesTable').data('removequestion');
     var address = row.data('address');
-    quest = quest.replace("$1", address)
-    if (confirm(quest)) {
+    if (confirm($.i18n('sk-def-tmpl-addressremove-question', address))) {
         $('.alert').alert('close');
         btn.prop('disabled', true);
         var icon = btn.children().first();
@@ -104,13 +102,13 @@ Skaffari.DefaultTmpl.AddressList.init = function() {
             $('#addbuttons button').prop('disabled', true);
             $('.edit-address-btn').prop('disabled', true);
             if (Skaffari.DefaultTmpl.AddressList.action == "add") {
-                aml.text(aml.data('addlabel'));
-                ast.text(ast.data('addlabel'));
+                aml.text($.i18n('sk-def-tmpl-addressmodal-add'));
+                ast.text($.i18n('sk-def-tmpl-submitbtn-add'));
                 Skaffari.DefaultTmpl.AddressList.actionRoute = Skaffari.DefaultTmpl.AddressList.addressForm.data('addaction');
                 Skaffari.DefaultTmpl.AddressList.localInput.val('');
             } else {
-                aml.text(aml.data('editlabel'));
-                ast.text(ast.data('editlabel'));
+                aml.text($.i18n('sk-def-tmpl-addressmodal-edit'));
+                ast.text($.i18n('sk-def-tmpl-submitbtn-change'));
                 var address  = btn.parents('tr').first().data('address');
                 Skaffari.DefaultTmpl.AddressList.actionRoute =  '/account/' + Skaffari.DefaultTmpl.AddressList.domainId + '/' + Skaffari.DefaultTmpl.AddressList.accountId + '/edit_address/' + encodeURIComponent(address).replace(".", "%2E");
                 var parts = address.split('@');

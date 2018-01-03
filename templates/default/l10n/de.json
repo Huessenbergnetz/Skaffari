@@ -6,7 +6,15 @@
     },
     "sk-def-tmpl-forwardmodal-add": "Neue Weiterleitung hinzufügen",
     "sk-def-tmpl-forwardmodal-edit": "Weiterleitung bearbeiten",
-    "sk-def-tmpl-forwardsubmit-add": "Hinzufügen",
-    "sk-def-tmpl-forwardsubmit-change": "Ändern",
-    "sk-def-tmpl-forwardremove-question": "Wollen Sie die Weiterleitungsadresse „$1“ wirklich von diesem Konto entfernen?"
+    "sk-def-tmpl-submitbtn-add": "Hinzufügen",
+    "sk-def-tmpl-submitbtn-change": "Ändern",
+    "sk-def-tmpl-forwardremove-question": "Wollen Sie die Weiterleitungsadresse „$1“ wirklich von diesem Konto entfernen?",
+    "sk-def-tmpl-accountlist-id": "ID:",
+    "sk-def-tmpl-accountlist-catchall": "Erhält alle nicht definierten E-Mail-Adressen für diese Domäne.",
+    "sk-def-tmpl-accountlist-keeplocal": "lokale Kopie behalten",
+    "sk-def-tmpl-accountlist-loadmore": "Weitere laden",
+    "sk-def-tmpl-htmltemplatesnotavailable": "Ihr Browser unterstützt das HTML-Template-Tag leider nicht.",
+    "sk-def-tmpl-addressmodal-add": "Neue E-Mai-Adresse hinzufügen",
+    "sk-def-tmpl-addressmodal-edit": "E-Mail-Adresse bearbeiten",
+    "sk-def-tmpl-addressremove-question": "Wollen Sie die E-Mail-Adresse „$1“ wirklich von diesem Konto entfernen?"
 }
