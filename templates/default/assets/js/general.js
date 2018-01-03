@@ -95,4 +95,9 @@ Skaffari.DefaultTmpl.init = function() {
             }
         }
     });
+
+    $.i18n().load({
+        en: '/i18n/en.json',
+        de: '/i18n/de.json'
+    });
 }
