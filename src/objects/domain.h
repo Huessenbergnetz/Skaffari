@@ -92,6 +92,12 @@ public:
      * If there is no domain quota set (domain quota == 0), this will return \c 0.
      */
     float domainQuotaUsagePercent() const;
+    /*!
+     * \brief Returns the percental value of used maximum accounts if maximum account value is set.
+     *
+     * If there is no maximum account value set (maximum accounts == 0), this will return \c 0.
+     */
+    float accountUsagePercent() const;
 
 
     void setId(dbid_t id);
@@ -264,6 +270,8 @@ if (property == QLatin1String("id")) {
     var.setValue(object.parent());
 } else if (property == QLatin1String("children")) {
     var.setValue(object.children());
+} else if (property == QLatin1String("accountUsagePercent")) {
+    var.setValue(object.accountUsagePercent());
 }
 return var;
 GRANTLEE_END_LOOKUP

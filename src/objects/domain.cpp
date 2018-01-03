@@ -297,6 +297,14 @@ float Domain::domainQuotaUsagePercent() const
     return ((float)d->domainQuotaUsed / (float)d->domainQuota) * 100.0;
 }
 
+float Domain::accountUsagePercent() const
+{
+    if ((d->accounts == 0) || (d->maxAccounts == 0)) {
+        return 0.0;
+    }
+
+    return ((float)d->accounts / (float)d->maxAccounts) * 100.0;
+}
 
 bool Domain::hasAccess(Cutelyst::Context *c) const
 {
