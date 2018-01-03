@@ -1,0 +1,12 @@
+{
+    "@metadata": {
+        "authors": [
+            "Buschmann"
+        ]
+    },
+    "sk-def-tmpl-forwardmodal-add": "Add new forward address",
+    "sk-def-tmpl-forwardmodal-edit": "Edit forward address",
+    "sk-def-tmpl-forwardsubmit-add": "Add",
+    "sk-def-tmpl-forwardsubmit-change": "Change",
+    "sk-def-tmpl-forwardremove-question": "Are you sure you want to delete the forward email address “$1” from this account?"
+}

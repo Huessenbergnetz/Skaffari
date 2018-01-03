@@ -1,0 +1,12 @@
+{
+    "@metadata": {
+        "authors": [
+            "Buschmann"
+        ]
+    },
+    "sk-def-tmpl-forwardmodal-add": "Neue Weiterleitung hinzufügen",
+    "sk-def-tmpl-forwardmodal-edit": "Weiterleitung bearbeiten",
+    "sk-def-tmpl-forwardsubmit-add": "Hinzufügen",
+    "sk-def-tmpl-forwardsubmit-change": "Ändern",
+    "sk-def-tmpl-forwardremove-question": "Wollen Sie die Weiterleitungsadresse „$1“ wirklich von diesem Konto entfernen?"
+}
