@@ -16,5 +16,6 @@
     "sk-def-tmpl-htmltemplatesnotavailable": "Ihr Browser unterstützt das HTML-Template-Tag leider nicht.",
     "sk-def-tmpl-addressmodal-add": "Neue E-Mai-Adresse hinzufügen",
     "sk-def-tmpl-addressmodal-edit": "E-Mail-Adresse bearbeiten",
-    "sk-def-tmpl-addressremove-question": "Wollen Sie die E-Mail-Adresse „$1“ wirklich von diesem Konto entfernen?"
+    "sk-def-tmpl-addressremove-question": "Wollen Sie die E-Mail-Adresse „$1“ wirklich von diesem Konto entfernen?",
+    "sk-def-tmpl-checkdomain-nothingtodo": "Nichts zu tun. Mit diesem Konto scheint alles in Ordnung zu sein."
 }

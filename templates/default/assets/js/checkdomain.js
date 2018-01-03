@@ -38,7 +38,7 @@ Skaffari.DefaultTmpl.checkDomain.run = function() {
     var infoBlock = $('#checkdomaininfo');
     var checkChildAddressesSwitch = $('input[name="checkChildAddresses"]');
     var cdp = $('#checkdomainprogress');
-    var ntdStr = Skaffari.DefaultTmpl.checkDomain.button.data('ntdstr');
+    var ntdStr = $.i18n('sk-def-tmpl-checkdomain-nothingtodo');
 
     if ((idCount > 0) && !Skaffari.DefaultTmpl.checkDomain.running) {
         Skaffari.DefaultTmpl.checkDomain.running = true;

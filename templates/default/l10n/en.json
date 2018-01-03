@@ -16,5 +16,6 @@
     "sk-def-tmpl-htmltemplatesnotavailable": "Your browser does not support the HTML template tag.",
     "sk-def-tmpl-addressmodal-add": "Add new email address",
     "sk-def-tmpl-addressmodal-edit": "Edit email address",
-    "sk-def-tmpl-addressremove-question": "Are you sure you want to delete the email address “$1” from this account?"
+    "sk-def-tmpl-addressremove-question": "Are you sure you want to delete the email address “$1” from this account?",
+    "sk-def-tmpl-checkdomain-nothingtodo": "Nothing to do. Everything seems to be ok with this account."
 }
