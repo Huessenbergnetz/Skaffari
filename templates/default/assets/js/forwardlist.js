@@ -83,10 +83,8 @@ Skaffari.DefaultTmpl.ForwardList.toggleKeepLocal = function() {
 Skaffari.DefaultTmpl.ForwardList.removeForwardRow = function(e) {
     var btn = $(e.target);
     var row = btn.parents('tr').first();
-    var quest = $('#forwardsTable').data('removequestion');
     var forward = row.data('forward');
-    quest = quest.replace("$1", forward);
-    if (confirm(quest)) {
+    if (confirm($.i18n('sk-def-tmpl-forwardremove-question', forward))) {
         $('.alert').alert('close');
         btn.prop('disabled', true);
         var icon = btn.children().first();
@@ -142,13 +140,13 @@ Skaffari.DefaultTmpl.ForwardList.init = function() {
             $('#addbuttons button').prop('disabled', true);
             $('.edit-forward-btn').prop('disabled', true);
             if (Skaffari.DefaultTmpl.ForwardList.action == "add") {
-                fml.text(fml.data('addlabel'));
-                fst.text(fst.data('addlabel'));
+                fml.text($.i18n('sk-def-tmpl-forwardmodal-add'));
+                fst.text($.i18n('sk-def-tmpl-forwardsubmit-add'));
                 Skaffari.DefaultTmpl.ForwardList.actionRoute = Skaffari.DefaultTmpl.ForwardList.forwardForm.data('addaction');
                 Skaffari.DefaultTmpl.ForwardList.forwardInput.val('');
             } else {
-                fml.text(fml.data('editlabel'));
-                fst.text(fst.data('editlabel'));
+                fml.text($.i18n('sk-def-tmpl-forwardmodal-edit'));
+                fst.text($.i18n('sk-def-tmpl-forwardsubmit-change'));
                 var forward = btn.parents('tr').first().data('forward');
                 Skaffari.DefaultTmpl.ForwardList.actionRoute = '/account/' + Skaffari.DefaultTmpl.ForwardList.domainId + '/' + Skaffari.DefaultTmpl.ForwardList.accountId + '/edit_forward/' + encodeURIComponent(forward).replace(".", "%2E");
                 Skaffari.DefaultTmpl.ForwardList.forwardInput.val(forward);

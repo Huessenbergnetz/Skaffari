@@ -14,7 +14,7 @@
     <section class="col-12 col-sm-12 col-md-7">
 
         <div class="table-responsive-md">
-            <table id="forwardsTable" class="table" data-domainid="{{ domain.id }}" data-accountid="{{ account.id }}" data-removequestion="{{ _("Are you sure you want to delete the forward email address “$1” from this account?") }}">
+            <table id="forwardsTable" class="table" data-domainid="{{ domain.id }}" data-accountid="{{ account.id }}">
                 <thead>
                     <tr>
                         <th>{{ _("Actions") }}</th>
@@ -76,7 +76,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="forwardModalLabel" data-addLabel="{{ _("Add new forward address") }}" data-editlabel="{{ _("Edit forward address") }}">{{ _("Add new forward address") }}</h5>
+                <h5 class="modal-title" id="forwardModalLabel"></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="{{ _("Close") }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -90,7 +90,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> {{ _("Cancel") }}</button>
-                <button type="submit" id="forwardSubmit" form="forwardForm" class="btn btn-primary"><i id="forwardSubmitIcon" class="fas fa-save"></i> <span id="forwardSubmitText" data-addlabel="{{ _("Add") }}" data-editlabel="{{ _("Change") }}">{{ _("Add") }}</span></button>
+                <button type="submit" id="forwardSubmit" form="forwardForm" class="btn btn-primary"><i id="forwardSubmitIcon" class="fas fa-save"></i> <span id="forwardSubmitText"></span></button>
             </div>
         </div>
     </div>
