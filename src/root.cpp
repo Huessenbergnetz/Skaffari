@@ -59,6 +59,7 @@ void Root::about(Context *c)
     description.push_back(c->translate("Root", "Skaffari is a web application for managing e-mail accounts, based on Cutelyst and written in Qt/C++. It serves as a link and access to a combination of SQL database, IMAP and SMTP server. Skaffari bundles administrative tasks such as the creation of new e-mail domains and e-mail accounts, as well as the creation of new e-mail addresses and e-mail forwards."));
     description.push_back(c->translate("Root", "Administrators can be either global or only responsible for specific domains. Individual domains and accounts can be subject to certain restrictions such as storage space, number of accounts or user names."));
     description.push_back(c->translate("Root", "Skaffari has been tested to work with Cyrus IMAP, Postfix and pam_mysql and was inspired by a PHP-based tool called web-cyradm."));
+    description.push_back(c->translate("Root", "By the way, Skaffari is the Old High German word for steward."));
 
     QVariantList coreComponents;
     coreComponents.push_back(QVariantMap({
