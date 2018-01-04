@@ -26,6 +26,7 @@
 #define SKAFFARI_SQLDIR "@SQL_INSTALL_DIR@"
 #define SKAFFARI_STATICDIR "@APPDIR@/static"
 #define SKAFFARI_SUPPORTED_LANGS {QStringLiteral("en"), QStringLiteral("de")}
+#define GRANTLEE_VERSION "@Grantlee5_VERSION@"
 
 // default values for Accounts
 #define SK_DEF_ACC_PWMETHOD @DEFVAL_ACC_PWMETHOD@
