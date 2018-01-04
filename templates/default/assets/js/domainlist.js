@@ -70,9 +70,37 @@ Skaffari.DefaultTmpl.DomainList.init = function() {
             }
             var _dir = (data.direction == "asc") ? "down" : "up";
             data.$th.append(' <small><i class="fas fa-sort-' + sortType + '-' + _dir + ' text-muted"></i></small>');
+            Cookies.set('domains_sort_col', data.column, {path: ''});
+            Cookies.set('domains_sort_dir', data.direction, {path: ''});
         });
 
-        Skaffari.DefaultTmpl.DomainList.domainTable.filterTable({inputSelector: "#domainTableFilter", ignoreClass: "no-filtering"});
+        var sortCol = Cookies.get('domains_sort_col');
+        if (sortCol !== undefined) {
+            sortCol = parseInt(sortCol);
+            var sortDir = Cookies.get('domains_sort_dir');
+            var th_to_sort = stupidDomainTable.find("thead th").eq(sortCol);
+            sortDir = (sortDir !== undefined) ? sortDir : th_to_sort.data('sort-default');
+            th_to_sort.stupidsort(sortDir);
+        } else {
+            stupidDomainTable.find("thead th").eq(1).stupidsort("asc");
+        }
+
+        Skaffari.DefaultTmpl.DomainList.domainTable.filterTable({
+            inputSelector: "#domainTableFilter",
+            ignoreClass: "no-filtering",
+            callback: function(term, table) {
+                if (term.length > 0) {
+                    Cookies.set('domains_filter_term', window.btoa(term), {path: ''});
+                } else {
+                    Cookies.remove('domains_filter_term', {path: ''});
+                }
+            }
+        });
+
+        var filterTerm = Cookies.get('domains_filter_term');
+        if (filterTerm !== undefined) {
+            $('#domainTableFilter').val(window.atob(filterTerm)).keyup();
+        }
 
         Skaffari.DefaultTmpl.DomainList.removeDomainModal = $('#removeDomainModal');
 
