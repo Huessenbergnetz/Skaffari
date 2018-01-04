@@ -69,7 +69,7 @@ void Root::about(Context *c)
                                              {QStringLiteral("author"), QStringLiteral("Matthias Fehring")},
                                              {QStringLiteral("authorUrl"), QStringLiteral("https://www.buschmann23.de")},
                                              {QStringLiteral("license"), QStringLiteral("GNU Affero General Public License 3.0")},
-                                             {QStringLiteral("licenseUrl"), QStringLiteral("https://www.gnu.org/licenses/agpl-3.0.en.html")}
+                                             {QStringLiteral("licenseUrl"), QStringLiteral("https://github.com/Huessenbergnetz/Skaffari/blob/master/LICENSE")}
                                          }));
 
     coreComponents.push_back(QVariantMap({
@@ -79,7 +79,7 @@ void Root::about(Context *c)
                                              {QStringLiteral("author"), QStringLiteral("Daniel Nicoletti")},
                                              {QStringLiteral("authorUrl"), QStringLiteral("https://dantti.wordpress.com/")},
                                              {QStringLiteral("license"), QStringLiteral("GNU Lesser General Public License 2.1")},
-                                             {QStringLiteral("licenseUrl"), QStringLiteral("https://www.gnu.org/licenses/lgpl-2.1.en.html")}
+                                             {QStringLiteral("licenseUrl"), QStringLiteral("https://github.com/cutelyst/cutelyst/blob/master/COPYING")}
                                          }));
     coreComponents.push_back(QVariantMap({
                                              {QStringLiteral("name"), QStringLiteral("Qt")},
@@ -88,7 +88,16 @@ void Root::about(Context *c)
                                              {QStringLiteral("author"), QStringLiteral("The Qt Company")},
                                              {QStringLiteral("authorUrl"), QStringLiteral("https://www.qt.io")},
                                              {QStringLiteral("license"), QStringLiteral("GNU Lesser General Public License 2.1")},
-                                             {QStringLiteral("licenseUrl"), QStringLiteral("https://www.gnu.org/licenses/lgpl-2.1.en.html")}
+                                             {QStringLiteral("licenseUrl"), QStringLiteral("https://doc.qt.io/qt-5.6/lgpl.html")}
+                                         }));
+    coreComponents.push_back(QVariantMap({
+                                             {QStringLiteral("name"), QStringLiteral("Grantlee")},
+                                             {QStringLiteral("version"), QStringLiteral(GRANTLEE_VERSION)},
+                                             {QStringLiteral("url"), QStringLiteral("http://www.grantlee.org")},
+                                             {QStringLiteral("author"), QStringLiteral("Stephen Kelly")},
+                                             {QStringLiteral("authorUrl"), QStringLiteral("https://steveire.wordpress.com/")},
+                                             {QStringLiteral("license"), QStringLiteral("GNU Lesser General Public License 2.1")},
+                                             {QStringLiteral("licenseUrl"), QStringLiteral("https://github.com/steveire/grantlee/blob/master/COPYING.LIB")}
                                          }));
 
     if (SkaffariConfig::useMemcached()) {
