@@ -394,6 +394,16 @@ public:
     static QString tmpl();
 
     /*!
+     * \brief Returns the absout base path to the template currently in use.
+     */
+    static QString tmplBasePath();
+
+    /*!
+     * \brief Sets the absolute base path to the template currently in use.
+     */
+    static void setTmplBasePath(const QString &path);
+
+    /*!
      * \brief Returns \c true if the current template uses asynchronous/AJAX requests to load the list of accounts.
      */
     static bool tmplAsyncAccountList();
@@ -445,6 +455,7 @@ private:
     static bool m_imapFqun;
 
     static QString m_template;
+    static QString m_tmplBasePath;
     static bool m_tmplAsyncAccountList;
 
     static bool m_useMemcached;

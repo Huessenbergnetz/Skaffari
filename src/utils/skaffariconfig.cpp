@@ -60,6 +60,7 @@ bool SkaffariConfig::m_imapDomainasprefix = SK_DEF_IMAP_DOMAINASPREFIX;
 bool SkaffariConfig::m_imapFqun = SK_DEF_IMAP_FQUN;
 
 QString SkaffariConfig::m_template = QStringLiteral("default");
+QString SkaffariConfig::m_tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1String("/default");
 bool SkaffariConfig::m_tmplAsyncAccountList = SK_DEF_TMPL_ASYNCACCOUNTLIST;
 
 bool SkaffariConfig::m_useMemcached = false;
@@ -181,6 +182,8 @@ QVariantHash SkaffariConfig::getSettingsFromDB()
 }
 
 QString SkaffariConfig::tmpl() { return m_template; }
+QString SkaffariConfig::tmplBasePath() { return SkaffariConfig::m_tmplBasePath; }
+void SkaffariConfig::setTmplBasePath(const QString &path) { SkaffariConfig::m_tmplBasePath = path; }
 bool SkaffariConfig::useMemcached() { return m_useMemcached; }
 bool SkaffariConfig::useMemcachedSession() { return (m_useMemcached && m_useMemcachedSession); }
 

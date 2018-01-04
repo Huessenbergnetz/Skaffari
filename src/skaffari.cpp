@@ -207,6 +207,7 @@ bool Skaffari::init()
     const QVariantMap generalConfig = engine()->config(QStringLiteral("Skaffari"));
     const QString tmplName = generalConfig.value(QStringLiteral("template"), QStringLiteral("default")).toString();
     const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + tmplName;
+    SkaffariConfig::setTmplBasePath(tmplBasePath);
 
     if (!isInitialized) {        
         QVariantMap tmplConfig;
