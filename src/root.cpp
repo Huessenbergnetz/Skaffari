@@ -55,6 +55,11 @@ void Root::index(Context *c)
 
 void Root::about(Context *c)
 {
+    QStringList description;
+    description.push_back(c->translate("Root", "Skaffari is a web application for managing e-mail accounts, based on Cutelyst and written in Qt/C++. It serves as a link and access to a combination of SQL database, IMAP and SMTP server. Skaffari bundles administrative tasks such as the creation of new e-mail domains and e-mail accounts, as well as the creation of new e-mail addresses and e-mail forwards."));
+    description.push_back(c->translate("Root", "Administrators can be either global or only responsible for specific domains. Individual domains and accounts can be subject to certain restrictions such as storage space, number of accounts or user names."));
+    description.push_back(c->translate("Root", "Skaffari has been tested to work with Cyrus IMAP, Postfix and pam_mysql and was inspired by a PHP-based tool called web-cyradm."));
+
     QVariantList coreComponents;
     coreComponents.push_back(QVariantMap({
                                              {QStringLiteral("name"), QStringLiteral("Skaffari")},
@@ -85,10 +90,23 @@ void Root::about(Context *c)
                                              {QStringLiteral("licenseUrl"), QStringLiteral("https://www.gnu.org/licenses/lgpl-2.1.en.html")}
                                          }));
 
+    if (SkaffariConfig::useMemcached()) {
+        coreComponents.push_back(QVariantMap({
+                                                 {QStringLiteral("name"), QStringLiteral("libMemcached")},
+                                                 {QStringLiteral("version"), QStringLiteral("1.0.18")},
+                                                 {QStringLiteral("url"), QStringLiteral("http://libmemcached.org")},
+                                                 {QStringLiteral("author"), QStringLiteral("Data Differential")},
+                                                 {QStringLiteral("authorUrl"), QStringLiteral("http://www.datadifferential.com/")},
+                                                 {QStringLiteral("license"), QStringLiteral("BSD License")},
+                                                 {QStringLiteral("licenseUrl"), QStringLiteral("http://libmemcached.org/License.html")}
+                                             }));
+    }
+
     c->stash({
                  {QStringLiteral("template"), QStringLiteral("about.html")},
                  {QStringLiteral("site_title"), c->translate("Root", "About")},
-                 {QStringLiteral("core_components"), coreComponents}
+                 {QStringLiteral("core_components"), coreComponents},
+                 {QStringLiteral("description"), description}
              });
 }
 
