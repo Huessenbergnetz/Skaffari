@@ -32,6 +32,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QFile>
+#include <QJsonParseError>
 
 #include "../common/global.h"
 
@@ -110,6 +112,23 @@ void Root::about(Context *c)
                                                  {QStringLiteral("license"), QStringLiteral("BSD License")},
                                                  {QStringLiteral("licenseUrl"), QStringLiteral("http://libmemcached.org/License.html")}
                                              }));
+    }
+
+    QFile tmplMetadataFile(SkaffariConfig::tmplBasePath() + QLatin1String("/metadata.json"));
+    if (Q_LIKELY(tmplMetadataFile.exists())) {
+        if (Q_LIKELY(tmplMetadataFile.open(QIODevice::ReadOnly|QIODevice::Text))) {
+            QJsonParseError jpe;
+            QJsonDocument tmplMetadataJson(QJsonDocument::fromJson(tmplMetadataFile.readAll(), &jpe));
+            if (jpe.error == QJsonParseError::NoError) {
+                c->setStash(QStringLiteral("templatemetadata"), tmplMetadataJson.object().toVariantMap());
+            } else {
+                c->setStash(QStringLiteral("error_msg"), c->translate("Root", "Failed to parse JSON from template metadata file at %1: %2").arg(tmplMetadataFile.fileName(), jpe.errorString()));
+            }
+        } else {
+            c->setStash(QStringLiteral("error_msg"), c->translate("Root", "Failed to open template metadata file at %1.").arg(tmplMetadataFile.fileName()));
+        }
+    } else {
+        c->setStash(QStringLiteral("error_msg"), c->translate("Root", "Can not find template metadata file at %1.").arg(tmplMetadataFile.fileName()));
     }
 
     c->stash({
