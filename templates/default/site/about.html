@@ -12,28 +12,73 @@
     </div>
 </section>
 
-<section class="row">
+<section class="row mt-5">
     <div class="col">
         <h3>{{ _("Core components") }}</h3>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>{{ _("Name") }}</th>
-                    <th>{{ _("Version") }}</th>
-                    <th>{{ _("License") }}</th>
-                    <th>{{ _("Author") }}<th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for component in core_components %}
-                <tr>
-                    <td><a href="{{ component.url }}" target="_blank">{{ component.name }}</a></td>
-                    <td>{{ component.version }}</td>
-                    <td><a href="{{ component.licenseUrl }}" target="_blank">{{ component.license }}</a></td>
-                    <td><a href="{{ component.authorUrl }}" target="_blank">{{ component.author }}</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{{ _("Name") }}</th>
+                        <th>{{ _("Version") }}</th>
+                        <th>{{ _("License") }}</th>
+                        <th>{{ _("Author") }}<th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for component in core_components %}
+                    <tr>
+                        <td><a href="{{ component.url }}" target="_blank">{{ component.name }}</a></td>
+                        <td>{{ component.version }}</td>
+                        <td><a href="{{ component.licenseUrl }}" target="_blank">{{ component.license }}</a></td>
+                        <td><a href="{{ component.authorUrl }}" target="_blank">{{ component.author }}</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="row mt-5">
+    <div class="col">
+        <h3>{{ _("Template") }}</h3>
+        <dl class="row">
+            <dt class="col-sm-2">{{ _("Name") }}</dt>
+            <dd class="col-sm-10"><a href="{{ templatemetadata.url }}">{{ templatemetadata.name }}</a> <span class="text-muted">{{ templatemetadata.version }}</span></dd>
+
+            <dt class="col-sm-2">{{ _("Description") }}</dt>
+            <dd class="col-sm-10">{{ templatemetadata.description }}</dd>
+
+            <dt class="col-sm-2">{{ _("License") }}</dt>
+            <dd class="col-sm-10"><a href="{{ templatemetadata.licenseUrl }}">{{ templatemetadata.license }}</a></dd>
+
+            <dt class="col-sm-2">{{ _("Author") }}</dt>
+            <dd class="col-sm-10"><a href="{{ templatemetadata.authorUrl }}">{{ templatemetadata.author }}</a></dd>
+        </dl>
+
+        <h4>{{ _("Template components") }}</h4>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{{ _("Name") }}</th>
+                        <th>{{ _("Version") }}</th>
+                        <th>{{ _("License") }}</th>
+                        <th>{{ _("Author") }}<th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for component in templatemetadata.components %}
+                    <tr>
+                        <td><a href="{{ component.url }}" target="_blank">{{ component.name }}</a></td>
+                        <td>{{ component.version }}</td>
+                        <td><a href="{{ component.licenseUrl }}" target="_blank">{{ component.license }}</a></td>
+                        <td><a href="{{ component.authorUrl }}" target="_blank">{{ component.author }}</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </section>
