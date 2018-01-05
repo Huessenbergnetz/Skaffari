@@ -1,9 +1,104 @@
 {
     "name": "Default",
     "license": "GNU Affero General Public License 3.0",
-    "licenseUrl": "https://www.gnu.org/licenses/agpl-3.0.en.html",
+    "licenseUrl": "https://github.com/Huessenbergnetz/Skaffari/blob/master/LICENSE",
     "version": "1.0.0",
     "url": "https://github.com/Huessenbergnetz/Skaffari",
+    "description": "This is the default template for Skaffari.",
+    "author": "Matthias Fehring",
+    "authorUrl": "https://www.buschmann23.de",
+    "components": [
+        {
+            "name": "jQuery",
+            "version": "3.2.1",
+            "url": "https://jquery.com",
+            "author": "jQuery Team",
+            "authorUrl": "https://js.foundation/",
+            "license": "MIT License",
+            "licenseUrl": "https://github.com/jquery/jquery/blob/3.2.1/LICENSE.txt"
+        },
+        {
+            "name": "Popper.js",
+            "version": "1.12.9",
+            "url": "https://popper.js.org/",
+            "author": "Federico Zivolo",
+            "authorUrl": "https://fezvrasta.github.io/",
+            "license": "MIT License",
+            "licenseUrl": "https://github.com/FezVrasta/popper.js/blob/v1.12.9/LICENSE.md"
+        },
+        {
+            "name": "Bootstrap",
+            "version": "4.0.0-beta.3",
+            "url": "http://getbootstrap.com/",
+            "author": "Bootstrap Core Team",
+            "authorUrl": "https://github.com/orgs/twbs/people",
+            "license": "MIT License",
+            "licenseUrl": "https://github.com/twbs/bootstrap/blob/v4.0.0-beta.3/LICENSE"
+        },
+        {
+            "name": "Font Awesome Free Icons",
+            "version": "5.0.2",
+            "url": "https://fontawesome.com",
+            "author": "Fonticons Inc.",
+            "authorUrl": "https://fontawesome.com",
+            "license": "Creative Commons Attribution 4.0 International",
+            "licenseUrl": "https://fontawesome.com/license"
+        },
+        {
+            "name": "Font Awesome Free Fonts",
+            "version": "5.0.2",
+            "url": "https://fontawesome.com",
+            "author": "Fonticons Inc.",
+            "authorUrl": "https://fontawesome.com",
+            "license": "SIL Open Font License 1.1",
+            "licenseUrl": "https://fontawesome.com/license"
+        },
+        {
+            "name": "Font Awesome Free Code",
+            "version": "5.0.2",
+            "url": "https://fontawesome.com",
+            "author": "Fonticons Inc.",
+            "authorUrl": "https://fontawesome.com",
+            "license": "MIT License",
+            "licenseUrl": "https://fontawesome.com/license"
+        },
+        {
+            "name": "qJax",
+            "version": "1.5.2",
+            "url": "https://github.com/PortableSheep/qjax",
+            "author": "Michael Gunderson",
+            "authorUrl": "http://www.portablesheep.com/",
+            "license": "GNU General Public License 2",
+            "licenseUrl": "https://github.com/PortableSheep/qJax/blob/1.5.2/GPL-LICENSE.txt"
+        },
+        {
+            "name": "Select2",
+            "version": "4.0.5",
+            "url": "https://select2.org/",
+            "author": "Select2 Team",
+            "authorUrl": "https://github.com/orgs/select2/people",
+            "license": "MIT License",
+            "licenseUrl": "https://github.com/select2/select2/blob/4.0.5/LICENSE.md"
+        },
+        {
+            "name": "Stupid jQuery Table Sort",
+            "version": "1.1.3",
+            "url": "http://joequery.github.io/Stupid-Table-Plugin/",
+            "author": "Joseph McCullough",
+            "authorUrl": "http://joequery.me",
+            "license": "MIT License",
+            "licenseUrl": "https://github.com/joequery/Stupid-Table-Plugin/blob/1.1.3/LICENSE"
+        },
+        {
+            "name": "JavaScript Cookie",
+            "version": "2.2.0",
+            "url": "https://github.com/js-cookie/js-cookie",
+            "author": "Fagner Brack",
+            "authorUrl": "https://about.me/fagnerbrack",
+            "license": "MIT License",
+            "licenseUrl": "https://github.com/js-cookie/js-cookie/blob/v2.2.0/LICENSE"
+        }
+    ],
     "config": {
         "asyncaccountlist": true
     }
