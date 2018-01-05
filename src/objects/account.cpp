@@ -26,6 +26,7 @@
 #include <Cutelyst/Response>
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <Cutelyst/Plugins/Session/Session>
+#include <Cutelyst/Plugins/Memcached/Memcached>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QTimeZone>
@@ -43,6 +44,9 @@ Q_LOGGING_CATEGORY(SK_ACCOUNT, "skaffari.account")
 #define ACCOUNT_STASH_KEY "account"
 #define PAM_ACCT_EXPIRED 1
 #define PAM_NEW_AUTHTOK_REQD 2
+
+#define MEMC_QUOTA_EXP 900
+#define MEMC_QUOTA_KEY QLatin1String("sk_quotausage_")
 
 Account::Account() :
     d(new AccountData)
@@ -756,6 +760,10 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     a.setPasswordExpires(pwExpiresUTC);
     a.setCatchAll(_catchAll);
 
+    if (SkaffariConfig::useMemcached()) {
+        Cutelyst::Memcached::set(MEMC_QUOTA_KEY + QString::number(id), QByteArray::number(id), MEMC_QUOTA_EXP);
+    }
+
     qCInfo(SK_ACCOUNT) << c->stash(QStringLiteral("userName")).toString() << "created a new account" << username << "for domain" << d.getName();
 
     return a;
@@ -1054,10 +1062,28 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
                   _catchAll,
                   q.value(11).value<quint8>());
 
-        if (Q_LIKELY(imap.isLoggedIn())) {
-            quota_pair quota = imap.getQuota(a.getUsername());
-            a.setUsage(quota.first);
-            a.setQuota(quota.second);
+
+        bool gotQuota = false;
+        if (SkaffariConfig::useMemcached()) {
+            const QByteArray usage = Cutelyst::Memcached::get(MEMC_QUOTA_KEY + QString::number(a.getId()));
+            if (!usage.isNull()) {
+                bool ok = false;
+                a.setUsage(usage.toULongLong(&ok));
+                if (ok) {
+                    gotQuota = true;
+                }
+            }
+        }
+
+        if (!gotQuota) {
+            if (Q_LIKELY(imap.isLoggedIn())) {
+                quota_pair quota = imap.getQuota(a.getUsername());
+                a.setUsage(quota.first);
+                a.setQuota(quota.second);
+                if (SkaffariConfig::useMemcached()) {
+                    Cutelyst::Memcached::set(MEMC_QUOTA_KEY + QString::number(a.getId()), QByteArray::number(quota.first), MEMC_QUOTA_EXP);
+                }
+            }
         }
 
         lst.push_back(a);
@@ -1172,12 +1198,30 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
     a.setAddresses(emailAddresses);
     a.setForwards(aliases);
 
-    SkaffariIMAP imap(c);
-    if (imap.login()) {
-        quota_pair quota = imap.getQuota(a.getUsername());
-        a.setUsage(quota.first);
-        a.setQuota(quota.second);
-        imap.logout();
+    bool gotQuota = false;
+    if (SkaffariConfig::useMemcached()) {
+        const QByteArray usage = Cutelyst::Memcached::get(MEMC_QUOTA_KEY + QString::number(id));
+        if (!usage.isNull()) {
+            bool ok = false;
+            a.setUsage(usage.toULongLong(&ok));
+            if (ok) {
+                gotQuota = true;
+            }
+        }
+    }
+
+    if (!gotQuota) {
+        SkaffariIMAP imap(c);
+        if (imap.login()) {
+            quota_pair quota = imap.getQuota(a.getUsername());
+            a.setUsage(quota.first);
+            a.setQuota(quota.second);
+            imap.logout();
+
+            if (SkaffariConfig::useMemcached()) {
+                Cutelyst::Memcached::set(MEMC_QUOTA_KEY + QString::number(id), QByteArray::number(quota.first), MEMC_QUOTA_EXP);
+            }
+        }
     }
 
     return a;
@@ -1591,6 +1635,10 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
     } else {
         d->usage = quota.first;
         d->status = newStatus;
+    }
+
+    if (SkaffariConfig::useMemcached()) {
+        Cutelyst::Memcached::set(MEMC_QUOTA_KEY + QString::number(d->id), QByteArray::number(d->usage), MEMC_QUOTA_EXP);
     }
 
     qCInfo(SK_ACCOUNT, "%s finished checking user account ID %u.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), d->id);
