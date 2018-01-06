@@ -21,11 +21,13 @@
 #include "utils/utils.h"
 #include "utils/language.h"
 #include "utils/skaffariconfig.h"
+#include "objects/skaffarierror.h"
 #include "../common/config.h"
 
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Session/Session>
+#include <Cutelyst/Plugins/Utils/Sql>
 #include <Cutelyst/Application>
 
 #include <QLocale>
@@ -34,6 +36,8 @@
 #include <QJsonValue>
 #include <QFile>
 #include <QJsonParseError>
+#include <QSqlQuery>
+#include <QSqlError>
 
 #include "../common/global.h"
 
@@ -49,9 +53,77 @@ Root::~Root()
 
 void Root::index(Context *c)
 {
+    const bool isSuperUser = c->stash(QStringLiteral("userType")).value<qint16>() == 0;
+    const dbid_t adminId = c->stash(QStringLiteral("userId")).value<dbid_t>();
+
+    QSqlQuery q;
+
+    if (isSuperUser) {
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT (SELECT COUNT(*) FROM accountuser) - 1 AS accounts, (SELECT COUNT(*) FROM adminuser) AS admins, (SELECT COUNT(*) FROM domain) AS domains, (SELECT SUM(quota) FROM accountuser) AS accountquota, (SELECT SUM(domainquota) FROM domain) AS domainquota, (SELECT COUNT(*) FROM virtual WHERE alias LIKE '%@%') AS addresses"));
+    } else {
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT (SELECT COUNT(*) FROM accountuser au JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id) AS accounts, (SELECT COUNT(*) FROM adminuser) AS admins, (SELECT COUNT(*) FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id) AS domains, (SELECT SUM(au.quota) FROM accountuser au JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id) AS accountquota, (SELECT SUM(dom.domainquota) FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id) AS domainquota, (SELECT COUNT(*) FROM virtual vi JOIN accountuser au ON vi.username = au.username JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id AND vi.alias LIKE '%@%') AS addresses"));
+        q.bindValue(QStringLiteral(":admin_id"), adminId);
+    }
+
+    dbid_t accounts = 0;
+    dbid_t admins = 0;
+    dbid_t domains = 0;
+    quota_size_t accountquota = 0;
+    quota_size_t domainquota = 0;
+    dbid_t addresses = 0;
+
+    if (Q_LIKELY(q.exec())) {
+        if (Q_LIKELY(q.next())) {
+            accounts = q.value(0).value<dbid_t>();
+            admins = q.value(1).value<dbid_t>();
+            domains = q.value(2).value<dbid_t>();
+            accountquota = q.value(3).value<quota_size_t>();
+            domainquota = q.value(4).value<quota_size_t>();
+            addresses = q.value(5).value<dbid_t>();
+        }
+    }
+
+    if (isSuperUser) {
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id AS id, dom.domain_name AS name, dom.created_at AS created FROM domain dom ORDER BY dom.created_at DESC LIMIT 5"));
+    } else {
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id AS id, dom.domain_name AS name, dom.created_at AS created FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY dom.created_at DESC LIMIT 5"));
+        q.bindValue(QStringLiteral(":admin_id"), adminId);
+    }
+
+    if (Q_LIKELY(q.exec())) {
+        const QVariantList domList = Sql::queryToMapList(q);
+        if (Q_LIKELY(!domList.empty())) {
+            c->setStash(QStringLiteral("domains_last_added"), domList);
+        }
+    } else {
+        c->setStash(QStringLiteral("domains_last_added_error"), c->translate("Root", "Failed to query last added domains from database: %1").arg(q.lastError().text()));
+    }
+
+    if (isSuperUser) {
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id AS id, au.domain_id AS domainId, au.created_at AS created, au.username AS username, dom.domain_name AS domainName FROM accountuser au JOIN domain dom ON dom.id = au.domain_id ORDER BY au.created_at DESC LIMIT 5"));
+    } else {
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id AS id, au.domain_id AS domainId, au.created_at AS created, au.username AS username, dom.domain_name AS domainName FROM accountuser au JOIN domain dom ON dom.id = au.domain_id JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY au.created_at DESC LIMIT 5"));
+        q.bindValue(QStringLiteral(":admin_id"), adminId);
+    }
+
+    if (Q_LIKELY(q.exec())) {
+        const QVariantList accList = Sql::queryToMapList(q);
+        if (Q_LIKELY(!accList.empty())) {
+            c->setStash(QStringLiteral("accounts_last_added"), accList);
+        }
+    } else {
+        c->setStash(QStringLiteral("accounts_last_added_error"), c->translate("Root", "Failed to query last added accounts from the database: %1").arg(q.lastError().text()));
+    }
+
 	c->stash({
                  {QStringLiteral("template"), QStringLiteral("dashboard.html")},
-                 {QStringLiteral("site_title"), c->translate("Root", "Dashboard")}
+                 {QStringLiteral("site_title"), c->translate("Root", "Dashboard")},
+                 {QStringLiteral("account_count"), QVariant::fromValue<dbid_t>(accounts)},
+                 {QStringLiteral("admin_count"), QVariant::fromValue<dbid_t>(admins)},
+                 {QStringLiteral("domain_count"), QVariant::fromValue<dbid_t>(domains)},
+                 {QStringLiteral("accountquota_assigned"), QVariant::fromValue<quota_size_t>(accountquota)},
+                 {QStringLiteral("domainquota_assigned"), QVariant::fromValue<quota_size_t>(domainquota)},
+                 {QStringLiteral("address_count"), QVariant::fromValue<dbid_t>(addresses)}
              });
 }
 

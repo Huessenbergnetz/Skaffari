@@ -24,6 +24,10 @@ th.sortable {
     display: none;
 }
 
+.dasboard-number {
+    font-size: $font-size-base * 3;
+}
+
 /******* PROGRESSBAR WIDTH *********/
 @for $w from 0 through 100 {
     .pb-w-#{$w} {

@@ -4,15 +4,113 @@
     </div>
 </div>
 
-<div class="row mt-4 justify-content-center">
-    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
-        <div class="card border-primary text-center">
+{% with "col-sm-12 col-md-6 col-lg-4" as colclass %}
+
+<div class="row">
+    <div class="{{ colclass }}">
+        <div class="card border-light text-center">
+            <div class="card-header">{{ _("Administrators") }}</div>
             <div class="card-body">
-                <h2 class="card-title">{{ _("Welcome to Skaffari") }}</h2>
-                <p class="card-text">{{ _("The dashboard has not yet been implemented. Head over to the domains to start managing your email server.") }}</p>
-                <a href="/domain" class="btn btn-primary">{{ _("Domains") }}</a>
+                <p class="card-text dasboard-number">{% ifequal userType 0 %}<a href="/admin">{{ admin_count }}</a>{% else %}{{ admin_count }}{% endifequal %}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="{{ colclass }}">
+        <div class="card border-light text-center">
+            <div class="card-header">{{ _("Domains") }}</div>
+            <div class="card-body">
+                <p class="card-text dasboard-number"><a href="/domain">{{ domain_count }}</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="{{ colclass }}">
+        <div class="card border-light text-center">
+            <div class="card-header">{{ _("Accounts") }}</div>
+            <div class="card-body">
+                <p class="card-text dasboard-number">{{ account_count }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="{{ colclass }}">
+        <div class="card border-light text-center">
+            <div class="card-header">{{ _("Email addresses") }}</div>
+            <div class="card-body">
+                <p class="card-text dasboard-number">{{ address_count }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="{{ colclass }}">
+        <div class="card border-light text-center">
+            <div class="card-header">{{ _("Domain quota assigned") }}</div>
+            <div class="card-body">
+                <p class="card-text dasboard-number">{% sk_fsf domainquota_assigned 2 2 1024 %}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="{{ colclass }}">
+        <div class="card border-light text-center">
+            <div class="card-header">{{ _("Account quota assigned") }}</div>
+            <div class="card-body">
+                <p class="card-text dasboard-number">{% sk_fsf accountquota_assigned 2 2 1024 %}</p>
             </div>
         </div>
     </div>
 </div>
 
+{% endwith %}
+
+{% with "col-sm-12 col-md-6" as colclass %}
+<div class="row">
+    <div class="{{ colclass }}">
+        <div class="card border-light">
+            <div class="card-header text-center">{{ _("Last added domains") }}</div>
+            {% if domains_last_added.size %}
+            <div class="list-group list-group-flush">
+                {% for dom in domains_last_added %}
+                <a href="/domain/{{ dom.id }}/accounts" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">{{ dom.name|sk_acedecode }} <time datetime="{{ dom.created }}">{% sk_tzc dom.created %}</time></a>
+                {% endfor %}
+            </div>
+            {% else %}
+            {% if domains_last_added_error %}
+            <div class="card-body"><p class="card-text text-danger">{{ domains_last_added_error }}</p></div>
+            {% else %}
+            <div class="card-body text-center">
+                {% ifequal userType 0 %}
+                <p class="card-text">{{ _("You have not added any domain yet.") }}</p>
+                <a href="" class="btn btn-primary"><i class="fas fa-plus"></i> {{ _("Add domain") }}</a>
+                {% else %}
+                <p class="card-text">{{ _("No domains have been assigned to you so far.") }}
+                {% endifequal %}
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="{{ colclass }}">
+        <div class="card border-light">
+            <div class="card-header text-center">{{ _("Last added accounts") }}</div>
+            {% if accounts_last_added.size %}
+            <div class="list-group list-group-flush">
+                {% for acc in accounts_last_added %}
+                <a href="/account/{{ acc.domainId }}/{{ acc.id }}/addresses" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"><span>{{ acc.username }} <span class="text-muted">{{ acc.domainName|sk_acedecode }}</span></span> <time datetime="{{ acc.created }}">{% sk_tzc acc.created %}</time></a>
+                {% endfor %}
+            </div>
+            {% else %}
+            {% if accounts_last_added_error %}
+            <div class="card-body"><p class="card-text text-danger">{{ accounts_last_added_error }}</p></div>
+            {% else %}
+            <div class="card-body text-center">
+                <p class="card-text">{{ _("You have not added any domain yet.") }}</p>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endwith %}
