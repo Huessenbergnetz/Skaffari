@@ -21,6 +21,18 @@
 
 #include <grantlee5/grantlee/filter.h>
 
+/*!
+ * \brief Grantlee template filter to encode strings to percent encoding.
+ *
+ * This filter can be used as \c sk_urlencode in your Grantlee templates. It encodes
+ * a string to percent encoding like used in URLs. Additionally to normal percent encoding
+ * it will also encode the '.' (dot).
+ *
+ * \par Example
+ * \code
+ * {{ email_address|sk_urlencode }}
+ * \endcode
+ */
 class UrlEncodeFilter : public Grantlee::Filter
 {
 public:

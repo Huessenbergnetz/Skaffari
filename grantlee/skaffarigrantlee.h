@@ -21,6 +21,17 @@
 
 #include <grantlee/taglibraryinterface.h>
 
+/*!
+ * \brief Skaffari specific plugin for the Grantlee template engine.
+ *
+ * Provides Skaffari specific tags and filters for the Grantlee template engine.
+ *
+ * The following tags and filters are available:
+ * \li sk_fsf - FileSizeFormat
+ * \li sk_tzc - TimeZoneConvert
+ * \li sk_acedecode - AceDecodeFilter
+ * \li sk_urlencode - UrlEncodeFilter
+ */
 class SkaffariGrantlee : public QObject, public Grantlee::TagLibraryInterface
 {
     Q_OBJECT

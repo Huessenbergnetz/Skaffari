@@ -24,6 +24,9 @@
 #include <grantlee/util.h>
 #include <grantlee/node.h>
 
+/*!
+ * \brief Grantlee node factory for the TimeZoneConvert tag.
+ */
 class TimeZoneConvertTag : public Grantlee::AbstractNodeFactory
 {
     Q_OBJECT
@@ -31,7 +34,27 @@ public:
     Grantlee::Node *getNode(const QString &tagContent, Grantlee::Parser *p) const override;
 };
 
-
+/*!
+ * \brief Grantlee template tag to convert a datetime into a specific time zone and format string output.
+ *
+ * This will take the current user's locale and time zone into account. Time zone and locale will be taken
+ * form the current Cutelyst stash.
+ *
+ * This tak can be used as \c sk_tzc in your Grantlee templates. It accepts up to 2 parameters.
+ * The first and required parameter has to be either a QDateTime or a string that can be converted into
+ * a QDateTime.
+ * The second parameter can be a format string to convert the QDateTime into a human readable string.
+ * If the second parameter is omitted, the default short format for the current locale will be used.
+ *
+ * \par Examples
+ * \code
+ * // will be converted to "25.10.17 18:44" if the current locale is de and the current timezone is Europe/Berlin
+ * {% sk_tzc "2017-10-25T16:44:20Z" %}
+ *
+ * // will be converted to "25. Oktober 2017" if the current locale is de and the current timezone is Europe/Berlin
+ * {% sk_tzc "2017-10-25T16:44:20Z" "d. MMMM yyyy" %}
+ * \endcode
+ */
 class TimeZoneConvert : public Grantlee::Node
 {
     Q_OBJECT

@@ -24,6 +24,9 @@
 #include <grantlee/util.h>
 #include <grantlee/node.h>
 
+/*!
+ * \brief Grantlee node factory for the FileSizeFormat tag.
+ */
 class FileSizeFormatTag : public Grantlee::AbstractNodeFactory
 {
     Q_OBJECT
@@ -32,6 +35,33 @@ public:
 };
 
 
+/*!
+ * \brief Grantlee template tag to convert a numeric value into a human readable file size.
+ *
+ * Converts for example 1024 into 1 KiB. It takes the current user's locale into account. The
+ * user's locale will be taken from the Cutelyst stash.
+ *
+ * The tag can be used as \c sk_fsf in your grantlee templates. It accepts up to 4 parameters.
+ * The first and required parameter has to be the size value, either as a variable or as a fixed number.
+ * The second parameter is the decimal precision for the converted value, the default is 2.
+ * The third parameter is the base to be used to convert the number value. It can be either 2 (binary)
+ * or 10 (decimal). The default is 2 and any other value than 2 or 10 will be interpreted as 2. Using
+ * the binary base will for example give Mebibytes (MiB) instead of Megabytes (MB).
+ * The fourth parameter is an optional multiplier every input value will be multiplied by before it
+ * will be converted in a file size string.
+ *
+ * \par Examples
+ * \code
+ * // will be converted into 2.04 KiB
+ * {% sk_fsf 2048 %}
+ *
+ * // will be converted into 2 KB
+ * {% sk_fsf 2048 0 10 %}
+ *
+ * // will be converted into 2 MiB
+ * {% sk_fsf 2048 2 2 1024 %}
+ * \endcode
+ */
 class FileSizeFormat : public Grantlee::Node
 {
     Q_OBJECT
