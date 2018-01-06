@@ -21,6 +21,7 @@
 #include "filesizeformattag.h"
 #include "timezoneconverttag.h"
 #include "urlencodefilter.h"
+#include "acedecodefilter.h"
 
 SkaffariGrantlee::SkaffariGrantlee(QObject *parent) : QObject(parent)
 {
@@ -48,6 +49,7 @@ QHash<QString, Grantlee::Filter *> SkaffariGrantlee::filters(const QString &name
     QHash<QString, Grantlee::Filter *> ret;
 
     ret.insert(QStringLiteral("sk_urlencode"), new UrlEncodeFilter());
+    ret.insert(QStringLiteral("sk_acedecode"), new AceDecodeFilter());
 
     return ret;
 }

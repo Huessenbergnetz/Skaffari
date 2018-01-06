@@ -5,6 +5,8 @@ add_library(grantlee_skaffari MODULE
     timezoneconverttag.h
     urlencodefilter.cpp
     urlencodefilter.h
+    acedecodefilter.cpp
+    acedecodefilter.h
     skaffarigrantlee.cpp
 )
 
