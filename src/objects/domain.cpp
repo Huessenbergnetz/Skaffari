@@ -620,19 +620,32 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
 }
 
 
-std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData, const Cutelyst::AuthenticationUser &user)
+std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData, const Cutelyst::AuthenticationUser &user, const QString orderBy, const QString sort, quint32 limit)
 {
     std::vector<Domain> lst;
 
     Q_ASSERT_X(errorData, "list domains", "invalid errorData object");
     Q_ASSERT_X(c, "list domains", "invalid Cutelyst context");
 
-    QSqlQuery q;
+    QSqlQuery q(QSqlDatabase::database(Cutelyst::Sql::databaseNameThread()));
 
-    if (user.value(QStringLiteral("type")).value<qint16>() == 0) {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id FROM domain dom ORDER BY dom.domain_name ASC"));
+    QString prepString;
+    const bool isSuperUser = user.value(QStringLiteral("type")).value<qint16>() == 0;
+    if (isSuperUser) {
+        prepString = QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id FROM domain dom ORDER BY dom.%1 %2").arg(orderBy, sort);
     } else {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY dom.domain_name ASC"));
+        prepString = QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY dom.%1 %2").arg(orderBy, sort);
+    }
+
+    if (limit > 0) {
+        prepString.append(QStringLiteral(" LIMIT %1").arg(limit));
+    }
+    if (Q_UNLIKELY(!q.prepare(prepString))) {
+        errorData->setSqlError(q.lastError());
+        qCCritical(SK_DOMAIN, "Failed to prepare database query to list domains: %s", qPrintable(q.lastError().text()));
+        return lst;
+    }
+    if (!isSuperUser) {
         q.bindValue(QStringLiteral(":admin_id"), QVariant::fromValue<dbid_t>(user.id().toULong()));
     }
 
@@ -687,7 +700,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
         qCCritical(SK_DOMAIN) << "Failed to query domain list from database:" << q.lastError().text();
     }
 
-    if (lst.size() > 1) {
+    if ((orderBy == QLatin1String("domain_name")) && lst.size() > 1) {
         DomainNameCollator dnc(c->locale());
         std::sort(lst.begin(), lst.end(), dnc);
     }

@@ -154,7 +154,7 @@ public:
 
     static Domain create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *errorData);
     static Domain get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData);
-    static std::vector<Domain> list(Cutelyst::Context *c, SkaffariError *errorData, const Cutelyst::AuthenticationUser &user);
+    static std::vector<Domain> list(Cutelyst::Context *c, SkaffariError *errorData, const Cutelyst::AuthenticationUser &user, const QString orderBy = QLatin1String("domain_name"), const QString sort = QLatin1String("ASC"), quint32 limit = 0);
 
     /*!
      * \brief Returns \c true if \a domainName is part of the database.
