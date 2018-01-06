@@ -57,7 +57,13 @@ void Login::index(Context *c)
                 Session::setValue(c, QStringLiteral("lang"), user.value(QStringLiteral("lang"), SkaffariConfig::defLanguage()));
                 Session::setValue(c, QStringLiteral("tz"), user.value(QStringLiteral("tz"), SkaffariConfig::defTimezone()).toByteArray());
 
-                c->res()->redirect(c->uriFor(QStringLiteral("/domain")));
+
+                if (user.value(QStringLiteral("domains")).value<QVariantList>().size() == 1) {
+                    c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(user.value(QStringLiteral("domains")).value<QVariantList>().first().toString())));
+                } else {
+                    c->res()->redirect(c->uriFor(QStringLiteral("/")));
+                }
+
                 return;
             } else {
                 qCWarning(SK_LOGIN, "Bad username or password for user %s from IP %s", username.toUtf8().constData(), req->address().toString().toUtf8().constData());
