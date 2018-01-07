@@ -23,12 +23,22 @@
 #include <QCoreApplication>
 #include "consoleoutput.h"
 
+/*!
+ * \brief Handles checks for the Skaffari installation.
+ */
 class Tester : public ConsoleOutput
 {
     Q_DECLARE_TR_FUNCTIONS(Tester)
 public:
+    /*!
+     * \brief Constructs a new Tester object using the given \a confFile.
+     * \param confFile  absolute path to the configuration file
+     */
     explicit Tester(const QString &confFile);
 
+    /*!
+     * \brief Executes the test routines and returns \c 0 on success.
+     */
     int exec() const;
 
 private:

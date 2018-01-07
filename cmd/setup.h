@@ -23,12 +23,22 @@
 #include <QCoreApplication>
 #include "configinput.h"
 
+/*!
+ * \brief Handles the setup for a Skaffari installation.
+ */
 class Setup : public ConfigInput
 {
     Q_DECLARE_TR_FUNCTIONS(Setup)
 public:
+    /*!
+     * \brief Constructs a new Setup object using the given \a confFile.
+     * \param confFile  absolute path to a configuration file
+     */
     explicit Setup(const QString &confFile);
 
+    /*!
+     * \brief Executes the setup routines and returns \c 0 on success.
+     */
     int exec() const;
 
 private:

@@ -23,14 +23,31 @@
 #include <QCoreApplication>
 #include "consoleoutput.h"
 
+/*!
+ * \brief Stores information about about a Skaffari configuration file.
+ */
 class ConfigFile : public ConsoleOutput
 {
     Q_DECLARE_TR_FUNCTIONS(ConfigFile)
 public:
+    /*!
+     * \brief Constructs a new ConfigFile object.
+     * \param confFile          Absolute path to the configuration file.
+     * \param createIfNotExists Set to \c true if the file should be created if it does not exist.
+     * \param checkIfWritable   Set to \c true if the file should be checked for writability.
+     * \param quiet             Set to \c true if no output should be send to stdout.
+     */
     ConfigFile(const QString &confFile, bool createIfNotExists = true, bool checkIfWritable = true, bool quiet = false);
 
+    /*!
+     * \brief Starts the checks on the configuration file.
+     * \return Returns \c 0 on success.
+     */
     int checkConfigFile() const;
 
+    /*!
+     * \brief Returns the absolute path to the configuration file.
+     */
     QString configFileName() const;
 
 private:

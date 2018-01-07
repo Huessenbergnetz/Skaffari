@@ -27,31 +27,100 @@
 #include <QVersionNumber>
 #include <QVariantHash>
 
+/*!
+ * \brief Handles setup database operations.
+ */
 class Database
 {
     Q_DECLARE_TR_FUNCTIONS(Database)
 public:
+    /*!
+     * \brief Constructs a new Database object without defining a database connection.
+     */
     Database();
+    /*!
+     * \brief Constructs a new Database object with the given connection parameters.
+     * \param type      the type of the database, like QMYSQL
+     * \param host      the host address or name or full path to local socket file
+     * \param port      the database port
+     * \param name      the name of the database
+     * \param user      the name of the database user
+     * \param password  the password of the database user
+     * \param conName   the name used for this connection
+     */
     Database(const QString &type, const QString &host, quint16 port, const QString &name, const QString &user, const QString &password, const QString &conName = QLatin1String(QSqlDatabase::defaultConnection));
 
+    /*!
+     * \brief Opens the database connection and returns \c true on success.
+     */
     bool open();
+    /*!
+     * \brief Opens the database connection with the given parameters and returns \c true on success.
+     * \param type      the type of the database, like QMYSQL
+     * \param host      the host address or name or full path to local socket file
+     * \param port      the database port
+     * \param name      the name of the database
+     * \param user      the name of the database user
+     * \param password  the password of the database user
+     * \param conName   the name used for this connection
+     */
     bool open(const QString &type, const QString &host, quint16 port, const QString &name, const QString &user, const QString &password, const QString &conName = QLatin1String(QSqlDatabase::defaultConnection));
 
+    /*!
+     * \brief Returns the version of the installed database schema.
+     */
     QVersionNumber installedVersion() const;
+    /*!
+     * \brief Returns the most recent version of the available database schema files.
+     */
     QVersionNumber sqlFilesVersion() const;
 
+    /*!
+     * \brief Installs the database schema and returns \c true on success.
+     *
+     * This will use the SQL schema files for installation.
+     */
     bool installDatabase();
+    /*!
+     * \brief Creates \a adminUser with the \a adminPassword in the database and returns \c true on success.
+     *
+     * This is the super user administrator for the web access.
+     */
     bool setAdmin(const QString &adminUser, const QByteArray &adminPassword);
+    /*!
+     * \brief Returns the number of admin accounts in the database.
+     */
     uint checkAdmin() const;
 
+    /*!
+     * \brief Create the \a cyrusAdmin with the \a cyrusPassword in the database and returns \c true on succes.
+     *
+     * This is the Cyrus IMAP admin user.
+     */
     bool setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusPassword);
+    /*!
+     * \brief Returns the name of the Cyrus IMAP server admin user from the database.
+     */
     QString checkCyrusAdmin() const;
 
+    /*!
+     * \brief Returns the last occured database error.
+     */
     QSqlError lastDbError() const;
+    /*!
+     * \brief Returns the internal QSqlDatabase object.
+     */
     QSqlDatabase getDb() const;
     void deleteAll();
 
+    /*!
+     * \brief Returns the options and values from the \a options table.
+     */
     QVariantHash loadOptions();
+
+    /*!
+     * \brief Saves the \a options to the options table.
+     */
     void saveOptions(const QVariantHash &options);
 
 private:

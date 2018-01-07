@@ -23,12 +23,23 @@
 #include <QCoreApplication>
 #include "configinput.h"
 
+/*!
+ * \brief Handles configuration import of a web-cyradm installation.
+ */
 class WebCyradmImporter : public ConfigInput
 {
     Q_DECLARE_TR_FUNCTIONS(WebCyradmImporter)
 public:
+    /*!
+     * \brief Constructs a new WebCyradmImporter object with the given parameters.
+     * \param confFileName  absolute path to the web-cyradm configuration file
+     * \param iniFileName   absolute path to the Skaffari configuration file
+     */
     WebCyradmImporter(const QString &confFileName, const QString &iniFileName);
 
+    /*!
+     * \brief Executes the import routines and returns \c 0 on success.
+     */
     int exec() const;
 
 private:

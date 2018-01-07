@@ -25,14 +25,65 @@
 
 #include "consoleoutput.h"
 
+/*!
+ * \brief Bundles methods to query the user for different config options on the command line.
+ */
 class ConfigInput : public ConsoleOutput
 {
     Q_DECLARE_TR_FUNCTIONS(ConfigInput)
 public:
+    /*!
+     * \brief Constructs a new ConfigInput object.
+     */
     ConfigInput();
 
+    /*!
+     * \brief Asks the user for database connection parameters on the command line.
+     *
+     * Can take a set of defaults that will be used for the questions.
+     *
+     * \par Keys in the hash (defaults and return value)
+     * Key      | Type    | Description
+     * ---------|---------|----------------------------------------------------------------------------------------
+     * type     | QString | the database type as QSqlDatabase driver name like QMYSQL
+     * host     | QString | the database host, either an IP address/host name or absolute path to local socket file
+     * port     | quint16 | he database port if no socket file will be used
+     * name     | QString | the database name
+     * user     | QString | the database user
+     * password | QString | the database password
+     */
     QVariantHash askDatabaseConfig(const QVariantHash &defaults = QVariantHash()) const;
+
+    /*!
+     * \brief Asks the user for IMAP server connection parameters on the command line.
+     *
+     * Can take a set of defaults that will be used for the questions.
+     *
+     * \par Keys in the hash (defaults and return value)
+     * Key        | Type    | Description
+     * -----------|---------|------------------------------------------------------
+     * host       | QString | the IMAP server host, either an IP address or a host name
+     * port       | quint16 | the IMAP server port
+     * user       | QString | the IMAP server admin user name
+     * password   | QString | the IMAP server admin user password
+     * protocol   | quint8  | QAbstractSocket::NetworkLayerProtocol
+     * encryption | quint8  | Imap::EncryptionType
+     * peername   | QString | SSL/TLS peer name
+     */
     QVariantHash askImapConfig(const QVariantHash &defaults = QVariantHash()) const;
+
+    /*!
+     * \brief Asks the user for PBKDF2 admin user password encryption options.
+     *
+     * Can take a set of defaults that will be used for the questions.
+     *
+     * \par Keys in the hash (defaults and return value)
+     * Key       | Type    | Description
+     * ----------|---------|-------------
+     * method    | quint8  | QCryptographicHash::Algorithm
+     * rounds    | quint32 | number of rounds used for the hashing
+     * minlength | quint8  | minimum password length
+     */
     QVariantHash askPbkdf2Config(const QVariantHash &defaults = QVariantHash()) const;
 };
 

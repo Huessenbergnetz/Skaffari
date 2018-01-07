@@ -23,12 +23,29 @@
 #include <QCoreApplication>
 #include "configfile.h"
 
+/*!
+ * \brief Updates the status column of the accountuser table.
+ *
+ * Checks every row in the accountuser table for expired account (valid_until) and expired password
+ * (pwd_expire). It updates the status column accordingly. The status column contains a integer value
+ * that is used for storing different flags. Bit 0 will be flagged if the account has expired, bit 1
+ * will be flagged if the password has been expired.
+ */
 class AccountStatusUpdater : public ConfigFile
 {
     Q_DECLARE_TR_FUNCTIONS(AccountStatusUpdater)
 public:
+    /*!
+     * \brief Constructs a new AccountStatusUpdater object.
+     * \param confFile  Absolute path to the configuration file that contains database access data.
+     * \param quiet     If \c true, no output will be print to stdout.
+     */
     AccountStatusUpdater(const QString &confFile, bool quiet = false);
 
+    /*!
+     * \brief Starts the execution of the status checks.
+     * \return Returns \c 0 on success.
+     */
     int exec() const;
 };
 
