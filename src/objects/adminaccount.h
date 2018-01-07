@@ -103,7 +103,6 @@ public:
      * \sa setId()
      */
     dbid_t getId() const;
-
     /*!
      * \brief Sets the database ID:
      *
@@ -120,7 +119,6 @@ public:
      * \sa setUsername()
 	 */
 	QString getUsername() const;
-
 	/*!
 	 * \brief Sets the user name of this admin account.
 	 *
@@ -137,7 +135,6 @@ public:
      * \sa setDomains()
 	 */
     QList<dbid_t> getDomains() const;
-
 	/*!
      * \brief Sets the list of domain IDs this admin is responsible for.
 	 *
@@ -156,12 +153,10 @@ public:
      * \sa setType()
      */
     qint16 getType() const;
-
 	/*!
 	 * \brief Sets the type of this admin account.
 	 *
 	 * Values lower than 0 (SuperUser) will be converted into DomainAdmin.
-	 * \param nType the account type
      * \sa getType()
      */
     void setType(qint16 nType);
@@ -173,72 +168,184 @@ public:
 
     /*!
      * \brief Returns the language set for this admin.
+     * \sa setLang()
      */
     QString getLang() const;
-
     /*!
      * \brief Sets the language for this admin.
+     * \sa getLang()
      */
     void setLang(const QString &lang);
 
     /*!
      * \brief Returns the time zone ID for this admin.
+     * \sa setTz()
      */
     QByteArray getTz() const;
-
     /*!
      * \brief Sets the time zone ID for this admin.
+     * \sa getTz()
      */
     void setTz(const QByteArray &tz);
 
     /*!
      * \brief Returns the date and time this admin account has been created.
+     * \sa setCreated()
      */
     QDateTime getCreated() const;
-
     /*!
      * \brief Sets the date and time this admin account has been created.
+     * \sa getCreated()
      */
     void setCreated(const QDateTime &created);
 
     /*!
      * \brief Returns the date and tim this admin account has been created.
+     * \sa setUpdated()
      */
     QDateTime getUpdated() const;
-
     /*!
      * \brief Sets the date and time this admin account has been created.
+     * \sa getUpdated()
      */
     void setUpdated(const QDateTime &updated);
 
+    /*!
+     * \brief Returns the maximum number of list entries to display per page.
+     * \sa setMaxDisplay()
+     */
     quint8 getMaxDisplay() const;
+    /*!
+     * \brief Sets the maximum number of list entries to display per page.
+     * \sa getMaxDisplay()
+     */
     void setMaxDisplay(quint8 maxDisplay);
 
+    /*!
+     * \brief Returns the warn level in percent for displaying limits like quota usage.
+     * \sa setWarnLevel()
+     */
     quint8 getWarnLevel() const;
+    /*!
+     * \brief Sets the warn level in percent for displaying limits like quota usage.
+     * \sa getWarnLevel()
+     */
     void setWarnLevel(quint8 warnLevel);
 
+    /*!
+     * \brief Returns the template name to use.
+     * Currently not in use.
+     * \sa setTemplate()
+     */
     QString getTemplate() const;
+    /*!
+     * \brief Sets the template name to use.
+     * Currently not in use
+     * \sa getTemplate()
+     */
     void setTemplate(const QString &tmpl);
 
 
 	/*!
-     * \brief Returns true if the account seems to be valid.
+     * \brief Returns \c true if the account seems to be valid.
 	 *
-	 * This function returns true, if the account seems to be valid. There is
+     * This function returns \c true, if the account seems to be valid. There is
      * no test against the databse. It only checks if user name and id are
-	 * correctly set.
-	 *
-	 * \return true if account seems to be valid
+     * correctly set.
 	 */
     bool isValid() const;
 
+    /*!
+     * \brief Creates a new account with the given \a params and returns it.
+     *
+     * The returned account might be invalid if an error occured.
+     *
+     * \par Keys for the params
+     * Key          | Converted Type | Description
+     * -------------|----------------|------------------------------
+     * username     | QString        | the user name for the new administrator account, will be trimmed
+     * password     | QString        | the password for the new administrator account, will be stored with PBKDF2
+     * type         | qint16         | the type of the new administrator account, see AdminAccount::AdminAccountType
+     * assocdomains | QStringList    | list of domains this account will be associated to if the type is AdminAccount::DomainMaster
+     *
+     * \param c         pointer to the current context, used for translating strings
+     * \param params    parameters for the new accounts
+     * \param error     pointer to an object taking error information
+     */
     static AdminAccount create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *error);
+
+    /*!
+     * \brief Returns a list of all administrator accounts from the database.
+     * \param c     pointer to the current context, used for translating strings
+     * \param error pointer to an object taking error information
+     */
     static QVector<AdminAccount> list(Cutelyst::Context *c, SkaffariError *error);
+
+    /*!
+     * \brief Returns a single administrator account from the database identified by the database \a id.
+     * \param c     pointer to the current context, used for translating strings
+     * \param e     pointer to an object taking error information
+     * \param id    database id of the administrator account to get
+     */
     static AdminAccount get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
+
+    /*!
+     * \brief Updates the administrator account \a with the new \a params and returns \c true on success.
+     *
+     * \par Keys for the params
+     * Key          | Converted Type | Description
+     * -------------|----------------|---------------------------------------
+     * password     | QString        | new password, will be stored with PBKDF2, if empty, password will not be changed
+     * type         | qint16         | new type, see AdminAccount::AdminAccountType
+     * assocdomains | QStringList    | list of domains this account will be associated to if the type is AdminAccount::DomainMaster
+     *
+     * \param c         pointer to the current context, used for translating strings
+     * \param e         pointer to an object taking error information
+     * \param a         pointer to the administrator account to update
+     * \param params    parameters used to update the account
+     * \return
+     */
     static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, const Cutelyst::ParamsMultiMap &params);
+
+    /*!
+     * \brief Updates the administrator acocunt \a of the currently authenticated administrator \a u with the new parameters \a p and returns \c true on success.
+     *
+     * \par Keys for the params
+     * Key          | Converted Type | Description
+     * -------------|----------------|---------------------------------------
+     * password     | QString        | new password, will be stored with PBKDF2, if empty, password will not be changed
+     * maxdisplay   | quint8         | new value for maximum numbuer of items to display in lists
+     * warnlevel    | quint8         | new warn level in percent for things like quota constraints
+     * lang         | QString        | new desplay language code
+     * tz           | QString        | new time zone value
+     *
+     * \param c pointer to the current context, used for translating strings
+     * \param e pointer to an object taking error information
+     * \param a pointer to the administartor account to update
+     * \param u pointer to the currently authenticated user account
+     * \param p parameters used to update the acount
+     */
     static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p);
+
+    /*!
+     * \brief Removes the administrator account \a a and returns \c true on success.
+     * \param c pointer to the current context, used for translating strings
+     * \param e pointer to an object taking error information
+     * \param a the account to remove
+     */
     static bool remove(Cutelyst::Context *c, SkaffariError *e, const AdminAccount &a);
+
+    /*!
+     * \brief Puts the admin account identified by \a adminId into the stash of the current context \a c.
+     * \param c         pointer to the current context
+     * \param adminId   the database id of the admin account
+     */
     static void toStash(Cutelyst::Context *c, dbid_t adminId);
+
+    /*!
+     * \brief Returns the admin account from current context.
+     * \param c pointer to the current context
+     */
     static AdminAccount fromStash(Cutelyst::Context *c);
 
 protected:

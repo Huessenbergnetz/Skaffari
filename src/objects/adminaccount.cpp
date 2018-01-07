@@ -197,7 +197,11 @@ quint8 AdminAccount::getWarnLevel() const
 
 void AdminAccount::setWarnLevel(quint8 warnLevel)
 {
-    d->warnLevel = warnLevel;
+    if (warnLevel > 100) {
+        d->warnLevel = 100;
+    } else {
+        d->warnLevel = warnLevel;
+    }
 }
 
 QString AdminAccount::getTemplate() const
@@ -508,7 +512,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     Q_ASSERT_X(c, "update own account", "invalid context object");
     Q_ASSERT_X(e, "update own account", "invalid error object");
     Q_ASSERT_X(!p.empty(), "update own account", "empty parameters");
-    Q_ASSERT_X(u, "update own accountt", "invalid authentication user object");
+    Q_ASSERT_X(u, "update own account", "invalid authentication user object");
 
     const dbid_t id = u->id().toULong();
     const QString password = p.value(QStringLiteral("password"));

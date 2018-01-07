@@ -630,6 +630,12 @@ public:
      */
     static QString addressToACE(const QString &address);
 
+    /*!
+     * \brief Calculates the account status based on the expiration times.
+     * \param validUntil    account expiration date and time
+     * \param pwExpires     password expiration date and time
+     * \return              status flags as integer value
+     */
     static quint8 calcStatus(const QDateTime validUntil, const QDateTime pwExpires);
 
     /*!
