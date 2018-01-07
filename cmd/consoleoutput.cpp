@@ -299,14 +299,19 @@ quint16 ConsoleOutput::readPort(const QString &name, quint16 defaultVal, const Q
 
     printDesc(desc);
 
-    printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
-    std::string in;
-    std::getline(std::cin, in);
-    QString _inputVal = QString::fromStdString(in);
-    if (_inputVal.isEmpty()) {
-        inputVal = defaultVal;
-    } else {
-        inputVal = _inputVal.toUInt();
+    bool ok = false;
+
+    while (!ok) {
+        printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
+        std::string in;
+        std::getline(std::cin, in);
+        QString _inputVal = QString::fromStdString(in);
+        if (_inputVal.isEmpty()) {
+            inputVal = defaultVal;
+            ok = true;
+        } else {
+            inputVal = _inputVal.toUShort(&ok);
+        }
     }
 
     return inputVal;
@@ -320,14 +325,23 @@ quint8 ConsoleOutput::readChar(const QString &name, quint8 defaultVal, const QSt
     printDesc(desc);
 
     if (acceptableInput.empty()) {
-        printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
-        std::string in;
-        std::getline(std::cin, in);
-        QString _inputVal = QString::fromStdString(in);
-        if (_inputVal.isEmpty()) {
-            inputVal = defaultVal;
-        } else {
-            inputVal = _inputVal.toUShort();
+        bool ok = false;
+        while (!ok) {
+            printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
+            std::string in;
+            std::getline(std::cin, in);
+            QString _inputVal = QString::fromStdString(in);
+            if (_inputVal.isEmpty()) {
+                inputVal = defaultVal;
+                ok = true;
+            } else {
+                const ushort _intermediate = _inputVal.toUShort(&ok);
+                if (ok && (_intermediate < 256)) {
+                    inputVal = static_cast<quint8>(_intermediate);
+                } else {
+                    ok = false;
+                }
+            }
         }
     } else {
         while(!acceptableInput.contains(inputVal)) {
@@ -338,7 +352,11 @@ quint8 ConsoleOutput::readChar(const QString &name, quint8 defaultVal, const QSt
             if (_inputVal.isEmpty()) {
                 inputVal = defaultVal;
             } else {
-                inputVal = _inputVal.toUShort();
+                bool ok = false;
+                const ushort _intermediate = _inputVal.toUShort(&ok);
+                if (ok && (_intermediate < 256)) {
+                    inputVal = static_cast<quint8>(_intermediate);
+                }
             }
         }
     }
@@ -353,14 +371,18 @@ quint32 ConsoleOutput::readInt(const QString &name, quint32 defaultVal, const QS
 
     printDesc(desc);
 
-    printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
-    std::string in;
-    std::getline(std::cin, in);
-    QString _inputVal = QString::fromStdString(in);
-    if (_inputVal.isEmpty()) {
-        inputVal = defaultVal;
-    } else {
-        inputVal = _inputVal.toULong();
+    bool ok = false;
+    while (!ok) {
+        printf("%s [%i]: ", qUtf8Printable(name), defaultVal);
+        std::string in;
+        std::getline(std::cin, in);
+        QString _inputVal = QString::fromStdString(in);
+        if (_inputVal.isEmpty()) {
+            inputVal = defaultVal;
+            ok = true;
+        } else {
+            inputVal = _inputVal.toUInt(&ok);
+        }
     }
 
     return inputVal;
