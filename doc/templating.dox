@@ -1,0 +1,9 @@
+/**
+
+ @page templating Creating %Skaffari Templates
+
+ @section templating_intro Introduction
+
+ %Skaffari uses <A HREF="http://www.grantlee.org/apidox/index.html">Grantlee</A> to generate the content that
+ is displayed by the web browser.
+*/

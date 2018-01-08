@@ -1,0 +1,23 @@
+/**
+
+ @mainpage Welcome
+
+ @section main-overview Overview
+
+ %Skaffari is a web application for managing e-mail accounts, based on <A HREF="https://www.cutelyst.org">Cutelyst</A>
+ and written in <A HREF="https://www.qt.io/">Qt/C++</A>. It serves as a link and access to a combination of SQL database,
+ IMAP and SMTP server. %Skaffari bundles administrative tasks such as the creation of new e-mail domains and e-mail accounts,
+ as well as the creation of new e-mail addresses and e-mail forwards.
+
+ Administrators can be either global or only responsible for specific domains. Individual domains and accounts can be subject to certain restrictions such as storage space, number of accounts or user names.
+
+ %Skaffari has been tested to work with <A HREF="https://www.cyrusimap.org/">Cyrus IMAP</A>, <A HREF="http://www.postfix.org/">Postfix</A>
+ and <A HREF="https://github.com/NigelCunningham/pam-MySQL">pam_mysql</A> and was inspired by a PHP-based tool called
+ <A HREF="https://github.com/web-cyradm/web-cyradm">web-cyradm</A>.
+
+ By the way, %Skaffari is the Old High German word for steward.
+
+ @section main-topics Topics
+
+ @subpage templating
+*/
