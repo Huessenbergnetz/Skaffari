@@ -34,6 +34,7 @@ class SkaffariError;
 class SimpleDomainData;
 
 /*!
+ * \ingroup skaffaricore
  * \brief Contains basic domain data (only database ID and domain name).
  */
 class SimpleDomain

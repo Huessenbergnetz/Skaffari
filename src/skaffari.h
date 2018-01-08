@@ -26,16 +26,40 @@ Q_DECLARE_LOGGING_CATEGORY(SK_CORE)
 
 using namespace Cutelyst;
 
+/*!
+ * \defgroup skaffaricore SkaffariCore
+ * \brief %Skaffari core application
+ */
+
+/*!
+ * \ingroup skaffaricore
+ * \brief Main application class.
+ */
 class Skaffari : public Application
 {
     Q_OBJECT
     CUTELYST_APPLICATION(IID "Skaffari")
 public:
+    /*!
+     * \brief Constructs a new application instance.
+     */
     Q_INVOKABLE explicit Skaffari(QObject *parent = 0);
+
+    /*!
+     * \brief Destroys the application instance.
+     */
     ~Skaffari();
 
+    /*!
+     * \brief Initializes the application and returns \c true on success.
+     */
     bool init() override;
     
+    /*!
+     * \brief This will be called after the engine forked and will setup the database connection.
+     *
+     * Returns always \c true.
+     */
     bool postFork() override;
 
 private:

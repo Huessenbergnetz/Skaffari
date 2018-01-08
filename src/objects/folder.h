@@ -25,6 +25,10 @@
 
 class FolderData;
 
+/*!
+ * \ingroup skaffaricore
+ * \brief Contains information about a single default folder.
+ */
 class Folder
 {
 public:

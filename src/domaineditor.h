@@ -26,6 +26,11 @@ Q_DECLARE_LOGGING_CATEGORY(SK_ACCOUNT)
 
 using namespace Cutelyst;
 class SkaffariEngine;
+
+/*!
+ * \ingroup skaffaricore
+ * \brief Routes for the domain namespace.
+ */
 class DomainEditor : public Controller
 {
     Q_OBJECT

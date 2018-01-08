@@ -21,6 +21,10 @@
 
 #include <Cutelyst/Plugins/Utils/ValidatorRule>
 
+/*!
+ * \ingroup skaffaricore
+ * \brief Cutelyst input validator to check for unique table entries.
+ */
 class SkValidatorUniqueDb : public Cutelyst::ValidatorRule
 {
 public:

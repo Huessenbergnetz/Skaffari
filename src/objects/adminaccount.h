@@ -38,7 +38,9 @@ class Context;
 class AdminAccountData;
 class SkaffariError;
 
-/*! \brief Represents an administrator account.
+/*!
+ * \ingroup skaffaricore
+ * \brief Represents an administrator account.
  *
  * The AdminAccount class represents an administrator account object.
  * There are currently two types of administrators, superusers and domain admins.
@@ -46,6 +48,22 @@ class SkaffariError;
  * ones, as well as adding and removing new admin accounts.
  *
  * Domain admins can only modify accounts in domains they are responsible for.
+ *
+ * \par Grantlee accessors
+ * Accessor    | Type          | Method
+ * ------------|---------------|-----------------
+ * created     | QDateTime     | getCreated()
+ * domains     | QList<dbid_t> | getDomains()
+ * id          | dbid_t        | getId()
+ * isSuperUser | bool          | isSuperUser()
+ * isValid     | bool          | isValid()
+ * lang        | QString       | getLang()
+ * maxDisplay  | quint8        | getMaxDisplay()
+ * type        | qint16        | getType()
+ * tz          | QByteArray    | getTz()
+ * updated     | QDateTime     | getUpdated()
+ * username    | QString       | getUsername()
+ * warnLevel   | quint8        | getWarnLevel()
  */
 class AdminAccount
 {
@@ -77,7 +95,7 @@ public:
 	 * \param username the user name of the administrator
 	 * \param type the admin account type, can not be AllAdmins
      * \param domains list of domain IDs this admin is responsible for
-     * \sa setUsername(), setPassword(), setType(), setDomains()
+     * \sa setUsername(), setType(), setDomains()
 	 */
     AdminAccount(dbid_t id, const QString& username, qint16 type, const QList<dbid_t> &domains);
 
@@ -114,8 +132,6 @@ public:
 
 	/*!
 	 * \brief Returns the username of this admin account.
-	 *
-	 * \return the user name
      * \sa setUsername()
 	 */
 	QString getUsername() const;
@@ -130,8 +146,6 @@ public:
 
 	/*!
      * \brief Returns the domain IDs this admin is responsible for.
-	 *
-	 * \retun list of domains
      * \sa setDomains()
 	 */
     QList<dbid_t> getDomains() const;
@@ -148,8 +162,6 @@ public:
 
 	/*!
 	 * \brief Returns the type of this admin account.
-	 *
-	 * \return the account type
      * \sa setType()
      */
     qint16 getType() const;
@@ -290,7 +302,7 @@ public:
     static AdminAccount get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
 
     /*!
-     * \brief Updates the administrator account \a with the new \a params and returns \c true on success.
+     * \brief Updates the administrator account \a a with the new \a params and returns \c true on success.
      *
      * \par Keys for the params
      * Key          | Converted Type | Description
@@ -308,7 +320,7 @@ public:
     static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, const Cutelyst::ParamsMultiMap &params);
 
     /*!
-     * \brief Updates the administrator acocunt \a of the currently authenticated administrator \a u with the new parameters \a p and returns \c true on success.
+     * \brief Updates the administrator account \a a of the currently authenticated administrator \a u with the new parameters \a p and returns \c true on success.
      *
      * \par Keys for the params
      * Key          | Converted Type | Description

@@ -25,6 +25,7 @@
 #include <grantlee/node.h>
 
 /*!
+ * \internal
  * \brief Grantlee node factory for the TimeZoneConvert tag.
  */
 class TimeZoneConvertTag : public Grantlee::AbstractNodeFactory
@@ -35,6 +36,7 @@ public:
 };
 
 /*!
+ * \ingroup skaffarigrantlee
  * \brief Grantlee template tag to convert a datetime into a specific time zone and format string output.
  *
  * This will take the current user's locale and time zone into account. Time zone and locale will be taken

@@ -22,6 +22,12 @@
 #include <grantlee/taglibraryinterface.h>
 
 /*!
+ * \defgroup skaffarigrantlee SkaffariGrantlee
+ * \brief %Skaffari specific Grantlee template engine plugins
+ */
+
+/*!
+ * \ingroup skaffarigrantlee
  * \brief Skaffari specific plugin for the Grantlee template engine.
  *
  * Provides Skaffari specific tags and filters for the Grantlee template engine.
@@ -38,10 +44,19 @@ class SkaffariGrantlee : public QObject, public Grantlee::TagLibraryInterface
     Q_PLUGIN_METADATA(IID "org.grantlee.TagLibraryInterface/1.0")
     Q_INTERFACES(Grantlee::TagLibraryInterface)
 public:
+    /*!
+     * \brief Constructs a new SkaffariGrantlee object.
+     */
     explicit SkaffariGrantlee(QObject *parent = nullptr);
 
+    /*!
+     * \brief Returns the Skaffari specific Grantlee template tags.
+     */
     virtual QHash<QString, Grantlee::AbstractNodeFactory *> nodeFactories(const QString &name = QString())  override;
 
+    /*!
+     * \brief Returns the Skaffari specific Grantlee template filters.
+     */
     virtual QHash<QString, Grantlee::Filter *> filters(const QString &name = QString()) override;
 };
 

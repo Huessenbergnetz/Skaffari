@@ -24,6 +24,7 @@
 #include "configfile.h"
 
 /*!
+ * \ingroup skaffaricmd
  * \brief Updates the status column of the accountuser table.
  *
  * Checks every row in the accountuser table for expired account (valid_until) and expired password

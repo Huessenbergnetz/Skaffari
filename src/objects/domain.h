@@ -46,6 +46,7 @@ class DomainData;
 class SkaffariError;
 
 /*!
+ * \ingroup skaffaricore
  * \brief Represents a domain
  */
 class Domain

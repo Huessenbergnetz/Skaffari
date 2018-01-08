@@ -31,6 +31,10 @@ class Context;
 
 class LanguageData;
 
+/*!
+ * \ingroup skaffaricore
+ * \brief Contains information about a supported language.
+ */
 class Language
 {
 public:

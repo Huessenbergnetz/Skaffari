@@ -22,15 +22,16 @@
 #include <grantlee5/grantlee/filter.h>
 
 /*!
+ * \ingroup skaffarigrantlee
  * \brief Grantlee template filter to decode ACE encoded strings.
  *
  * This filter can be used as \c sk_acedecode in your Grantlee templates. It decodes
  * a strings that has before been encoded using ASCII Compatible Encoding (ACE).
  *
- * \par Example
- * \code
- * \\ will be converted into "hüssenbergnetz.de" if the variable contains "xn--hssenbergnetz-wob.de"
- * {{ domain|sk_acedecode }}
+ * <H3>Example</H3>
+ * \code{.html}
+ * <!-- will be converted into "hüssenbergnetz.de" if the variable contains "xn--hssenbergnetz-wob.de" -->
+ * <p>{{ domain|sk_acedecode }}</p>
  * \endcode
  */
 class AceDecodeFilter : public Grantlee::Filter

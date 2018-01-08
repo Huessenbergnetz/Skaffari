@@ -24,6 +24,7 @@
 #include "consoleoutput.h"
 
 /*!
+ * \ingroup skaffaricmd
  * \brief Stores information about about a Skaffari configuration file.
  */
 class ConfigFile : public ConsoleOutput

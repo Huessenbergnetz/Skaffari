@@ -32,6 +32,7 @@ class Context;
 }
 
 /*!
+ * \ingroup skaffaricore
  * \brief Helper class to perform IMAP4rev1 operations used by Skaffari.
  *
  * As Skaffari is not an IMAP email client, it only needs a few of the IMAP commands to be implemented. So, this

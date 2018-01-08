@@ -26,6 +26,11 @@ Q_DECLARE_LOGGING_CATEGORY(SK_LOGIN)
 
 using namespace Cutelyst;
 class SkaffariEngine;
+
+/*!
+ * \ingroup skaffaricore
+ * \brief Handles the login route.
+ */
 class Login : public Controller
 {
     Q_OBJECT

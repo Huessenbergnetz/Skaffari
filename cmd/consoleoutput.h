@@ -28,6 +28,7 @@ class QSqlError;
 class QStringList;
 
 /*!
+ * \ingroup skaffaricmd
  * \brief Handles console output and input.
  */
 class ConsoleOutput {

@@ -24,6 +24,7 @@
 #include "consoleoutput.h"
 
 /*!
+ * \ingroup skaffaricmd
  * \brief Handles checks for the Skaffari installation.
  */
 class Tester : public ConsoleOutput

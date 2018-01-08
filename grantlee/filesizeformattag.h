@@ -25,6 +25,7 @@
 #include <grantlee/node.h>
 
 /*!
+ * \internal
  * \brief Grantlee node factory for the FileSizeFormat tag.
  */
 class FileSizeFormatTag : public Grantlee::AbstractNodeFactory
@@ -36,6 +37,7 @@ public:
 
 
 /*!
+ * \ingroup skaffarigrantlee
  * \brief Grantlee template tag to convert a numeric value into a human readable file size.
  *
  * Converts for example 1024 into 1 KiB. It takes the current user's locale into account. The

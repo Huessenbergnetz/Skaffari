@@ -38,7 +38,8 @@ class SkaffariError;
 class SimpleAccountData;
 
 /*!
- * \brief Contains basic account data (only database ID and user name).
+ * \ingroup skaffaricore
+ * \brief Contains basic account data (only database ID, user name and domain name).
  */
 class SimpleAccount
 {

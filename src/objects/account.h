@@ -42,6 +42,7 @@ class AccountData;
 class SkaffariError;
 
 /*!
+ * \ingroup skaffaricore
  * \brief Represents an user account
  *
  * A user account contains information about a single email user account, inlcuding associated addresses and forwards.

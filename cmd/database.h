@@ -28,6 +28,7 @@
 #include <QVariantHash>
 
 /*!
+ * \ingroup skaffaricmd
  * \brief Handles setup database operations.
  */
 class Database

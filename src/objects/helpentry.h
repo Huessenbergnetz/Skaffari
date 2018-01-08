@@ -24,6 +24,10 @@
 
 class HelpEntryData;
 
+/*!
+ * \ingroup skaffaricore
+ * \brief Represents a single help entry.
+ */
 class HelpEntry
 {
 public:

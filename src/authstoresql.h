@@ -23,6 +23,10 @@
 
 using namespace Cutelyst;
 
+/*!
+ * \ingroup skaffaricore
+ * \brief SQL based Cutelyst authentication store.
+ */
 class AuthStoreSql : public AuthenticationStore
 {
     Q_OBJECT

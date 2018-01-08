@@ -31,6 +31,11 @@
 #include "tester.h"
 #include "accountstatusupdater.h"
 
+/*!
+ * \defgroup skaffaricmd SkaffariCMD
+ * \brief The %Skaffari command line utility skaffaricmd.
+ */
+
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);

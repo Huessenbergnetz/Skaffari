@@ -47,6 +47,7 @@ Q_DECLARE_LOGGING_CATEGORY(SK_CONFIG)
 class QSqlQuery;
 
 /*!
+ * \ingroup skaffaricore
  * \brief Static interface to access Skaffari and template settings in read only mode.
  *
  * This class contains the settings from the Skaffari configuration file as well as the settings

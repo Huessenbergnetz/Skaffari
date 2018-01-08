@@ -23,6 +23,10 @@
 
 using namespace Cutelyst;
 
+/*!
+ * \ingroup skaffaricore
+ * \brief Routes for the settings namespace.
+ */
 class SettingsEditor : public Controller
 {
     Q_OBJECT

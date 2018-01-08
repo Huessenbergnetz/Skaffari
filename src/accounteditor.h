@@ -23,6 +23,11 @@
 
 using namespace Cutelyst;
 class SkaffariEngine;
+
+/*!
+ * \ingroup skaffaricore
+ * \brief Routes for the account namespace.
+ */
 class AccountEditor : public Controller
 {
     Q_OBJECT

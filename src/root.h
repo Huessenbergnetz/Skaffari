@@ -23,6 +23,11 @@
 
 using namespace Cutelyst;
 class SkaffariEngine;
+
+/*!
+ * \ingroup skaffaricore
+ * \brief Routes for the root/empty namespace.
+ */
 class Root : public Controller
 {
     Q_OBJECT

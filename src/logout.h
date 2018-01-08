@@ -26,6 +26,10 @@ Q_DECLARE_LOGGING_CATEGORY(SK_LOGIN)
 
 using namespace Cutelyst;
 
+/*!
+ * \ingroup skaffaricore
+ * \brief Handles the logout route.
+ */
 class Logout : public Controller
 {
     Q_OBJECT

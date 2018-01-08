@@ -24,6 +24,7 @@
 #include "configinput.h"
 
 /*!
+ * \ingroup skaffaricmd
  * \brief Handles configuration import of a web-cyradm installation.
  */
 class WebCyradmImporter : public ConfigInput

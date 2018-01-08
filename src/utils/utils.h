@@ -26,6 +26,10 @@ namespace Cutelyst {
 class Context;
 }
 
+/*!
+ * \ingroup skaffaricore
+ * \brief Small helper methods.
+ */
 class Utils
 {
 public:

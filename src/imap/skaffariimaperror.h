@@ -25,6 +25,10 @@
 class QSslError;
 class SkaffariIMAPErrorData;
 
+/*!
+ * \ingroup skaffaricore
+ * \brief Contains information about occured IMAP errors.
+ */
 class SkaffariIMAPError
 {
 public:

@@ -25,6 +25,7 @@
 Q_DECLARE_LOGGING_CATEGORY(SK_PASSWORD)
 
 /*!
+ * \ingroup skaffaricore
  * \brief Handles passwords encrypted with the crypt(3) function or MySQL password hashing.
  *
  * For more information about crypt(3) see man 3 crypt, for more information about MySQL encrpytion

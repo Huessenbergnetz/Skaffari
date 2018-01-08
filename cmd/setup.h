@@ -24,6 +24,7 @@
 #include "configinput.h"
 
 /*!
+ * \ingroup skaffaricmd
  * \brief Handles the setup for a Skaffari installation.
  */
 class Setup : public ConfigInput

@@ -26,6 +26,7 @@
 #include "consoleoutput.h"
 
 /*!
+ * \ingroup skaffaricmd
  * \brief Bundles methods to query the user for different config options on the command line.
  */
 class ConfigInput : public ConsoleOutput

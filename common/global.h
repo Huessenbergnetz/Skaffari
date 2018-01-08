@@ -23,6 +23,11 @@
 #include <utility>
 
 /*!
+ * \file global.h
+ * \brief Global %Skaffari Definitions
+ */
+
+/*!
  * \brief 64bit unsigned integer type for mailbox storage quota.
  */
 typedef quint64 quota_size_t;
