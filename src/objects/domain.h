@@ -395,7 +395,6 @@ public:
 
     /*!
      * \brief Removes the \a domain and all of their accounts from the database and the IMAP server.
-     * \todo Remove accounts from IMAP server.
      * \param c                 Pointer to the current context, used for translations.
      * \param domain            Pointer to the domain to remove.
      * \param error             Pointer to an error object to give feedback on database and IMAP errors.

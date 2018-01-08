@@ -154,6 +154,8 @@ bool Password::check(const QByteArray &savedPw)
 {
     bool ret = false;
 
+    Q_UNUSED(savedPw)
+
     return ret;
 }
 
