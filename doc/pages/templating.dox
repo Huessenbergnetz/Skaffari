@@ -1,9 +1,35 @@
 /**
 
- @page templating Creating %Skaffari Templates
+ @page templating Creating Templates
 
  @section templating_intro Introduction
 
  %Skaffari uses <A HREF="http://www.grantlee.org/apidox/index.html">Grantlee</A> to generate the content that
  is displayed by the web browser.
+
+ @section templating_structure Structure
+
+ - wrapper.html
+ - base.html
+ - 403.html
+ - 404.html
+ - login.html
+ - dashboard.html
+ - about.html
+ - csrfdenied.html
+ - @subpage tmpl-account
+   - @ref tmpl-account-add_address
+   - @ref tmpl-account-add_forward
+   - @ref tmpl-account-addresses
+   - @ref tmpl-account-check
+   - @ref tmpl-account-edit_address
+   - @ref tmpl-account-edit_forward
+   - @ref tmpl-account-edit
+   - @ref tmpl-account-forwards
+   - @ref tmpl-account-keep_local
+   - @ref tmpl-account-remove_address
+   - @ref tmpl-account-remove_forward
+   - @ref tmpl-account-remove
+
+ @section templating_ajax AJAX Requests
 */

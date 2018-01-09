@@ -1,0 +1,7 @@
+/**
+
+ @page tmpl-account-add_forward account/add_forward.html
+
+ @tmplpagegeneral{/account/&lowast;/&lowast;/add_forward,yes,yes,account/add_forward.html,AccountEditor,add_forward}
+
+*/

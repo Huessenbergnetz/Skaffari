@@ -1,0 +1,7 @@
+/**
+
+ @page tmpl-account-addresses account/addresses.html
+
+ @tmplpagegeneral{/account/&lowast;/&lowast;/addresses,no,no,account/addresses.html,AccountEditor,addresses}
+
+*/

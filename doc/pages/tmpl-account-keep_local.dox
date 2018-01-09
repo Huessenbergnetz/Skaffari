@@ -1,0 +1,7 @@
+/**
+
+ @page tmpl-account-keep_local account/keep_local.html
+
+ @tmplpagegeneral{/account/&lowast;/&lowast;/keep_local,yes,yes,account/keep_local.html,AccountEditor,keep_local}
+
+*/

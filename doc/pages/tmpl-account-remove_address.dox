@@ -1,0 +1,7 @@
+/**
+
+ @page tmpl-account-remove_address account/remove_address.html
+
+ @tmplpagegeneral{/account/&lowast;/&lowast;/remove_address/&lowast;,yes,yes,account/remove_address.html,AccountEditor,remove_address}
+
+*/

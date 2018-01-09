@@ -1,0 +1,7 @@
+/**
+
+ @page tmpl-account-forwards account/forwards.html
+
+ @tmplpagegeneral{/account/&lowast;/&lowast;/forwards,no,no,account/forwards.html,AccountEditor,forwards}
+
+*/

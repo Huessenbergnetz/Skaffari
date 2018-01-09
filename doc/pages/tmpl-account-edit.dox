@@ -1,0 +1,23 @@
+/**
+
+ @page tmpl-account-edit account/edit.html
+
+ @tmplpagegeneral{/account/&lowast;/&lowast;/edit,no,yes,account/edit.html,AccountEditor,edit}
+
+ This template page is used to edit an existing user account. It should display a form to change the properties of the user. Have
+ a look a the <A HREF="#tmpl-account-edit-accepted-post">accepted POST parameters</A> to learn more about them. The form data has
+ to be sent to the same route with the POST method.
+
+ <H3 id="tmpl-account-edit-available-stash">Available Stash Keys</H3>
+ <H4>General Available Stash Keys</H4>
+ @includedoc general-available-stash-keys.html
+
+ <H4>Keys specific for the /account namespace</H4>
+ @includedoc account-stash-keys.html
+
+ <H4>Keys specific for this template</H4>
+ @includedoc account-edit-stash-keys.html
+
+ <H3 id="tmpl-account-edit-accepted-post">Accepted POST parameters</H3>
+ @includedoc account-edit-accepted-post.html
+*/

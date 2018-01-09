@@ -1,0 +1,119 @@
+/**
+
+ @page routes Routes
+
+ <TABLE>
+     <TR>
+         <TH>Route</TH>
+         <TH>Controller</TH>
+         <TH>Action</TH>
+         <TH>Arguments</TH>
+         <TH>Template</TH>
+         <TH>AJAX support</TH>
+     </TR>
+     <TR>
+         <TD>/account/&lowast;/&lowast;/edit</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::edit() edit \endlink</TD>
+         <TD><OL><LI>domain database ID</LI><LI>account database ID</LI></OL></TD>
+         <TD>\ref tmpl-account-edit</TD>
+         <TD>no</TD>
+     </TR>
+     <TR>
+         <TD>/account/&lowast;/&lowast;/remove</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::remove() remove \endlink</TD>
+         <TD><OL><LI>domain database ID</LI><LI>account database ID</LI></OL></TD>
+         <TD>\ref tmpl-account-remove</TD>
+         <TD>yes</TD>
+     </TR>
+     <TR>
+         <TD>/account/&lowast;/&lowast;/addresses</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::addresses() addresses \endlink</TD>
+         <TD><OL><LI>domain database ID</LI><LI>account database ID</LI></OL></TD>
+         <TD>\ref tmpl-account-addresses</TD>
+         <TD>no</TD>
+     </TR>
+     <TR>
+         <TD>/account/&lowast;/&lowast;/add_address</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::add_address() add_address \endlink</TD>
+         <TD><OL><LI>domain database ID</LI><LI>account database ID</LI></OL></TD>
+         <TD>\ref tmpl-account-add_address</TD>
+         <TD>yes</TD>
+     </TR>
+     <TR>
+         <TD>/account/&lowast;/&lowast;/edit_address/&lowast;</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::edit_address() edit_address \endlink</TD>
+         <TD><OL><LI>domain database ID</LI><LI>account database ID</LI><LI>address to edit</LI></OL></TD>
+         <TD>\ref tmpl-account-edit_address</TD>
+         <TD>yes</TD>
+     </TR>
+     <TR>
+         <TD>/account/&lowast;/&lowast;/remove_address/&lowast;</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::remove_address() remove_address \endlink</TD>
+         <TD><OL><LI>domain database ID</LI><LI>account database ID</LI><LI>address to remove</LI></OL></TD>
+         <TD>\ref tmpl-account-remove_address</TD>
+         <TD>yes</TD>
+     </TR>
+     <TR>
+         <TD>/account/&lowast;/&lowast;/forwards</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::forwards() forwards \endlink</TD>
+         <TD><OL><LI>domain database ID</LI><LI>account database ID</LI></OL></TD>
+         <TD>\ref tmpl-account-forwards</TD>
+         <TD>no</TD>
+     </TR>
+     <TR>
+         <TD>/account/&lowast;/&lowast;/add_forward</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::add_forward() add_forward \endlink</TD>
+         <TD><OL><LI>domain database ID</LI><LI>account database ID</LI></OL></TD>
+         <TD>\ref tmpl-account-add_forward</TD>
+         <TD>yes</TD>
+     </TR>
+     <TR>
+         <TD>/account/&lowast;/&lowast;/edit_forward</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::edit_forward() edit_forward \endlink</TD>
+         <TD><OL><LI>domain database ID</LI><LI>account database ID</LI><LI>forward to edit</LI></OL></TD>
+         <TD>\ref tmpl-account-edit_forward</TD>
+         <TD>yes</TD>
+     </TR>
+     <TR>
+         <TD>/account/&lowast;/&lowast;/remove_forward</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::remove_forward() remove_forward \endlink</TD>
+         <TD><OL><LI>domain database ID</LI><LI>account database ID</LI><LI>forward to remove</LI></OL></TD>
+         <TD>\ref tmpl-account-remove_forward</TD>
+         <TD>yes</TD>
+     </TR>
+     <TR>
+         <TD>/account/&lowast;/&lowast;/keep_local</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::keep_local() keep_local \endlink</TD>
+         <TD><OL><LI>domain database ID</LI><LI>account database ID</LI></OL></TD>
+         <TD>\ref tmpl-account-keep_local</TD>
+         <TD>yes</TD>
+     </TR>
+     <TR>
+         <TD>/account/&lowast;/&lowast;/check</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::check() check \endlink</TD>
+         <TD><OL><LI>domain database ID</LI><LI>account database ID</LI></OL></TD>
+         <TD>\ref tmpl-account-check</TD>
+         <TD>yes</TD>
+     </TR>
+     <TR>
+         <TD>/account/list</TD>
+         <TD>AccountEditor</TD>
+         <TD>\link AccountEditor::list() list \endlink</TD>
+         <TD></TD>
+         <TD></TD>
+         <TD>only</TD>
+     </TR>
+ </TABLE>
+*/

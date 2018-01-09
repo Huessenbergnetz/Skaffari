@@ -1,0 +1,47 @@
+<TABLE>
+    <TR>
+        <TH>Key</TH>
+        <TH>Type</TH>
+        <TH>Description</TH>
+    </TR>
+    <TR>
+        <TD>userId</TD>
+        <TD>dbid_t</TD>
+        <TD>%Database ID of the current user</TD>
+    </TR>
+    <TR>
+        <TD>userType</TD>
+        <TD>qint16</TD>
+        <TD>Type of the current user as integer, see \link AdminAccount::AdminAccountType AdminAccountType \endlink</TD>
+    </TR>
+    <TR>
+        <TD>userName</TD>
+        <TD>QString</TD>
+        <TD>User name of the current user</TD>
+    </TR>
+    <TR>
+        <TD>userMaxDisplay</TD>
+        <TD>quint8</TD>
+        <TD>Maximum display setting for lists for the current user</TD>
+    </TR>
+    <TR>
+        <TD>userWarnLevel</TD>
+        <TD>quint8</TD>
+        <TD>Warn level in percent for the current user to display warnings on limits like quota</TD>
+    </TR>
+    <TR>
+        <TD>template</TD>
+        <TD>QString</TD>
+        <TD>name/path of the template file</TD>
+    </TR>
+    <TR>
+        <TD>status_msg</TD>
+        <TD>QString</TD>
+        <TD>Status message for the last performed action. This key is only available, if a status message has been generated.</TD>
+    </TR>
+    <TR>
+        <TD>error_msg</TD>
+        <TD>QString</TD>
+        <TD>Error message if an error occured in the last performed action. This key is only availabe, if an error message has been generated.</TD>
+    </TR>
+</TABLE>

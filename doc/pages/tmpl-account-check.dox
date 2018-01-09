@@ -1,0 +1,7 @@
+/**
+
+ @page tmpl-account-check account/check.html
+
+ @tmplpagegeneral{/account/&lowast;/&lowast;/check,yes,yes,account/check.html,AccountEditor,check}
+
+*/

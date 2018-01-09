@@ -1,0 +1,7 @@
+{
+    "status_msg": "Successfully removed account of user tester.",
+    "account_id": 23,
+    "account_name": "tester",
+    "domain_id": 2,
+    "domain_name": "example.com"
+}

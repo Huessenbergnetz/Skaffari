@@ -1,0 +1,7 @@
+/**
+
+ @page tmpl-account-add_address account/add_address.html
+
+ @tmplpagegeneral{/account/&lowast;/&lowast;/add_address,yes,yes,account/add_address.html,AccountEditor,add_address}
+
+*/

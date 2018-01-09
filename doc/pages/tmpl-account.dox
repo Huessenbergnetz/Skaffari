@@ -1,0 +1,21 @@
+/**
+
+ @page tmpl-account account
+
+
+
+ <h3>Files in this section</h3>
+ @li @subpage tmpl-account-add_address
+ @li @subpage tmpl-account-add_forward
+ @li @subpage tmpl-account-addresses
+ @li @subpage tmpl-account-check
+ @li @subpage tmpl-account-edit_address
+ @li @subpage tmpl-account-edit_forward
+ @li @subpage tmpl-account-edit
+ @li @subpage tmpl-account-forwards
+ @li @subpage tmpl-account-keep_local
+ @li @subpage tmpl-account-remove_address
+ @li @subpage tmpl-account-remove_forward
+ @li @subpage tmpl-account-remove
+*/
+
