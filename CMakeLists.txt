@@ -8,7 +8,7 @@ set(SKAFFARI_VERSION_PATCH "0")
 set(SKAFFARI_VERSION "${SKAFFARI_VERSION_MAJOR}.${SKAFFARI_VERSION_MINOR}.${SKAFFARI_VERSION_PATCH}")
 
 find_package(Qt5 5.6.0 COMPONENTS Core Network Sql)
-find_package(CutelystQt5 1.6.0 REQUIRED)
+find_package(CutelystQt5 1.12.0 REQUIRED)
 find_package(Grantlee5 REQUIRED)
 find_package(PkgConfig REQUIRED)
 
