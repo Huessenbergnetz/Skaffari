@@ -20,6 +20,7 @@
 #define UTILS_H
 
 #include <QDateTime>
+#include <Cutelyst/ParamsMultiMap>
 #include "../../common/global.h"
 
 namespace Cutelyst {
@@ -61,6 +62,16 @@ public:
      * \return  \c true if the request is made via AJAX.
      */
     static bool isAjax(Cutelyst::Context *c);
+
+    /*!
+     * \brief Returns \c true if \a params contains the \a field with with a specific value.
+     *
+     * Values that are treated as boolean \c true are the following strings:
+     * \li 1
+     * \li on
+     * \li true
+     */
+    static bool checkCheckbox(const Cutelyst::ParamsMultiMap &params, const QString &field);
 };
 
 #endif // UTILS_H

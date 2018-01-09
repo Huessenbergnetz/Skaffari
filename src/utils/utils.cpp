@@ -144,3 +144,15 @@ bool Utils::isAjax(Cutelyst::Context *c)
 {
     return c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
 }
+
+bool Utils::checkCheckbox(const Cutelyst::ParamsMultiMap &params, const QString &field)
+{
+    bool ret = false;
+
+    if (params.contains(field)) {
+        static QStringList allowedVals({QStringLiteral("1"), QStringLiteral("true"), QStringLiteral("on")});
+        ret = allowedVals.contains(params.value(field), Qt::CaseInsensitive);
+    }
+
+    return ret;
+}

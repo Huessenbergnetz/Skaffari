@@ -454,11 +454,11 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     }
     // end encrypting the password
 
-    const bool imap = (p.value(QStringLiteral("imap"), QStringLiteral("0")) == QLatin1String("1"));
-    const bool pop = (p.value(QStringLiteral("pop"), QStringLiteral("0")) == QLatin1String("1"));
-    const bool sieve = (p.value(QStringLiteral("sieve"), QStringLiteral("0")) == QLatin1String("1"));
-    const bool smtpauth = (p.value(QStringLiteral("smtpauth"), QStringLiteral("0")) == QLatin1String("1"));
-    const bool _catchAll = (p.value(QStringLiteral("catchall"), QStringLiteral("0")) == QLatin1String("1"));
+    const bool imap =  Utils::checkCheckbox(p, QStringLiteral("imap"));
+    const bool pop =  Utils::checkCheckbox(p, QStringLiteral("pop"));
+    const bool sieve =  Utils::checkCheckbox(p, QStringLiteral("sieve"));
+    const bool smtpauth =  Utils::checkCheckbox(p, QStringLiteral("smtpauth"));
+    const bool _catchAll =  Utils::checkCheckbox(p, QStringLiteral("catchall"));
 
     quota_size_t quota = 0;
     if (p.contains(QStringLiteral("humanQuota"))) {
@@ -1301,13 +1301,15 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
             e->setErrorText(c->translate("Account", "Failed to convert human readable quota size string into valid integer value."));
             return ret;
         }
-    } else {
+    } else if (p.contains(QStringLiteral("quota"))) {
         bool quotaOk = true;
         quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULongLong(&quotaOk);
         if (!quotaOk) {
             e->setErrorType(SkaffariError::InputError);
             e->setErrorText(c->translate("Account", "Failed to parse quota string into integer value."));
         }
+    } else {
+        quota = a->getQuota();
     }
 
     if (quota != a->getQuota()) {
@@ -1337,11 +1339,11 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
     }
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
-    const bool imap = (p.value(QStringLiteral("imap"), QStringLiteral("0")) == QLatin1String("1"));
-    const bool pop = (p.value(QStringLiteral("pop"), QStringLiteral("0")) == QLatin1String("1"));
-    const bool sieve = (p.value(QStringLiteral("sieve"), QStringLiteral("0")) == QLatin1String("1"));
-    const bool smtpauth = (p.value(QStringLiteral("smtpauth"), QStringLiteral("0")) == QLatin1String("1"));
-    const bool _catchAll = (p.value(QStringLiteral("catchall"), QStringLiteral("0")) == QLatin1String("1"));
+    const bool imap = Utils::checkCheckbox(p, QStringLiteral("imap"));
+    const bool pop =  Utils::checkCheckbox(p, QStringLiteral("pop"));
+    const bool sieve =  Utils::checkCheckbox(p, QStringLiteral("sieve"));
+    const bool smtpauth =  Utils::checkCheckbox(p, QStringLiteral("smtpauth"));
+    const bool _catchAll =  Utils::checkCheckbox(p, QStringLiteral("catchall"));
 
     QSqlQuery q;
     if (!password.isEmpty()) {

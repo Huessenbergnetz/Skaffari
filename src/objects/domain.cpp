@@ -410,8 +410,8 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
     }
 
     const quint32 maxAccounts = params.value(QStringLiteral("maxAccounts")).toULong();
-    const bool freeNames = params.contains(QStringLiteral("freeNames"));
-    const bool freeAddress = params.contains(QStringLiteral("freeAddress"));
+    const bool freeNames = Utils::checkCheckbox(params, QStringLiteral("freeNames"));
+    const bool freeAddress = Utils::checkCheckbox(params, QStringLiteral("freeAddress"));
     const QStringList folders = Domain::trimStringList(params.value(QStringLiteral("folders")).split(QLatin1Char(','), QString::SkipEmptyParts));
     const QString transport = params.value(QStringLiteral("transport"), QStringLiteral("cyrus"));
     const dbid_t parentId = params.value(QStringLiteral("parent"), QStringLiteral("0")).toULong();
@@ -876,8 +876,8 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
         }
 
         const quint32 maxAccounts = p.value(QStringLiteral("maxAccounts"), QString::number(d->getMaxAccounts())).toULong();
-        const bool freeNames = p.contains(QStringLiteral("freeNames"));
-        const bool freeAddress = p.contains(QStringLiteral("freeAddress"));
+        const bool freeNames = Utils::checkCheckbox(p, QStringLiteral("freeNames"));
+        const bool freeAddress = Utils::checkCheckbox(p, QStringLiteral("freeAddress"));
         const QString transport = p.value(QStringLiteral("transport"), d->getTransport());
 
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET maxaccounts = :maxaccounts, quota = :quota, domainquota = :domainquota, freenames = :freenames, freeaddress = :freeaddress, transport = :transport, updated_at = :updated_at, parent_id = :parent_id WHERE id = :id"));
