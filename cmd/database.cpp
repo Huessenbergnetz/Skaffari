@@ -90,6 +90,18 @@ bool Database::open(const QString &type, const QString &host, quint16 port, cons
 }
 
 
+bool Database::open(const QVariantHash &params, const QString &conName)
+{
+    return open(params.value(QStringLiteral("type")).toString(),
+                params.value(QStringLiteral("host")).toString(),
+                params.value(QStringLiteral("port")).value<quint16>(),
+                params.value(QStringLiteral("name")).toString(),
+                params.value(QStringLiteral("user")).toString(),
+                params.value(QStringLiteral("password")).toString(),
+                conName);
+}
+
+
 QSqlError Database::lastDbError() const
 {
     return m_lastError;
@@ -149,7 +161,6 @@ bool Database::installDatabase()
     QSqlQuery q(m_db);
 
     for (const QFileInfo &fi : fil) {
-//        printf("%s\n", qUtf8Printable(tr("Applying SQL statements from %1.").arg(fi.absoluteFilePath())));
         QFile f(fi.absoluteFilePath());
         f.open(QFile::ReadOnly|QFile::Text);
         QTextStream in(&f);

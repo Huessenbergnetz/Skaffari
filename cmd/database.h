@@ -68,6 +68,13 @@ public:
     bool open(const QString &type, const QString &host, quint16 port, const QString &name, const QString &user, const QString &password, const QString &conName = QLatin1String(QSqlDatabase::defaultConnection));
 
     /*!
+     * \brief Opens the database connection the given \a params and \a conName and returns \c on success.
+     * \param params    as returned by ConfigInput::askDatabaseConfig()
+     * \param conName   the name used for this connection
+     */
+    bool open(const QVariantHash &params, const QString &conName = QLatin1String(QSqlDatabase::defaultConnection));
+
+    /*!
      * \brief Returns the version of the installed database schema.
      */
     QVersionNumber installedVersion() const;
