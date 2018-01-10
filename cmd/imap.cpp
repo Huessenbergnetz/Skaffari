@@ -418,9 +418,9 @@ void Imap::setProtocol ( QAbstractSocket::NetworkLayerProtocol protocol )
 }
 
 
-void Imap::setEncryptionType(Imap::EncryptionType encType)
+void Imap::setEncryptionType(Imap::EncryptionType type)
 {
-    m_encType = encType;
+    m_encType = type;
 }
 
 
@@ -441,11 +441,11 @@ void Imap::setHierarchySeparator(QChar separator)
 }
 
 
-QString Imap::encryptionTypeToString(EncryptionType et)
+QString Imap::encryptionTypeToString(EncryptionType type)
 {
     QString str;
 
-    switch(et) {
+    switch(type) {
     case Unsecured:
         str = tr("Unsecured");
         break;
@@ -463,17 +463,17 @@ QString Imap::encryptionTypeToString(EncryptionType et)
 }
 
 
-QString Imap::encryptionTypeToString(quint8 et)
+QString Imap::encryptionTypeToString(quint8 type)
 {
-    return encryptionTypeToString(static_cast<EncryptionType>(et));
+    return encryptionTypeToString(static_cast<EncryptionType>(type));
 }
 
 
-QString Imap::networkProtocolToString(QAbstractSocket::NetworkLayerProtocol nlp)
+QString Imap::networkProtocolToString(QAbstractSocket::NetworkLayerProtocol protocol)
 {
     QString str;
 
-    switch(nlp) {
+    switch(protocol) {
     case QAbstractSocket::IPv4Protocol:
         str = QStringLiteral("IPv4");
         break;
@@ -493,9 +493,9 @@ QString Imap::networkProtocolToString(QAbstractSocket::NetworkLayerProtocol nlp)
 
 
 
-QString Imap::networkProtocolToString(quint8 nlp)
+QString Imap::networkProtocolToString(quint8 protocol)
 {
-    return networkProtocolToString(static_cast<QAbstractSocket::NetworkLayerProtocol>(nlp));
+    return networkProtocolToString(static_cast<QAbstractSocket::NetworkLayerProtocol>(protocol));
 }
 
 
