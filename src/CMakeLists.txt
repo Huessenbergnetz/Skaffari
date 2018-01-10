@@ -63,6 +63,8 @@ set(skaffari_SRCS
     ../common/global.h
     validators/skvalidatoruniquedb.cpp
     validators/skvalidatoruniquedb.h
+    validators/skvalidatorfilesize.cpp
+    validators/skvalidatorfilesize.h
 )
 
 # Create the application

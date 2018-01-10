@@ -27,6 +27,7 @@
 #include "utils/skaffariconfig.h"
 #include "utils/utils.h"
 #include "../common/global.h"
+#include "validators/skvalidatorfilesize.h"
 
 #include <Cutelyst/Plugins/Session/Session>
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
@@ -85,7 +86,7 @@ void AccountEditor::edit(Context* c)
                                    new ValidatorBoolean(QStringLiteral("sieve")),
                                    new ValidatorBoolean(QStringLiteral("smtpauth")),
                                    new ValidatorBoolean(QStringLiteral("catchall")),
-                                   new ValidatorRegularExpression(QStringLiteral("humanQuota"), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption)),
+                                   new SkValidatorFilesize(QStringLiteral("humanQuota")),
                                    new ValidatorInteger(QStringLiteral("quota")),
                                    new ValidatorMin(QStringLiteral("quota"), QMetaType::UInt, 0)
                                });
