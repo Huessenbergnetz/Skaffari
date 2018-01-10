@@ -1585,7 +1585,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
         }
     }
 
-    if (p.contains(QStringLiteral("checkChildAddresses")) && (p.value(QStringLiteral("checkChildAddresses")) == QLatin1String("1")) && !domain.children().empty()) {
+    if (Utils::checkCheckbox(p, QStringLiteral("checkChildAddresses")) && !domain.children().empty()) {
         const QStringList addresses = d->addresses;
         if (!addresses.empty()) {
             QSqlQuery q;

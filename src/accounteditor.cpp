@@ -1087,7 +1087,7 @@ void AccountEditor::check(Context *c)
             auto d = Domain::fromStash(c);
 
             SkaffariError e(c);
-            const QStringList actions = a.check(c, &e, d, c->req()->params());
+            const QStringList actions = a.check(c, &e, d, c->req()->bodyParameters());
 
             Account::toStash(c, a);
 

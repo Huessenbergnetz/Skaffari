@@ -94,7 +94,7 @@ void AdminEditor::create(Context *c)
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
                 SkaffariError e(c);
-                AdminAccount::create(c, req->parameters(), &e);
+                AdminAccount::create(c, req->bodyParameters(), &e);
 
                 if (e.type() == SkaffariError::NoError) {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/admin/index"),
@@ -106,7 +106,7 @@ void AdminEditor::create(Context *c)
                 }
             }
 
-            c->setStash(QStringLiteral("assocdomains"), QVariant::fromValue<QStringList>(req->parameters().values(QStringLiteral("assocdomains"))));
+            c->setStash(QStringLiteral("assocdomains"), QVariant::fromValue<QStringList>(req->bodyParameters().values(QStringLiteral("assocdomains"))));
         }
 
         SkaffariError e(c);

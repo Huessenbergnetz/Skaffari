@@ -66,7 +66,7 @@ void MyAccount::index(Context *c)
             ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
                 SkaffariError e(c);
-                if (AdminAccount::update(c, &e, &aac, &user, req->parameters())) {
+                if (AdminAccount::update(c, &e, &aac, &user, req->bodyParameters())) {
                     c->setStash(QStringLiteral("status_msg"), c->translate("MyAccount", "Your account has been updated."));
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
