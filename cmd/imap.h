@@ -57,6 +57,11 @@ public:
     void setPort(const quint16 &port);
     void setProtocol(NetworkLayerProtocol protocol);
     void setEncryptionType(EncryptionType encType);
+    /*!
+     * \brief Sets the IMAP connnection \a paramaters.
+     * \param params    as returned by ConfigInput::askImapConfig()
+     */
+    void setParams(const QVariantHash &parameters);
     void setHierarchySeparator(QChar separator);
 
     static QString encryptionTypeToString(EncryptionType et);
