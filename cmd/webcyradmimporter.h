@@ -25,7 +25,7 @@
 
 /*!
  * \ingroup skaffaricmd
- * \brief Handles configuration import of a web-cyradm installation.
+ * \brief Handles configuration and database import of a web-cyradm installation.
  */
 class WebCyradmImporter : public ConfigInput
 {
