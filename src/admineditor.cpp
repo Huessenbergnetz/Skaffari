@@ -22,6 +22,7 @@
 #include "objects/simpledomain.h"
 #include "objects/helpentry.h"
 #include "utils/skaffariconfig.h"
+#include "utils/utils.h"
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
 #include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
@@ -207,7 +208,7 @@ void AdminEditor::remove(Context *c)
     if (accessGranted(c)) {
         auto req = c->req();
 
-        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+        const bool isAjax = Utils::isAjax(c);
         QJsonObject json;
 
         if (req->isPost()) {
@@ -281,7 +282,7 @@ bool AdminEditor::checkAccess(Context *c)
         return true;
     }
 
-    if (c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive)) {
+    if (Utils::isAjax(c)) {
         QJsonObject json({
                              {QStringLiteral("error_msg"), c->translate("AdminEditor", "You are not authorized to access this resource or to perform this action.")}
                          });
