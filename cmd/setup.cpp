@@ -31,8 +31,8 @@
 #include "../common/config.h"
 #include "../common/global.h"
 
-Setup::Setup(const QString &confFile) :
-    m_confFile(confFile)
+Setup::Setup(const QString &confFile, bool quiet) :
+    ConfigInput(quiet), m_confFile(confFile, true, true, quiet)
 {
 
 }
@@ -45,60 +45,81 @@ int Setup::exec() const
     printStatus(tr("Checking configuration file"));
 
     bool configExists = m_confFile.exists();
-    if (configExists) {
-        if (!m_confFile.isReadable()) {
-            printFailed();
-            return fileError(tr("Configuration file exists at %1 but is not readable.").arg(m_confFile.absoluteFilePath()));
-        }
 
-        if (!m_confFile.isWritable()) {
-            printFailed();
-            return fileError(tr("Configuration file exists at %1 but is not writable.").arg(m_confFile.absoluteFilePath()));
-        }
-        printDone(tr("Found"));
-        printMessage(tr("Using existing configuration file at %1.").arg(m_confFile.absoluteFilePath()));
-
-    } else {
-
-        QDir confDir = m_confFile.absoluteDir();
-        QFileInfo confDirInfo(confDir.absolutePath());
-        if (!confDir.exists() && !confDir.mkpath(confDir.absolutePath())) {
-            printFailed();
-            return fileError(tr("Failed to create configuation directory at %1.").arg(confDir.absolutePath()));
-        } else if (confDir.exists() && !confDirInfo.isWritable()) {
-            printFailed();
-            return fileError(tr("Can not write to configuration directory at %1.").arg(confDir.absolutePath()));
-        }
-
-        printDone(tr("Created"));
-        printMessage(tr("Creating configuration file at %1.").arg(m_confFile.absoluteFilePath()));
+    const int configCheck = m_confFile.checkConfigFile();
+    if (configCheck > 0) {
+        return configCheck;
     }
+
+//    bool configExists = m_confFile.exists();
+//    if (configExists) {
+//        if (!m_confFile.isReadable()) {
+//            printFailed();
+//            return fileError(tr("Configuration file exists at %1 but is not readable.").arg(m_confFile.absoluteFilePath()));
+//        }
+
+//        if (!m_confFile.isWritable()) {
+//            printFailed();
+//            return fileError(tr("Configuration file exists at %1 but is not writable.").arg(m_confFile.absoluteFilePath()));
+//        }
+//        printDone(tr("Found"));
+//        printMessage(tr("Using existing configuration file at %1.").arg(m_confFile.absoluteFilePath()));
+
+//    } else {
+
+//        QDir confDir = m_confFile.absoluteDir();
+//        QFileInfo confDirInfo(confDir.absolutePath());
+//        if (!confDir.exists() && !confDir.mkpath(confDir.absolutePath())) {
+//            printFailed();
+//            return fileError(tr("Failed to create configuation directory at %1.").arg(confDir.absolutePath()));
+//        } else if (confDir.exists() && !confDirInfo.isWritable()) {
+//            printFailed();
+//            return fileError(tr("Can not write to configuration directory at %1.").arg(confDir.absolutePath()));
+//        }
+
+//        printDone(tr("Created"));
+//        printMessage(tr("Creating configuration file at %1.").arg(m_confFile.absoluteFilePath()));
+//    }
 
 
     QSettings os(m_confFile.absoluteFilePath(), QSettings::IniFormat);
+
+    QVariantHash dbparams;
     os.beginGroup(QStringLiteral("Database"));
-    QString dbhost = os.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
-    QString dbname = os.value(QStringLiteral("name")).toString();
-    QString dbpass = os.value(QStringLiteral("password")).toString();
-    QString dbtype = os.value(QStringLiteral("type"), QStringLiteral("QMYSQL")).toString();
-    QString dbuser = os.value(QStringLiteral("user")).toString();
-    quint16 dbport = os.value(QStringLiteral("port"), 3306).value<quint16>();
+    for (const QString &key : os.childKeys()) {
+        QVariant defVal;
+        if (key == QLatin1String("host")) {
+            defVal.setValue<QString>(QStringLiteral("localhost"));
+        } else if (key == QLatin1String("type")) {
+            defVal.setValue<QString>(QStringLiteral("QMYSQL"));
+        } else if (key == QLatin1String("port")) {
+            defVal.setValue<quint16>(3306);
+        }
+        dbparams.insert(key, os.value(key, defVal));
+    }
+//    QString dbhost = os.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
+//    QString dbname = os.value(QStringLiteral("name")).toString();
+//    QString dbpass = os.value(QStringLiteral("password")).toString();
+//    QString dbtype = os.value(QStringLiteral("type"), QStringLiteral("QMYSQL")).toString();
+//    QString dbuser = os.value(QStringLiteral("user")).toString();
+//    quint16 dbport = os.value(QStringLiteral("port"), 3306).value<quint16>();
     os.endGroup();
 
     Database db;
 
     bool dbaccess = false;
-    if (configExists && !dbpass.isEmpty()) {
+    if (configExists && !dbparams.value(QStringLiteral("password")).toString().isEmpty()) {
         printTable({
-                       {tr("Type"), dbtype},
-                       {tr("Host"), dbhost},
-                       {tr("Port"), QString::number(dbport)},
-                       {tr("Name"), dbname},
-                       {tr("User"), dbuser},
+                       {tr("Type"), dbparams.value(QStringLiteral("type")).toString()},
+                       {tr("Host"), dbparams.value(QStringLiteral("host")).toString()},
+                       {tr("Port"), dbparams.value(QStringLiteral("port")).toString()},
+                       {tr("Name"), dbparams.value(QStringLiteral("name")).toString()},
+                       {tr("User"), dbparams.value(QStringLiteral("user")).toString()},
                        {tr("Password"), QStringLiteral("********")}
                    }, tr("Database settings"));
         printStatus(tr("Establishing database connection"));
-        dbaccess = db.open(dbtype, dbhost, dbport, dbname, dbuser, dbpass);
+//        dbaccess = db.open(dbtype, dbhost, dbport, dbname, dbuser, dbpass);
+        dbaccess = db.open(dbparams);
         if (dbaccess) {
             printDone();
         } else {
@@ -109,30 +130,33 @@ int Setup::exec() const
     if (!dbaccess) {
         printDesc(tr("Please enter the data to connect to your database system."));
 
-        dbtype = readString(tr("DB Type"),
-                            dbtype,
-                            QStringList({
-                                            tr("The type of database you are using, identified by the Qt driver name."),
-                                            tr("See %1 for a list of drivers supported by Qt.").arg(QStringLiteral("http://doc.qt.io/qt-5/sql-driver.html")),
-                                            tr("Currently supported by Skaffari: %1").arg(QStringLiteral("QMYSQL"))}),
-                            QStringList({QStringLiteral("QMYSQL")}));
-        printf("%s\n", dbtype.toUtf8().constData());
-        dbhost = readString(tr("DB Host"),
-                            dbhost,
-                            QStringList({
-                                            tr("The host your database server is running on. By default this is the local host."),
-                                            tr("You can use localhost, a remote host identified by hostname or IP address or an absolute path to a local socket file.")
-                                        }));
-        if (dbhost[0] != QLatin1Char('/')) {
-            dbport = readPort(tr("DB Port"), dbport, QStringList({tr("The port your database server is listening on.")}));
-        }
-        dbname = readString(tr("DB Name"), dbname, QStringList({tr("The name of the database used for Skaffari and the SMTP and POP/IMAP servers.")}));
-        dbuser = readString(tr("DB User"), dbuser, QStringList({tr("The name of the database user that has read and write access to the database defined in the previous step.")}));
-        dbpass = readString(tr("DB Password"), dbpass, QStringList({tr("The password of the database user defined in the previous step.")}));
+        dbparams = askDatabaseConfig(dbparams);
+
+//        dbtype = readString(tr("DB Type"),
+//                            dbtype,
+//                            QStringList({
+//                                            tr("The type of database you are using, identified by the Qt driver name."),
+//                                            tr("See %1 for a list of drivers supported by Qt.").arg(QStringLiteral("http://doc.qt.io/qt-5/sql-driver.html")),
+//                                            tr("Currently supported by Skaffari: %1").arg(QStringLiteral("QMYSQL"))}),
+//                            QStringList({QStringLiteral("QMYSQL")}));
+//        printf("%s\n", dbtype.toUtf8().constData());
+//        dbhost = readString(tr("DB Host"),
+//                            dbhost,
+//                            QStringList({
+//                                            tr("The host your database server is running on. By default this is the local host."),
+//                                            tr("You can use localhost, a remote host identified by hostname or IP address or an absolute path to a local socket file.")
+//                                        }));
+//        if (dbhost[0] != QLatin1Char('/')) {
+//            dbport = readPort(tr("DB Port"), dbport, QStringList({tr("The port your database server is listening on.")}));
+//        }
+//        dbname = readString(tr("DB Name"), dbname, QStringList({tr("The name of the database used for Skaffari and the SMTP and POP/IMAP servers.")}));
+//        dbuser = readString(tr("DB User"), dbuser, QStringList({tr("The name of the database user that has read and write access to the database defined in the previous step.")}));
+//        dbpass = readString(tr("DB Password"), dbpass, QStringList({tr("The password of the database user defined in the previous step.")}));
 
         printStatus(tr("Establishing database connection"));
 
-        if (!db.open(dbtype, dbhost, dbport, dbname, dbuser, dbpass)) {
+//        if (!db.open(dbtype, dbhost, dbport, dbname, dbuser, dbpass)) {
+        if (!db.open(dbparams)) {
             printFailed();
             return dbError(db.lastDbError());
         } else {
@@ -140,12 +164,17 @@ int Setup::exec() const
         }
 
         os.beginGroup(QStringLiteral("Database"));
-        os.setValue(QStringLiteral("type"), dbtype);
-        os.setValue(QStringLiteral("host"), dbhost);
-        os.setValue(QStringLiteral("port"), dbport);
-        os.setValue(QStringLiteral("name"), dbname);
-        os.setValue(QStringLiteral("user"), dbuser);
-        os.setValue(QStringLiteral("password"), dbpass);
+        QVariantHash::const_iterator i = dbparams.constBegin();
+        while (i != dbparams.constEnd()) {
+            os.setValue(i.key(), i.value());
+            ++i;
+        }
+//        os.setValue(QStringLiteral("type"), dbtype);
+//        os.setValue(QStringLiteral("host"), dbhost);
+//        os.setValue(QStringLiteral("port"), dbport);
+//        os.setValue(QStringLiteral("name"), dbname);
+//        os.setValue(QStringLiteral("user"), dbuser);
+//        os.setValue(QStringLiteral("password"), dbpass);
         os.endGroup();
         os.sync();
     }
@@ -174,41 +203,38 @@ int Setup::exec() const
         printFailed(tr("None"));
     }
 
-    //: %1 will be substituted by a link to pbkdf2test GitHub repo, %2 will be substituded by an URL to a Wikipedia page about PBKDF2
-    const QString pbkdf2Desc = tr("Skaffari uses PBKDF2 to secure the administrator passwords. PBKDF2 can use different hashing algorithms and iteration counts to produce a derived key and to increase the cost for the derivation. To better secure your administartor passwords you should use values that lead to a time consumption of around 0.5s on your system for creating the derived key. This might be a good compromise between security and user experience. To test different settings with the PBKDF2 implementation of Cutelyst/Skaffari you can use %1. See %2 to learn more about PBKDF2.").arg(QStringLiteral("https://github.com/Buschtrommel/pbkdf2test"), tr("https://en.wikipedia.org/wiki/PBKDF2"));
+//    //: %1 will be substituted by a link to pbkdf2test GitHub repo, %2 will be substituded by an URL to a Wikipedia page about PBKDF2
+//    const QString pbkdf2Desc = tr("Skaffari uses PBKDF2 to secure the administrator passwords. PBKDF2 can use different hashing algorithms and iteration counts to produce a derived key and to increase the cost for the derivation. To better secure your administartor passwords you should use values that lead to a time consumption of around 0.5s on your system for creating the derived key. This might be a good compromise between security and user experience. To test different settings with the PBKDF2 implementation of Cutelyst/Skaffari you can use %1. See %2 to learn more about PBKDF2.").arg(QStringLiteral("https://github.com/Buschtrommel/pbkdf2test"), tr("https://en.wikipedia.org/wiki/PBKDF2"));
 
-    const QStringList pbkdf2AlgoDesc({
-                                         tr("The PBKDF2 implementation of Cutelyst/Skaffari supports the following hashing algorithms:"),
-                                         QStringLiteral(" 3: SHA-224"),
-                                         QStringLiteral(" 4: SHA-256"),
-                                         QStringLiteral(" 5: SHA-384"),
-                                         QStringLiteral(" 6: SHA-512"),
-                                         QStringLiteral(" 7: SHA3-224"),
-                                         QStringLiteral(" 8: SHA3-256"),
-                                         QStringLiteral(" 9: SHA3-384"),
-                                         QStringLiteral("10: SHA3-512"),
-                                     });
+//    const QStringList pbkdf2AlgoDesc({
+//                                         tr("The PBKDF2 implementation of Cutelyst/Skaffari supports the following hashing algorithms:"),
+//                                         QStringLiteral(" 3: SHA-224"),
+//                                         QStringLiteral(" 4: SHA-256"),
+//                                         QStringLiteral(" 5: SHA-384"),
+//                                         QStringLiteral(" 6: SHA-512"),
+//                                         QStringLiteral(" 7: SHA3-224"),
+//                                         QStringLiteral(" 8: SHA3-256"),
+//                                         QStringLiteral(" 9: SHA3-384"),
+//                                         QStringLiteral("10: SHA3-512"),
+//                                     });
 
-    const QStringList pbkdf2IterDesc({tr("The iteration count is used to increase the cost for deriving the key from the password.")});
+//    const QStringList pbkdf2IterDesc({tr("The iteration count is used to increase the cost for deriving the key from the password.")});
 
-    const QStringList adminMinPwDesc({tr("Required minimum length for administrator passwords.")});
+//    const QStringList adminMinPwDesc({tr("Required minimum length for administrator passwords.")});
+
+    QVariantHash adminsParams;
 
     os.beginGroup(QStringLiteral("Admins"));
-    QCryptographicHash::Algorithm adminPasswordAlgorithm = static_cast<QCryptographicHash::Algorithm>(os.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM).toInt());
-    quint32 adminPasswordRounds = os.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>();
-    quint8 adminPasswordMinLength = os.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>();
+    adminsParams.insert(QStringLiteral("pwalgorithm"), os.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM));
+    adminsParams.insert(QStringLiteral("pwrounds"), os.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS));
+    adminsParams.insert(QStringLiteral("pwminlength"), os.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH));
     os.endGroup();
 
     if (adminCount == 0) {
         printDesc(tr("Please configure your admin password settings and create a new admin user."));
         printDesc(QString());
 
-        printDesc(pbkdf2Desc);
-        printMessage(QString());
-
-        adminPasswordAlgorithm = static_cast<QCryptographicHash::Algorithm>(readChar(tr("PBKDF2 algorithm"), static_cast<quint8>(adminPasswordAlgorithm), pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10})));
-        adminPasswordRounds = readInt(tr("PBKDF2 iterations"), adminPasswordRounds, pbkdf2IterDesc);
-        adminPasswordMinLength = readChar(tr("Password minimum length"), adminPasswordMinLength, adminMinPwDesc);
+        adminsParams = askPbkdf2Config(adminsParams);
 
         printMessage(QString());
 
@@ -217,7 +243,11 @@ int Setup::exec() const
         const QString adminUser = readString(tr("User name"), QStringLiteral("admin"));
         const QString adminPass = readString(tr("Password"), QString());
 
-        const QByteArray pw = Cutelyst::CredentialPassword::createPassword(adminPass.toUtf8(), adminPasswordAlgorithm, adminPasswordRounds, 24, 27);
+        const QByteArray pw = Cutelyst::CredentialPassword::createPassword(adminPass.toUtf8(),
+                                                                           static_cast<QCryptographicHash::Algorithm>(adminsParams.value(QStringLiteral("pwalgorithm")).value<quint8>()),
+                                                                           adminsParams.value(QStringLiteral("pwrounds")).toInt(),
+                                                                           24,
+                                                                           27);
 
         printStatus(tr("Creating new admin account in database"));
         if (!db.setAdmin(adminUser, pw)) {
@@ -228,25 +258,34 @@ int Setup::exec() const
         printDone();
 
         os.beginGroup(QStringLiteral("Admins"));
-        os.setValue(QStringLiteral("pwalgorithm"), static_cast<int>(adminPasswordAlgorithm));
-        os.setValue(QStringLiteral("pwrounds"), adminPasswordRounds);
-        os.setValue(QStringLiteral("pwminlength"), adminPasswordMinLength);
+        QVariantHash::const_iterator i = adminsParams.constBegin();
+        while (i != adminsParams.constEnd()) {
+            os.setValue(i.key(), i.value());
+            ++i;
+        }
+//        os.setValue(QStringLiteral("pwalgorithm"), static_cast<int>(adminPasswordAlgorithm));
+//        os.setValue(QStringLiteral("pwrounds"), adminPasswordRounds);
+//        os.setValue(QStringLiteral("pwminlength"), adminPasswordMinLength);
         os.endGroup();
         os.sync();
 
-    } else if ((adminCount == 0) || readBool(tr("Do you want to set the admin password settings?"), false)) {
+    } else if (readBool(tr("Do you want to set the admin password settings?"), false)) {
 
-        printDesc(pbkdf2Desc);
-        printMessage(QString());
+        adminsParams = askPbkdf2Config(adminsParams);
 
-        adminPasswordAlgorithm = static_cast<QCryptographicHash::Algorithm>(readChar(tr("PBKDF2 algorithm"), static_cast<quint8>(adminPasswordAlgorithm), pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10})));
-        adminPasswordRounds = readInt(tr("PBKDF2 iterations"), adminPasswordRounds, pbkdf2IterDesc);
-        adminPasswordMinLength = readChar(tr("Password minimum length"), adminPasswordMinLength, adminMinPwDesc);
+//        adminPasswordAlgorithm = static_cast<QCryptographicHash::Algorithm>(readChar(tr("PBKDF2 algorithm"), static_cast<quint8>(adminPasswordAlgorithm), pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10})));
+//        adminPasswordRounds = readInt(tr("PBKDF2 iterations"), adminPasswordRounds, pbkdf2IterDesc);
+//        adminPasswordMinLength = readChar(tr("Password minimum length"), adminPasswordMinLength, adminMinPwDesc);
 
         os.beginGroup(QStringLiteral("Admins"));
-        os.setValue(QStringLiteral("pwalgorithm"), static_cast<int>(adminPasswordAlgorithm));
-        os.setValue(QStringLiteral("pwrounds"), adminPasswordRounds);
-        os.setValue(QStringLiteral("pwminlength"), adminPasswordMinLength);
+        QVariantHash::const_iterator i = adminsParams.constBegin();
+        while (i != adminsParams.constEnd()) {
+            os.setValue(i.key(), i.value());
+            ++i;
+        }
+//        os.setValue(QStringLiteral("pwalgorithm"), static_cast<int>(adminPasswordAlgorithm));
+//        os.setValue(QStringLiteral("pwrounds"), adminPasswordRounds);
+//        os.setValue(QStringLiteral("pwminlength"), adminPasswordMinLength);
         os.endGroup();
         os.sync();
     }

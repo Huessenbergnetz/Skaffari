@@ -19,9 +19,9 @@
 #ifndef SETUP_H
 #define SETUP_H
 
-#include <QFileInfo>
 #include <QCoreApplication>
 #include "configinput.h"
+#include "configfile.h"
 
 /*!
  * \ingroup skaffaricmd
@@ -35,7 +35,7 @@ public:
      * \brief Constructs a new Setup object using the given \a confFile.
      * \param confFile  absolute path to a configuration file
      */
-    explicit Setup(const QString &confFile);
+    explicit Setup(const QString &confFile, bool quiet = false);
 
     /*!
      * \brief Executes the setup routines and returns \c 0 on success.
@@ -43,7 +43,7 @@ public:
     int exec() const;
 
 private:
-    QFileInfo m_confFile;
+    ConfigFile m_confFile;
 };
 
 #endif // SETUP_H
