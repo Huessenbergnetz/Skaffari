@@ -32,6 +32,9 @@ class TimeZoneConvertTag : public Grantlee::AbstractNodeFactory
 {
     Q_OBJECT
 public:
+    /*!
+     * \brief Returns the TimeZoneConvert node.
+     */
     Grantlee::Node *getNode(const QString &tagContent, Grantlee::Parser *p) const override;
 };
 
@@ -40,7 +43,7 @@ public:
  * \brief Grantlee template tag to convert a datetime into a specific time zone and format string output.
  *
  * This will take the current user's locale and time zone into account. Time zone and locale will be taken
- * form the current Cutelyst stash.
+ * from the current Cutelyst stash.
  *
  * This tak can be used as \c sk_tzc in your Grantlee templates. It accepts up to 2 parameters.
  * The first and required parameter has to be either a QDateTime or a string that can be converted into
@@ -61,8 +64,17 @@ class TimeZoneConvert : public Grantlee::Node
 {
     Q_OBJECT
 public:
+    /*!
+     * \brief Constructs a new %TimeZoneConvert node with the given parameters.
+     * \param dateTime  that datetime that should be converted
+     * \param format    the output format
+     * \param parser    pointer to the parser
+     */
     explicit TimeZoneConvert(const Grantlee::FilterExpression &dateTime, const Grantlee::FilterExpression &format, Grantlee::Parser *parser = nullptr);
 
+    /*!
+     * \brief Performs the formatting and renders the result into the \a stream.
+     */
     void render(Grantlee::OutputStream *stream, Grantlee::Context *gc) const override;
 
 private:

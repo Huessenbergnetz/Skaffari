@@ -67,6 +67,9 @@ void FileSizeFormat::render(Grantlee::OutputStream *stream, Grantlee::Context *g
 {
     const QVariant sizeVar = m_size.resolve(gc);
     const int sizeVarType = sizeVar.userType();
+
+    // if the size variable already is a string, we will not convert it
+    // but send it directly to the output stream
     if (sizeVarType == qMetaTypeId<Grantlee::SafeString>()) {
         *stream << sizeVar.value<Grantlee::SafeString>().get();
         return;
@@ -128,6 +131,10 @@ void FileSizeFormat::render(Grantlee::OutputStream *stream, Grantlee::Context *g
     }
 
     size *= multiplier;
+
+    if (size < 0.0) {
+        size *= -1.0;
+    }
 
     static const QStringList binaryUnits({
                                              QStringLiteral("B"),

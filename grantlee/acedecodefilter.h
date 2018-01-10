@@ -37,9 +37,17 @@
 class AceDecodeFilter : public Grantlee::Filter
 {
 public:
+    /*!
+     * \brief Returns \c true because this filter is safe.
+     */
     bool isSafe() const override { return true; }
 
-    QVariant doFilter(const QVariant &input, const QVariant &argument, bool autoescape) const override;
+    /*!
+     * \brief Performs this filter on \a input.
+     *
+     * \a argument and  \a autoescape are not used.
+     */
+    QVariant doFilter(const QVariant &input, const QVariant &argument = QVariant(), bool autoescape = false) const override;
 };
 
 #endif // ACEDECODEFILTER_H

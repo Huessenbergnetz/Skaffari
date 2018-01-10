@@ -32,6 +32,9 @@ class FileSizeFormatTag : public Grantlee::AbstractNodeFactory
 {
     Q_OBJECT
 public:
+    /*!
+     * \brief Returns the FileSizeFormat node.
+     */
     Grantlee::Node *getNode(const QString &tagContent, Grantlee::Parser *p) const override;
 };
 
@@ -68,8 +71,19 @@ class FileSizeFormat : public Grantlee::Node
 {
     Q_OBJECT
 public:
+    /*!
+     * \brief Constructs a new %FileSizeFormat node with the given parameters.
+     * \param size          the file size that should be formatted
+     * \param base          the base to use, either 2 (binary) or 10 (decimal)
+     * \param decimal       the decimal precision for the converted value
+     * \param multiplier    value the size should be multiplied with
+     * \param parser        pointer to the parser
+     */
     explicit FileSizeFormat(const Grantlee::FilterExpression &size, const Grantlee::FilterExpression &base, const Grantlee::FilterExpression &decimal, const Grantlee::FilterExpression &multiplier, Grantlee::Parser *parser = nullptr);
 
+    /*!
+     * \brief Performs the formatting and renders the result into the \a stream.
+     */
     void render(Grantlee::OutputStream *stream, Grantlee::Context *gc) const override;
 
 private:
