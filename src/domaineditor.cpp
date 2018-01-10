@@ -25,6 +25,7 @@
 #include "utils/utils.h"
 #include "validators/skvalidatoruniquedb.h"
 #include "validators/skvalidatorfilesize.h"
+#include "validators/skvalidatoraccountexists.h"
 #include "../common/global.h"
 
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
@@ -369,14 +370,19 @@ void DomainEditor::create(Context* c)
                                    new ValidatorMin(QStringLiteral("parent"), QMetaType::UInt, 0),
                                    new ValidatorInteger(QStringLiteral("abuseAccount")),
                                    new ValidatorMin(QStringLiteral("abuseAccount"), QMetaType::UInt, 0),
+                                   new SkValidatorAccountExists(QStringLiteral("abuseAccount")),
                                    new ValidatorInteger(QStringLiteral("nocAccount")),
                                    new ValidatorMin(QStringLiteral("nocAccount"), QMetaType::UInt, 0),
+                                   new SkValidatorAccountExists(QStringLiteral("nocAccount")),
                                    new ValidatorInteger(QStringLiteral("postmasterAccount")),
                                    new ValidatorMin(QStringLiteral("postmasterAccount"), QMetaType::UInt, 0),
+                                   new SkValidatorAccountExists(QStringLiteral("postmasterAccount")),
                                    new ValidatorInteger(QStringLiteral("hostmasterAccount")),
                                    new ValidatorMin(QStringLiteral("hostmasterAccount"), QMetaType::UInt, 0),
+                                   new SkValidatorAccountExists(QStringLiteral("hostmasterAccount")),
                                    new ValidatorInteger(QStringLiteral("webmasterAccount")),
-                                   new ValidatorMin(QStringLiteral("webmasterAccount"), QMetaType::UInt, 0)
+                                   new ValidatorMin(QStringLiteral("webmasterAccount"), QMetaType::UInt, 0),
+                                   new SkValidatorAccountExists(QStringLiteral("webmasterAccount"))
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);

@@ -21,13 +21,18 @@
 #include "utils/skaffariconfig.h"
 #include "utils/language.h"
 #include "objects/helpentry.h"
+#include "validators/skvalidatoraccountexists.h"
+#include "validators/skvalidatorfilesize.h"
 #include "../common/global.h"
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QTimeZone>
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
-#include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result
+#include <Cutelyst/Plugins/Utils/validatorin.h>
+#include <Cutelyst/Plugins/Utils/validatorinteger.h>
+#include <Cutelyst/Plugins/Utils/validatorbetween.h>
+#include <Cutelyst/Plugins/Utils/validatormin.h>
 
 SettingsEditor::SettingsEditor(QObject *parent) : Controller(parent)
 {
@@ -54,13 +59,26 @@ void SettingsEditor::index(Context *c)
                                    new ValidatorBetween(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), QMetaType::UInt, 15.0, 255.0),
                                    new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS)),
                                    new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), QMetaType::UInt, 0.0),
-                                   new ValidatorRegularExpression(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption)),
-                                   new ValidatorRegularExpression(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), QRegularExpression(QStringLiteral("^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?"), QRegularExpression::CaseInsensitiveOption)),
+                                   new SkValidatorFilesize(QStringLiteral(SK_CONF_KEY_DEF_QUOTA)),
+                                   new SkValidatorFilesize(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA)),
                                    new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC)),
+                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), QMetaType::UInt, 0),
+                                   new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC)),
                                    new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC)),
+                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), QMetaType::UInt, 0),
+                                   new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC)),
+                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC)),
+                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), QMetaType::UInt, 0),
+                                   new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC)),
                                    new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC)),
+                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), QMetaType::UInt, 0),
+                                   new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC)),
                                    new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC)),
-                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC))
+                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), QMetaType::UInt, 0),
+                                   new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC)),
+                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC)),
+                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), QMetaType::UInt, 0),
+                                   new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC))
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
