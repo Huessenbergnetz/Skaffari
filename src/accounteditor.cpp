@@ -125,7 +125,7 @@ void AccountEditor::edit(Context* c)
                             enoughQuotaLeft = false;
 
                             c->setStash(QStringLiteral("error_msg"),
-                                        c->translate("AccountEditor", "There is not enough free quota on this domain. Please lower the quota for the account to a maximum of %1.").arg(Utils::humanBinarySize(c, freeQuota * 1024));
+                                        c->translate("AccountEditor", "There is not enough free quota on this domain. Please lower the quota for the account to a maximum of %1.").arg(Utils::humanBinarySize(c, freeQuota * 1024)));
                         }
 
                         if ((dom.getDomainQuota() > 0) && (accQuota <= 0)) {
@@ -133,7 +133,7 @@ void AccountEditor::edit(Context* c)
                             enoughQuotaLeft = false;
 
                             c->setStash(QStringLiteral("error_msg"),
-                                        c->translate("AccountEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(Utils::humanBinarySize(c, Utils::humanBinarySize(c, dom.getDomainQuota() * 1024))));
+                                        c->translate("AccountEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(Utils::humanBinarySize(c, dom.getDomainQuota() * 1024)));
 
                         }
                     } else {
