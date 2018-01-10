@@ -112,7 +112,11 @@ void AccountEditor::edit(Context* c)
                             enoughQuotaLeft = false;
                         }
                     } else {
-                        accQuota = p.value(QStringLiteral("quota")).toULong();
+                        accQuota = p.value(QStringLiteral("quota")).toULong(&quotaOk);
+                        if (!quotaOk) {
+                            c->setStash(QStringLiteral("error_msg"),
+                                        c->translate("AccountEditor", "Failed to convert quota string into valid integer value."));
+                        }
                     }
 
                     if (quotaOk) {
@@ -121,7 +125,7 @@ void AccountEditor::edit(Context* c)
                             enoughQuotaLeft = false;
 
                             c->setStash(QStringLiteral("error_msg"),
-                                        c->translate("AccountEditor", "There is not enough free quota on this domain. Please lower the quota for the account to a maximum of %1 KiB.").arg(freeQuota));
+                                        c->translate("AccountEditor", "There is not enough free quota on this domain. Please lower the quota for the account to a maximum of %1.").arg(Utils::humanBinarySize(c, freeQuota * 1024));
                         }
 
                         if ((dom.getDomainQuota() > 0) && (accQuota <= 0)) {
@@ -129,9 +133,11 @@ void AccountEditor::edit(Context* c)
                             enoughQuotaLeft = false;
 
                             c->setStash(QStringLiteral("error_msg"),
-                                        c->translate("AccountEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(Utils::humanBinarySize(c, dom.getDomainQuota())));
+                                        c->translate("AccountEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(Utils::humanBinarySize(c, Utils::humanBinarySize(c, dom.getDomainQuota() * 1024))));
 
                         }
+                    } else {
+                        c->res()->setStatus(400);
                     }
                 }
 
@@ -150,6 +156,7 @@ void AccountEditor::edit(Context* c)
                                  });
                     } else {
                         c->setStash(QStringLiteral("error_msg"), e.errorText());
+                        c->res()->setStatus(500);
                     }
                 }
             }
@@ -205,7 +212,7 @@ void AccountEditor::remove(Context* c)
         auto a = Account::fromStash(c);
         auto dom = Domain::fromStash(c);
 
-        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+        const bool isAjax = Utils::isAjax(c);
         QJsonObject json;
 
         if (c->req()->isPost()) {
@@ -281,32 +288,12 @@ void AccountEditor::addresses(Context *c)
 
         auto d = Domain::fromStash(c);
 
-        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
-        QJsonObject json;
-
         if (d.isFreeAddressEnabled()) {
             AuthenticationUser user = Authentication::user(c);
             SkaffariError sde(c);
-            const quint8 userType = user.value(QStringLiteral("type")).value<quint8>();
-            if (isAjax) {
-                const QJsonArray maildomains = SimpleDomain::listJson(c, &sde, userType, user.id().toULong());
-                json.insert(QStringLiteral("maildomains"), maildomains);
-            } else {
-                const std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, userType, user.id().toULong());
-                c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
-            }
-        }
-
-        if (isAjax) {
-            auto a =Account::fromStash(c);
-            json.insert(QStringLiteral("domain_id"), static_cast<qint64>(d.id()));
-            json.insert(QStringLiteral("account_id"), static_cast<qint64>(a.getId()));
-            json.insert(QStringLiteral("addresses"), QJsonArray::fromStringList(a.getAddresses()));
-            json.insert(QStringLiteral("actions_btn_label"), c->translate("AccountEditor", "Email address actions"));
-            json.insert(QStringLiteral("edit_btn_label"), c->translate("AccountEditor", "Edit address"));
-            json.insert(QStringLiteral("delete_btn_label"), c->translate("AccountEditor", "Delete address"));
-            c->res()->setJsonBody(QJsonDocument(json));
-            return;
+            const qint16 userType = user.value(QStringLiteral("type")).value<qint16>();
+            const std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, userType, user.id().toULong());
+            c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
         }
 
         c->setStash(QStringLiteral("template"), QStringLiteral("account/addresses.html"));
@@ -321,7 +308,7 @@ void AccountEditor::edit_address(Context *c, const QString &address)
 
         auto a = Account::fromStash(c);
 
-        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+        const bool isAjax = Utils::isAjax(c);
         QJsonObject json;
 
         if (!a.getAddresses().contains(address)) {
@@ -387,6 +374,8 @@ void AccountEditor::edit_address(Context *c, const QString &address)
                     } else {
                         c->setStash(QStringLiteral("error_msg"), errorMsg);
                     }
+
+                    c->res()->setStatus(Response::BadRequest);
 
                 } else {
 
@@ -466,9 +455,9 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 {
     if (Domain::accessGranted(c)) {
 
-        auto a = Account::fromStash(c);
+        const bool isAjax = Utils::isAjax(c);
 
-        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+        auto a = Account::fromStash(c);
         QJsonObject json;
 
         if (a.getAddresses().size() <= 1) {
@@ -488,6 +477,9 @@ void AccountEditor::remove_address(Context *c, const QString &address)
                                                    QStringList(),
                                                    StatusMessage::errorQuery(c, errorMsg)));
             }
+
+            c->res()->setStatus(Response::BadRequest);
+
             return;
         }
 
@@ -583,7 +575,7 @@ void AccountEditor::add_address(Context *c)
         auto d = Domain::fromStash(c);
         auto a = Account::fromStash(c);
 
-        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+        const bool isAjax = Utils::isAjax(c);
         QJsonObject json;
 
         if (c->req()->isPost()) {
@@ -709,23 +701,6 @@ void AccountEditor::add_address(Context *c)
 void AccountEditor::forwards(Context *c)
 {
     if (Domain::accessGranted(c)) {
-        auto a = Account::fromStash(c);
-
-        if (c->req()->isPost()) {
-
-            SkaffariError e(c);
-            if (Account::updateForwards(c, &e, &a, c->req()->bodyParams())) {
-                c->stash({
-                             {QStringLiteral("status_msg"), c->translate("AccountEditor", "Successfully updated forward mail addresses for account %1.").arg(a.getUsername())},
-                             {QStringLiteral("account"), QVariant::fromValue<Account>(a)}
-                         });
-            } else {
-                c->stash({
-                             {QStringLiteral("error_msg"), e.errorText()},
-                             {QStringLiteral("forwards"), c->req()->bodyParams(QStringLiteral("forward"))}
-                         });
-            }
-        }
 
         c->setStash(QStringLiteral("template"), QStringLiteral("account/forwards.html"));
     }
