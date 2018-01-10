@@ -83,7 +83,7 @@ bool SimpleDomain::isValid() const
 }
 
 
-std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, quint16 userType, dbid_t adminId, bool orphansOnly)
+std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, bool orphansOnly)
 {
     std::vector<SimpleDomain> lst;
 
@@ -125,7 +125,7 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
 }
 
 
-QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError *e, quint16 userType, dbid_t adminId)
+QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId)
 {
     QJsonArray lst;
 
