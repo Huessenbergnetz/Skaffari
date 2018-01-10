@@ -27,6 +27,28 @@ class SkaffariEngine;
 /*!
  * \ingroup skaffaricore
  * \brief Routes for the account namespace.
+ *
+ * Except for the list() action all actions in this controller are chained to the base()
+ * action that expects two arguments in the path that define the domain and the account
+ * by their database ID. Both arguments have to be convertible into a dbid_t.
+ *
+ * <table>
+ *  <caption>Routes in the account namespace</caption>
+ *  <tr><th>Route</th><th>Action</th></tr>
+ *  <tr><td>/account/&lowast;/&lowast;/add_address</td><td>add_address()</td></tr>
+ *  <tr><td>/account/&lowast;/&lowast;/add_forward</td><td>add_forward()</td></tr>
+ *  <tr><td>/account/&lowast;/&lowast;/addresses</td><td>addresses()</td></tr>
+ *  <tr><td>/account/&lowast;/&lowast;/check</td><td>check()</td></tr>
+ *  <tr><td>/account/&lowast;/&lowast;/edit_address/&lowast;</td><td>edit_address()</td></tr>
+ *  <tr><td>/account/&lowast;/&lowast;/edit_forward/&lowast;</td><td>edit_forward()</td></tr>
+ *  <tr><td>/account/&lowast;/&lowast;/edit</td><td>edit()</td></tr>
+ *  <tr><td>/account/&lowast;/&lowast;/forwards</td><td>forwards()</td></tr>
+ *  <tr><td>/account/&lowast;/&lowast;/keep_local</td><td>keep_local()</td></tr>
+ *  <tr><td>/account/&lowast;/&lowast;/remove_address/&lowast;</td><td>remove_address()</td></tr>
+ *  <tr><td>/account/&lowast;/&lowast;/remove_forward/&lowast;</td><td>remove_forward()</td></tr>
+ *  <tr><td>/account/&lowast;/&lowast;/remove</td><td>remove()</td></tr>
+ *  <tr><td>/account/list</td><td>list()</td></tr>
+ * </table>
  */
 class AccountEditor : public Controller
 {

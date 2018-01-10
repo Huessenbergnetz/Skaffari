@@ -26,7 +26,7 @@
  * \brief Cutelyst input validator to check human readable file size input.
  *
  * This checks if the input value matches the following regular expression:
- * \c <A HREF="https://regex101.com/r/eOoYvT/1">^\d+[,.٫]?\d*\s*[KMGT]?i?B?</A>
+ * \c <A HREF="https://regex101.com/r/eOoYvT/1">^\\d+[,.٫]?\\d*\\s*[KMGT]?i?B?</A>
  */
 class SkValidatorFilesize : public Cutelyst::ValidatorRule
 {
