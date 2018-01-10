@@ -51,6 +51,18 @@ public:
      */
     QString configFileName() const;
 
+    /*!
+     * \brief Returns \c true if the configuration file exists.
+     */
+    bool exists() const;
+
+    /*!
+     * \brief Returns the absolute file path of the configuration file.
+     *
+     * This does the same as configFileName()
+     */
+    QString absoluteFilePath() const;
+
 private:
     QFileInfo m_confFile;
     bool m_createIfNotExists = true;

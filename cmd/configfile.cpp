@@ -70,3 +70,13 @@ QString ConfigFile::configFileName() const
 {
     return m_confFile.absoluteFilePath();
 }
+
+bool ConfigFile::exists() const
+{
+    return m_confFile.exists();
+}
+
+QString ConfigFile::absoluteFilePath() const
+{
+    return m_confFile.absoluteFilePath();
+}
