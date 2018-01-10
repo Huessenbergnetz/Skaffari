@@ -44,6 +44,8 @@ public:
 
 private:
     ConfigFile m_confFile;
+
+    static void insertParamsDefault(QVariantHash &params, const QString &key, const QVariant &defVal);
 };
 
 #endif // SETUP_H
