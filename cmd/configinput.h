@@ -79,11 +79,11 @@ public:
      * Can take a set of defaults that will be used for the questions.
      *
      * \par Keys in the hash (defaults and return value)
-     * Key       | Type    | Description
-     * ----------|---------|-------------
-     * method    | quint8  | QCryptographicHash::Algorithm
-     * rounds    | quint32 | number of rounds used for the hashing
-     * minlength | quint8  | minimum password length
+     * Key         | Type    | Description
+     * ------------|---------|-------------
+     * pwalgorithm | quint8  | QCryptographicHash::Algorithm
+     * pwrounds    | quint32 | number of rounds used for the hashing
+     * pwminlength | quint8  | minimum password length
      */
     QVariantHash askPbkdf2Config(const QVariantHash &defaults = QVariantHash()) const;
 };
