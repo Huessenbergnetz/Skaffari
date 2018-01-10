@@ -19,7 +19,8 @@
 #include "configinput.h"
 #include "../common/config.h"
 
-ConfigInput::ConfigInput()
+ConfigInput::ConfigInput(bool quiet) :
+    ConsoleOutput(quiet)
 {
 
 }
@@ -32,8 +33,9 @@ QVariantHash ConfigInput::askDatabaseConfig(const QVariantHash &defaults) const
     const QString dbtype = readString(tr("DB Type"),
                                       defaults.value(QStringLiteral("type"), QStringLiteral("QMYSQL")).toString(),
                                       QStringList({
-                                                      tr("The type of database you are using, identified by the Qt driver name."),
-                                                      tr("See %1 for a list of drivers supported by Qt.").arg(QStringLiteral("http://doc.qt.io/qt-5/sql-driver.html")),
+                                                      tr("The database type you use, identified by the Qt driver name."),
+                                                      //: %1 will be substituded by a link to the Qt documentation
+                                                      tr("At %1 you will find a list of the database drivers supported by Qt.").arg(QStringLiteral("http://doc.qt.io/qt-5/sql-driver.html")),
                                                       tr("Currently supported by Skaffari: %1").arg(QStringLiteral("QMYSQL"))}),
                                       QStringList({QStringLiteral("QMYSQL")}));
     conf.insert(QStringLiteral("type"), dbtype);
@@ -41,8 +43,8 @@ QVariantHash ConfigInput::askDatabaseConfig(const QVariantHash &defaults) const
     const QString dbhost = readString(tr("DB Host"),
                                       defaults.value(QStringLiteral("host"), QStringLiteral("localhost")).toString(),
                                       QStringList({
-                                                      tr("The host your database server is running on. By default this is the local host."),
-                                                      tr("You can use localhost, a remote host identified by hostname or IP address or an absolute path to a local socket file.")
+                                                      tr("The Host that runs your database server. By default, this is the local host."),
+                                                      tr("You can use localhost, a remote host identified by hostname or IP address, or an absolute path to a local socket file.")
                                                   }));
     conf.insert(QStringLiteral("host"), dbhost);
 
@@ -71,7 +73,7 @@ QVariantHash ConfigInput::askImapConfig(const QVariantHash &defaults) const
 {
     QVariantHash conf;
 
-    const QString imaphost = readString(tr("IMAP Host"), defaults.value(QStringLiteral("host"), QStringLiteral("localhost")).toString(), QStringList(tr("The host the IMAP server is running on.")));
+    const QString imaphost = readString(tr("IMAP Host"), defaults.value(QStringLiteral("host"), QStringLiteral("localhost")).toString(), QStringList(tr("The Host that runs your IMAP server.")));
     conf.insert(QStringLiteral("host"), imaphost);
 
     const quint16 imapport = readPort(tr("IMAP Port"), defaults.value(QStringLiteral("port"), 143).value<quint16>(), QStringList(tr("The port your IMAP server is listening on.")));
@@ -98,7 +100,7 @@ QVariantHash ConfigInput::askImapConfig(const QVariantHash &defaults) const
     const quint8 imapencryption = readChar(tr("IMAP Encryption"),
                                            defaults.value(QStringLiteral("encryption"), 1).value<quint8>(),
                                            QStringList({
-                                                           tr("The method to encrypt the connection to the IMAP server."),
+                                                           tr("The method for encryption of the connection to the IMAP server."),
                                                            tr("Available methods:"),
                                                            tr("0: unsecured"),
                                                            QStringLiteral("1: StartTLS"),
@@ -134,7 +136,7 @@ QVariantHash ConfigInput::askPbkdf2Config(const QVariantHash &defaults) const
 
 
     //: %1 will be substituted by a link to pbkdf2test GitHub repo, %2 will be substituded by an URL to a Wikipedia page about PBKDF2
-    printDesc(tr("Skaffari uses PBKDF2 to secure the administrator passwords. PBKDF2 can use different hashing algorithms and iteration counts to produce a derived key and to increase the cost for the derivation. To better secure your administartor passwords you should use values that lead to a time consumption of around 0.5s on your system for creating the derived key. This might be a good compromise between security and user experience. To test different settings with the PBKDF2 implementation of Cutelyst/Skaffari you can use %1. See %2 to learn more about PBKDF2.").arg(QStringLiteral("https://github.com/Buschtrommel/pbkdf2test"), tr("https://en.wikipedia.org/wiki/PBKDF2")));
+    printDesc(tr("Skaffari uses PBKDF2 to secure administrator passwords. PBKDF2 can use different hash functions and multiple rounds to generate a derived key and increase the cost of derivation. To better protect your passwords, you should choose settings that cause your system to encrypt a password for about half a second. This should be a good compromise between security and user experience. You can use %1 to test different settings with the PBKDF2 implementation of Cutelyst/Skaffari. Learn more about PBKDF2 here %2.").arg(QStringLiteral("https://github.com/Buschtrommel/pbkdf2test"), tr("https://en.wikipedia.org/wiki/PBKDF2")));
 
     printDesc(QString());
 
@@ -151,13 +153,13 @@ QVariantHash ConfigInput::askPbkdf2Config(const QVariantHash &defaults) const
                                      });
 
 
-    quint8 method = readChar(tr("PBKDF2 algorithm"), defaults.value(QStringLiteral("method"), SK_DEF_ADM_PWALGORITHM).value<quint8>(), pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10}));
-    quint32 rounds = readInt(tr("PBKDF2 iterations"), defaults.value(QStringLiteral("rounds"), SK_DEF_ADM_PWROUNDS).value<quint32>(), QStringList(tr("The iteration count is used to increase the cost for deriving the key from the password.")));
-    quint8 minLength = readChar(tr("Password minimum length"), defaults.value(QStringLiteral("minlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>(), QStringList(tr("Required minimum length for administrator passwords.")));
+    quint8 method = readChar(tr("PBKDF2 algorithm"), defaults.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM).value<quint8>(), pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10}));
+    quint32 rounds = readInt(tr("PBKDF2 rounds"), defaults.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>(), QStringList(tr("The iteration count is used to increase the cost for deriving the key from the password.")));
+    quint8 minLength = readChar(tr("Password minimum length"), defaults.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>(), QStringList(tr("Required minimum length for administrator passwords.")));
 
-    conf.insert(QStringLiteral("method"), method);
-    conf.insert(QStringLiteral("rounds"), rounds);
-    conf.insert(QStringLiteral("minlength"), minLength);
+    conf.insert(QStringLiteral("pwalgorithm"), method);
+    conf.insert(QStringLiteral("pwrounds"), rounds);
+    conf.insert(QStringLiteral("pwminlength"), minLength);
 
     return conf;
 }

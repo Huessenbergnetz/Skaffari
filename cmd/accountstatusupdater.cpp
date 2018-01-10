@@ -36,7 +36,7 @@ AccountStatusUpdater::AccountStatusUpdater(const QString &confFile, bool quiet) 
 
 int AccountStatusUpdater::exec() const
 {
-    printMessage(tr("Start updating status for all accounts."));
+    printMessage(tr("Start status check for all user accounts."));
 
     int retVal = checkConfigFile();
     if (retVal > 0) {
