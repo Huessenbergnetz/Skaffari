@@ -136,7 +136,10 @@ void DomainEditor::edit(Context *c)
                              });
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
+                    c->res()->setStatus(Response::InternalServerError);
                 }
+            } else {
+                c->res()->setStatus(Response::BadRequest);
             }
         }
 
@@ -396,7 +399,10 @@ void DomainEditor::create(Context* c)
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
                 }
+            } else {
+                c->res()->setStatus(Response::BadRequest);
             }
+
             SkaffariError getAccountsErrors(c);
             for (const QString &a : {QStringLiteral("abuseAccount"), QStringLiteral("nocAccount"), QStringLiteral("securityAccount"), QStringLiteral("postmasterAccount"), QStringLiteral("hostmasterAccount"), QStringLiteral("webmasterAccount")}) {
                 const dbid_t aId = SKAFFARI_STRING_TO_DBID(params.value(a, QStringLiteral("0")));
@@ -454,10 +460,10 @@ void DomainEditor::remove(Context* c)
 {
     if (Domain::accessGranted(c)) {
 
-        const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+        const bool isAjax = Utils::isAjax(c);
         QJsonObject json;
 
-        if (c->stash(QStringLiteral("userType")).value<quint16>() == 0) {
+        if (c->stash(QStringLiteral("userType")).value<qint16>() == 0) {
 
             auto req = c->req();
 
@@ -559,11 +565,11 @@ void DomainEditor::add_account(Context* c)
             qCDebug(SK_ACCOUNT) << "Start creating a new account";
 
             c->stash({
-                         {QStringLiteral("imap"), p.contains(QStringLiteral("imap"))},
-                         {QStringLiteral("pop"), p.contains(QStringLiteral("pop"))},
-                         {QStringLiteral("sieve"), p.contains(QStringLiteral("sieve"))},
-                         {QStringLiteral("smtpauth"), p.contains(QStringLiteral("smtpauth"))},
-                         {QStringLiteral("catchall"), p.contains(QStringLiteral("catchall"))},
+                         {QStringLiteral("imap"), Utils::checkCheckbox(p, QStringLiteral("imap"))},
+                         {QStringLiteral("pop"), Utils::checkCheckbox(p, QStringLiteral("pop"))},
+                         {QStringLiteral("sieve"), Utils::checkCheckbox(p, QStringLiteral("sieve"))},
+                         {QStringLiteral("smtpauth"), Utils::checkCheckbox(p, QStringLiteral("smtpauth"))},
+                         {QStringLiteral("catchall"), Utils::checkCheckbox(p, QStringLiteral("catchall"))},
                          {QStringLiteral("username"), p.value(QStringLiteral("username"))},
                          {QStringLiteral("localpart"), p.value(QStringLiteral("localpart"))},
                          {QStringLiteral("quota"), p.value(QStringLiteral("quota"))}
@@ -611,7 +617,12 @@ void DomainEditor::add_account(Context* c)
                             enoughQuotaLeft = false;
                         }
                     } else {
-                        accQuota = p.value(QStringLiteral("quota")).toULong();
+                        accQuota = p.value(QStringLiteral("quota")).toULong(&quotaOk);
+                        if (!quotaOk) {
+                            c->setStash(QStringLiteral("error_msg"),
+                                        c->translate("DomainEditor", "Failed to convert quota input string into valid integer value."));
+                            enoughQuotaLeft = false;
+                        }
                     }
 
                     if (quotaOk) {
@@ -620,7 +631,7 @@ void DomainEditor::add_account(Context* c)
                             enoughQuotaLeft = false;
 
                             c->setStash(QStringLiteral("error_msg"),
-                                        c->translate("DomainEditor", "There is not enough free quota on this domain. Please lower the quota for the new account to a maximum of %1 KiB.").arg(freeQuota));
+                                        c->translate("DomainEditor", "There is not enough free quota on this domain. Please lower the quota for the new account to a maximum of %1.").arg(Utils::humanBinarySize(c, freeQuota)));
                         }
 
                         if ((dom.getDomainQuota() > 0) && (accQuota <= 0)) {
@@ -637,10 +648,7 @@ void DomainEditor::add_account(Context* c)
                 if (enoughQuotaLeft) {
 
                     SkaffariError e(c);
-                    Account account = Account::create(c,
-                                                      &e,
-                                                      req->parameters(),
-                                                      dom);
+                    Account account = Account::create(c, &e, req->parameters(), dom);
                     if (account.isValid()) {
 
                         Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
@@ -648,13 +656,12 @@ void DomainEditor::add_account(Context* c)
                         return;
 
                     } else {
-                        qCDebug(SK_ACCOUNT) << e.errorText();
                         c->setStash(QStringLiteral("error_msg"), e.errorText());
                     }
+                } else {
+                    c->res()->setStatus(Response::BadRequest);
                 }
 
-            } else {
-                qCDebug(SK_ACCOUNT) << "Failed to create account. Invalid input data:" << vr.errorStrings();
             }
 
         } else {
@@ -818,10 +825,7 @@ void DomainEditor::check(Context *c)
             qCCritical(SK_DOMAIN, "Failed to query all account IDs for domain %s from database: %s", d.getName().toUtf8().constData(), q.lastError().text().toUtf8().constData());
         }
 
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("domain/check.html")},
-                     {QStringLiteral("baseurl"), c->req()->base()}
-                 });
+        c->setStash(QStringLiteral("template"), QStringLiteral("domain/check.html"));
     }
 }
 
@@ -830,12 +834,10 @@ QStringList DomainEditor::trimFolderStrings(const QStringList& folders)
 {
     QStringList trimmed;
 
-    if (folders.empty()) {
-        return trimmed;
-    }
-
-    for (const QString &folder : folders) {
-        trimmed << folder.simplified();
+    if (!folders.empty()) {
+        for (const QString &folder : folders) {
+            trimmed << folder.simplified();
+        }
     }
 
     return trimmed;
