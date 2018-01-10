@@ -818,7 +818,7 @@ void AdminAccount::toStash(Cutelyst::Context *c, dbid_t adminId)
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("404.html")},
                      {QStringLiteral("site_title"), c->translate("AdminAccount", "Not found")},
-                     {QStringLiteral("not_found_text"), c->translate("AdminAccount", "Tehe is no admin account with database ID %1.").arg(adminId)}
+                     {QStringLiteral("not_found_text"), c->translate("AdminAccount", "There is no admin account with database ID %1.").arg(adminId)}
                  });
         c->res()->setStatus(404);
     }
