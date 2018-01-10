@@ -1,0 +1,776 @@
+/**
+
+ @page database-layout %Database layout
+
+ @tableofcontents
+
+ @section database-layout-qmysql MySQL
+
+ @subsection database-layout-mysql-accountuser accountuser table
+
+ Stores information about user accounts.
+
+ <table>
+     <caption>Table settings</caption>
+     <tr><th>Engine</th><th>Charset</th><th>Collate</th></tr>
+     <tr><td>MyISAM</td><td>UTF-8</td><td>utf8_unicode_ci</td></tr>
+ </table>
+
+ <table>
+     <caption>Column description</caption>
+     <tr>
+         <th>Field</th>
+         <th>Type</th>
+         <th>Null</th>
+         <th>Key</th>
+         <th>Default</th>
+         <th>Description</th>
+     </tr>
+     <tr>
+         <td>id</td>
+         <td>int(10) unsigned</td>
+         <td>NO</td>
+         <td>PRI</td>
+         <td>NULL</td>
+         <td>internal primary identifier, automatically incremented</td>
+     </tr>
+     <tr>
+         <td>domain_id</td>
+         <td>int(10) unsigned</td>
+         <td>NO</td>
+         <td>MUL</td>
+         <td>NULL</td>
+         <td>id of the @link database-layout-mysql-domain domain @endlink this account belongs to</td>
+     </tr>
+     <tr>
+         <td>username</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td>UNI</td>
+         <td>NULL</td>
+         <td>unique user name</td>
+     </tr>
+     <tr>
+         <td>password</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td></td>
+         <td>NULL</td>
+         <td>the user's password</td>
+     </tr>
+     <tr>
+         <td>prefix</td>
+         <td>varchar(50)</td>
+         <td>NO</td>
+         <td></td>
+         <td>NULL</td>
+         <td>prefix of the domain the account belongs to</td>
+     </tr>
+     <tr>
+         <td>domain_name</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td></td>
+         <td>NULL</td>
+         <td>name of the domain the account belongs to</td>
+     </tr>
+     <tr>
+         <td>imap</td>
+         <td>bool</td>
+         <td>NO</td>
+         <td></td>
+         <td>true</td>
+         <td>true if IMAP access is allowed</td>
+     </tr>
+     <tr>
+         <td>pop</td>
+         <td>bool</td>
+         <td>NO</td>
+         <td></td>
+         <td>true</td>
+         <td>true if POP access is allowed</td>
+     </tr>
+     <tr>
+         <td>sieve</td>
+         <td>bool</td>
+         <td>NO</td>
+         <td></td>
+         <td>true</td>
+         <td>true if Sieve access is allowed</td>
+     </tr>
+     <tr>
+         <td>smtpauth</td>
+         <td>bool</td>
+         <td>NO</td>
+         <td></td>
+         <td>true</td>
+         <td>true if SMTP authentication is allowed</td>
+     </tr>
+     <tr>
+         <td>quota</td>
+         <td>bigint(20) unsigned</td>
+         <td>NO</td>
+         <td></td>
+         <td>0</td>
+         <td>storage quota in KiB</td>
+     </tr>
+     <tr>
+         <td>created_at</td>
+         <td>datetime</td>
+         <td>NO</td>
+         <td></td>
+         <td>2000-01-01 00:00:00</td>
+         <td>date and time the account has been created</td>
+     </tr>
+     <tr>
+         <td>updated_at</td>
+         <td>datetime</td>
+         <td>NO</td>
+         <td></td>
+         <td>2000-01-01 00:00:00</td>
+         <td>date and time the account has been updated</td>
+     </tr>
+     <tr>
+         <td>valid_until</td>
+         <td>datetime</td>
+         <td>NO</td>
+         <td></td>
+         <td>2998-12-31 23:59:59</td>
+         <td>date and time until the account is valid</td>
+     </tr>
+     <tr>
+         <td>pwd_expire</td>
+         <td>datetime</td>
+         <td>NO</td>
+         <td></td>
+         <td>2998-12-31 23:59:59</td>
+         <td>date and time the account's password expires</td>
+     </tr>
+     <tr>
+         <td>status</td>
+         <td>tinyint(1) unsigned</td>
+         <td>NO</td>
+         <td></td>
+         <td>0</td>
+         <td>status of the account, 0 means valid</td>
+     </tr>
+ </table>
+
+ @subsection database-layout-mysql-adminuser adminuser table
+
+ Stores information about administrator accounts.
+
+ <table>
+     <caption>Table settings</caption>
+     <tr><th>Engine</th><th>Charset</th><th>Collate</th></tr>
+     <tr><td>MyISAM</td><td>UTF-8</td><td>utf8_unicode_ci</td></tr>
+ </table>
+
+ <table>
+     <caption>Column description</caption>
+     <tr>
+         <th>Field</th>
+         <th>Type</th>
+         <th>Null</th>
+         <th>Key</th>
+         <th>Default</th>
+         <th>Description</th>
+     </tr>
+     <tr>
+         <td>id</td>
+         <td>int(10) unsigned</td>
+         <td>NO</td>
+         <td>PRI</td>
+         <td>NULL</td>
+         <td>internal primary identifier, automatically incremented</td>
+     </tr>
+     <tr>
+         <td>username</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td>UNI</td>
+         <td>NULL</td>
+         <td>administrator user name</td>
+     </tr>
+     <tr>
+         <td>password</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td></td>
+         <td>NULL</td>
+         <td>administrator password</td>
+     </tr>
+     <tr>
+         <td>type</td>
+         <td>tinyint(1) unsigned</td>
+         <td>NO</td>
+         <td></td>
+         <td>0</td>
+         <td>@link AdminAccount::AdminAccountType type of the administrator @endlink</td>
+     </tr>
+     <tr>
+         <td>created_at</td>
+         <td>datetime</td>
+         <td>NO</td>
+         <td></td>
+         <td>2000-01-01 00:00:00</td>
+         <td>date and time the account has been created</td>
+     </tr>
+     <tr>
+         <td>updated_at</td>
+         <td>datetime</td>
+         <td>NO</td>
+         <td></td>
+         <td>2000-01-01 00:00:00</td>
+         <td>date and time the account has been updated</td>
+     </tr>
+     <tr>
+         <td>valid_until</td>
+         <td>datetime</td>
+         <td>NO</td>
+         <td></td>
+         <td>2998-12-31 23:59:59</td>
+         <td>date and time until the administrator account is valid</td>
+     </tr>
+     <tr>
+         <td>pwd_expire</td>
+         <td>datetime</td>
+         <td>NO</td>
+         <td></td>
+         <td>2998-12-31 23:59:59</td>
+         <td>date and time the administrator's password expires</td>
+     </tr>
+ </table>
+
+ @subsection database-layout-mysql-alias alias table
+
+ @todo Add description for alias table
+
+ <table>
+     <caption>Table settings</caption>
+     <tr><th>Engine</th><th>Charset</th><th>Collate</th></tr>
+     <tr><td>MyISAM</td><td>UTF-8</td><td>utf8_unicode_ci</td></tr>
+ </table>
+
+ @subsection database-layout-mysql-domain domain table
+
+ Stores information about Domains.
+
+ <table>
+     <caption>Table settings</caption>
+     <tr><th>Engine</th><th>Charset</th><th>Collate</th></tr>
+     <tr><td>MyISAM</td><td>UTF-8</td><td>utf8_unicode_ci</td></tr>
+ </table>
+
+ <table>
+     <caption>Column description</caption>
+     <tr>
+         <th>Field</th>
+         <th>Type</th>
+         <th>Null</th>
+         <th>Key</th>
+         <th>Default</th>
+         <th>Description</th>
+     </tr>
+     <tr>
+         <td>id</td>
+         <td>int(10) unsigned</td>
+         <td>NO</td>
+         <td>PRI</td>
+         <td>NULL</td>
+         <td>internal primary identifier, automatically incremented</td>
+     </tr>
+     <tr>
+         <td>parent_id</td>
+         <td>int(10) unsigned</td>
+         <td>NO</td>
+         <td></td>
+         <td>0</td>
+         <td>internal id of the parent domain</td>
+     </tr>
+     <tr>
+         <td>domain_name</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td>UNI</td>
+         <td>NULL</td>
+         <td>unique domain name</td>
+     </tr>
+     <tr>
+         <td>prefix</td>
+         <td>varchar(50)</td>
+         <td>NO</td>
+         <td>UNI</td>
+         <td>NULL</td>
+         <td>unique domain prefix</td>
+     </tr>
+     <tr>
+         <td>maxaccounts</td>
+         <td>int(11)</td>
+         <td>NO</td>
+         <td></td>
+         <td>20</td>
+         <td>maximum number of accounts allowed in this domain</td>
+     </tr>
+     <tr>
+         <td>quota</td>
+         <td>bigint(20) unsigned</td>
+         <td>NO</td>
+         <td></td>
+         <td>100000</td>
+         <td>default quota for new accounts in KiB</td>
+     </tr>
+     <tr>
+         <td>domainquota</td>
+         <td>bigint(20) unsigned</td>
+         <td>NO</td>
+         <td></td>
+         <td>0</td>
+         <td>overall quota for all accounts in this domain</td>
+     </tr>
+     <tr>
+         <td>domainquotaused</td>
+         <td>bigint(20) unsigned</td>
+         <td>NO</td>
+         <td></td>
+         <td>0</td>
+         <td>overall quota assigned to all accounts in this domain</td>
+     </tr>
+     <tr>
+         <td>transport</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td></td>
+         <td>cyrus</td>
+         <td>transport mechanism used by this domain</td>
+     </tr>
+     <tr>
+         <td>freenames</td>
+         <td>bool</td>
+         <td>NO</td>
+         <td></td>
+         <td>false</td>
+         <td>set to true if free user names can be used on this domain</td>
+     </tr>
+     <tr>
+         <td>freeaddress</td>
+         <td>bool</td>
+         <td>NO</td>
+         <td></td>
+         <td>false</td>
+         <td>set to true if accounts in this domain can have addresses for other domains</td>
+     </tr>
+     <tr>
+         <td>accountcount</td>
+         <td>int(10) unsigned</td>
+         <td>NO</td>
+         <td></td>
+         <td>0</td>
+         <td>number of accounts that belong to this domain</td>
+     </tr>
+     <tr>
+         <td>created_at</td>
+         <td>datetime</td>
+         <td>NO</td>
+         <td></td>
+         <td>2000-01-01 00:00:00</td>
+         <td>date and time the domain has been created</td>
+     </tr>
+     <tr>
+         <td>updated_at</td>
+         <td>datetime</td>
+         <td>NO</td>
+         <td></td>
+         <td>2000-01-01 00:00:00</td>
+         <td>date and time the domain has been updated</td>
+     </tr>
+ </table>
+
+ @subsection database-layout-mysql-domainadmin domainadmin table
+
+ This table connects domain administrators and domains.
+
+ <table>
+     <caption>Table settings</caption>
+     <tr><th>Engine</th><th>Charset</th><th>Collate</th></tr>
+     <tr><td>MyISAM</td><td>UTF-8</td><td>utf8_unicode_ci</td></tr>
+ </table>
+
+ <table>
+     <caption>Column description</caption>
+     <tr>
+         <th>Field</th>
+         <th>Type</th>
+         <th>Null</th>
+         <th>Key</th>
+         <th>Default</th>
+         <th>Description</th>
+     </tr>
+     <tr>
+         <td>domain_id</td>
+         <td>int(10) unsigned</td>
+         <td>NO</td>
+         <td></td>
+         <td>NULL</td>
+         <td>@link database-layout-mysql-domain id of the domain @endlink</td>
+     </tr>
+     <tr>
+         <td>admin_id</td>
+         <td>int(10) unsigned</td>
+         <td>NO</td>
+         <td></td>
+         <td>NULL</td>
+         <td>@link database-layout-mysql-adminuser id of the administrator @endlink</td>
+     </tr>
+ </table>
+
+ @subsection database-layout-mysql-folder folder table
+
+ This table stores information about default folders for domains that
+ will be created if a new account is created for the domain.
+
+ <table>
+     <caption>Table settings</caption>
+     <tr><th>Engine</th><th>Charset</th><th>Collate</th></tr>
+     <tr><td>MyISAM</td><td>UTF-8</td><td>utf8_unicode_ci</td></tr>
+ </table>
+
+ <table>
+     <caption>Column description</caption>
+     <tr>
+         <th>Field</th>
+         <th>Type</th>
+         <th>Null</th>
+         <th>Key</th>
+         <th>Default</th>
+         <th>Description</th>
+     </tr>
+     <tr>
+         <td>id</td>
+         <td>int(10) unsigned</td>
+         <td>NO</td>
+         <td>PRI</td>
+         <td>NULL</td>
+         <td>internal primary identifier, automatically incremented</td>
+     </tr>
+     <tr>
+         <td>domain_id</td>
+         <td>int(10) unsigned</td>
+         <td>NO</td>
+         <td>MUL</td>
+         <td>NULL</td>
+         <td>@link database-layout-mysql-domain id @endlink of the domain the folder belongs to</td>
+     </tr>
+     <tr>
+         <td>name</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td></td>
+         <td>NULL</td>
+         <td>name of the folder</td>
+     </tr>
+     <tr>
+         <td>special_use</td>
+         <td>text</td>
+         <td>YES</td>
+         <td></td>
+         <td>NULL</td>
+         <td><a href="https://tools.ietf.org/html/rfc6154">attributes for special use mailboxes</a></td>
+     </tr>
+ </table>
+
+ @subsection database-layout-mysql-log log table
+
+ This table can store sql log entries from <a href="https://github.com/NigelCunningham/pam-MySQL">pam_mysql</a>.
+ So, %Skaffari only uses this table to show and delete the entries on admins behalf, it will not add entires.
+ For the content of this table, pam_mysql is responsible.
+
+ <table>
+     <caption>Table settings</caption>
+     <tr><th>Engine</th><th>Charset</th><th>Collate</th></tr>
+     <tr><td>MyISAM</td><td>UTF-8</td><td>utf8_unicode_ci</td></tr>
+ </table>
+
+ <table>
+     <caption>Column description</caption>
+     <tr>
+         <th>Field</th>
+         <th>Type</th>
+         <th>Null</th>
+         <th>Key</th>
+         <th>Default</th>
+         <th>Description</th>
+     </tr>
+     <tr>
+         <td>id</td>
+         <td>int(10) unsigned</td>
+         <td>NO</td>
+         <td>PRI</td>
+         <td>NULL</td>
+         <td>internal primary identifier, automatically incremented</td>
+     </tr>
+     <tr>
+         <td>msg</td>
+         <td>text</td>
+         <td>NO</td>
+         <td></td>
+         <td>NULL</td>
+         <td>description of the performed operation</td>
+     </tr>
+     <tr>
+         <td>user</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td>MUL</td>
+         <td></td>
+         <td>name of the user being authenticated</td>
+     </tr>
+     <tr>
+         <td>host</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td></td>
+         <td></td>
+         <td>IP address of the machine performing the operation</td>
+     </tr>
+     <tr>
+         <td>rhost</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td></td>
+         <td></td>
+         <td>name of the remote host that initiates the session</td>
+     </tr>
+     <tr>
+         <td>time</td>
+         <td>datetime</td>
+         <td>NO</td>
+         <td></td>
+         <td>2000-01-01 00:00:00</td>
+         <td>timestamp of the log entry</td>
+     </tr>
+     <tr>
+         <td>pid</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td></td>
+         <td></td>
+         <td>pid of the process utilising pam_mysql's authentication service</td>
+     </tr>
+ </table>
+
+ @subsection database-layout-mysql-options options table
+
+ This table stores %Skaffari runtime configuration values that can, in opposite to the
+ settings in the configuration file, be changed while %Skaffari is running.
+
+ <table>
+     <caption>Table settings</caption>
+     <tr><th>Engine</th><th>Charset</th><th>Collate</th></tr>
+     <tr><td>MyISAM</td><td>UTF-8</td><td>utf8_unicode_ci</td></tr>
+ </table>
+
+ <table>
+     <caption>Column description</caption>
+     <tr>
+         <th>Field</th>
+         <th>Type</th>
+         <th>Null</th>
+         <th>Key</th>
+         <th>Default</th>
+         <th>Description</th>
+     </tr>
+     <tr>
+         <td>option_id</td>
+         <td>int(11)</td>
+         <td>NO</td>
+         <td>PRI</td>
+         <td>NULL</td>
+         <td>internal primary identifier, automatically incremented</td>
+     </tr>
+     <tr>
+         <td>option_name</td>
+         <td>varchar(127)</td>
+         <td>NO</td>
+         <td>UNI</td>
+         <td>NULL</td>
+         <td>name of the option</td>
+     </tr>
+     <tr>
+         <td>option_value</td>
+         <td>longtext</td>
+         <td>NO</td>
+         <td></td>
+         <td>NULL</td>
+         <td>value of the option</td>
+     </tr>
+ </table>
+
+ @subsection database-layout-mysql-settings settings table
+
+ This table stores settings for administrator accounts.
+
+ <table>
+     <caption>Table settings</caption>
+     <tr><th>Engine</th><th>Charset</th><th>Collate</th></tr>
+     <tr><td>MyISAM</td><td>UTF-8</td><td>utf8_unicode_ci</td></tr>
+ </table>
+
+ <table>
+     <caption>Column description</caption>
+     <tr>
+         <th>Field</th>
+         <th>Type</th>
+         <th>Null</th>
+         <th>Key</th>
+         <th>Default</th>
+         <th>Description</th>
+     </tr>
+     <tr>
+         <td>admin_id</td>
+         <td>int(10) unsigned</td>
+         <td>NO</td>
+         <td>PRI</td>
+         <td>NULL</td>
+         <td>internal primary identifier that also defines the @link database-layout-mysql-adminuser admin id @endlink the settings belong to</td>
+     </tr>
+     <tr>
+         <td>template</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td></td>
+         <td>default</td>
+         <td>template selected by the admin</td>
+     </tr>
+     <tr>
+         <td>maxdisplay</td>
+         <td>tinyint(3) unsigned</td>
+         <td>NO</td>
+         <td></td>
+         <td>25</td>
+         <td>maximum display of list entries per page</td>
+     </tr>
+     <tr>
+         <td>warnlevel</td>
+         <td>tinyint(3) unsigned</td>
+         <td>NO</td>
+         <td></td>
+         <td>90</td>
+         <td>warn level in percent to display warnings for stuff like quotas</td>
+     </tr>
+     <tr>
+         <td>tz</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td></td>
+         <td>UTC</td>
+         <td>time zone of the administrator</td>
+     </tr>
+     <tr>
+         <td>lang</td>
+         <td>varchar(127)</td>
+         <td>NO</td>
+         <td></td>
+         <td>en</td>
+         <td>language the administrator uses</td>
+     </tr>
+ </table>
+
+ @subsection database-layout-mysql-systeminfo systeminfo table
+
+ This table stores internal information like db schema version.
+
+ <table>
+     <caption>Table settings</caption>
+     <tr><th>Engine</th><th>Charset</th><th>Collate</th></tr>
+     <tr><td>MyISAM</td><td>UTF-8</td><td>utf8_unicode_ci</td></tr>
+ </table>
+
+ <table>
+     <caption>Column description</caption>
+     <tr>
+         <th>Field</th>
+         <th>Type</th>
+         <th>Null</th>
+         <th>Key</th>
+         <th>Default</th>
+         <th>Description</th>
+     </tr>
+     <tr>
+         <td>name</td>
+         <td>varchar(127)</td>
+         <td>NO</td>
+         <td></td>
+         <td>NULL</td>
+         <td>name os the information</td>
+     </tr>
+     <tr>
+         <td>value</td>
+         <td>longtext</td>
+         <td>NO</td>
+         <td></td>
+         <td>NULL</td>
+         <td>value of the information</td>
+     </tr>
+ </table>
+
+ <table>
+     <caption>Content description</caption>
+     <tr><th>Name</th><th>Description</th></tr>
+     <tr><td>skaffari_db_version</td><td>installed version of the %Skaffari database layout</td></tr>
+ </table>
+
+ @subsection database-layout-mysql-virtual virtual table
+
+ This table stores the email addresses / aliases and destination mailboxes of the accounts.
+
+ <table>
+     <caption>Table settings</caption>
+     <tr><th>Engine</th><th>Charset</th><th>Collate</th></tr>
+     <tr><td>MyISAM</td><td>UTF-8</td><td>utf8_unicode_ci</td></tr>
+ </table>
+
+ <table>
+     <caption>Column description</caption>
+     <tr>
+         <th>Field</th>
+         <th>Type</th>
+         <th>Null</th>
+         <th>Key</th>
+         <th>Default</th>
+         <th>Description</th>
+     </tr>
+     <tr>
+         <td>alias</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td>MUL</td>
+         <td>NULL</td>
+         <td>stores either an email address connected to an account, or an mailbox/account name if the destination is a forward</td>
+     </tr>
+     <tr>
+         <td>dest</td>
+         <td>longtext</td>
+         <td>YES</td>
+         <td></td>
+         <td>NULL</td>
+         <td>stores a comma separated list of destinations, that are either mailbox names or forward email addresses</td>
+     </tr>
+     <tr>
+         <td>username</td>
+         <td>varchar(255)</td>
+         <td>NO</td>
+         <td></td>
+         <td>empty string ''</td>
+         <td>the name of the user the address belongs to, this is empty if it is a forward</td>
+     </tr>
+     <tr>
+         <td>status</td>
+         <td>int(11)</td>
+         <td>NO</td>
+         <td></td>
+         <td>1</td>
+         <td>status of the entry</td>
+     </tr>
+ </table>
+*/
