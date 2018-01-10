@@ -55,8 +55,4 @@ typedef std::pair<quota_size_t,quota_size_t> quota_pair;
 # define SKAFFARI_STRING_TO_DBID(str) str.toULong()
 #endif
 
-#ifndef qUtf8Printable
-#  define qUtf8Printable(string) QString(string).toUtf8().constData()
-#endif
-
 #endif // SKAFFARIGLOBAL_H
