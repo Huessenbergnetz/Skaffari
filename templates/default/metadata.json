@@ -81,6 +81,15 @@
             "licenseUrl": "https://github.com/select2/select2/blob/4.0.5/LICENSE.md"
         },
         {
+            "name": "Select2 Bootstrap4 Theme",
+            "version": "0.1.0-beta.10",
+            "url": "https://github.com/angel-vladov/select2-bootstrap-theme",
+            "author": "Angel Valdaov",
+            "authorUrl": "https://avladov.com/",
+            "license": "MIT License",
+            "licenseUrl": "https://github.com/angel-vladov/select2-bootstrap-theme/blob/master/LICENSE"
+        },
+        {
             "name": "Stupid jQuery Table Sort",
             "version": "1.1.3",
             "url": "http://joequery.github.io/Stupid-Table-Plugin/",
