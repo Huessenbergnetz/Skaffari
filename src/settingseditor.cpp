@@ -22,7 +22,6 @@
 #include "utils/language.h"
 #include "objects/helpentry.h"
 #include "validators/skvalidatoraccountexists.h"
-#include "validators/skvalidatorfilesize.h"
 #include "../common/global.h"
 #include <QJsonObject>
 #include <QJsonDocument>
@@ -33,6 +32,7 @@
 #include <Cutelyst/Plugins/Utils/validatorinteger.h>
 #include <Cutelyst/Plugins/Utils/validatorbetween.h>
 #include <Cutelyst/Plugins/Utils/validatormin.h>
+#include <Cutelyst/Plugins/Utils/validatorfilesize.h>
 
 SettingsEditor::SettingsEditor(QObject *parent) : Controller(parent)
 {
@@ -59,8 +59,8 @@ void SettingsEditor::index(Context *c)
                                    new ValidatorBetween(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), QMetaType::UInt, 15.0, 255.0),
                                    new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS)),
                                    new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), QMetaType::UInt, 0.0),
-                                   new SkValidatorFilesize(QStringLiteral(SK_CONF_KEY_DEF_QUOTA)),
-                                   new SkValidatorFilesize(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA)),
+                                   new ValidatorFileSize(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), ValidatorFileSize::ForceBinary),
+                                   new ValidatorFileSize(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), ValidatorFileSize::ForceBinary),
                                    new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC)),
                                    new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), QMetaType::UInt, 0),
                                    new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC)),

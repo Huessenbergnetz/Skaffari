@@ -19,11 +19,12 @@
 #include "skvalidatoraccountexists.h"
 #include "../common/global.h"
 #include <Cutelyst/Plugins/Utils/Sql>
+#include <Cutelyst/Context>
 #include <QSqlQuery>
 #include <QSqlError>
 
-SkValidatorAccountExists::SkValidatorAccountExists(const QString &field, const QString &label, const QString &customError) :
-    Cutelyst::ValidatorRule(field, label, customError)
+SkValidatorAccountExists::SkValidatorAccountExists(const QString &field, const Cutelyst::ValidatorMessages &messages) :
+    Cutelyst::ValidatorRule(field, messages, QString())
 {
 
 }
@@ -33,40 +34,50 @@ SkValidatorAccountExists::~SkValidatorAccountExists()
 
 }
 
-QString SkValidatorAccountExists::validate() const
+Cutelyst::ValidatorReturnType SkValidatorAccountExists::validate(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params) const
 {
-    QString result;
+    Cutelyst::ValidatorReturnType result;
 
-    if (!value().isEmpty()) {
-        const dbid_t id = SKAFFARI_STRING_TO_DBID(value());
-        if (id > 0) {
-            QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM accountuser WHERE domain_id != 0 AND id = :id"));
-            q.bindValue(QStringLiteral(":id"), id);
+    const QString v = value(params);
 
-            if (q.exec()) {
-                if (!q.next() || q.value(0).toString().isEmpty()) {
-                    result = validationError();
+    if (!v.isEmpty()) {
+        bool ok = false;
+        const dbid_t id = v.toULong(&ok);;
+        if (ok) {
+            if (id > 0) {
+                QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM accountuser WHERE domain_id != 0 AND id = :id"));
+                q.bindValue(QStringLiteral(":id"), id);
+
+                if (q.exec()) {
+                    if (!q.next() || q.value(0).toString().isEmpty()) {
+                        result.errorMessage = validationError(c, id);
+                    } else {
+                        result.value.setValue<dbid_t>(id);
+                    }
+                } else {
+                    result.errorMessage = c->translate("SkValidatorAccountExists", "Failed to check for existing account: %1").arg(q.lastError().text());
                 }
-            } else {
-                result = QStringLiteral("Failed to check for existing account: %1").arg(q.lastError().text());
-            }
 
+            } else {
+                result.errorMessage = validationError(c, id);
+            }
         } else {
-            result = validationError();
+            result.errorMessage = parsingError(c);
         }
     }
 
     return result;
 }
 
-QString SkValidatorAccountExists::genericValidationError() const
+QString SkValidatorAccountExists::genericValidationError(Cutelyst::Context *c, const QVariant &errorData) const
 {
     QString error;
-
-    if (label().isEmpty()) {
-        error = QStringLiteral("The account with ID %1 does not exist.").arg(value());
+    dbid_t id = errorData.value<dbid_t>();
+    const QString _label = label(c);
+    if (_label.isEmpty()) {
+        error = c->translate("SkValidatorAccountExists","The account with ID %1 does not exist.").arg(id);
     } else {
-        error = QStringLiteral("The account with ID %1 selected for the field “%2” does not exist.").arg(value(), label());
+        error = c->translate("SkValidatorAccountExists", "The account with ID %1 selected for the field “%2” does not exist.").arg(QString::number(id), _label);
     }
 
     return error;

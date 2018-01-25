@@ -42,10 +42,10 @@ cp CMakeLists.txt ${DIR}/templates
 for TMPL in default
 do
     pushd $TMPL
-    npm update --dev
+#     npm update --dev
     ./gulp --production
     pushd static
-    find $PWD -type f -name "*.css" -o -type f -name "*.js" | parallel compasset
+    find $PWD -type f -name "*.css" -o -type f -name "*.js" -o -type f -name "*.json" | parallel compasset
     popd
     mkdir ${DIR}/templates/${TMPL}
     cp metadata.json ${DIR}/templates/${TMPL}

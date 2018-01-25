@@ -24,7 +24,6 @@
 #include "utils/skaffariconfig.h"
 #include "utils/utils.h"
 #include "validators/skvalidatoruniquedb.h"
-#include "validators/skvalidatorfilesize.h"
 #include "validators/skvalidatoraccountexists.h"
 #include "../common/global.h"
 
@@ -108,8 +107,8 @@ void DomainEditor::edit(Context *c)
                                 new ValidatorMin(QStringLiteral("domainQuota"), QMetaType::UInt, 0),
                                 new ValidatorBoolean(QStringLiteral("freeNames")),
                                 new ValidatorBoolean(QStringLiteral("freeAddress")),
-                                new SkValidatorFilesize(QStringLiteral("humanQuota")),
-                                new SkValidatorFilesize(QStringLiteral("humanDomainQuota")),
+                                new ValidatorFileSize(QStringLiteral("humanQuota"), ValidatorFileSize::ForceBinary),
+                                new ValidatorFileSize(QStringLiteral("humanDomainQuota"), ValidatorFileSize::ForceBinary),
                                 new ValidatorInteger(QStringLiteral("parent")),
                                 new ValidatorMin(QStringLiteral("parent"), QMetaType::UInt, 0)
                             });
@@ -121,7 +120,7 @@ void DomainEditor::edit(Context *c)
                 static Validator v({
                                 new ValidatorInteger(QStringLiteral("quota")),
                                 new ValidatorMin(QStringLiteral("quota"), QMetaType::UInt, 0),
-                                new SkValidatorFilesize(QStringLiteral("humanQuota"))
+                                new ValidatorFileSize(QStringLiteral("humanQuota"), ValidatorFileSize::ForceBinary)
                             });
 
                 vr = v.validate(c, Validator::FillStashOnError);
@@ -367,8 +366,8 @@ void DomainEditor::create(Context* c)
                                    new ValidatorMin(QStringLiteral("domainQuota"), QMetaType::UInt, 0),
                                    new ValidatorBoolean(QStringLiteral("freeNames")),
                                    new ValidatorBoolean(QStringLiteral("freeAddress")),
-                                   new SkValidatorFilesize(QStringLiteral("humanQuota")),
-                                   new SkValidatorFilesize(QStringLiteral("humanDomainQuota")),
+                                   new ValidatorFileSize(QStringLiteral("humanQuota"), ValidatorFileSize::ForceBinary),
+                                   new ValidatorFileSize(QStringLiteral("humanDomainQuota"), ValidatorFileSize::ForceBinary),
                                    new ValidatorInteger(QStringLiteral("parent")),
                                    new ValidatorMin(QStringLiteral("parent"), QMetaType::UInt, 0),
                                    new ValidatorInteger(QStringLiteral("abuseAccount")),
@@ -592,7 +591,7 @@ void DomainEditor::add_account(Context* c)
                                    new ValidatorBoolean(QStringLiteral("sieve")),
                                    new ValidatorBoolean(QStringLiteral("smtpauth")),
                                    new ValidatorBoolean(QStringLiteral("catchall")),
-                                   new SkValidatorFilesize(QStringLiteral("humanQuota")),
+                                   new ValidatorFileSize(QStringLiteral("humanQuota"), ValidatorFileSize::ForceBinary),
                                    new ValidatorInteger(QStringLiteral("quota")),
                                    new ValidatorMin(QStringLiteral("quota"), QMetaType::Int, 0)
                                });

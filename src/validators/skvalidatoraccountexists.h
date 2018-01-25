@@ -37,26 +37,26 @@ public:
      * \param label         Optional field label for the generic error messages.
      * \param customError   Optional custom error message if validation fails.
      */
-    SkValidatorAccountExists(const QString &field, const QString &label = QString(), const QString &customError = QString());
+    SkValidatorAccountExists(const QString &field, const Cutelyst::ValidatorMessages &messages = Cutelyst::ValidatorMessages());
 
     /*!
      * \brief Destroys the %SkValidatorAccountExists.
      */
     ~SkValidatorAccountExists();
 
+protected:
     /*!
      * \brief Executes the validation and returns an empty string on success.
      *
      * If validation fails, the returned string will not be empty but contains
      * the validation error messsage.
      */
-    QString validate() const override;
+    Cutelyst::ValidatorReturnType validate(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params) const override;
 
-protected:
     /*!
      * \brief Returns the generic validation error message if no custom message has been set.
      */
-    QString genericValidationError() const override;
+    QString genericValidationError(Cutelyst::Context *c, const QVariant &errorData = QVariant()) const override;
 };
 
 #endif // SKVALIDATORACCOUNTEXISTS_H

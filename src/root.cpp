@@ -225,7 +225,7 @@ void Root::csrfdenied(Context *c)
     c->res()->setStatus(403);
     Language::setLang(c);
     if (Utils::isAjax(c)) {
-        c->res()->setJsonBody(QJsonObject({
+        c->res()->setJsonObjectBody(QJsonObject({
                                               {QStringLiteral("error_msg"), QJsonValue(c->stash(QStringLiteral("error_msg")).toString())}
                                           }));
     } else {

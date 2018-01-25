@@ -34,14 +34,13 @@ public:
         EmailAddress    = 2
     };
 
-    SkValidatorUniqueDb(const QString &field, const QString &table, const QString &column, ColumnType colType = General, const QString &label = QString(), const QString &customError = QString());
+    SkValidatorUniqueDb(const QString &field, const QString &table, const QString &column, ColumnType colType = General, const Cutelyst::ValidatorMessages &messags = Cutelyst::ValidatorMessages());
 
     ~SkValidatorUniqueDb();
 
-    QString validate() const override;
-
 protected:
-    QString genericValidationError() const override;
+    Cutelyst::ValidatorReturnType validate(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params) const override;
+    QString genericValidationError(Cutelyst::Context *c, const QVariant &errorData = QVariant()) const override;
 
 private:
     QString m_table;

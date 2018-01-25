@@ -19,12 +19,13 @@
 #include "skvalidatoruniquedb.h"
 #include "../objects/account.h"
 #include <Cutelyst/Plugins/Utils/Sql>
+#include <Cutelyst/Context>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QUrl>
 
-SkValidatorUniqueDb::SkValidatorUniqueDb(const QString &field, const QString &table, const QString &column, ColumnType colType, const QString &label, const QString &customError) :
-    Cutelyst::ValidatorRule(field, label, customError), m_table(table), m_column(column), m_columnType(colType)
+SkValidatorUniqueDb::SkValidatorUniqueDb(const QString &field, const QString &table, const QString &column, ColumnType colType, const Cutelyst::ValidatorMessages &messags) :
+    Cutelyst::ValidatorRule(field, messags, QString()), m_table(table), m_column(column), m_columnType(colType)
 {
 
 }
@@ -36,16 +37,16 @@ SkValidatorUniqueDb::~SkValidatorUniqueDb()
 }
 
 
-QString SkValidatorUniqueDb::validate() const
+Cutelyst::ValidatorReturnType SkValidatorUniqueDb::validate(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params) const
 {
-    QString result;
+    Cutelyst::ValidatorReturnType result;
 
     if (m_table.isEmpty() || m_column.isEmpty()) {
-        result = validationDataError();
+        result.errorMessage = validationDataError(c);
         return result;
     }
 
-    const QString v = (m_columnType == DomainName) ? QString::fromLatin1(QUrl::toAce(value())) : (m_columnType == EmailAddress) ? Account::addressToACE(value()) : value();
+    const QString v = (m_columnType == DomainName) ? QString::fromLatin1(QUrl::toAce(value(params))) : (m_columnType == EmailAddress) ? Account::addressToACE(value(params)) : value(params);
 
     if (!v.isEmpty()) {
 
@@ -56,10 +57,12 @@ QString SkValidatorUniqueDb::validate() const
 
         if (Q_LIKELY(q.exec())) {
             if (q.next()) {
-                result = validationError();
+                result.errorMessage = validationError(c);
+            } else {
+                result.value.setValue<QString>(v);
             }
         } else {
-            result = q.lastError().text();
+            result.errorMessage = q.lastError().text();
         }
     }
 
@@ -67,14 +70,15 @@ QString SkValidatorUniqueDb::validate() const
 }
 
 
-QString SkValidatorUniqueDb::genericValidationError() const
+QString SkValidatorUniqueDb::genericValidationError(Cutelyst::Context *c, const QVariant &errorData) const
 {
     QString error;
-
-    if (label().isEmpty()) {
-        error = QStringLiteral("Has to be unique but is already in use somewhere else.");
+    Q_UNUSED(errorData)
+    const QString _label = label(c);
+    if (_label.isEmpty()) {
+        error = c->translate("SkValidatorUniqueDb", "Has to be unique but is already in use somewhere else.");
     } else {
-        error = QStringLiteral("The %1 field has to be unique but is already in use somewhere else.");
+        error = c->translate("SkValidatorUniqueDb", "The “%1” field has to be unique but the content is already in use somewhere else.");
     }
 
     return error;

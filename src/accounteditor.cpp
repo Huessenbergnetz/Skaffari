@@ -27,7 +27,6 @@
 #include "utils/skaffariconfig.h"
 #include "utils/utils.h"
 #include "../common/global.h"
-#include "validators/skvalidatorfilesize.h"
 
 #include <Cutelyst/Plugins/Session/Session>
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
@@ -86,7 +85,7 @@ void AccountEditor::edit(Context* c)
                                    new ValidatorBoolean(QStringLiteral("sieve")),
                                    new ValidatorBoolean(QStringLiteral("smtpauth")),
                                    new ValidatorBoolean(QStringLiteral("catchall")),
-                                   new SkValidatorFilesize(QStringLiteral("humanQuota")),
+                                   new ValidatorFileSize(QStringLiteral("humanQuota"), ValidatorFileSize::ForceBinary),
                                    new ValidatorInteger(QStringLiteral("quota")),
                                    new ValidatorMin(QStringLiteral("quota"), QMetaType::UInt, 0)
                                });
@@ -680,7 +679,7 @@ void AccountEditor::add_address(Context *c)
                 c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
             }
 
-            c->response()->setJsonBody(json);
+            c->res()->setJsonObjectBody(json);
 
             return;
         }
@@ -721,7 +720,7 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
 
             if (isAjax) {
                 json.insert(QStringLiteral("error_msg"), QJsonValue(notFoundText));
-                c->res()->setJsonBody(json);
+                c->res()->setJsonObjectBody(json);
             } else {
                 c->stash({
                              {QStringLiteral("template"), QStringLiteral("404.html")},
@@ -784,7 +783,7 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
                 c->res()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
             }
 
-            c->res()->setJsonBody(json);
+            c->res()->setJsonObjectBody(json);
             return;
         }
 
@@ -873,7 +872,7 @@ void AccountEditor::add_forward(Context *c)
                 c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
             }
 
-            c->res()->setJsonBody(json);
+            c->res()->setJsonObjectBody(json);
             return;
         }
 
@@ -967,7 +966,7 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
                 c->res()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
             }
 
-            c->res()->setJsonBody(json);
+            c->res()->setJsonObjectBody(json);
             return;
         }
 
@@ -1033,7 +1032,7 @@ void AccountEditor::keep_local(Context *c)
                 c->res()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
             }
 
-            c->res()->setJsonBody(json);
+            c->res()->setJsonObjectBody(json);
             return;
         }
 
