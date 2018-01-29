@@ -57,8 +57,7 @@ int main(int argc, char *argv[])
     QCommandLineOption test(QStringList({QStringLiteral("test"), QStringLiteral("t")}), QCoreApplication::translate("main", "Test the Skaffari settings."));
     parser.addOption(test);
 
-    QString confFilePath = QStringLiteral(SKAFFARI_CONFDIR);
-    confFilePath.append(QLatin1String("/skaffari.ini"));
+    const QString confFilePath = QStringLiteral(SKAFFARI_CONFDIR) + QLatin1String("/skaffari.ini");
     QCommandLineOption iniPath(QStringList({QStringLiteral("ini"), QStringLiteral("i")}), QCoreApplication::translate("main", "Path to the configuration file. Default: %1").arg(confFilePath), QStringLiteral("ini-file"), confFilePath);
     parser.addOption(iniPath);
 
