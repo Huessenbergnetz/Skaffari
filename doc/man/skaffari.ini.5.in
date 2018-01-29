@@ -70,6 +70,20 @@ to use a Memcached server to store the session data for logged in users.
 .B usememcached
 has to be enabled for this. See man 5 cutelyst_memcachedsessionstore_plugin to learn more about possible plugin configuration options.
 .RE
+
+.B logging_backend
+= empty
+.RS 4
+Defines the logging backend used by Skaffari.
+
+Supported backends:
+.IP syslog
+the traditional syslog backend.
+.IP journald
+the systemd journald backend
+.IP stdout
+prints to stdout
+.RE
 .RE
 
 .B [Accounts]

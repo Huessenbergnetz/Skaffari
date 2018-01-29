@@ -158,18 +158,20 @@ Skaffari::~Skaffari()
 
 bool Skaffari::init()
 {
+    const QVariantMap generalConfig = engine()->config(QStringLiteral("Skaffari"));
+
     if (!messageHandlerInstalled) {
-        const QString backend = QString::fromLocal8Bit(qgetenv("SKAFFARI_LOG_BACKEND"));
+        const QString backend = generalConfig.value(QStringLiteral("logging_backend")).toString();
         if (backend.compare(QLatin1String("syslog"), Qt::CaseInsensitive) == 0) {
             qSetMessagePattern(QStringLiteral("%{message}"));
             qInstallMessageHandler(syslogMessageOutput);
             qCInfo(SK_CORE, "Using syslog logging backend.");
         }
 #ifdef WITH_SYSTEMD
-        else if (backend.compare(QLatin1String("systemd"), Qt::CaseInsensitive) == 0) {
+        else if (backend.compare(QLatin1String("journald"), Qt::CaseInsensitive) == 0) {
             qSetMessagePattern(QStringLiteral("%{message}"));
             qInstallMessageHandler(journaldMessageOutput);
-            qCInfo(SK_CORE, "Using systemd logging backend.");
+            qCInfo(SK_CORE, "Using systemd's journald logging backend.");
         }
 #endif
         else {
@@ -204,7 +206,6 @@ bool Skaffari::init()
     Grantlee::registerMetaType<Account>();
     Grantlee::registerMetaType<HelpEntry>();
 
-    const QVariantMap generalConfig = engine()->config(QStringLiteral("Skaffari"));
     const QString tmplName = generalConfig.value(QStringLiteral("template"), QStringLiteral("default")).toString();
     const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + tmplName;
     SkaffariConfig::setTmplBasePath(tmplBasePath);
