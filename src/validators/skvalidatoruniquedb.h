@@ -31,7 +31,8 @@ public:
     enum ColumnType {
         General         = 0,
         DomainName      = 1,
-        EmailAddress    = 2
+        EmailAddress    = 2,
+        UserName        = 3
     };
 
     SkValidatorUniqueDb(const QString &field, const QString &table, const QString &column, ColumnType colType = General, const Cutelyst::ValidatorMessages &messags = Cutelyst::ValidatorMessages());
