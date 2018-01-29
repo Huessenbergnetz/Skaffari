@@ -65,6 +65,8 @@ set(skaffari_SRCS
     validators/skvalidatoruniquedb.h
     validators/skvalidatoraccountexists.cpp
     validators/skvalidatoraccountexists.h
+    validators/skvalidatordomainexists.cpp
+    validators/skvalidatordomainexists.h
 )
 
 # Create the application
@@ -108,4 +110,4 @@ else(PKG_CONFIG_FOUND)
     message(STATUS "Can not find pkg-config. Disabling systemd journal support.")
 endif(PKG_CONFIG_FOUND)
 
-install(TARGETS skaffari DESTINATION ${CMAKE_INSTALL_LIBDIR}/cutelyst-apps)
+install(TARGETS skaffari DESTINATION ${CMAKE_INSTALL_LIBDIR}/cutelyst${Cutelyst2Qt5_VERSION_MAJOR}-apps)
