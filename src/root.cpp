@@ -265,7 +265,8 @@ bool Root::Auto(Context* c)
                  {QStringLiteral("userType"), user.value(QStringLiteral("type"))},
                  {QStringLiteral("userName"), user.value(QStringLiteral("username"))},
                  {QStringLiteral("userMaxDisplay"), Session::value(c, QStringLiteral("maxdisplay"), SkaffariConfig::defMaxdisplay()).value<quint8>()},
-                 {QStringLiteral("userWarnLevel"), Session::value(c, QStringLiteral("warnlevel"), SkaffariConfig::defWarnlevel()).value<quint8>()}
+                 {QStringLiteral("userWarnLevel"), Session::value(c, QStringLiteral("warnlevel"), SkaffariConfig::defWarnlevel()).value<quint8>()},
+                 {QStringLiteral("userTz"), Session::value(c, QStringLiteral("tz"), SkaffariConfig::defTimezone()).toByteArray()}
              });
 
     return true;
