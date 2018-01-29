@@ -42,7 +42,7 @@ Cutelyst::ValidatorReturnType SkValidatorAccountExists::validate(Cutelyst::Conte
 
     if (!v.isEmpty()) {
         bool ok = false;
-        const dbid_t id = v.toULong(&ok);;
+        const dbid_t id = v.toUInt(&ok);;
         if (ok) {
             if (id > 0) {
                 QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM accountuser WHERE domain_id != 0 AND id = :id"));
@@ -59,7 +59,7 @@ Cutelyst::ValidatorReturnType SkValidatorAccountExists::validate(Cutelyst::Conte
                 }
 
             } else {
-                result.errorMessage = validationError(c, id);
+                result.value.setValue<dbid_t>(id);
             }
         } else {
             result.errorMessage = parsingError(c);
@@ -75,10 +75,23 @@ QString SkValidatorAccountExists::genericValidationError(Cutelyst::Context *c, c
     dbid_t id = errorData.value<dbid_t>();
     const QString _label = label(c);
     if (_label.isEmpty()) {
-        error = c->translate("SkValidatorAccountExists","The account with ID %1 does not exist.").arg(id);
+        error = c->translate("SkValidatorAccountExists", "The account with ID %1 does not exist.").arg(id);
     } else {
         error = c->translate("SkValidatorAccountExists", "The account with ID %1 selected for the field “%2” does not exist.").arg(QString::number(id), _label);
     }
 
+    return error;
+}
+
+QString SkValidatorAccountExists::genericParsingError(Cutelyst::Context *c, const QVariant &errorData) const
+{
+    QString error;
+    Q_UNUSED(errorData)
+    const QString _label = label(c);
+    if (_label.isEmpty()) {
+        error = c->translate("SkValidatorAccountExists", "Failed to convert the input data into a database ID.");
+    } else {
+        error = c->translate("SkValidatorAccountExists", "Failed to convert the input data of the “%1” field into a database ID.");
+    }
     return error;
 }

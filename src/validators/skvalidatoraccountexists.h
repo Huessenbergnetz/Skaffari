@@ -34,7 +34,6 @@ public:
     /*!
      * \brief Constructs a new %SkValidatorAccountExits with the given parameters.
      * \param field         Name of the input field.
-     * \param label         Optional field label for the generic error messages.
      * \param customError   Optional custom error message if validation fails.
      */
     SkValidatorAccountExists(const QString &field, const Cutelyst::ValidatorMessages &messages = Cutelyst::ValidatorMessages());
@@ -46,7 +45,7 @@ public:
 
 protected:
     /*!
-     * \brief Executes the validation and returns an empty string on success.
+     * \brief Executes the validation and returns the result.
      *
      * If validation fails, the returned string will not be empty but contains
      * the validation error messsage.
@@ -57,6 +56,12 @@ protected:
      * \brief Returns the generic validation error message if no custom message has been set.
      */
     QString genericValidationError(Cutelyst::Context *c, const QVariant &errorData = QVariant()) const override;
+
+    /*!
+     * \brief Return the generic parsing error message if input value could not be converted into unsigned int.
+     */
+    QString genericParsingError(Cutelyst::Context *c, const QVariant &errorData = QVariant()) const override;
+
 };
 
 #endif // SKVALIDATORACCOUNTEXISTS_H
