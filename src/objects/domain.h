@@ -344,10 +344,8 @@ public:
      * ------------------|----------------|----------------------------------------------------------------
      * domainName        | QString        | the name for the domain, will be trimmed and converted to lower case
      * prefix            | QString        | the prefix for the domain, will be trimmed and converted to lower case
-     * humanQuota        | quota_size_t   | default quota for new accounts as string that can be converted by Utils::humanToIntSize()
-     * quota             | quota_size_t   | default quota for new accounts as string that can be converted into integer
-     * humanDomainQuota  | quota_size_t   | overall allowed account quota for the domain as string that can be convertedn by Utils::humanToIntSize()
-     * domainQuota       | quota_size_t   | overall allowed account quota for the domain as string that can be converted into integer
+     * quota             | quota_size_t   | default quota for new accounts
+     * domainQuota       | quota_size_t   | overall allowed account quota for the domain
      * maxAccounts       | quint32        | maximum allowed accounts in this domain
      * freeNames         | bool           | if free account user names are allowed or not
      * freeAddress       | bool           | if free email addresses are allowed or not
@@ -365,7 +363,7 @@ public:
      * \param params    parameters used to create the new domain
      * \param errorData pointer to an object taking error information
      */
-    static Domain create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *errorData);
+    static Domain create(Cutelyst::Context *c, const QVariantHash &params, SkaffariError *errorData);
 
     /*!
      * \brief Returns the domain identified by \a domId from the database.
@@ -413,7 +411,7 @@ public:
      * \param u The user that wants to update the domain, used to decide which parameters could be updated.
      * \return  True on success.
      */
-    static bool update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, SkaffariError *e, Domain *d, const Cutelyst::AuthenticationUser &u);
+    static bool update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *e, Domain *d, const Cutelyst::AuthenticationUser &u);
 
     /*!
      * \brief Loads the domain identified by \a domainId into the stash of context \a c.

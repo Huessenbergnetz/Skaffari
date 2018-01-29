@@ -418,7 +418,7 @@ public:
      * \param d The domain the account should be created in.
      * \return A valid Account object on success.
      */
-    static Account create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p, const Domain &d);
+    static Account create(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p, const Domain &d, const QStringList &selectedKids);
 
     /*!
      * \brief Removes the account defined by \a username from the database and the IMAP server.
@@ -511,7 +511,7 @@ public:
      * \param p Updated parameters for this account.
      * \return \c true on success.
      */
-    static bool update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain *d, const Cutelyst::ParamsMultiMap &p);
+    static bool update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain *d, const QVariantHash &p);
 
     /*!
      * \brief Checks if all account data is available and creates missing data.

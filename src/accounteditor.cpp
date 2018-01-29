@@ -39,6 +39,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonValue>
+#include <limits>
 
 using namespace Cutelyst;
 
@@ -68,96 +69,55 @@ void AccountEditor::edit(Context* c)
         Domain dom = Domain::fromStash(c);
 
         const quota_size_t freeQuota = (dom.getDomainQuota() - dom.getDomainQuotaUsed() + a.getQuota());
+        if (dom.getDomainQuota() > 0) {
+            c->setStash(QStringLiteral("freeQuota"), freeQuota * Q_UINT64_C(1024));
+            c->setStash(QStringLiteral("minQuota"), 1024);
+        } else {
+            c->setStash(QStringLiteral("freeQuota"), std::numeric_limits<quota_size_t>::max());
+            c->setStash(QStringLiteral("minQuota"), 0);
+        }
 
         auto req = c->req();
 
         if (req->isPost()) {
 
+            c->setStash(QStringLiteral("_def_boolean"), false);
+
             static Validator v({
                                    new ValidatorConfirmed(QStringLiteral("password")),
                                    new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::accPwMinlength()),
                                    new ValidatorRequired(QStringLiteral("validUntil")),
-                                   new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("yyyy-MM-ddTHH:mm")),
+                                   new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("userTz"), "yyyy-MM-ddTHH:mm"),
                                    new ValidatorRequired(QStringLiteral("passwordExpires")),
-                                   new ValidatorDateTime(QStringLiteral("passwordExpires"), QStringLiteral("yyyy-MM-ddTHH:mm")),
-                                   new ValidatorBoolean(QStringLiteral("imap")),
-                                   new ValidatorBoolean(QStringLiteral("pop")),
-                                   new ValidatorBoolean(QStringLiteral("sieve")),
-                                   new ValidatorBoolean(QStringLiteral("smtpauth")),
-                                   new ValidatorBoolean(QStringLiteral("catchall")),
-                                   new ValidatorFileSize(QStringLiteral("humanQuota"), ValidatorFileSize::ForceBinary),
-                                   new ValidatorInteger(QStringLiteral("quota")),
-                                   new ValidatorMin(QStringLiteral("quota"), QMetaType::UInt, 0)
+                                   new ValidatorDateTime(QStringLiteral("passwordExpires"), QStringLiteral("userTz"), "yyyy-MM-ddTHH:mm"),
+                                   new ValidatorBoolean(QStringLiteral("imap"), ValidatorMessages(), QStringLiteral("_def_boolean")),
+                                   new ValidatorBoolean(QStringLiteral("pop"), ValidatorMessages(), QStringLiteral("_def_boolean")),
+                                   new ValidatorBoolean(QStringLiteral("sieve"), ValidatorMessages(), QStringLiteral("_def_boolean")),
+                                   new ValidatorBoolean(QStringLiteral("smtpauth"), ValidatorMessages(), QStringLiteral("_def_boolean")),
+                                   new ValidatorBoolean(QStringLiteral("catchall"), ValidatorMessages(), QStringLiteral("_def_boolean")),
+                                   new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, QStringLiteral("minQuota"), QStringLiteral("freeQuota"))
                                });
 
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
+                SkaffariError e(c);
+                if (Account::update(c,
+                                    &e,
+                                    &a,
+                                    &dom,
+                                    vr.values())) {
 
-                const ParamsMultiMap p = c->req()->bodyParams();
-
-                // if this domain has a global quota limit, we have to calculate the
-                // quota that is left
-                bool enoughQuotaLeft = true;
-                if (dom.getDomainQuota() > 0) {
-
-                    quota_size_t accQuota = 0;
-                    bool quotaOk = true;
-
-                    if (p.contains(QStringLiteral("humanQuota"))) {
-                        accQuota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanQuota")), &quotaOk);
-                        if (!quotaOk) {
-                            c->setStash(QStringLiteral("error_msg"),
-                                        c->translate("AccountEditor", "Failed to convert human readable quota size string into valid integer value."));
-                            enoughQuotaLeft = false;
-                        }
-                    } else {
-                        accQuota = p.value(QStringLiteral("quota")).toULong(&quotaOk);
-                        if (!quotaOk) {
-                            c->setStash(QStringLiteral("error_msg"),
-                                        c->translate("AccountEditor", "Failed to convert quota string into valid integer value."));
-                        }
-                    }
-
-                    if (quotaOk) {
-                        if (freeQuota < accQuota) {
-
-                            enoughQuotaLeft = false;
-
-                            c->setStash(QStringLiteral("error_msg"),
-                                        c->translate("AccountEditor", "There is not enough free quota on this domain. Please lower the quota for the account to a maximum of %1.").arg(Utils::humanBinarySize(c, freeQuota * 1024)));
-                        }
-
-                        if ((dom.getDomainQuota() > 0) && (accQuota <= 0)) {
-
-                            enoughQuotaLeft = false;
-
-                            c->setStash(QStringLiteral("error_msg"),
-                                        c->translate("AccountEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(Utils::humanBinarySize(c, dom.getDomainQuota() * 1024)));
-
-                        }
-                    } else {
-                        c->res()->setStatus(400);
-                    }
+                    c->stash({
+                                 {QStringLiteral("status_msg"), c->translate("AccountEditor", "Successfully updated account %1.").arg(a.getUsername())},
+                                 {QStringLiteral("account"), QVariant::fromValue<Account>(a)},
+                                 {QStringLiteral("domain"), QVariant::fromValue<Domain>(dom)}
+                             });
+                } else {
+                    c->setStash(QStringLiteral("error_msg"), e.errorText());
+                    c->res()->setStatus(500);
                 }
-
-                if (enoughQuotaLeft) {
-                    SkaffariError e(c);
-                    if (Account::update(c,
-                                        &e,
-                                        &a,
-                                        &dom,
-                                        p)) {
-
-                        c->stash({
-                                     {QStringLiteral("status_msg"), c->translate("AccountEditor", "Successfully updated account %1.").arg(a.getUsername())},
-                                     {QStringLiteral("account"), QVariant::fromValue<Account>(a)},
-                                     {QStringLiteral("domain"), QVariant::fromValue<Domain>(dom)}
-                                 });
-                    } else {
-                        c->setStash(QStringLiteral("error_msg"), e.errorText());
-                        c->res()->setStatus(500);
-                    }
-                }
+            } else {
+                c->res()->setStatus(400);
             }
         }
 
@@ -167,11 +127,9 @@ void AccountEditor::edit(Context* c)
 
         const QString quotaTitle = c->translate("DomainEditor", "Quota");
         if (dom.getDomainQuota() > 0) {
-            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You have to set a storage quota for this account that does not exceed %1.").arg(Utils::humanBinarySize(c, freeQuota * Q_UINT64_C(1024)))));
-            help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You have to set a storage quota for this account that does not exceed %1. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.").arg(Utils::humanBinarySize(c, freeQuota * Q_UINT64_C(1024)))));
+            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You have to set a storage quota for this account that does not exceed %1. You can use the multipliers K, KiB, M, MiB, G, GiB, T and TiB.").arg(Utils::humanBinarySize(c, freeQuota * Q_UINT64_C(1024)))));
         } else {
-            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it.")));
-            help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));
+            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it. You can use the multipliers K, KiB, M, MiB, G, GiB, T and TiB.")));
         }
         help.insert(QStringLiteral("password"), HelpEntry(c->translate("AccountEditor", "Password"), c->translate("AccountEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
         help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AccountEditor", "Password confirmation"), c->translate("AccountEditor", "Confirm your entered password.")));
@@ -196,6 +154,8 @@ void AccountEditor::edit(Context* c)
             }
         }
         help.insert(QStringLiteral("catchall"), HelpEntry(catchAllTitle, catchAllHelp));
+
+        ValidatorFileSize::inputPattern(c, QStringLiteral("quotaPattern"));
 
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("account/edit.html")},

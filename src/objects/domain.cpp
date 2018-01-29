@@ -23,6 +23,7 @@
 #include "../utils/skaffariconfig.h"
 #include <Cutelyst/ParamsMultiMap>
 #include <Cutelyst/Response>
+#include <Cutelyst/Plugins/Utils/validatoremail.h>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <Cutelyst/Plugins/Utils/Sql>
@@ -333,91 +334,25 @@ bool Domain::hasAccess(Cutelyst::Context *c) const
 }
 
 
-Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *errorData)
+Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, SkaffariError *errorData)
 {
     Domain dom;
 
     Q_ASSERT_X(errorData, "create new domain", "invalid errorData object");
 
-    const QString domainName = params.value(QStringLiteral("domainName")).trimmed().toLower();
-    const QString prefix = !SkaffariConfig::imapDomainasprefix() ? params.value(QStringLiteral("prefix")).trimmed().toLower() : domainName;
-
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_name FROM domain WHERE prefix = :prefix"));
-    q.bindValue(QStringLiteral(":prefix"), prefix);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to check if prefix is alredy in use."));
-        qCCritical(SK_DOMAIN, "Failed to check if prefix %s for new domain %s is already in use: %s", qUtf8Printable(prefix), qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
-        return dom;
-    }
-
-    if (Q_UNLIKELY(q.next())) {
-        errorData->setErrorType(SkaffariError::InputError);
-        errorData->setErrorText(c->translate("Domain", "The prefix “%1” is already in use by another domain.").arg(prefix));
-        qCWarning(SK_DOMAIN, "Failed to create domain %s: prefix %s is already in use by %s", qUtf8Printable(domainName), qUtf8Printable(prefix), qUtf8Printable(q.value(0).toString()));
-        return dom;
-    }
-
-    q = CPreparedSqlQueryThread(QStringLiteral("SELECT id FROM domain WHERE domain_name = :domain_name"));
-    q.bindValue(QStringLiteral(":domain_name"), QUrl::toAce(domainName));
-
-    if (Q_UNLIKELY(!q.exec())) {
-        errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to check if domain name is already in use."));
-        qCCritical(SK_DOMAIN, "Failed to check if new domain %s already exists in database: %s", qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
-        return dom;
-    }
-
-    if (Q_UNLIKELY(q.next())) {
-        errorData->setErrorType(SkaffariError::InputError);
-        errorData->setErrorText(c->translate("Domain", "The domain name “%1” is already in use.").arg(domainName));
-        qCWarning(SK_DOMAIN, "Failed to create domain %s: name is already in use by domain ID %u", domainName.toUtf8().constData(), q.value(0).value<dbid_t>());
-    }
-
-    quota_size_t quota = 0;
-    bool quotaOk = true;
-    if (params.contains(QStringLiteral("humanQuota"))) {
-        quota = Utils::humanToIntSize(c, params.value(QStringLiteral("humanQuota")), &quotaOk);
-        if (!quotaOk) {
-            errorData->setErrorType(SkaffariError::InputError);
-            errorData->setErrorText(c->translate("Domain", "Failed to convert human readable quota size string into valid integer value."));
-            return dom;
-        }
-    } else {
-        quota = params.value(QStringLiteral("quota")).toULongLong(&quotaOk);
-        if (!quotaOk) {
-            errorData->setErrorType(SkaffariError::InputError);
-            errorData->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
-            return dom;
-        }
-    }
-
-    quota_size_t domainQuota = 0;
-    bool domainQuotaOk = true;
-    if (params.contains(QStringLiteral("humanDomainQuota"))) {
-        domainQuota = Utils::humanToIntSize(c, params.value(QStringLiteral("humanDomainQuota")), &domainQuotaOk);
-        if (!domainQuotaOk) {
-            errorData->setErrorType(SkaffariError::InputError);
-            errorData->setErrorText(c->translate("Domain", "Failed to convert human readable quota size string into valid integer value."));
-            return dom;
-        }
-    } else {
-        domainQuota = params.value(QStringLiteral("domainQuota")).toULongLong(&domainQuotaOk);
-        if (!domainQuotaOk) {
-            errorData->setErrorType(SkaffariError::InputError);
-            errorData->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
-            return dom;
-        }
-    }
-
-    const quint32 maxAccounts = params.value(QStringLiteral("maxAccounts")).toULong();
-    const bool freeNames = Utils::checkCheckbox(params, QStringLiteral("freeNames"));
-    const bool freeAddress = Utils::checkCheckbox(params, QStringLiteral("freeAddress"));
-    const QStringList folders = Domain::trimStringList(params.value(QStringLiteral("folders")).split(QLatin1Char(','), QString::SkipEmptyParts));
-    const QString transport = params.value(QStringLiteral("transport"), QStringLiteral("cyrus"));
-    const dbid_t parentId = params.value(QStringLiteral("parent"), QStringLiteral("0")).toULong();
+    const QString domainName = params.value(QStringLiteral("domainName")).toString().toLower();
+    const QString prefix = !SkaffariConfig::imapDomainasprefix() ? params.value(QStringLiteral("prefix")).toString().toLower() : domainName;
+    const quota_size_t quota = params.value(QStringLiteral("quota")).value<quota_size_t>() / Q_UINT64_C(1024);
+    const quota_size_t domainQuota = params.value(QStringLiteral("domainQuota")).value<quota_size_t>() / Q_UINT64_C(1024);
+    const quint32 maxAccounts = params.value(QStringLiteral("maxAccounts")).value<quint32>();
+    const bool freeNames = params.value(QStringLiteral("freeNames")).toBool();
+    const bool freeAddress = params.value(QStringLiteral("freeAddress")).toBool();
+    const QStringList folders = Domain::trimStringList(params.value(QStringLiteral("folders")).toString().split(QLatin1Char(','), QString::SkipEmptyParts));
+    const QString transport = params.value(QStringLiteral("transport"), QStringLiteral("cyrus")).toString();
+    const dbid_t parentId = params.value(QStringLiteral("parent")).value<dbid_t>();
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
-    q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domain (parent_id, domain_name, prefix, maxaccounts, quota, domainquota, freenames, freeaddress, transport, created_at, updated_at) "
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domain (parent_id, domain_name, prefix, maxaccounts, quota, domainquota, freenames, freeaddress, transport, created_at, updated_at) "
                                                          "VALUES (:parent_id, :domain_name, :prefix, :maxaccounts, :quota, :domainquota, :freenames, :freeaddress, :transport, :created_at, :updated_at)"));
     q.bindValue(QStringLiteral(":parent_id"), parentId);
     q.bindValue(QStringLiteral(":domain_name"), QUrl::toAce(domainName));
@@ -493,21 +428,26 @@ Domain Domain::create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &para
                                                      });
     QHash<QString,QString>::const_iterator i = roleAccounts.constBegin();
     while (i != roleAccounts.constEnd()) {
-        dbid_t roleAccId = SKAFFARI_STRING_TO_DBID(params.value(i.key(), QStringLiteral("0")));
+        dbid_t roleAccId = params.value(i.key(), QStringLiteral("0")).value<dbid_t>();
         if (roleAccId > 0) {
             auto roleAcc = Account::get(c, errorData, roleAccId);
             if (Q_LIKELY(roleAcc.getId() > 0)) {
-                const Cutelyst::ParamsMultiMap roleAccParams({
-                                                                 {QStringLiteral("newlocalpart"), i.value()},
-                                                                 {QStringLiteral("newmaildomain"), dom.getName()}
-                                                             });
-                auto roleDom = Domain::get(c, roleAcc.getDomainId(), errorData);
-                if (Q_LIKELY(roleDom)) {
-                    if (Account::addEmail(c, errorData, &roleAcc, roleDom, roleAccParams)) {
-                        qCInfo(SK_DOMAIN, "%s created a new email adress for the %s role of new domain %s in account %s (ID: %u).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(i.value()), qUtf8Printable(dom.getName()), qUtf8Printable(roleAcc.getUsername()), roleAcc.getId());
+                const QString email = i.value() + QLatin1Char('@') + dom.getName();
+                if (Cutelyst::ValidatorEmail::validate(email, Cutelyst::ValidatorEmail::Valid)) {
+                    const Cutelyst::ParamsMultiMap roleAccParams({
+                                                                     {QStringLiteral("newlocalpart"), i.value()},
+                                                                     {QStringLiteral("newmaildomain"), dom.getName()}
+                                                                 });
+                    auto roleDom = Domain::get(c, roleAcc.getDomainId(), errorData);
+                    if (Q_LIKELY(roleDom)) {
+                        if (Account::addEmail(c, errorData, &roleAcc, roleDom, roleAccParams)) {
+                            qCInfo(SK_DOMAIN, "%s created a new email adress for the %s role of new domain %s in account %s (ID: %u).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(i.value()), qUtf8Printable(dom.getName()), qUtf8Printable(roleAcc.getUsername()), roleAcc.getId());
+                        }
+                    } else {
+                        qCWarning(SK_DOMAIN, "Failed to query domain with ID %u of account with ID %u to use as %s account for new domain %s: %s", roleAcc.getDomainId(), roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.getName()), qUtf8Printable(errorData->errorText()));
                     }
                 } else {
-                    qCWarning(SK_DOMAIN, "Failed to query domain with ID %u of account with ID %u to use as %s account for new domain %s: %s", roleAcc.getDomainId(), roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.getName()), qUtf8Printable(errorData->errorText()));
+                    qCWarning(SK_DOMAIN, "Can not add invalid email address \"%s\" of new domain %s to account %s (ID: %u).", qPrintable(email), qPrintable(dom.getName()), qPrintable(roleAcc.getUsername()), roleAcc.getId());
                 }
             } else {
                 qCWarning(SK_DOMAIN, "Failed to query account with ID %u to use as %s account for new domain %s: %s", roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.getName()), qUtf8Printable(errorData->errorText()));
@@ -809,7 +749,7 @@ bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error, 
 
 
 
-bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, SkaffariError *e, Domain *d, const Cutelyst::AuthenticationUser &u)
+bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *e, Domain *d, const Cutelyst::AuthenticationUser &u)
 {
     bool ret = false;
 
@@ -821,53 +761,17 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
 
     QSqlQuery q;
 
-    const QStringList folders = Domain::trimStringList(p.value(QStringLiteral("folders")).split(QLatin1Char(','), QString::SkipEmptyParts));
+    const QStringList folders = Domain::trimStringList(p.value(QStringLiteral("folders")).toString().split(QLatin1Char(','), QString::SkipEmptyParts));
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
 
-    quota_size_t quota = 0;
-    bool quotaOk = true;
-    if (p.contains(QStringLiteral("humanQuota"))) {
-        quota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanQuota")), &quotaOk);
-        if (!quotaOk) {
-            e->setErrorType(SkaffariError::InputError);
-            e->setErrorText(c->translate("Domain", "Failed to convert human readable quota size string into valid integer value."));
-            qCCritical(SK_DOMAIN, "Failed to convert human readable quota size \"%s\" into valid integer value.", qUtf8Printable(p.value(QStringLiteral("humanQuota"))));
-            return ret;
-        }
-    } else {
-        quota = p.value(QStringLiteral("quota"), QString::number(d->getQuota())).toULongLong(&quotaOk);
-        if (!quotaOk) {
-            e->setErrorType(SkaffariError::InputError);
-            e->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
-            qCCritical(SK_DOMAIN, "Failed to parse quota string \"%s\" into integer value.", qUtf8Printable(p.value(QStringLiteral("quota"))));
-            return ret;
-        }
-    }
+    const quota_size_t quota = p.value(QStringLiteral("quota")).value<quota_size_t>() / Q_UINT64_C(1024);
 
     if (u.value(QStringLiteral("type")).value<qint16>() == 0) {
 
-        quota_size_t domainQuota = 0;
-        bool domainQuotaOk = true;
-        if (p.contains(QStringLiteral("humanDomainQuota"))) {
-            domainQuota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanDomainQuota")), &domainQuotaOk);
-            if (!domainQuotaOk) {
-                e->setErrorType(SkaffariError::InputError);
-                e->setErrorText(c->translate("Domain", "Failed to convert human readable quota size string into valid integer value."));
-                qCCritical(SK_DOMAIN, "Failed to convert human readable quota size string \"%s\" into valid integer value.", qUtf8Printable(p.value(QStringLiteral("humanDomainQuota"))));
-                return ret;
-            }
-        } else {
-            domainQuota = p.value(QStringLiteral("domainQuota"), QString::number(d->getDomainQuota())).toULongLong(&domainQuotaOk);
-            if (!domainQuotaOk) {
-                e->setErrorType(SkaffariError::InputError);
-                e->setErrorText(c->translate("Domain", "Failed to parse quota string into integer value."));
-                qCCritical(SK_DOMAIN, "Failed to parse quota string \"%s\" into integer value.", qUtf8Printable(p.value(QStringLiteral("domainQuota"))));
-                return ret;
-            }
-        }
+        const quota_size_t domainQuota = p.value(QStringLiteral("domainQuota")).value<quota_size_t>() / Q_UINT64_C(1024);
 
-        const dbid_t parentId = p.value(QStringLiteral("parent"), QStringLiteral("0")).toULong();
+        const dbid_t parentId = p.value(QStringLiteral("parent"), 0).value<dbid_t>();
         if (parentId == d->id()) {
             e->setErrorType(SkaffariError::InputError);
             e->setErrorText(c->translate("Domain", "You can not set a domain as its own parent domain."));
@@ -875,10 +779,10 @@ bool Domain::update(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &p, Ska
             return ret;
         }
 
-        const quint32 maxAccounts = p.value(QStringLiteral("maxAccounts"), QString::number(d->getMaxAccounts())).toULong();
-        const bool freeNames = Utils::checkCheckbox(p, QStringLiteral("freeNames"));
-        const bool freeAddress = Utils::checkCheckbox(p, QStringLiteral("freeAddress"));
-        const QString transport = p.value(QStringLiteral("transport"), d->getTransport());
+        const quint32 maxAccounts = p.value(QStringLiteral("maxAccounts"), QString::number(d->getMaxAccounts())).value<quint32>();
+        const bool freeNames = p.value(QStringLiteral("freeNames"), false).toBool();
+        const bool freeAddress = p.value(QStringLiteral("freeAddress"), false).toBool();
+        const QString transport = p.value(QStringLiteral("transport"), d->getTransport()).toString();
 
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET maxaccounts = :maxaccounts, quota = :quota, domainquota = :domainquota, freenames = :freenames, freeaddress = :freeaddress, transport = :transport, updated_at = :updated_at, parent_id = :parent_id WHERE id = :id"));
         q.bindValue(QStringLiteral(":maxaccounts"), maxAccounts);

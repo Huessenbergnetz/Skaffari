@@ -27,6 +27,7 @@
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <Cutelyst/Plugins/Session/Session>
 #include <Cutelyst/Plugins/Memcached/Memcached>
+#include <Cutelyst/Plugins/Utils/validatoremail.h>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QTimeZone>
@@ -389,7 +390,7 @@ QJsonObject Account::toJson() const
 }
 
 
-Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p, const Domain &d)
+Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p, const Domain &d, const QStringList &selectedKids)
 {
     Account a;
 
@@ -401,31 +402,21 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     // if domain as prefix is enabled, the username will be the local part of the email address plus the domain separated by a dot
     // if additionally fqun is enabled, it will a fully qualified user name (email address like user@example.com
     // if both are disabled, the username will be the entered username
-    const QString username = SkaffariConfig::imapDomainasprefix() ? p.value(QStringLiteral("localpart")).trimmed() + (SkaffariConfig::imapFqun() ? QLatin1Char('@') : QLatin1Char('.')) + d.getName() : p.value(QStringLiteral("username")).trimmed();
-
-    // start checking if the username is already in use
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id FROM accountuser WHERE username = :username"));
-    q.bindValue(QStringLiteral(":username"), username);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Failed to query for already existing username."));
-        qCCritical(SK_ACCOUNT, "Failed to query database for already existing username %s: %s", qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
-        return a;
-    }
-
-    if (Q_UNLIKELY(q.next())) {
-        e->setErrorType(SkaffariError::InputError);
-        e->setErrorText(c->translate("Account", "Username %1 is already in use.").arg(username));
-        return a;
-    }
-    // end checking if the username is already in use
+    const QString username = SkaffariConfig::imapDomainasprefix() ? p.value(QStringLiteral("localpart")).toString().trimmed() + (SkaffariConfig::imapFqun() ? QLatin1Char('@') : QLatin1Char('.')) + d.getName() : p.value(QStringLiteral("username")).toString().trimmed();
 
     // construct the email address from local part and domain name
-    const QString localPart = p.value(QStringLiteral("localpart"));
+    const QString localPart = p.value(QStringLiteral("localpart")).toString().trimmed();
     const QString email = localPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.getName()));
 
+    QList<Cutelyst::ValidatorEmail::Diagnose> diags;
+    if (!Cutelyst::ValidatorEmail::validate(email, Cutelyst::ValidatorEmail::Valid, false, &diags)) {
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(Cutelyst::ValidatorEmail::diagnoseString(c, diags.at(0)));
+        return a;
+    }
+
     // start checking if the email address is already in use
-    q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :email"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :email"));
     q.bindValue(QStringLiteral(":email"), email);
 
     if (Q_UNLIKELY(!q.exec())) {
@@ -442,7 +433,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     // end checking if the email address is already in use
 
     // start encrypting the password
-    const QString password = p.value(QStringLiteral("password"));
+    const QString password = p.value(QStringLiteral("password")).toString();
     Password pw(password);
     const QByteArray encpw = pw.encrypt(SkaffariConfig::accPwMethod(), SkaffariConfig::accPwAlgorithm(), SkaffariConfig::accPwRounds());
 
@@ -454,43 +445,20 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     }
     // end encrypting the password
 
-    const bool imap =  Utils::checkCheckbox(p, QStringLiteral("imap"));
-    const bool pop =  Utils::checkCheckbox(p, QStringLiteral("pop"));
-    const bool sieve =  Utils::checkCheckbox(p, QStringLiteral("sieve"));
-    const bool smtpauth =  Utils::checkCheckbox(p, QStringLiteral("smtpauth"));
-    const bool _catchAll =  Utils::checkCheckbox(p, QStringLiteral("catchall"));
+    const bool imap = p.value(QStringLiteral("imap")).toBool();
+    const bool pop = p.value(QStringLiteral("pop")).toBool();
+    const bool sieve = p.value(QStringLiteral("sieve")).toBool();
+    const bool smtpauth = p.value(QStringLiteral("smtpauth")).toBool();
+    const bool _catchAll = p.value(QStringLiteral("catchall")).toBool();
 
-    quota_size_t quota = 0;
-    if (p.contains(QStringLiteral("humanQuota"))) {
-        bool quotaOk = true;
-        quota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanQuota")), &quotaOk);
-        if (!quotaOk) {
-            e->setErrorType(SkaffariError::InputError);
-            e->setErrorText(c->translate("Account", "Failed to convert human readable quota size string into valid integer value."));
-            return a;
-        }
-    } else {
-        quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULongLong();
-    }
+    const quota_size_t quota = (p.value(QStringLiteral("quota")).value<quota_size_t>() / Q_UINT64_C(1024));
 
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
+    const QDateTime defDateTime(QDate(2999, 12, 31), QTime(0, 0), QTimeZone::utc());
+    const QDateTime validUntil = p.value(QStringLiteral("validUntil"), defDateTime).toDateTime().toUTC();
+    const QDateTime pwExpires = p.value(QStringLiteral("passwordExpires"), defDateTime).toDateTime().toUTC();
 
-    // start converting the entered valid until time into UTC
-    QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), QStringLiteral("UTC")).toByteArray());
-    QDateTime validUntil = QDateTime::fromString(p.value(QStringLiteral("validUntil"), QStringLiteral("2998-12-31T23:59")), QStringLiteral("yyyy-MM-ddTHH:mm"));
-    QDateTime pwExpires = QDateTime::fromString(p.value(QStringLiteral("passwordExpires"), QStringLiteral("2998-12-31T23:59")), QStringLiteral("yyyy-MM-ddTHH:mm"));
-    if (userTz == QTimeZone::utc()) {
-        validUntil.setTimeSpec(Qt::UTC);
-        pwExpires.setTimeSpec(Qt::UTC);
-    } else {
-        validUntil.setTimeZone(userTz);
-        pwExpires.setTimeZone(userTz);
-    }
-    const QDateTime validUntilUTC = validUntil.toUTC();
-    const QDateTime pwExpiresUTC = validUntil.toUTC();
-
-    const quint8 accountStatus = Account::calcStatus(validUntilUTC, pwExpiresUTC);
-    // end converting the entered valid until time into UTC
+    const quint8 accountStatus = Account::calcStatus(validUntil, pwExpires);
 
     q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, prefix, domain_name, imap, pop, sieve, smtpauth, quota, created_at, updated_at, valid_until, pwd_expire, status) "
                                          "VALUES (:domain_id, :username, :password, :prefix, :domain_name, :imap, :pop, :sieve, :smtpauth, :quota, :created_at, :updated_at, :valid_until, :pwd_expire, :status)"));
@@ -507,8 +475,8 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     q.bindValue(QStringLiteral(":quota"), quota);
     q.bindValue(QStringLiteral(":created_at"), currentUtc);
     q.bindValue(QStringLiteral(":updated_at"), currentUtc);
-    q.bindValue(QStringLiteral(":valid_until"), validUntilUTC);
-    q.bindValue(QStringLiteral(":pwd_expire"), pwExpiresUTC);
+    q.bindValue(QStringLiteral(":valid_until"), validUntil);
+    q.bindValue(QStringLiteral(":pwd_expire"), pwExpires);
     q.bindValue(QStringLiteral(":status"), accountStatus);
 
     if (Q_UNLIKELY(!q.exec())) {
@@ -535,7 +503,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     }
 
     if (!d.children().empty()) {
-        const QStringList selectedKids = p.values(QStringLiteral("children"));
+//        const QStringList selectedKids = p.values(QStringLiteral("children"));
         if (!selectedKids.empty()) {
             const QVector<SimpleDomain> thekids = d.children();
             for (const SimpleDomain &kid : thekids) {
@@ -756,8 +724,8 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::
     a.setAddresses(QStringList(email));
     a.setCreated(currentUtc);
     a.setUpdated(currentUtc);
-    a.setValidUntil(validUntilUTC);
-    a.setPasswordExpires(pwExpiresUTC);
+    a.setValidUntil(validUntil);
+    a.setPasswordExpires(pwExpires);
     a.setCatchAll(_catchAll);
 
     if (SkaffariConfig::useMemcached()) {
@@ -1270,7 +1238,7 @@ Account Account::fromStash(Cutelyst::Context *c)
 
 
 
-bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain *d, const Cutelyst::ParamsMultiMap &p)
+bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain *d, const QVariantHash &p)
 {
     bool ret = false;
 
@@ -1279,7 +1247,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
     Q_ASSERT_X(a, "update account", "invalid account object");
     Q_ASSERT_X(d, "update account", "invalid domain object");
 
-    const QString password = p.value(QStringLiteral("password"));
+    const QString password = p.value(QStringLiteral("password")).toString();
     QByteArray encPw;
     if (!password.isEmpty()) {
         Password pw(password);
@@ -1292,25 +1260,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
         }
     }
 
-    quota_size_t quota = 0;
-    if (p.contains(QStringLiteral("humanQuota"))) {
-        bool quotaOk = true;
-        quota = Utils::humanToIntSize(c, p.value(QStringLiteral("humanQuota")), &quotaOk);
-        if (!quotaOk) {
-            e->setErrorType(SkaffariError::InputError);
-            e->setErrorText(c->translate("Account", "Failed to convert human readable quota size string into valid integer value."));
-            return ret;
-        }
-    } else if (p.contains(QStringLiteral("quota"))) {
-        bool quotaOk = true;
-        quota = p.value(QStringLiteral("quota"), QStringLiteral("0")).toULongLong(&quotaOk);
-        if (!quotaOk) {
-            e->setErrorType(SkaffariError::InputError);
-            e->setErrorText(c->translate("Account", "Failed to parse quota string into integer value."));
-        }
-    } else {
-        quota = a->getQuota();
-    }
+    const quota_size_t quota = p.contains(QStringLiteral("quota")) ? static_cast<quota_size_t>(p.value(QStringLiteral("quota")).value<quota_size_t>()/Q_UINT64_C(1024)) : a->getQuota();
 
     if (quota != a->getQuota()) {
         SkaffariIMAP imap(c);
@@ -1325,35 +1275,25 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain 
         }
     }
 
-    QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), QStringLiteral("UTC")).toByteArray());
-    QDateTime validUntil = QDateTime::fromString(p.value(QStringLiteral("validUntil"), QStringLiteral("2998-12-31 23:59:59")), QStringLiteral("yyyy-MM-ddTHH:mm"));
-    QDateTime pwExpires = QDateTime::fromString(p.value(QStringLiteral("passwordExpires"), QStringLiteral("2998-12-31 23:59:59")), QStringLiteral("yyyy-MM-ddTHH:mm"));
-    if (userTz == QTimeZone::utc()) {
-        validUntil.setTimeSpec(Qt::UTC);
-        pwExpires.setTimeSpec(Qt::UTC);
-    } else {
-        validUntil.setTimeZone(userTz);
-        validUntil = validUntil.toUTC();
-        pwExpires.setTimeZone(userTz);
-        pwExpires = pwExpires.toUTC();
-    }
+    const QDateTime validUntil = p.value(QStringLiteral("validUntil")).toDateTime().toUTC();
+    const QDateTime pwExpires = p.value(QStringLiteral("passwordExpires")).toDateTime().toUTC();
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
-    const bool imap = Utils::checkCheckbox(p, QStringLiteral("imap"));
-    const bool pop =  Utils::checkCheckbox(p, QStringLiteral("pop"));
-    const bool sieve =  Utils::checkCheckbox(p, QStringLiteral("sieve"));
-    const bool smtpauth =  Utils::checkCheckbox(p, QStringLiteral("smtpauth"));
-    const bool _catchAll =  Utils::checkCheckbox(p, QStringLiteral("catchall"));
+    const bool imap = p.value(QStringLiteral("imap")).toBool();
+    const bool pop = p.value(QStringLiteral("pop")).toBool();
+    const bool sieve = p.value(QStringLiteral("sieve")).toBool();
+    const bool smtpauth = p.value(QStringLiteral("smtpauth")).toBool();
+    const bool _catchAll = p.value(QStringLiteral("catchall")).toBool();
 
     QSqlQuery q;
     if (!password.isEmpty()) {
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET password = :password, quota = :quota, valid_until = :validUntil, updated_at = :updated_at, imap = :imap, pop = :pop, sieve = :sieve, smtpauth =:smtpauth, pwd_expire = :pwd_expire WHERE id = :id"));
         q.bindValue(QStringLiteral(":password"), encPw);
     } else {
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET quota = :quota, valid_until = :validUntil, updated_at = :updated_at, imap = :imap, pop = :pop, sieve = :sieve, smtpauth =:smtpauth, pwd_expire = :pwd_expire WHERE id = :id"));
+        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET quota = :quota, valid_until = :valid_until, updated_at = :updated_at, imap = :imap, pop = :pop, sieve = :sieve, smtpauth =:smtpauth, pwd_expire = :pwd_expire WHERE id = :id"));
     }
     q.bindValue(QStringLiteral(":quota"), quota);
-    q.bindValue(QStringLiteral(":validUntil"), validUntil);
+    q.bindValue(QStringLiteral(":valid_until"), validUntil);
     q.bindValue(QStringLiteral(":id"), a->getId());
     q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
     q.bindValue(QStringLiteral(":imap"), imap);
@@ -1679,6 +1619,14 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
         return ret;
     }
 
+    QList<Cutelyst::ValidatorEmail::Diagnose> diags;
+    if (!Cutelyst::ValidatorEmail::validate(address, Cutelyst::ValidatorEmail::Valid, false, &diags)) {
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(c->translate("Account", "Failed to update email address %1 to %2: %3").arg(oldAddress, address, Cutelyst::ValidatorEmail::diagnoseString(c, diags.at(0))));
+        qCWarning(SK_ACCOUNT, "Updating email address failed: new address %s is not valid.", qPrintable(address));
+        return ret;
+    }
+
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias, dest, username FROM virtual WHERE alias = :address"));
     q.bindValue(QStringLiteral(":address"), addressToACE(address));
 
@@ -1741,6 +1689,14 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const
         address = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"));
     } else {
         address = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + a->getDomainName();
+    }
+
+    QList<Cutelyst::ValidatorEmail::Diagnose> diags;
+    if (!Cutelyst::ValidatorEmail::validate(address, Cutelyst::ValidatorEmail::Valid, false, &diags)) {
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(c->translate("Account", "Failed to add new email address %1: %2").arg(address, Cutelyst::ValidatorEmail::diagnoseString(c, diags.at(0))));
+        qCWarning(SK_ACCOUNT, "Adding email address failed: new address %s is not valid.", qPrintable(address));
+        return ret;
     }
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias, dest, username FROM virtual WHERE alias = :address"));

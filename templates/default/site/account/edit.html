@@ -57,13 +57,13 @@
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                <label for="humanQuota" class="col-form-label">{{ help.humanQuota.title }}</label>
+                <label for="quota" class="col-form-label">{{ help.quota.title }}</label>
                 <div class="input-group">
                     <div class="input-group-prepend"><span class="input-group-text">{% sk_fsf account.usage 2 2 1024 %} /</span></div>
-                    <input type="text" id="humanQuota" name="humanQuota" class="form-control{% if validationErrors.humanQuota.count %} is-invalid{% endif %}" value="{% sk_fsf account.quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="humanQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+                    <input type="text" id="quota" name="quota" class="form-control{% if validationErrors.quota.count %} is-invalid{% endif %}" value="{% sk_fsf account.quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="quotaDesc" pattern="{{ quotaPattern }}">
                 </div>
-                {% if validationErrors.humanQuota.count %}<div class="invalid-feedback"><small>{{ validationErrors.humanQuota.0 }}</small></div>{% endif %}
-                <small id="humanQuotaDesc" class="form-text text-muted">{{ help.humanQuota.text }}</small>
+                {% if validationErrors.quota.count %}<div class="invalid-feedback"><small>{{ validationErrors.quota.0 }}</small></div>{% endif %}
+                <small id="quotaDesc" class="form-text text-muted">{{ help.quota.text }}</small>
             </div>
 
         </div>

@@ -33,6 +33,7 @@
 #include <Cutelyst/Plugins/Utils/validatorbetween.h>
 #include <Cutelyst/Plugins/Utils/validatormin.h>
 #include <Cutelyst/Plugins/Utils/validatorfilesize.h>
+#include <limits>
 
 SettingsEditor::SettingsEditor(QObject *parent) : Controller(parent)
 {
@@ -53,31 +54,16 @@ void SettingsEditor::index(Context *c)
         if (c->req()->isPost()) {
             static Validator v({
                                    new ValidatorIn(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), Language::supportedLangsList()),
-                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL)),
-                                   new ValidatorBetween(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), QMetaType::UInt, 0.0, 100.0),
-                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY)),
-                                   new ValidatorBetween(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), QMetaType::UInt, 15.0, 255.0),
-                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS)),
-                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), QMetaType::UInt, 0.0),
-                                   new ValidatorFileSize(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), ValidatorFileSize::ForceBinary),
-                                   new ValidatorFileSize(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), ValidatorFileSize::ForceBinary),
-                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC)),
-                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), QMetaType::UInt, 0),
+                                   new ValidatorBetween(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), QMetaType::UShort, 0, 100),
+                                   new ValidatorBetween(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), QMetaType::UShort, 15, 255),
+                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), QMetaType::UInt, 0),
+                                   new ValidatorFileSize(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), ValidatorFileSize::ForceBinary, 0, std::numeric_limits<quota_size_t>::max()),
+                                   new ValidatorFileSize(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), ValidatorFileSize::ForceBinary, 0, std::numeric_limits<quota_size_t>::max()),
                                    new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC)),
-                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC)),
-                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), QMetaType::UInt, 0),
                                    new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC)),
-                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC)),
-                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), QMetaType::UInt, 0),
                                    new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC)),
-                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC)),
-                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), QMetaType::UInt, 0),
                                    new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC)),
-                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC)),
-                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), QMetaType::UInt, 0),
                                    new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC)),
-                                   new ValidatorInteger(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC)),
-                                   new ValidatorMin(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), QMetaType::UInt, 0),
                                    new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC))
                                });
 
