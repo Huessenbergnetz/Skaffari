@@ -31,7 +31,7 @@ public:
         errorText(_errorText)
     {}
 
-    SkaffariIMAPErrorData(const QSslError &sslError) :
+    explicit SkaffariIMAPErrorData(const QSslError &sslError) :
         errorType(SkaffariIMAPError::EncryptionError),
         errorText(sslError.errorString())
     {}

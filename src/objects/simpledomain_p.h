@@ -26,7 +26,7 @@
 class SimpleDomainNameCollator : public QCollator
 {
 public:
-    SimpleDomainNameCollator(const QLocale &locale) :
+    explicit SimpleDomainNameCollator(const QLocale &locale) :
         QCollator(locale)
     {}
 

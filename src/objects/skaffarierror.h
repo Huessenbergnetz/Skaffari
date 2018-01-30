@@ -179,12 +179,12 @@ public:
 	/*!
 	 * \brief Compares this SkaffariError with \e other and returns \c true if they are equal; otherwise returns \c false.
 	 */
-	bool operator==(const SkaffariError &other);
+    bool operator==(const SkaffariError &other) const;
 
 	/*!
 	 * \brief Compares this SkaffariError with \e other and returns \c true if they are not equal; otherwise returns \c false.
 	 */
-	bool operator!=(const SkaffariError &other);
+    bool operator!=(const SkaffariError &other) const;
 
 private:
     QSharedDataPointer<SkaffariErrorData> d;

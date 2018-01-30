@@ -166,14 +166,14 @@ SkaffariError& SkaffariError::operator=(const QSqlError& sqlError)
 
 
 
-bool SkaffariError::operator==(const SkaffariError& other)
+bool SkaffariError::operator==(const SkaffariError& other) const
 {
 	return ((d->errorType == other.d->errorType) && (d->qSqlError == other.d->qSqlError));
 }
 
 
 
-bool SkaffariError::operator!=(const SkaffariError& other)
+bool SkaffariError::operator!=(const SkaffariError& other) const
 {
 	return ((d->errorType != other.d->errorType) || (d->qSqlError != other.d->qSqlError));
 }

@@ -36,7 +36,7 @@ public:
      * \param field         Name of the input field.
      * \param customError   Optional custom error message if validation fails.
      */
-    SkValidatorAccountExists(const QString &field, const Cutelyst::ValidatorMessages &messages = Cutelyst::ValidatorMessages());
+    explicit SkValidatorAccountExists(const QString &field, const Cutelyst::ValidatorMessages &messages = Cutelyst::ValidatorMessages());
 
     /*!
      * \brief Destroys the %SkValidatorAccountExists.

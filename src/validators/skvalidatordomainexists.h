@@ -29,7 +29,7 @@ public:
      * \param field     Name of the input field.
      * \param messages  Optional custom error messages if validation fails.
      */
-    SkValidatorDomainExists(const QString &field, const Cutelyst::ValidatorMessages &messages = Cutelyst::ValidatorMessages());
+    explicit SkValidatorDomainExists(const QString &field, const Cutelyst::ValidatorMessages &messages = Cutelyst::ValidatorMessages());
 
     /*!
      * \brief Destroys the %SkValidatorDomainExists.

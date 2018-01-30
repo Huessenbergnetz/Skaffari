@@ -47,11 +47,11 @@ public:
 	};
 
     explicit SkaffariIMAPError(ErrorType type = NoError, const QString errorText = QString());
-    SkaffariIMAPError(const QSslError &sslError);
-	SkaffariIMAPError(const SkaffariIMAPError &other);
+    explicit SkaffariIMAPError(const QSslError &sslError);
+    SkaffariIMAPError(const SkaffariIMAPError &other);
     SkaffariIMAPError& operator=(const SkaffariIMAPError &other);
-	bool operator==(const SkaffariIMAPError &other);
-	bool operator!=(const SkaffariIMAPError &other);
+    bool operator==(const SkaffariIMAPError &other) const;
+    bool operator!=(const SkaffariIMAPError &other) const;
     ~SkaffariIMAPError();
 
 	ErrorType type() const;

@@ -48,14 +48,14 @@ SkaffariIMAPError& SkaffariIMAPError::operator=(const SkaffariIMAPError& other)
 
 
 
-bool SkaffariIMAPError::operator==(const SkaffariIMAPError& other)
+bool SkaffariIMAPError::operator==(const SkaffariIMAPError& other) const
 {
 	return d->errorType == other.d->errorType;
 }
 
 
 
-bool SkaffariIMAPError::operator!=(const SkaffariIMAPError& other)
+bool SkaffariIMAPError::operator!=(const SkaffariIMAPError& other) const
 {
 	return d->errorType != other.d->errorType;
 }

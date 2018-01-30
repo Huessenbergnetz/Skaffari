@@ -26,7 +26,7 @@
 class SimpleAccountCollator : public QCollator
 {
 public:
-    SimpleAccountCollator(const QLocale &locale) :
+    explicit SimpleAccountCollator(const QLocale &locale) :
         QCollator(locale)
     {}
 

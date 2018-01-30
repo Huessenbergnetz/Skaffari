@@ -39,7 +39,7 @@ public:
      * \brief Constructs a new ConsoleOutput object.
      * \param quiet Set to \c true to disable console output.
      */
-    ConsoleOutput(bool quiet = false);
+    explicit ConsoleOutput(bool quiet = false);
 
     /*!
      * \brief Deconstructs the ConsoleOutput object.

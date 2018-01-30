@@ -29,7 +29,7 @@ class LanguageData : public QSharedData
 public:
     LanguageData() {}
 
-    LanguageData(const QString &_code) :
+    explicit LanguageData(const QString &_code) :
         code(_code)
     {
         QLocale l(code);

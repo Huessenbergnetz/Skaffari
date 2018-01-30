@@ -41,7 +41,7 @@ public:
      * \param confFile  Absolute path to the configuration file that contains database access data.
      * \param quiet     If \c true, no output will be print to stdout.
      */
-    AccountStatusUpdater(const QString &confFile, bool quiet = false);
+    explicit AccountStatusUpdater(const QString &confFile, bool quiet = false);
 
     /*!
      * \brief Starts the execution of the status checks.

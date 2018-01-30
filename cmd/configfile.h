@@ -38,7 +38,7 @@ public:
      * \param checkIfWritable   Set to \c true if the file should be checked for writability.
      * \param quiet             Set to \c true if no output should be send to stdout.
      */
-    ConfigFile(const QString &confFile, bool createIfNotExists = true, bool checkIfWritable = true, bool quiet = false);
+    explicit ConfigFile(const QString &confFile, bool createIfNotExists = true, bool checkIfWritable = true, bool quiet = false);
 
     /*!
      * \brief Starts the checks on the configuration file.

@@ -71,7 +71,7 @@ set(DEFVAL_DEF_MAXDISPLAY 25 CACHE INTERNAL "Default value for displaying list e
 set(DEFVAL_IMAP_PROTOCOL 2 CACHE INTERNAL "Default protocol for the IMAP connection")
 set(DEFVAL_IMAP_ENCRYPTION 1 CACHE INTERNAL "Encryption layer for the IMAP connection")
 set(DEFVAL_IMAP_CREATEMAILBOX 3 CACHE INTERNAL "Strategy to create new mailboxes on the IMAP server")
-set(DEFVAL_IMAP_UNIXHIERARCHYSEP false CACHE INTERNAL "Default value for unix hierarchy seperator")
+set(DEFVAL_IMAP_UNIXHIERARCHYSEP false CACHE INTERNAL "Default value for unix hierarchy separator")
 set(DEFVAL_IMAP_DOMAINASPREFIX false CACHE INTERNAL "Default value for domain as prefix")
 set(DEFVAL_IMAP_FQUN false CACHE INTERNAL "Default value for fqun")
 set(DEFVAL_TMPL_ASYNCACCOUNTLIST false CACHE INTERNAL "Default value for async account list")

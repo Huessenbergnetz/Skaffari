@@ -36,7 +36,7 @@ public:
     /*!
      * \brief Constructs a new ConfigInput object.
      */
-    ConfigInput(bool quiet = false);
+    explicit ConfigInput(bool quiet = false);
 
     /*!
      * \brief Asks the user for database connection parameters on the command line.
