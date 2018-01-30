@@ -225,7 +225,7 @@ int WebCyradmImporter::exec() const
                    {tr("IMAP Encryption"), Imap::encryptionTypeToString(imapencryption)},
                    {tr("IMAP User"), imapuser},
                    {tr("IMAP Password"), QStringLiteral("********")},
-                   {QStringLiteral("UNIX hierarchy seperator"), unixHierarchySep ? tr("yes") : tr("no")},
+                   {QStringLiteral("UNIX hierarchy separator"), unixHierarchySep ? tr("yes") : tr("no")},
                    {QStringLiteral("Domain as prefix"), domainAsPrefix ? tr("yes") : tr("no")},
                    {QStringLiteral("FQUN"), fqun ? tr("yes") : tr("no")},
                    {tr("Default language"), defaultLang},
@@ -890,7 +890,7 @@ int WebCyradmImporter::exec() const
         return configError(tr("Failed to write configuration to file."));
     default:
         printFailed();
-        return error(tr("Unknown error occured while writing configuration to file."));
+        return error(tr("Unknown error occurred while writing configuration to file."));
     }
 
     printSuccess(tr("Successfully configured Skaffari and imported web-cyradm data."));

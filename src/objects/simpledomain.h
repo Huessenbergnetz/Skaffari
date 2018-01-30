@@ -106,7 +106,7 @@ public:
     /*!
      * \brief Returns a list of domains for the admin defined by \a adminId.
      * \param c         Pointer to the current context, used for localization.
-     * \param e         Pointer to an object taking occuring errors.
+     * \param e         Pointer to an object taking occurring errors.
      * \param userType  The type of the admin user to determine domain access.
      * \param adminId   The database ID of the admin user to determine domain access.
      * \return          List of simple domain objects.
@@ -116,7 +116,7 @@ public:
     /*!
      * \brief Returns a JSON array of domains for the admin defined by \a adminId.
      * \param c         Pointer to the current context, used for localization.
-     * \param e         Pointer to an object taking occuring errors.
+     * \param e         Pointer to an object taking occurring errors.
      * \param userType  The type of the admin user to determine domain access.
      * \param adminId   The database ID of the admin user to determine domain access.
      * \return          JSON array containing objects with domain ID and domain name.
@@ -126,7 +126,7 @@ public:
     /*!
      * \brief Returns a single simpled domain object identified by its database \a id.
      * \param c     Pointer to the current context, used for localization.
-     * \param e     Pointer to an object taking occuring errors.
+     * \param e     Pointer to an object taking occurring errors.
      * \param id    The database ID of the domain to retrieve.
      * \return      Simple domain object.
      */

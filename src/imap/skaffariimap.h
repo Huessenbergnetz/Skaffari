@@ -129,7 +129,7 @@ public:
     /*!
      * \brief Requests the quota values for \a user.
      *
-     * If both quota values are \c 0, lastError() might provide further information about occured errors,
+     * If both quota values are \c 0, lastError() might provide further information about occurred errors,
      * but there also might be no quota set for the \a user account.
      *
      * \param user  The user to request the quota values for.
@@ -212,7 +212,7 @@ public:
     QStringList getMailboxes();
 
     /*!
-     * \brief Returns the last occured error.
+     * \brief Returns the last occurred error.
      * \return Last error object.
      */
 	SkaffariIMAPError lastError() const;

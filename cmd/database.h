@@ -112,7 +112,7 @@ public:
     QString checkCyrusAdmin() const;
 
     /*!
-     * \brief Returns the last occured database error.
+     * \brief Returns the last occurred database error.
      */
     QSqlError lastDbError() const;
     /*!

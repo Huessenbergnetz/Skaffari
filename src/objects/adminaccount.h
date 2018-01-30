@@ -271,7 +271,7 @@ public:
     /*!
      * \brief Creates a new account with the given \a params and returns it.
      *
-     * The returned account might be invalid if an error occured.
+     * The returned account might be invalid if an error occurred.
      *
      * \par Keys for the params
      * Key          | Converted Type | Description
@@ -336,7 +336,7 @@ public:
      * \param e pointer to an object taking error information
      * \param a pointer to the administartor account to update
      * \param u pointer to the currently authenticated user account
-     * \param p parameters used to update the acount
+     * \param p parameters used to update the account
      * \return \c true on success
      */
     static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p);

@@ -120,7 +120,7 @@ public:
      */
     void setEncryptionType(EncryptionType type);
     /*!
-     * \brief Sets the IMAP connnection \a paramaters.
+     * \brief Sets the IMAP connection \a parameters.
      * \param params    as returned by ConfigInput::askImapConfig()
      */
     void setParams(const QVariantHash &parameters);
@@ -147,7 +147,7 @@ public:
     static QString networkProtocolToString(quint8 protocol);
 
     /*!
-     * \brief Returns the last occured error.
+     * \brief Returns the last occurred error.
      */
     QString lastError() const;
 

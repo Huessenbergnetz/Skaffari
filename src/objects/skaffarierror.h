@@ -46,15 +46,15 @@ public:
 	 * \brief Different types of errors that can happen in Skaffari.
 	 */
 	enum ErrorType {
-		NoError,				/**< No Error occured */
-		ImapError,				/**< An IMAP error occured */
-		SqlError,				/**< An SQL error occured */
-		ConfigError,			/**< An configuration error occured, or configuration could not be written */
+        NoError,				/**< No Error occurred */
+        ImapError,				/**< An IMAP error occurred */
+        SqlError,				/**< An SQL error occurred */
+        ConfigError,			/**< An configuration error occurred, or configuration could not be written */
 		EmptyDatabase,			/**< The database is completely empty */
 		DbLayoutError,			/**< The database layout is not complete */
 		AuthenticationError,	/**< Authentication failed */
 		InputError,				/**< Input data is corrupted */
-        ApplicationError,       /**< An internal error occured */
+        ApplicationError,       /**< An internal error occurred */
         AutorizationError,      /**< Authorization for an operation failed */
         NotFound,               /**< The requested resource could not be found */
 		UnknownError			/**< Unknown error */

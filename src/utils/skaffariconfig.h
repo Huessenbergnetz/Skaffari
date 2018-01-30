@@ -356,7 +356,7 @@ public:
      */
     static Account::CreateMailbox imapCreatemailbox();
     /*!
-     * \brief The IMAP server uses the UNIX hierarchy seperator.
+     * \brief The IMAP server uses the UNIX hierarchy separator.
      *
      * This setting should correspond to the value of the same setting in your imapd.conf(5) file and indicates that your imap server uses
      * the UNIX separator character '/' for delimiting levels of mailbox hierarchy instead of the netnews separator character '.'. Up to

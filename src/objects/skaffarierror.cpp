@@ -22,11 +22,11 @@ QString SkaffariErrorData::databaseErrorText() const
 {
     QString es;
     switch(qSqlError.type()) {
-        case QSqlError::NoError: es = c->translate("SkaffariErrorData", "Database, no error occured.");
+        case QSqlError::NoError: es = c->translate("SkaffariErrorData", "Database, no error occurred.");
         case QSqlError::ConnectionError: es = c->translate("SkaffariErrorData", "Database connection error:");
         case QSqlError::StatementError: es = c->translate("SkaffariErrorData", "SQL statement syntax error:");
         case QSqlError::TransactionError: es = c->translate("SkaffariErrorData", "Database transaction failed error:");
-        case QSqlError::UnknownError: es = c->translate("SkaffariErrorData", "Unkown database error:");
+        case QSqlError::UnknownError: es = c->translate("SkaffariErrorData", "Unknown database error:");
         default: es = c->translate("SkaffariErrorData", "Unknown database error:");
     }
     return es;
@@ -97,7 +97,7 @@ QString SkaffariError::errorText() const
 
 	switch(type()) {
     case NoError:
-        text = d->c->translate("SkaffariError", "No error occured, everything is fine.");
+        text = d->c->translate("SkaffariError", "No error occurred, everything is fine.");
 		break;
     case ImapError:
         text = d->c->translate("SkaffariError", "IMAP error:");

@@ -27,7 +27,7 @@ class SkaffariIMAPErrorData;
 
 /*!
  * \ingroup skaffaricore
- * \brief Contains information about occured IMAP errors.
+ * \brief Contains information about occurred IMAP errors.
  */
 class SkaffariIMAPError
 {

@@ -441,7 +441,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
                     auto roleDom = Domain::get(c, roleAcc.getDomainId(), errorData);
                     if (Q_LIKELY(roleDom)) {
                         if (Account::addEmail(c, errorData, &roleAcc, roleDom, roleAccParams)) {
-                            qCInfo(SK_DOMAIN, "%s created a new email adress for the %s role of new domain %s in account %s (ID: %u).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(i.value()), qUtf8Printable(dom.getName()), qUtf8Printable(roleAcc.getUsername()), roleAcc.getId());
+                            qCInfo(SK_DOMAIN, "%s created a new email address for the %s role of new domain %s in account %s (ID: %u).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(i.value()), qUtf8Printable(dom.getName()), qUtf8Printable(roleAcc.getUsername()), roleAcc.getId());
                         }
                     } else {
                         qCWarning(SK_DOMAIN, "Failed to query domain with ID %u of account with ID %u to use as %s account for new domain %s: %s", roleAcc.getDomainId(), roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.getName()), qUtf8Printable(errorData->errorText()));

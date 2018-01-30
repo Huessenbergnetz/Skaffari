@@ -269,7 +269,7 @@ public:
     /*!
      * \brief Returns the date and time when the current password of this user expires.
      *
-     * Acces from Grantlee: passwordExpires
+     * Access from Grantlee: passwordExpires
      *
      * \sa setPasswordExpires()
      */
@@ -413,7 +413,7 @@ public:
      * will contain information about the error.
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
-     * \param e Pointer to an object taking information about occuring errors.
+     * \param e Pointer to an object taking information about occurring errors.
      * \param p Input parameters containting information about the new account.
      * \param d The domain the account should be created in.
      * \return A valid Account object on success.
@@ -429,7 +429,7 @@ public:
      * If deletion fails, the SkaffariError object pointed to by \a e will contain information about the error.
      *
      * \param c         Pointer to the current context, used for string translation and user authentication.
-     * \param e         Pointer to an object taking information about occuring errors.
+     * \param e         Pointer to an object taking information about occurring errors.
      * \param username  The username of the account to delete.
      * \param domain    The domain the account to delete belongs to.
      * \return \c true on success.
@@ -442,7 +442,7 @@ public:
      * If deletion fails, the SkaffariError object pointed to by \a e will contain information about the error.
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
-     * \param e Pointer to an object taking information about occuring errors.
+     * \param e Pointer to an object taking information about occurring errors.
      * \param d Pointer to the domain object the accounts to delete belong to.
      * \return \c true on success.
      */
@@ -451,7 +451,7 @@ public:
     /*!
      * \brief Lists all accounts belonging to the domain \a d.
      * \param c             Pointer to the current context, used for string translation and user authentication.
-     * \param e             Pointer to an object taking information about occuring errors.
+     * \param e             Pointer to an object taking information about occurring errors.
      * \param d             The domain you want to list the accounts from.
      * \param p             Contains information about the pagination.
      * \param sortBy        Column to sort the accounts by.
@@ -466,12 +466,12 @@ public:
      * \brief Gets the account defined by database ID \a id from the database.
      *
      * You should use isValid() to check if the request succeeded. If not, the SkaffariError object point to
-     * by \a e will contain information about occured errors.
+     * by \a e will contain information about occurred errors.
      *
      * \param c     Pointer to the current context, used for string translation, user authentication and to set the stash.
-     * \param e     Pointer to an object taking information about occuring errors.
+     * \param e     Pointer to an object taking information about occurring errors.
      * \param id    The database ID of the account.
-     * \return      Account object containg the account data.
+     * \return      Account object containing the account data.
      */
     static Account get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
 
@@ -502,10 +502,10 @@ public:
      *
      * Will update data like account password and quota.
      *
-     * If the update fails, the SkaffariError object pointed to by \a e will contain information about occured errors.
+     * If the update fails, the SkaffariError object pointed to by \a e will contain information about occurred errors.
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
-     * \param e Pointer to an object taking information about occuring errors.
+     * \param e Pointer to an object taking information about occurring errors.
      * \param a Pointer to an Account object that should be updated.
      * \param d Pointer to an Domain object that will have it's used domain quota updated.
      * \param p Updated parameters for this account.
@@ -519,7 +519,7 @@ public:
      * This will for example check for missing mailbox on the IMAP server and wrong or missing storage quotas.
      *
      * \param c         Pointer to the current context, used for string translation and user authentication.
-     * \param e         Pointer to an object taking information about occuring errors.
+     * \param e         Pointer to an object taking information about occurring errors.
      * \param domain    Object containing information about the domain the account belongs to.
      * \param p         Man of input parameters containing checks to perform.
      * \return List of actions performed for this account.
@@ -529,10 +529,10 @@ public:
     /*!
      * \brief Updates a single email address connected to the account pointed to by \a a.
      *
-     * If the update fails, the SkaffariError object pointed to by \a e will contain information about occured errors.
+     * If the update fails, the SkaffariError object pointed to by \a e will contain information about occurred errors.
      *
      * \param c             Pointer to the current context, used for string translation and user authentication.
-     * \param e             Pointer to an object taking information about occuring errors.
+     * \param e             Pointer to an object taking information about occurring errors.
      * \param a             Pointer to the Account object the email address should be updated for.
      * \param d             The domain the account belongs to.
      * \param p             Input parameters containing the updated email address.
@@ -545,10 +545,10 @@ public:
      * \brief Adds a new email address to the account pointed to by \a a.
      *
      * If adding the email address fails, the SkaffariError object pointed to by \a e will contain information
-     * about occured errors.
+     * about occurred errors.
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
-     * \param e Pointer to an object taking information about occuring errors.
+     * \param e Pointer to an object taking information about occurring errors.
      * \param a Pointer to the Account object the new email address should be added to.
      * \param d The domain this account belongs to.
      * \param p Input parameters containing the new email address.
@@ -559,7 +559,7 @@ public:
     /*!
      * \brief Removes an email address from the account pointed to by \a a.
      * \param c         Pointer to the current context, used for string translation and user authentication.
-     * \param e         Pointer to an object taking information about occuring errors.
+     * \param e         Pointer to an object taking information about occurring errors.
      * \param a         Pointer to the Account object the email address should be removed from.
      * \param address   The address that should be removed.
      * \return \c true on success.
@@ -570,10 +570,10 @@ public:
      * \brief Adds a new forward address to the account pointed to by \a a.
      *
      * If adding the forward email address fails, the SkaffariError object pointed to by \a e will contain information
-     * about occured errors.
+     * about occurred errors.
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
-     * \param e Pointer to an object taking information about occuring errors.
+     * \param e Pointer to an object taking information about occurring errors.
      * \param a Pointer to the Account object the new forward address should be added to.
      * \param p INput parameters containing the new forward email address.
      * \return \c true on success.
@@ -583,7 +583,7 @@ public:
     /*!
      * \brief Removes an forward email address from the account pointed to by \a a.
      * \param c         Pointer to the current context, used for string translation and user authentication.
-     * \param e         Pointer to an object taking information about occuring errors.
+     * \param e         Pointer to an object taking information about occurring errors.
      * \param a         Pointer to the Account object the forward address should be deleted from.
      * \param forward   The forward address that should be removed.
      * \return \c true on success
@@ -593,7 +593,7 @@ public:
     /*!
      * \brief Edits a forward address on the account pointer to by \a a.
      * \param c             Pointer to the current context, used for string translation and user authentication.
-     * \param e             Pointer to an object taking information about occuring errors.
+     * \param e             Pointer to an object taking information about occurring errors.
      * \param a             Pointer to the Account object the forward address should edited on.
      * \param oldForward    Old forward address that should be changed.
      * \param newForward    New forward address the old one should be changed to.
@@ -604,7 +604,7 @@ public:
     /*!
      * \brief Changes the keeping of forwarded mails of account \a to \a keepLocal.
      * \param c         Pointer to the current context, used for string translation and user authentication.
-     * \param e         Pointer to an object taking information about occuring errors.
+     * \param e         Pointer to an object taking information about occurring errors.
      * \param a         Pointer to the Account object the keepLocal setting should changed on.
      * \param keepLocal Set to \c true if forwarded mails should be kept in local mail box, to \c false otherwise.
      * \return          \c true on success
@@ -631,7 +631,7 @@ public:
 
     /*!
      * \brief Splits an email address into local and domain part.
-     * \param address The email adress to split.
+     * \param address The email address to split.
      * \return String pair where first contains the local part and second the domain part.
      */
     static std::pair<QString,QString> addressParts(const QString &address);

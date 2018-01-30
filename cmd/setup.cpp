@@ -392,7 +392,7 @@ int Setup::exec() const
         bool fqun               = imapParams.value(QStringLiteral("fqun")).toBool();
         quint8 createmailbox    = imapParams.value(QStringLiteral("createmailbox")).value<quint8>();
 
-        unixHierarchySep = readBool(tr("UNIX hierarchy seperator"),
+        unixHierarchySep = readBool(tr("UNIX hierarchy separator"),
                                     unixHierarchySep,
                                     QStringList({
                                                     tr("This setting should correspond to the value of the same setting in your imapd.conf(5) file and indicates that your imap server uses the UNIX separator character '/' for delimiting levels of mailbox hierarchy instead of the netnews separator character '.'. Up to Cyrus-IMAP 2.5.x the default value for this value in the IMAP server configuration is off, beginning with version 3.0.0 of Cyrus-IMAP the default has changed to on.")
