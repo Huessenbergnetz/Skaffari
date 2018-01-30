@@ -25,6 +25,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <cmath>
+#include <limits>
 
 Utils::Utils()
 {
@@ -56,23 +57,43 @@ QString Utils::humanBinarySize(Cutelyst::Context *c, quota_size_t sizeInByte)
 {
     QString sizeStr;
 
-    if (sizeInByte < 1048576) {
-        float kibFloat = (float)sizeInByte/1024.0f;
-        sizeStr = c->locale().toString(kibFloat, 'f', 2);
-        sizeStr.append(QLatin1String(" KiB"));
-    } else if (sizeInByte < 1073741824) {
-        float mibFloat = (float)sizeInByte/1048576.0f;
-        sizeStr = c->locale().toString(mibFloat, 'f', 2);
-        sizeStr.append(QLatin1String(" MiB"));
-    } else if (sizeInByte < 1099511627776) {
-        float gibFloat = (float)sizeInByte/1073741824.0f;
-        sizeStr = c->locale().toString(gibFloat, 'f', 2);
-        sizeStr.append(QLatin1String(" GiB"));
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+
+    if (sizeInByte < static_cast<quota_size_t>(std::numeric_limits<qint64>::max())) {
+        sizeStr = c->locale().formattedDataSize(static_cast<qint64>(sizeInByte));
     } else {
-        float tibFloat = (float)sizeInByte/1099511627776.0f;
-        sizeStr = c->locale().toString(tibFloat, 'f', 2);
-        sizeStr.append(QLatin1String(" TiB"));
+
+#endif
+
+        if (sizeInByte < Q_UINT64_C(1048576)) {
+            const double kibFloat = static_cast<double>(sizeInByte)/1024.0;
+            sizeStr = c->locale().toString(kibFloat, 'f', 2);
+            sizeStr.append(QLatin1String(" KiB"));
+        } else if (sizeInByte < Q_UINT64_C(1073741824)) {
+            const double mibFloat = static_cast<double>(sizeInByte)/1048576.0;
+            sizeStr = c->locale().toString(mibFloat, 'f', 2);
+            sizeStr.append(QLatin1String(" MiB"));
+        } else if (sizeInByte < Q_UINT64_C(1099511627776)) {
+            const double gibFloat = static_cast<double>(sizeInByte)/1073741824.0;
+            sizeStr = c->locale().toString(gibFloat, 'f', 2);
+            sizeStr.append(QLatin1String(" GiB"));
+        } else if (sizeInByte < Q_UINT64_C(1125899906842624)) {
+            const double tibFloat = static_cast<double>(sizeInByte)/1099511627776.0;
+            sizeStr = c->locale().toString(tibFloat, 'f', 2);
+            sizeStr.append(QLatin1String(" TiB"));
+        } else if (sizeInByte < Q_UINT64_C(1152921504606846976)) {
+            const double pibFloat = static_cast<double>(sizeInByte)/1125899906842624.0;
+            sizeStr = c->locale().toString(pibFloat, 'f', 2);
+            sizeStr.append(QLatin1String(" PiB"));
+        } else {
+            const double eibFloat = static_cast<double>(sizeInByte)/1152921504606846976.0;
+            sizeStr = c->locale().toString(eibFloat, 'f', 2);
+            sizeStr.append(QLatin1String(" EiB"));
+        }
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
     }
+#endif
 
     return sizeStr;
 }
