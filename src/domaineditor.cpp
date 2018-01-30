@@ -98,19 +98,17 @@ void DomainEditor::edit(Context *c)
         if (req->isPost()) {
 
             c->setStash(QStringLiteral("_def_boolean"), false);
-            c->setStash(QStringLiteral("_min_maxAccounts"), dom.getAccounts());
-            c->setStash(QStringLiteral("_min_domainQuota"), dom.getDomainQuotaUsed() * Q_UINT64_C(1024));
 
             ValidatorResult vr;
             if (user.value(QStringLiteral("type")).value<qint16>() == 0) {
 
                 static Validator v({
                                 new ValidatorIn(QStringLiteral("transport"), QStringList({QStringLiteral("cyrus"), QStringLiteral("lmtp"), QStringLiteral("smtp"), QStringLiteral("uucp")})),
-                                new ValidatorMin(QStringLiteral("maxAccounts"), QMetaType::UInt, QStringLiteral("_min_maxAccounts")),
+                                new ValidatorMin(QStringLiteral("maxAccounts"), QMetaType::UInt, 0),
                                 new ValidatorBoolean(QStringLiteral("freeNames"), ValidatorMessages(), QStringLiteral("_def_boolean")),
                                 new ValidatorBoolean(QStringLiteral("freeAddress"), ValidatorMessages(), QStringLiteral("_def_boolean")),
-                                new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, QVariant(), std::numeric_limits<quota_size_t>::max()),
-                                new ValidatorFileSize(QStringLiteral("domainQuota"), ValidatorFileSize::ForceBinary, QStringLiteral("_min_domainQuota"), std::numeric_limits<quota_size_t>::max()),
+                                new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, 0, std::numeric_limits<quota_size_t>::max()),
+                                new ValidatorFileSize(QStringLiteral("domainQuota"), ValidatorFileSize::ForceBinary, 0, std::numeric_limits<quota_size_t>::max()),
                                 new SkValidatorDomainExists(QStringLiteral("parent"))
                             });
 
@@ -144,28 +142,28 @@ void DomainEditor::edit(Context *c)
 
         QHash<QString,HelpEntry> help;
         help.insert(QStringLiteral("prefix"), HelpEntry(c->translate("DomainEditor", "Prefix"), c->translate("DomainEditor", "The prefix might be used for automatically generated user names, especially if free names are not allowed for this domain.")));
-        help.insert(QStringLiteral("created"), HelpEntry(c->translate("DomainEditor", "Created"), c->translate("DomainEditor", "Date and time this domain has been created in Skaffari.")));
-        help.insert(QStringLiteral("updated"), HelpEntry(c->translate("DomainEditor", "Updated"), c->translate("DomainEditor", "Date and time this domain has been updated in Skaffari.")));
+        help.insert(QStringLiteral("created"), HelpEntry(c->translate("DomainEditor", "Created"), c->translate("DomainEditor", "Date and time this domain was created.")));
+        help.insert(QStringLiteral("updated"), HelpEntry(c->translate("DomainEditor", "Updated"), c->translate("DomainEditor", "Date and time this domain was last updated.")));
 
         const QString domainQuotaTitle = c->translate("DomainEditor", "Domain quota");
+        QString domainQuotaText;
         if (c->stash(QStringLiteral("userType")).value<qint16>() == 0) {
             // current user is a super administrator
-            help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Maximum accounts"), c->translate("DomainEditor", "The maximum accounts value limits the amount of accounts that can be created for this domain. Set it to 0 to disable the limit.")));
-            help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set, every account must have a quota defined. Set it to 0 to disable the domain quota. You can use the multipliers K, KiB, M, MiB, G, GiB, T and TiB.")));
+            help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Maximum accounts"), c->translate("DomainEditor", "Limits the maximum number of user accounts that can be created in this domain. Set the value to 0 to disable the limit.")));
+            domainQuotaText = c->translate("DomainEditor", "Total storage quota for all user accounts belonging to this domain. If the domain quota is set (not 0), each user account in the domain must have set its own quota. Set it to 0 to disable the domain quota. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.");
         } else {
             // current user is a domain administrator
-            const QString domainQuotaText = c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set (not unlimited), every account must have a quota defined.");
-            help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "Shows the current amount of accounts created in this domain and the maximum number of accounts that can be created for this domain.")));
-            help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, domainQuotaText));
+            help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "The current number of user accounts in this domain and the maximum allowed number of user accounts in this domain.")));
+            domainQuotaText = c->translate("DomainEditor", "Total storage quota for all user accounts belonging to this domain. If the domain quota is set (not 0), each user account in the domain must have set its own quota.");
         }
+        help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, domainQuotaText));
 
-        const QString quotaTitle = c->translate("DomainEditor", "Default quota");
-        help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "Default quota for new accounts for this domain. This value can be changed individually for every account. You can use the multipliers K, Kib, M, MiB, G, GiB, T and TiB.")));
+        help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Default quota"), c->translate("DomainEditor", "Default storage quota for new user accounts in this domain. You can use the multipliers K, Kib, M, MiB, G, GiB, etc.")));
 
 
-        help.insert(QStringLiteral("folders"), HelpEntry(c->translate("DomainEditor", "Standard folders"), c->translate("DomainEditor", "Comma separated list of folders that will be automatically created when creating a new account for this domain. You can safely insert localized folder names in UTF-8 encoding. They will be internally converted into UTF-7-IMAP encoding.")));
-        help.insert(QStringLiteral("parent"), HelpEntry(c->translate("DomainEditor", "Parent domain"), c->translate("DomainEditor", "Setting a parent domain for this domain will automatically create email addresses for this domain when creating new accounts in the parent domain.")));
-        help.insert(QStringLiteral("children"), HelpEntry(c->translate("DomainEditor", "Child domains"), c->translate("DomainEditor", "List of domains that are children of this domain. Creating new accounts in this domain will automatically add email addresses for the child domains to the new accounts.")));
+        help.insert(QStringLiteral("folders"), HelpEntry(c->translate("DomainEditor", "Standard folders"), c->translate("DomainEditor", "Comma-separated list of folder names that are automatically created for new user accounts in this domain.")));
+        help.insert(QStringLiteral("parent"), HelpEntry(c->translate("DomainEditor", "Parent domain"), c->translate("DomainEditor", "If you set a parent domain for this domain, new accounts in the parent domain automatically create e-mail addresses for the child domain.")));
+        help.insert(QStringLiteral("children"), HelpEntry(c->translate("DomainEditor", "Child domains"), c->translate("DomainEditor", "List of child domains of this domain. New accounts in this domain will automatically get email addresses for the child domains.")));
         help.insert(QStringLiteral("transport"), HelpEntry(c->translate("DomainEditor", "Transport"), c->translate("DomainEditor", "The transport mechanism for received emails for this domain. Defaults to Cyrus.")));
         help.insert(QStringLiteral("freeNames"), HelpEntry(c->translate("DomainEditor", "Allow free names"), c->translate("DomainEditor", "If enabled, account user names for this domain can be freely selected (if not in use already).")));
         help.insert(QStringLiteral("freeAddress"), HelpEntry(c->translate("DomainEditor", "Allow free addresses"), c->translate("DomainEditor", "If enabled, user accounts in this domain can have email addresses for all domains managed by Skaffari. If disabled, only email addresses for this domain can be added to user accounts in this domain.")));
@@ -400,15 +398,13 @@ void DomainEditor::create(Context* c)
         QHash<QString,HelpEntry> help;
         help.insert(QStringLiteral("domainName"), HelpEntry(c->translate("DomainEditor", "Domain name"), c->translate("DomainEditor", "The name of the domain you want to manage emails for, like example.com. You can safely insert international domain names in UTF-8 encoding, it will be converted internally into ASCII compatible encoding.")));
         help.insert(QStringLiteral("prefix"), HelpEntry(c->translate("DomainEditor", "Prefix"), c->translate("DomainEditor", "The prefix might be used for automatically generated user names, especially if free names are not allowed for this domain.")));
-        help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Maximum accounts"), c->translate("DomainEditor", "The maximum accounts value limits the amount of accounts that can be created for this domain. Set it to 0 to disable the limit.")));
+        help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Maximum accounts"), c->translate("DomainEditor", "Limits the maximum number of user accounts that can be created in this domain. Set the value to 0 to disable the limit.")));
 
-        const QString domainQuotaTitle = c->translate("DomainEditor", "Domain quota");
-        const QString quotaTitle = c->translate("DomainEditor", "Default quota");
-        help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "Overall quota limit for all accounts that belong to this domain. If the domain quota is set, every account must have a quota defined. Set it to 0 to disable the domain quota. You can use the multipliers K, M, G, and T.")));
-        help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "Default quota for new accounts for this domain. This value can be changed individually for every account. You can use the multipliers K, M, G, and T.")));
+        help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "Total storage quota for all user accounts belonging to this domain. If the domain quota is set (not 0), each user account in the domain must have set its own quota. Set it to 0 to disable the domain quota. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.")));
+        help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Default quota"), c->translate("DomainEditor", "Default storage quota for new user accounts in this domain. You can use the multipliers K, Kib, M, MiB, G, GiB, etc.")));
 
-        help.insert(QStringLiteral("folders"), HelpEntry(c->translate("DomainEditor", "Standard folders"), c->translate("DomainEditor", "Comma separated list of folders that will be automatically created when creating a new account for this domain. You can safely insert localized folder names in UTF-8 encoding. They will be internally converted into UTF-7-IMAP encoding.")));
-        help.insert(QStringLiteral("parent"), HelpEntry(c->translate("DomainEditor", "Parent domain"), c->translate("DomainEditor", "Setting a parent domain for this domain will automatically create email addresses for this domain when creating new accounts in the parent domain.")));
+        help.insert(QStringLiteral("folders"), HelpEntry(c->translate("DomainEditor", "Standard folders"), c->translate("DomainEditor", "Comma-separated list of folder names that are automatically created for new user accounts in this domain.")));
+        help.insert(QStringLiteral("parent"), HelpEntry(c->translate("DomainEditor", "Parent domain"), c->translate("DomainEditor", "If you set a parent domain for this domain, new accounts in the parent domain automatically create e-mail addresses for the child domain.")));
         help.insert(QStringLiteral("transport"), HelpEntry(c->translate("DomainEditor", "Transport"), c->translate("DomainEditor", "The transport mechanism for received emails for this domain. Defaults to Cyrus.")));
         help.insert(QStringLiteral("freeNames"), HelpEntry(c->translate("DomainEditor", "Allow free names"), c->translate("DomainEditor", "If enabled, account user names for this domain can be freely selected (if not in use already).")));
         help.insert(QStringLiteral("freeAddress"), HelpEntry(c->translate("DomainEditor", "Allow free addresses"), c->translate("DomainEditor", "If enabled, user accounts in this domain can have email addresses for all domains managed by Skaffari. If disabled, only email addresses for this domain can be added to user accounts in this domain.")));
@@ -458,7 +454,7 @@ void DomainEditor::remove(Context* c)
                     SkaffariError e(c);
                     if (Domain::remove(c, &dom, &e, req->bodyParam(QStringLiteral("newParentId"), QStringLiteral("0")).toULong(), false)) {
 
-                        const QString statusMsg = c->translate("DomainEditor", "Successfully deleted domain %1.").arg(dom.getName());
+                        const QString statusMsg = c->translate("DomainEditor", "The domain %1 has been successfully deleted.").arg(dom.getName());
 
                         if (isAjax) {
                             json.insert(QStringLiteral("status_msg"), statusMsg);
@@ -480,7 +476,7 @@ void DomainEditor::remove(Context* c)
 
                 } else {
 
-                    const QString errorMsg = c->translate("DomainEditor", "The entered name does not match the domain name.");
+                    const QString errorMsg = c->translate("DomainEditor", "The specified name does not match the domain name.");
 
                     if (isAjax) {
                         json.insert(QStringLiteral("error_msg"), errorMsg);
@@ -595,6 +591,7 @@ void DomainEditor::add_account(Context* c)
                         enoughQuotaLeft = false;
 
                         c->setStash(QStringLiteral("error_msg"),
+                                    //: %1 will be the free domain quota as string like 1.5 GiB
                                     c->translate("DomainEditor", "There is not enough free quota on this domain. Please lower the quota for the new account to a maximum of %1.").arg(Utils::humanBinarySize(c, freeQuota)));
                     }
 
@@ -603,6 +600,7 @@ void DomainEditor::add_account(Context* c)
                         enoughQuotaLeft = false;
 
                         c->setStash(QStringLiteral("error_msg"),
+                                    //: %1 will be the overall domain quota limit as string like 1.5 GiB
                                     c->translate("DomainEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(Utils::humanBinarySize(c, dom.getDomainQuota())));
                     }
                 }
@@ -614,7 +612,8 @@ void DomainEditor::add_account(Context* c)
                     if (account.isValid()) {
 
                         Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
-                        c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, c->translate("DomainEditor", "Successfully created account %1 with email address %2.").arg(account.getUsername(), account.getAddresses().at(0)))));
+                        //: %1 will be the user name of the new account, %2 will be the added email address
+                        c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, c->translate("DomainEditor", "User account %1 successfully created with email address %2.").arg(account.getUsername(), account.getAddresses().at(0)))));
                         return;
 
                     } else {
@@ -665,7 +664,7 @@ void DomainEditor::add_account(Context* c)
                         QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM accountuser WHERE domain_id = :domain_id ORDER BY id DESC LIMIT 1"));
                         q.bindValue(QStringLiteral(":domain_id"), dom.id());
                         if (!q.exec()) {
-                            SkaffariError e(c, q.lastError(), c->translate("DomainEditor", "Failed to query last added account from database."));
+                            SkaffariError e(c, q.lastError(), c->translate("DomainEditor", "Failed to query the last added user account from the database."));
                             c->setStash(QStringLiteral("error_msg"), e.errorText());
                             c->res()->setStatus(500);
                             return;
@@ -706,19 +705,22 @@ void DomainEditor::add_account(Context* c)
         }
 
         QHash<QString,HelpEntry> help;
-        help.insert(QStringLiteral("accounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "Number of accounts that are currently part of this domain. If there is a maximum account limit defined, it will be shown, too.")));
+        help.insert(QStringLiteral("accounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "Number of user accounts currently associated with this domain. If there is a limit on the maximum number, it is also displayed.")));
 
         const QString quotaTitle = c->translate("DomainEditor", "Quota");
+        QString quotaText;
         const QString domainQuotaTitle = c->translate("DomainEditor", "Domain quota");
+        QString domainQuotaText;
         if (dom.getDomainQuota() > 0) {
-            help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "Used and total amount of storage quota for this domain.")));
-            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1 KiB.").arg(freeQuota * Q_UINT64_C(1024))));
-            help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You have to set a storage quota for this account that does not exceed %1. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.").arg(Utils::humanBinarySize(c, freeQuota * Q_UINT64_C(1024)))));
+            domainQuotaText = c->translate("DomainEditor", "Used and total storage quota for this domain.");
+            //: %1 will be the maximum quota as string like 1.5 GiB
+            quotaText = c->translate("DomainEditor", "You must set a storage quota for this user account that does not exceed %1. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.").arg(Utils::humanBinarySize(c, freeQuota));
         } else {
-            help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, c->translate("DomainEditor", "This domain has no overall quota limit, so the value shows the sum of the quota limit of all accounts in this domain.")));
-            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it.")));
-            help.insert(QStringLiteral("humanQuota"), HelpEntry(quotaTitle, c->translate("DomainEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it. You can use the multipliers M, MiB, G, GiB, T and TiB. Without a multiplier, KiB is the default.")));
+            domainQuotaText = c->translate("DomainEditor", "This domain has no overall quota limit, so the value shows the sum of the quota limit of all accounts in this domain.");
+            quotaText = c->translate("DomainEditor", "You can optionally set a storage quota of up to %1 for this user account. If you set it to 0, the quota is disabled. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.").arg(Utils::humanBinarySize(c, freeQuota));
         }
+        help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, quotaText));
+        help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, domainQuotaText));
 
         const QString usernameTitle = c->translate("DomainEditor", "User name");
         if (!SkaffariConfig::imapDomainasprefix()) {
