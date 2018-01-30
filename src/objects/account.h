@@ -51,12 +51,12 @@ class Account
 {
 public:
     /*!
-     * \brief Creates an empty, invalid Account object.
+     * \brief Creates an empty, invalid %Account object.
      */
     Account();
 
     /*!
-     * \brief Creates a new Account object with the given parameters.
+     * \brief Creates a new %Account object with the given parameters.
      * \param id            Database ID
      * \param domainId      Database ID of the domain the account belongs to
      * \param username      Account user name
@@ -74,7 +74,7 @@ public:
      * \param updated       Date and time this account has been updated the last time
      * \param validUntil    Date and time until this account is valid
      * \param pwdExpiration Date and time until the password for this account is valid
-     * \param keepLocal     \c true if fowarded emails should be kept local too
+     * \param keepLocal     \c true if forwaded emails should be kept local too
      * \param catchAll      \c true if this is the catch all account for the \a domainName
      * \param status        Status value saved in the database.
      */
@@ -86,12 +86,12 @@ public:
     Account(const Account &other);
 
     /*!
-     * \brief Assigns \a other to this object.
+     * \brief Assigns \a other to this %Account.
      */
     Account& operator=(const Account &other);
 
     /*!
-     * \brief Destroys the object and frees any allocated resources.
+     * \brief Destroys the %Account object and frees any allocated resources.
      */
     ~Account();
 
@@ -565,16 +565,6 @@ public:
      * \return \c true on success.
      */
     static bool removeEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &address);
-
-    /*!
-     * \brief Updates the list of forwards for the account pointed to by \a a.
-     * \param c Pointer to the current context, used for string translation and user authentication.
-     * \param e Pointer to an object taking information about occuring errors.
-     * \param a Pointer to the Account object the forwards should be updated for.
-     * \param p Input parameters containing the updated forwards.
-     * \return
-     */
-    static bool updateForwards(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p);
 
     /*!
      * \brief Adds a new forward address to the account pointed to by \a a.
