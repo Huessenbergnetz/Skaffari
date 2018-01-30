@@ -42,9 +42,9 @@ class SkaffariError;
  * \ingroup skaffaricore
  * \brief Represents an administrator account.
  *
- * The AdminAccount class represents an administrator account object.
+ * The %AdminAccount class represents an administrator account object.
  * There are currently two types of administrators, superusers and domain admins.
- * Superusers can modify anyting and can also create new domains and deleting existing
+ * Superusers can modify anything and can also create new domains and deleting existing
  * ones, as well as adding and removing new admin accounts.
  *
  * Domain admins can only modify accounts in domains they are responsible for.
@@ -105,11 +105,12 @@ public:
     AdminAccount(const AdminAccount &other);
 
 	/*!
-	 * \brief Assigns other to this AdminAccount and returns a reference to this account.
+     * \brief Assigns other to this %AdminAccount and returns a reference to this account.
 	 */
 	AdminAccount &operator=(const AdminAccount &other);
 
-	/*! \brief Destroys the object
+    /*!
+     * \brief Destroys the object
 	 */
     ~AdminAccount();
 
@@ -315,7 +316,7 @@ public:
      * \param e         pointer to an object taking error information
      * \param a         pointer to the administrator account to update
      * \param params    parameters used to update the account
-     * \return
+     * \return \c true on success
      */
     static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, const Cutelyst::ParamsMultiMap &params);
 
@@ -336,6 +337,7 @@ public:
      * \param a pointer to the administartor account to update
      * \param u pointer to the currently authenticated user account
      * \param p parameters used to update the acount
+     * \return \c true on success
      */
     static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p);
 
@@ -344,6 +346,7 @@ public:
      * \param c pointer to the current context, used for translating strings
      * \param e pointer to an object taking error information
      * \param a the account to remove
+     * \return \c true on success
      */
     static bool remove(Cutelyst::Context *c, SkaffariError *e, const AdminAccount &a);
 

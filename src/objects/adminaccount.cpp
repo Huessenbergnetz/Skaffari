@@ -229,14 +229,14 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMu
     q.bindValue(QStringLiteral(":username"), username);
 
     if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to check if user name is already in use."));
+        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Cannot check whether the user name is already assigned."));
         qCCritical(SK_ADMIN) << "Failed to check if user name is already in use while creating new admin account." << q.lastError().text();
         return aa;
     }
 
     if (Q_UNLIKELY(q.next())) {
         error->setErrorType(SkaffariError::InputError);
-        error->setErrorText(c->translate("AdminAccount", "This admin user name is already in use."));
+        error->setErrorText(c->translate("AdminAccount", "This administrator user name is already in use."));
         return aa;
     }
 
@@ -244,8 +244,8 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMu
 
     if (Q_UNLIKELY(password.isEmpty())) {
         error->setErrorType(SkaffariError::ApplicationError);
-        error->setErrorText(c->translate("AdminAccount", "Failed to encrypt password. Please check your encryption settings."));
-        qCCritical(SK_ADMIN) << "Failed to encrypt password using Cutelyst::CredentialPassword";
+        error->setErrorText(c->translate("AdminAccount", "Password encryption failed. Please check your encryption settings."));
+        qCCritical(SK_ADMIN) << "Password encryption failed using Cutelyst::CredentialPassword";
         return aa;
     }
 
@@ -407,13 +407,13 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT COUNT(id) FROM adminuser WHERE type = 0"));
 
         if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of super users to check if thi is the last super user account."));
+            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of super users to check if this is the last super user account."));
             qCCritical(SK_ADMIN) << "Failed to query count of super users to check if thi is the last super user account." << q.lastError().text();
             return ret;
         }
 
         if (Q_UNLIKELY(!q.next())) {
-            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of super users to check if thi is the last super user account."));
+            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of super users to check if this is the last super user account."));
             qCCritical(SK_ADMIN) << "Failed to query count of super users to check if thi is the last super user account." << q.lastError().text();
             return ret;
         }
@@ -433,8 +433,8 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
                                                                               24, 27);
         if (Q_UNLIKELY(encPw.isEmpty())) {
             e->setErrorType(SkaffariError::ApplicationError);
-            e->setErrorText(c->translate("AdminAccount", "Failed to encrypt password. Please check your encryption settings."));
-            qCCritical(SK_ADMIN) << "Failed to encrypt password using Cutelyst::CredentialPassword";
+            e->setErrorText(c->translate("AdminAccount", "Password encryption failed. Please check your encryption settings."));
+            qCCritical(SK_ADMIN) << "Password encryption failed using Cutelyst::CredentialPassword";
             return ret;
         }
 
@@ -482,7 +482,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
             q.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue<dbid_t>(did));
             q.bindValue(QStringLiteral(":admin_id"), a->getId());
             if (Q_UNLIKELY(!q.exec())) {
-                e->setSqlError(q.lastError(), c->translate("AdminAccount", "Faild to update admin to domain connections in database."));
+                e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update admin to domain connections in database."));
                 qCCritical(SK_ADMIN, "Failed to update connections between admin %s and domains in database: %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(q.lastError().text()));
                 return ret;
             }
@@ -529,8 +529,8 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
 
         if (Q_UNLIKELY(encPw.isEmpty())) {
             e->setErrorType(SkaffariError::ApplicationError);
-            e->setErrorText(c->translate("AdminAccount", "Failed to encrypt password. Please check your encryption settings."));
-            qCCritical(SK_ADMIN) << "Failed to encrypt password using Cutelyst::CredentialPassword";
+            e->setErrorText(c->translate("AdminAccount", "Password encryption failed. Please check your encryption settings."));
+            qCCritical(SK_ADMIN) << "Password encryption failed using Cutelyst::CredentialPassword";
             return ret;
         }
 
