@@ -56,10 +56,8 @@ void MyAccount::index(Context *c)
             static Validator v({
                                    new ValidatorConfirmed(QStringLiteral("password")),
                                    new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),
-                                   new ValidatorInteger(QStringLiteral("maxdisplay")),
-                                   new ValidatorBetween(QStringLiteral("maxdisplay"), QMetaType::UInt, 0, 255),
-                                   new ValidatorInteger(QStringLiteral("warnlevel")),
-                                   new ValidatorBetween(QStringLiteral("warnlevel"), QMetaType::UInt, 0, 100),
+                                   new ValidatorBetween(QStringLiteral("maxdisplay"), QMetaType::UShort, 0, 255),
+                                   new ValidatorBetween(QStringLiteral("warnlevel"), QMetaType::UShort, 0, 100),
                                    new ValidatorIn(QStringLiteral("lang"), Language::supportedLangsList())
                                });
 
@@ -75,14 +73,14 @@ void MyAccount::index(Context *c)
         }
 
         QHash<QString,HelpEntry> help;
-        help.insert(QStringLiteral("created"), HelpEntry(c->translate("MyAccount", "Created"), c->translate("MyAccount", "Date and time your account has been created.")));
-        help.insert(QStringLiteral("updated"), HelpEntry(c->translate("MyAccount", "Updated"), c->translate("MyAccount", "Date and time your account has been updated the last time.")));
-        help.insert(QStringLiteral("password"), HelpEntry(c->translate("MyAccount", "New password"), c->translate("MyAccount", "Specify a new password with a minimum length of %n character(s). Leave the input field blank to not change the password.", "", SkaffariConfig::accPwMinlength())));
+        help.insert(QStringLiteral("created"), HelpEntry(c->translate("MyAccount", "Created"), c->translate("MyAccount", "Date and time your account was created.")));
+        help.insert(QStringLiteral("updated"), HelpEntry(c->translate("MyAccount", "Updated"), c->translate("MyAccount", "Date and time your account was last updated.")));
+        help.insert(QStringLiteral("password"), HelpEntry(c->translate("MyAccount", "New password"), c->translate("MyAccount", "Enter a new password with a minimum length of %n character(s) or leave the field blank to avoid changing the password.", "", SkaffariConfig::accPwMinlength())));
         help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("MyAccount", "Confirm new password"), c->translate("MyAccount", "Confirm your new password by entering it again.")));
         help.insert(QStringLiteral("maxdisplay"), HelpEntry(c->translate("MyAccount", "Max display"), c->translate("MyAccount", "Set the number of results you want to load in paginated lists like the account list (minimum 15, maximum 255")));
         help.insert(QStringLiteral("warnlevel"), HelpEntry(c->translate("MyAccount", "Warn level"), c->translate("MyAccount", "Set the percentage limit that will show warnings on number of accounts and quota usage.")));
-        help.insert(QStringLiteral("lang"), HelpEntry(c->translate("MyAccount", "Language"), c->translate("MyAccount", "Select one of the supported languages to display Skaffari localized.")));
-        help.insert(QStringLiteral("tz"), HelpEntry(c->translate("MyAccount", "Time zone"), c->translate("MyAccount", "Select your time zone to display localized date and time values.")));
+        help.insert(QStringLiteral("lang"), HelpEntry(c->translate("MyAccount", "Language"), c->translate("MyAccount", "Select one of the supported languages.")));
+        help.insert(QStringLiteral("tz"), HelpEntry(c->translate("MyAccount", "Time zone"), c->translate("MyAccount", "Select your time zone to enter and display date and time values appropriately.")));
 
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("myaccount/index.html")},
