@@ -108,7 +108,7 @@ void AccountEditor::edit(Context* c)
                                     vr.values())) {
 
                     c->stash({
-                                 {QStringLiteral("status_msg"), c->translate("AccountEditor", "Successfully updated account %1.").arg(a.getUsername())},
+                                 {QStringLiteral("status_msg"), c->translate("AccountEditor", "User account %1 successfully updated.").arg(a.getUsername())},
                                  {QStringLiteral("account"), QVariant::fromValue<Account>(a)},
                                  {QStringLiteral("domain"), QVariant::fromValue<Domain>(dom)}
                              });
@@ -122,17 +122,19 @@ void AccountEditor::edit(Context* c)
         }
 
         QHash<QString,HelpEntry> help;
-        help.insert(QStringLiteral("created"), HelpEntry(c->translate("AccountEditor", "Created"), c->translate("AcountEditor", "Date and time this account has been created.")));
-        help.insert(QStringLiteral("updated"), HelpEntry(c->translate("AccountEditor", "Updated"), c->translate("AccountEditor", "Date and time this account has been updated the last time.")));
+        help.insert(QStringLiteral("created"), HelpEntry(c->translate("AccountEditor", "Created"), c->translate("AccountEditor", "Date and time this user account was created.")));
+        help.insert(QStringLiteral("updated"), HelpEntry(c->translate("AccountEditor", "Updated"), c->translate("AccountEditor", "Date and time this user account was last updated.")));
 
         const QString quotaTitle = c->translate("DomainEditor", "Quota");
         if (dom.getDomainQuota() > 0) {
-            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You have to set a storage quota for this account that does not exceed %1. You can use the multipliers K, KiB, M, MiB, G, GiB, T and TiB.").arg(Utils::humanBinarySize(c, freeQuota * Q_UINT64_C(1024)))));
+            // %1 will be something like 1.5 GB
+            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You must set a storage quota for this account that does not exceed %1. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.").arg(Utils::humanBinarySize(c, freeQuota * Q_UINT64_C(1024)))));
         } else {
-            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You can freely set a storage quota for this account or set the quota to 0 to disable it. You can use the multipliers K, KiB, M, MiB, G, GiB, T and TiB.")));
+            // %1 will be something like 1.5 TiB
+            help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You can optionally set a storage quota for this account that does not exceed %1. To disable the storage quota, set it to 0. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.").arg(Utils::humanBinarySize(c, std::numeric_limits<quota_size_t>::max()))));
         }
-        help.insert(QStringLiteral("password"), HelpEntry(c->translate("AccountEditor", "Password"), c->translate("AccountEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
-        help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AccountEditor", "Password confirmation"), c->translate("AccountEditor", "Confirm your entered password.")));
+        help.insert(QStringLiteral("password"), HelpEntry(c->translate("AccountEditor", "Password"), c->translate("AccountEditor", "Enter a new password with a minimum length of %n character(s) or leave the field blank to avoid changing the password.", "", SkaffariConfig::accPwMinlength())));
+        help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AccountEditor", "Password confirmation"), c->translate("AccountEditor", "Confirm the new password.")));
         help.insert(QStringLiteral("validUntil"), HelpEntry(c->translate("AccountEditor", "Valid until"), c->translate("AccountEditor", "You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future.")));
         help.insert(QStringLiteral("passwordExpires"), HelpEntry(c->translate("AccountEditor", "Password expires"), c->translate("AccountEditor", "You can set a date and time until the password for this account is valid. To let the password never expire, simply set a date far in the future.")));
         help.insert(QStringLiteral("imap"), HelpEntry(c->translate("AccountEditor", "IMAP Access"), c->translate("AccountEditor", "If enabled, the user of this account can access the mailbox through the IMAP protocol.")));
@@ -181,7 +183,7 @@ void AccountEditor::remove(Context* c)
                 SkaffariError e(c);
                 if (Account::remove(c, &e, a.getUsername(), &dom)) {
 
-                    const QString statusMsg = c->translate("AccountEditor", "Successfully removed account of user %1.").arg(a.getUsername());
+                    const QString statusMsg = c->translate("AccountEditor", "User account %1 successfully removed.").arg(a.getUsername());
 
                     if (isAjax) {
                         json = QJsonObject({
@@ -200,7 +202,7 @@ void AccountEditor::remove(Context* c)
 
                     c->res()->setStatus(Response::InternalServerError);
 
-                    const QString errorMsg = c->translate("AccountEditor", "Failed to remove account. %1").arg(e.errorText());
+                    const QString errorMsg = c->translate("AccountEditor", "Failed to remove account %1").arg(e.errorText());
 
                     if (isAjax) {
                         json.insert(QStringLiteral("error_msg"), errorMsg);
@@ -272,7 +274,7 @@ void AccountEditor::edit_address(Context *c, const QString &address)
 
         if (!a.getAddresses().contains(address)) {
 
-            const QString errorMsg = c->translate("AccountEditor", "The requested email address does not belong to the account %1.").arg(a.getUsername());
+            const QString errorMsg = c->translate("AccountEditor", "The email address %1 is not part of the user account %2.").arg(address, a.getUsername());
 
             if (isAjax) {
                 json.insert(QStringLiteral("error_msg"), QJsonValue(errorMsg));
@@ -300,7 +302,7 @@ void AccountEditor::edit_address(Context *c, const QString &address)
                              {QStringLiteral("maildomain"), parts.at(1)}
                          });
             } else {
-                c->setStash(QStringLiteral("error_msg"), c->translate("AccountEditor", "Invalid email address"));
+                c->setStash(QStringLiteral("error_msg"), c->translate("AccountEditor", "Invalid email address."));
             }
 
             if (d.isFreeAddressEnabled()) {
@@ -425,7 +427,6 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 
             if (isAjax) {
 
-                c->res()->setStatus(Response::BadRequest);
                 json.insert(QStringLiteral("error_msg"), QJsonValue(errorMsg));
                 c->res()->setJsonBody(QJsonDocument(json));
 
@@ -444,7 +445,7 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 
         if (!a.getAddresses().contains(address)) {
 
-            const QString notFoundText = c->translate("AccountEditor", "The requested email address does not belong to the account %1.").arg(a.getUsername());
+            const QString notFoundText = c->translate("AccountEditor", "The email address to remove does not belong to the account %1.").arg(a.getUsername());
 
             if (isAjax) {
 
@@ -460,6 +461,36 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 
             c->res()->setStatus(Response::NotFound);
             return;
+        }
+
+        if (address.endsWith(a.getDomainName())) {
+            int domainAddressCount = 0;
+            for (const QString &addr : a.getAddresses()) {
+                if (addr.endsWith(a.getDomainName()), Qt::CaseInsensitive) {
+                    domainAddressCount++;
+                }
+            }
+            if (domainAddressCount < 2) {
+
+                const QString errorMsg = c->translate("AccountEditor", "You can not remove the last email address that matches the domain this account belongs to.");
+
+                if (isAjax) {
+
+                    json.insert(QStringLiteral("error_msg"), QJsonValue(errorMsg));
+                    c->res()->setJsonBody(QJsonDocument(json));
+
+                } else {
+
+                    c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"),
+                                                       QStringList({QString::number(a.getDomainId()), QString::number(a.getId())}),
+                                                       QStringList(),
+                                                       StatusMessage::errorQuery(c, errorMsg)));
+                }
+
+                c->res()->setStatus(Response::BadRequest);
+
+                return;
+            }
         }
 
         if (c->req()->isPost()) {
@@ -676,7 +707,7 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
         QJsonObject json;
 
         if (!a.getForwards().contains(forward)) {
-            const QString notFoundText = c->translate("AccountEditor", "The requested forward email address does not belong to the account %1.").arg(a.getUsername());
+            const QString notFoundText = c->translate("AccountEditor", "The forward email address to remove does not belong to the account %1.").arg(a.getUsername());
 
             if (isAjax) {
                 json.insert(QStringLiteral("error_msg"), QJsonValue(notFoundText));
