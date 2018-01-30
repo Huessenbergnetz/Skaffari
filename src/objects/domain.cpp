@@ -447,7 +447,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
                         qCWarning(SK_DOMAIN, "Failed to query domain with ID %u of account with ID %u to use as %s account for new domain %s: %s", roleAcc.getDomainId(), roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.getName()), qUtf8Printable(errorData->errorText()));
                     }
                 } else {
-                    qCWarning(SK_DOMAIN, "Can not add invalid email address \"%s\" of new domain %s to account %s (ID: %u).", qPrintable(email), qPrintable(dom.getName()), qPrintable(roleAcc.getUsername()), roleAcc.getId());
+                    qCWarning(SK_DOMAIN, "Can not add invalid email address \"%s\" of new domain %s to account %s (ID: %u).", qUtf8Printable(email), qUtf8Printable(dom.getName()), qUtf8Printable(roleAcc.getUsername()), roleAcc.getId());
                 }
             } else {
                 qCWarning(SK_DOMAIN, "Failed to query account with ID %u to use as %s account for new domain %s: %s", roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.getName()), qUtf8Printable(errorData->errorText()));
@@ -582,7 +582,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
     }
     if (Q_UNLIKELY(!q.prepare(prepString))) {
         errorData->setSqlError(q.lastError());
-        qCCritical(SK_DOMAIN, "Failed to prepare database query to list domains: %s", qPrintable(q.lastError().text()));
+        qCCritical(SK_DOMAIN, "Failed to prepare database query to list domains: %s", qUtf8Printable(q.lastError().text()));
         return lst;
     }
     if (!isSuperUser) {
