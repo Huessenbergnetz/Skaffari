@@ -22,6 +22,8 @@
 #include <Cutelyst/Context>
 #include <Cutelyst/Plugins/Session/Session>
 #include <QLocale>
+#include <map>
+#include <utility>
 
 Language::Language() :
     d(new LanguageData)
@@ -87,11 +89,34 @@ void Language::setLang(Cutelyst::Context *c)
     if (Q_UNLIKELY(lang.isEmpty())) {
         const QStringList acceptedLangs = c->req()->header(QStringLiteral("Accept-Language")).split(QLatin1Char(','), QString::SkipEmptyParts);
         if (Q_LIKELY(!acceptedLangs.empty())) {
+            std::map<float,QString> langMap;
             for (const QString &al : acceptedLangs) {
-                const QString langPart = al.section(QLatin1Char(';'), 0, 0);
-                if (Language::supportedLangsList().contains(langPart)) {
-                    lang = langPart;
-                    break;
+                const int scidx = al.indexOf(QLatin1Char(';'));
+                float priority = 1.0f;
+                QString langPart;
+                bool ok = true;
+                if (scidx > -1) {
+                    langPart = al.left(scidx);
+                    const QStringRef ref = al.midRef(scidx +1);
+                    priority = ref.mid(ref.indexOf(QLatin1Char('=')) + 1).toFloat(&ok);
+                } else {
+                    langPart = al;
+                }
+                if (ok && !langPart.isEmpty()) {
+                    auto search = langMap.find(priority);
+                    if (search == langMap.cend()) {
+                        langMap.insert({priority, langPart});
+                    }
+                }
+            }
+            if (!langMap.empty()) {
+                auto i = langMap.crbegin();
+                while (i != langMap.crend()) {
+                    if (Language::supportedLangsList().contains(i->second)) {
+                        lang = i->second;
+                        break;
+                    }
+                    ++i;
                 }
             }
         }
