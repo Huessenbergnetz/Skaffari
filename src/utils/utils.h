@@ -34,10 +34,37 @@ class Context;
 class Utils
 {
 public:
+    /*!
+     * \brief Constructs a new %Utils object.
+     */
     Utils();
 
+    /*!
+     * \brief Converts the \a dt to the time zone of the current user in the context \a c.
+     * \param c     The current Context to get the user from.
+     * \param dt    The date and time to convert.
+     * \return date and time converted into current user's time zone.
+     */
     static QDateTime toUserTZ(Cutelyst::Context *c, const QDateTime &dt);
+
+    /*!
+     * \brief Returns a human readable formatted data size string.
+     *
+     * On Qt >= 5.10 and if the \a sizeInByte fits into qint64, this uses
+     * QLocale::formattedDataSize(), otherwise it uses a similar but Skaffari
+     * specific implementation.
+     *
+     * \param c             The current Context, used for localization.
+     * \param sizeInByte    The data size in bytes.
+     * \return human readable formatted data size string.
+     */
     static QString humanBinarySize(Cutelyst::Context *c, quota_size_t sizeInByte);
+
+    /*!
+     * \brief Returns the name of the current user.
+     * \param c The current Context.
+     * \return name of the current user.
+     */
     static QString getUserName(Cutelyst::Context *c);
 
     /*!
