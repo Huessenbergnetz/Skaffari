@@ -53,7 +53,7 @@
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="parent">{{ help.parent.title }}</label>
                 <select id="parent" name="parent" class="form-control{% if validationErrors.parent.count %} is-invalid{% endif %} select2" aria-describedby="parentDesc">
-                    <option value="0"{% if domain.parent.id == 0 %} selected{% endif %}>{{ _("none") }}</option>
+                    <option value="0"{% if domain.parent.id == 0 %} selected{% endif %}>{% i18nc "parent domain" "none" %}</option>
                     {% for dom in domains %}
                     <option value="{{ dom.id }}"{% if domain.parent.id == dom.id %} selected{% endif %}>{{ dom.name }}</option>
                     {% endfor %}

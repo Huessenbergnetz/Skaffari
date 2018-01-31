@@ -738,8 +738,8 @@ void DomainEditor::add_account(Context* c)
         }
 
         help.insert(QStringLiteral("localpart"), HelpEntry(c->translate("DomainEditor", "Email address"), c->translate("DomainEditor", "Enter the local part of the main email address for this account. You can add more alias addresses to this account later on.")));
-        help.insert(QStringLiteral("password"), HelpEntry(c->translate("DomainEditor", "Password"), c->translate("DomainEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
-        help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("DomainEditor", "Password confirmation"), c->translate("DomainEditor", "Confirm your entered password.")));
+        help.insert(QStringLiteral("password"), HelpEntry(c->translate("DomainEditor", "Password"), c->translate("DomainEditor", "Specify a password with a minimum length of %n character(s).", nullptr, SkaffariConfig::accPwMinlength())));
+        help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("DomainEditor", "Password confirmation"), c->translate("DomainEditor", "Confirm the password by entering it again.")));
         help.insert(QStringLiteral("validUntil"), HelpEntry(c->translate("DomainEditor", "Valid until"), c->translate("DomainEditor", "You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future.")));
         help.insert(QStringLiteral("passwordExpires"), HelpEntry(c->translate("DomainEditor", "Password expires"), c->translate("DomainEditor", "You can set a date and time until the password for this account is valid. To let the password never expire, simply set a date far in the future.")));
         help.insert(QStringLiteral("imap"), HelpEntry(c->translate("DomainEditor", "IMAP Access"), c->translate("DomainEditor", "If enabled, the user of this account can access the mailbox through the IMAP protocol.")));

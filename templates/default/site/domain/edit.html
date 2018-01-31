@@ -74,7 +74,7 @@
                 <label class="col-form-label" for="parent">{{ help.parent.title }}</label>
                 {% ifequal userType 0 %}
                 <select id="parent" name="parent" class="form-control{% if validationErrors.parent.count %} is-invalid{% endif %} select2" aria-describedby="parentDesc">
-                    <option value="0"{% if parent|default_if_none:domain.parent.id == 0 %} selected{% endif %}>{{ _("none") }}</option>
+                    <option value="0"{% if parent|default_if_none:domain.parent.id == 0 %} selected{% endif %}>{% i18nc "parent domain" "none" %}</option>
                     {% for dom in domains %}
                     {% if dom.id != domain.id %}
                     <option value="{{ dom.id }}"{% if parent|default_if_none:domain.parent.id == dom.id %} selected{% endif %}>{{ dom.name }}</option>
@@ -83,7 +83,7 @@
                 </select>
                 {% if validationErrors.parent.count %}<div class="invalid-feedback"><small>{{ validationErrors.parent.0 }}</small></div>{% endif %}
                 {% else %}
-                <input type="text" readonly class="form-control-plaintext" id="parent" value="{% if domain.parent %}{{ domain.parent.name }}{% else %}{{ _("none") }}{% endif %}" aria-describedby="parentDesc">
+                <input type="text" readonly class="form-control-plaintext" id="parent" value="{% if domain.parent %}{{ domain.parent.name }}{% else %}{% i18nc "parent domain" "none" %}{% endif %}" aria-describedby="parentDesc">
                 {% endifequal %}
                 <small id="parentDesc" class="form-text text-muted">{{ help.parent.text }}</small>
             </div>
