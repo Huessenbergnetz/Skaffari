@@ -220,7 +220,7 @@ void AdminEditor::remove(Context *c)
                 SkaffariError e(c);
                 if (AdminAccount::remove(c, &e, aac)) {
 
-                    const QString statusMsg = c->translate("AdminEditor", "Successfully removed admin %1.").arg(aac.getUsername());
+                    const QString statusMsg = c->translate("AdminEditor", "Successfully removed administrator %1.").arg(aac.getUsername());
 
                     if (isAjax) {
                         json.insert(QStringLiteral("status_msg"), statusMsg);
