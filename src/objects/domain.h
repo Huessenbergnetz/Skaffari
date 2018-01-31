@@ -105,12 +105,12 @@ public:
     /*!
      * \brief Constructs a copy of \a other.
      */
-	Domain(const Domain &other);
+    Domain(const Domain &other);
 
     /*!
      * \brief Assigns \a other to this domain and returns a reference to this domain.
      */
-	Domain& operator=(const Domain &other);
+    Domain& operator=(const Domain &other);
 
     /*!
      * Destroys the domain.
@@ -439,7 +439,7 @@ public:
      * \param u The user that wants to update the domain, used to decide which parameters could be updated.
      * \return  True on success.
      */
-    static bool update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *e, Domain *d, const Cutelyst::AuthenticationUser &u);
+    bool update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *e, const Cutelyst::AuthenticationUser &u);
 
     /*!
      * \brief Loads the domain identified by \a domainId into the stash of context \a c.

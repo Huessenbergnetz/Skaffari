@@ -126,7 +126,7 @@ void DomainEditor::edit(Context *c)
             if (vr) {
                 vr.addValue(QStringLiteral("folders"), req->bodyParam(QStringLiteral("folders")));
                 SkaffariError e(c);
-                if (Domain::update(c, vr.values(), &e, &dom, user)) {
+                if (dom.update(c, vr.values(), &e, user)) {
                     c->stash({
                                  {QStringLiteral("domain"), QVariant::fromValue<Domain>(dom)},
                                  {QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated domain %1.").arg(dom.name())}
