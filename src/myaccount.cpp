@@ -77,7 +77,7 @@ void MyAccount::index(Context *c)
         help.insert(QStringLiteral("updated"), HelpEntry(c->translate("MyAccount", "Updated"), c->translate("MyAccount", "Date and time your account was last updated.")));
         help.insert(QStringLiteral("password"), HelpEntry(c->translate("MyAccount", "New password"), c->translate("MyAccount", "Enter a new password with a minimum length of %n character(s) or leave the field blank to avoid changing the password.", "", SkaffariConfig::accPwMinlength())));
         help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("MyAccount", "Confirm new password"), c->translate("MyAccount", "Confirm your new password by entering it again.")));
-        help.insert(QStringLiteral("maxdisplay"), HelpEntry(c->translate("MyAccount", "Max display"), c->translate("MyAccount", "Set the number of results you want to load in paginated lists like the account list (minimum 15, maximum 255")));
+        help.insert(QStringLiteral("maxdisplay"), HelpEntry(c->translate("MyAccount", "Max display"), c->translate("MyAccount", "Set the number of results you want to load in paginated lists like the account list (minimum 15, maximum 255)")));
         help.insert(QStringLiteral("warnlevel"), HelpEntry(c->translate("MyAccount", "Warn level"), c->translate("MyAccount", "Set the percentage limit that will show warnings on number of accounts and quota usage.")));
         help.insert(QStringLiteral("lang"), HelpEntry(c->translate("MyAccount", "Language"), c->translate("MyAccount", "Select one of the supported languages.")));
         help.insert(QStringLiteral("tz"), HelpEntry(c->translate("MyAccount", "Time zone"), c->translate("MyAccount", "Select your time zone to enter and display date and time values appropriately.")));

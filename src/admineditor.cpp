@@ -124,13 +124,13 @@ void AdminEditor::create(Context *c)
         help.insert(QStringLiteral("username"), HelpEntry(c->translate("AdminEditor", "User name"), c->translate("AdminEditor", "The user name for the new administrator. Can only contain alpha-numeric characters as well as dashes and underscores.")));
         help.insert(QStringLiteral("password"), HelpEntry(c->translate("AdminEditor", "Password"), c->translate("AdminEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
         help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AdminEditor", "Password confirmation"), c->translate("AdminEditor", "Confirm the password by entering it again.")));
-        help.insert(QStringLiteral("type"), HelpEntry(c->translate("AdminEditor", "Type"), c->translate("AdminEditor", "An administrator user has access to the whole system, while a domain manager only has access to the associated domains.")));
+        help.insert(QStringLiteral("type"), HelpEntry(c->translate("AdminEditor", "Type"), c->translate("AdminEditor", "An administrator has access to the whole system, while a domain manager only has access to the associated domains.")));
         help.insert(QStringLiteral("assocdomains"), HelpEntry(c->translate("AdminEditor", "Domains"), c->translate("AdminEditor", "For domain managers, select the associated domains the user is responsible for.")));
 
         c->stash({
                      {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)},
                      {QStringLiteral("template"), QStringLiteral("admin/create.html")},
-                     {QStringLiteral("site_title"), c->translate("AdminUser", "Create admin")}
+                     {QStringLiteral("site_title"), c->translate("AdminUser", "Create administrator")}
                  });
 
     }
@@ -245,7 +245,7 @@ void AdminEditor::remove(Context *c)
             } else {
                 c->res()->setStatus(Response::BadRequest);
 
-                const QString errorMsg = c->translate("AdminEditor", "The entered user name does not match the user name of the administrato you want to delete.");
+                const QString errorMsg = c->translate("AdminEditor", "The entered user name does not match the user name of the administrator you want to delete.");
 
                 if (isAjax) {
                     json.insert(QStringLiteral("error_msg"), errorMsg);
