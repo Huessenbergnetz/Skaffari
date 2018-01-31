@@ -158,12 +158,7 @@ void AdminEditor::edit(Context *c)
                 auto aac = AdminAccount::fromStash(c);
 
                 SkaffariError e(c);
-                AdminAccount::update(c,
-                                     &e,
-                                     &aac,
-                                     req->parameters());
-
-                if (e.type() == SkaffariError::NoError) {
+                if (aac.update(c, &e, req->bodyParameters())) {
                     c->stash({
                                  {QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac)},
                                  {QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated administrator %1.").arg(aac.username())}

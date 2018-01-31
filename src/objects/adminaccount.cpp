@@ -30,6 +30,7 @@
 #include <Cutelyst/Response>
 #include <QStringList>
 #include <QLoggingCategory>
+#include <QTimeZone>
 
 Q_LOGGING_CATEGORY(SK_ADMIN, "skaffari.admin")
 
@@ -355,14 +356,12 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
     return acc;
 }
 
-bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, const Cutelyst::ParamsMultiMap &params)
+bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &params)
 {
     bool ret = false;
 
     Q_ASSERT_X(c, "update adminaccount", "invalid context object");
     Q_ASSERT_X(e, "update adminaccount", "invalid error object");
-    Q_ASSERT_X(a, "update adminaccount", "invalid account object");
-    Q_ASSERT_X(a->isValid(), "update adminaccount", "invalid account object");
     Q_ASSERT_X(!params.empty(), "update adminaccount", "empty parameters");
 
     const QString password = params.value(QStringLiteral("password"));
@@ -370,7 +369,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
 
     QSqlQuery q;
 
-    if (a->isSuperUser() && (type != 0)) {
+    if (isSuperUser() && (type != 0)) {
 
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT COUNT(id) FROM adminuser WHERE type = 0"));
 
@@ -417,24 +416,24 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
 
     q.bindValue(QStringLiteral(":type"), type);
     q.bindValue(QStringLiteral(":updated_at"), currentUtc);
-    q.bindValue(QStringLiteral(":id"), a->id());
+    q.bindValue(QStringLiteral(":id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update administrator account in database."));
-        qCCritical(SK_ADMIN, "Failed to update administrator account %s in database: %s", qUtf8Printable(a->username()), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_ADMIN, "Failed to update administrator account %s in database: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
-    a->setType(type);
-    a->setUpdated(currentUtc);
+    d->type = type;
+    d->updated = currentUtc;
 
     QStringList domains;
-    if (a->type() != AdminAccount::SuperUser) {
+    if (d->type != AdminAccount::SuperUser) {
         domains = params.values(QStringLiteral("assocdomains"));
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domainadmin WHERE admin_id = :id"));
-    q.bindValue(QStringLiteral(":id"), a->id());
+    q.bindValue(QStringLiteral(":id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update domain manager to domain connections in database."));
@@ -448,7 +447,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
             const dbid_t did = domains.at(i).toULong();
             q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domainadmin (domain_id, admin_id) VALUES (:domain_id, :admin_id)"));
             q.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue<dbid_t>(did));
-            q.bindValue(QStringLiteral(":admin_id"), a->id());
+            q.bindValue(QStringLiteral(":admin_id"), d->id);
             if (Q_UNLIKELY(!q.exec())) {
                 e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update domain manager to domain connections in database."));
                 qCCritical(SK_ADMIN, "Failed to update connections between domain manager %s and domains in database: %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(q.lastError().text()));
@@ -458,21 +457,21 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
         }
     }
 
-    a->setDomains(domIds);
+    d->domains = domIds;
 
     ret = true;
 
-    if (a->type() == 0) {
-        qCInfo(SK_ADMIN, "%s updated administrator user %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a->username()));
+    if (d->type == 0) {
+        qCInfo(SK_ADMIN, "%s updated administrator user %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->username));
     } else {
-        qCInfo(SK_ADMIN, "%s updated domain manager %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a->username()));
+        qCInfo(SK_ADMIN, "%s updated domain manager %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->username));
     }
 
 
     return ret;
 }
 
-bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p)
+bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p)
 {
     bool ret = false;
 
@@ -484,6 +483,14 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     const dbid_t id = u->id().toULong();
     const QString password = p.value(QStringLiteral("password"));
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
+    const QByteArray tz = p.value(QStringLiteral("tz"), u->value(QStringLiteral("tz")).toString()).toLatin1();
+
+    QTimeZone timeZone(tz);
+    if (!timeZone.isValid()) {
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(c->translate("AdminAccount", "%1 is not a valid IANA time zone ID.").arg(QString::fromLatin1(tz)));
+        return ret;
+    }
 
     QSqlQuery q;
 
@@ -512,14 +519,13 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update administrator in database."));
-        qCCritical(SK_ADMIN, "Failed to update administrator %s in database: %s", qUtf8Printable(a->username()), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_ADMIN, "Failed to update administrator %s in database: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
     const quint8 maxdisplay = p.value(QStringLiteral("maxdisplay"), u->value(QStringLiteral("maxdisplay")).toString()).toUShort();
     const quint8 warnlevel = p.value(QStringLiteral("warnlevel"), u->value(QStringLiteral("warnlevel")).toString()).toUShort();
     const QString lang = p.value(QStringLiteral("lang"), u->value(QStringLiteral("lang")).toString());
-    const QByteArray tz = p.value(QStringLiteral("tz"), u->value(QStringLiteral("tz")).toString()).toUtf8();
 
     q = CPreparedSqlQueryThread(QStringLiteral("UPDATE settings SET maxdisplay = :maxdisplay, warnlevel = :warnlevel, lang = :lang, tz = :tz WHERE admin_id = :admin_id"));
     q.bindValue(QStringLiteral(":maxdisplay"), maxdisplay);
@@ -530,7 +536,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update administrator settings in database."));
-        qCCritical(SK_ADMIN, "Failed to update settings for administrator %s in database: %s", qUtf8Printable(a->username()), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_ADMIN, "Failed to update settings for administrator %s in database: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -544,24 +550,25 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     Cutelyst::Session::setValue(c, QStringLiteral("lang"), lang);
     Cutelyst::Session::setValue(c, QStringLiteral("tz"), tz);
 
-    a->setMaxDisplay(maxdisplay);
-    a->setWarnLevel(warnlevel);
-    a->setLang(lang);
-    a->setTz(tz);
-    a->setUpdated(currentUtc);
+    d->maxDisplay = maxdisplay;
+    d->warnLevel = warnlevel;
+    d->lang = lang;
+    d->tz = tz;
+    d->updated = currentUtc;
 
     c->stash({
                  {QStringLiteral("userMaxDisplay"), maxdisplay},
                  {QStringLiteral("userWarnLevel"), warnlevel},
+                 {QStringLiteral("userTz"), tz},
                  {QStringLiteral("lang"), lang}
              });
 
     ret = true;
 
-    if (a->type() == 0) {
-        qCInfo(SK_ADMIN, "%s updated administrator user %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a->username()));
+    if (d->type == 0) {
+        qCInfo(SK_ADMIN, "%s updated administrator user %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->username));
     } else {
-        qCInfo(SK_ADMIN, "%s updated domain manager %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a->username()));
+        qCInfo(SK_ADMIN, "%s updated domain manager %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->username));
     }
 
     return ret;

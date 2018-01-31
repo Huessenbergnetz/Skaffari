@@ -285,7 +285,7 @@ public:
     static AdminAccount get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
 
     /*!
-     * \brief Updates the administrator account \a a with the new \a params and returns \c true on success.
+     * \brief Updates the administrator account with the new \a params and returns \c true on success.
      *
      * \par Keys for the params
      * Key          | Converted Type | Description
@@ -296,14 +296,13 @@ public:
      *
      * \param c         pointer to the current context, used for translating strings
      * \param e         pointer to an object taking error information
-     * \param a         pointer to the administrator account to update
      * \param params    parameters used to update the account
      * \return \c true on success
      */
-    static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, const Cutelyst::ParamsMultiMap &params);
+    bool update(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &params);
 
     /*!
-     * \brief Updates the administrator account \a a of the currently authenticated administrator \a u with the new parameters \a p and returns \c true on success.
+     * \brief Updates the account of the currently authenticated administrator \a u with the new parameters \a p and returns \c true on success.
      *
      * \par Keys for the params
      * Key          | Converted Type | Description
@@ -316,12 +315,11 @@ public:
      *
      * \param c pointer to the current context, used for translating strings
      * \param e pointer to an object taking error information
-     * \param a pointer to the administartor account to update
      * \param u pointer to the currently authenticated user account
      * \param p parameters used to update the account
      * \return \c true on success
      */
-    static bool update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *a, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p);
+    bool update(Cutelyst::Context *c, SkaffariError *e, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p);
 
     /*!
      * \brief Removes the administrator account \a a and returns \c true on success.
