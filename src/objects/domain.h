@@ -451,10 +451,10 @@ public:
     static QStringList trimStringList(const QStringList &list);
 
     /*!
-     * \brief Returns the user name of the account used to catch all emails without recipient.
+     * \brief Returns the user name of the account used to catch-all emails without recipient.
      * \param c The current context, used for translations.
      * \param e Pointer to an object taking error information.
-     * \return User name of the catch all account.
+     * \return User name of the catch-all account.
      */
     QString getCatchAllAccount(Cutelyst::Context *c, SkaffariError *e) const;
 
