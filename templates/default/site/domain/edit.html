@@ -32,7 +32,7 @@
                 {% ifequal userType 0 %}
                 <div class="input-group">
                     <div class="input-group-prepend"><span class="input-group-text">{{ domain.accounts }} /</span></div>
-                    <input type="number" id="maxAccounts" name="maxAccounts" class="form-control{% if validationErrors.maxAccounts.count %} is-invalid{% endif %}" value="{{ maxAccounts|default_if_none:domain.maxAccounts }}" min="0" aria-describedby="maxAccountsDesc">
+                    <input type="number" id="maxAccounts" name="maxAccounts" class="form-control{% if validationErrors.maxAccounts.count %} is-invalid{% endif %}" value="{{ maxAccounts|default_if_none:domain.maxAccounts }}" min="0" placeholder="{{ domain.maxAccounts }}" aria-describedby="maxAccountsDesc">
                 </div>
                 {% if validationErrors.maxAccounts.count %}<div class="invalid-feedback"><small>{{ validationErrors.maxAccounts.0 }}</small></div>{% endif %}
                 {% else %}
@@ -46,7 +46,7 @@
                 {% ifequal userType 0 %}
                 <div class="input-group">
                     <div class="input-group-prepend"><span class="input-group-text">{% sk_fsf domain.domainQuotaUsed 2 2 1024 %} /</span></div>
-                    <input type="text" id="domainQuota" name="domainQuota" class="form-control{% if validationErrors.domainQuota.count %} is-invalid{% endif %}" value="{% sk_fsf domainQuota|default_if_none:domain.domainQuota 2 2 1024 %}" placeholder="{{ _("e.g. 300MiB") }}" aria-describedby="domainQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+                    <input type="text" id="domainQuota" name="domainQuota" class="form-control{% if validationErrors.domainQuota.count %} is-invalid{% endif %}" value="{% sk_fsf domainQuota|default_if_none:domain.domainQuota 2 2 1024 %}" placeholder="{% sk_fsf domain.domainQuota 2 2 1024 %}" aria-describedby="domainQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
                 </div>
                 {% if validationErrors.domainQuota.count %}<div class="invalid-feedback"><small>{{ validationErrors.domainQuota.0 }}</small></div>{% endif %}
                 {% else %}
@@ -57,7 +57,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="quota" class="col-form-label">{{ help.quota.title }}</label>
-                <input type="text" id="quota" name="quota" class="form-control{% if validationErrors.quota.count %} is-invalid{% endif %}" value="{% sk_fsf quota|default_if_none:domain.quota 2 2 1024 %}" placeholder="{{ _("e.g. 300MiB") }}" aria-describedby="quotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+                <input type="text" id="quota" name="quota" class="form-control{% if validationErrors.quota.count %} is-invalid{% endif %}" value="{% sk_fsf quota|default_if_none:domain.quota 2 2 1024 %}" placeholder="{% sk_fsf domain.quota 2 2 1024 %}" aria-describedby="quotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
                 {% if validationErrors.quota.count %}<div class="invalid-feedback"><small>{{ validationErrors.quota.0 }}</small></div>{% endif %}
                 <small id="quotaDesc" class="form-text text-muted">{{ help.quota.text }}</small>
             </div>
