@@ -166,7 +166,7 @@ void AdminEditor::edit(Context *c)
                 if (e.type() == SkaffariError::NoError) {
                     c->stash({
                                  {QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac)},
-                                 {QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated administrator %1.").arg(aac.getUsername())}
+                                 {QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated administrator %1.").arg(aac.username())}
                              });
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -217,17 +217,17 @@ void AdminEditor::remove(Context *c)
 
             auto aac = AdminAccount::fromStash(c);
 
-            if (aac.getUsername() == req->param(QStringLiteral("adminName"))) {
+            if (aac.username() == req->param(QStringLiteral("adminName"))) {
 
                 SkaffariError e(c);
                 if (AdminAccount::remove(c, &e, aac)) {
 
-                    const QString statusMsg = c->translate("AdminEditor", "Successfully removed administrator %1.").arg(aac.getUsername());
+                    const QString statusMsg = c->translate("AdminEditor", "Successfully removed administrator %1.").arg(aac.username());
 
                     if (isAjax) {
                         json.insert(QStringLiteral("status_msg"), statusMsg);
-                        json.insert(QStringLiteral("admin_id"), static_cast<qint64>(aac.getId()));
-                        json.insert(QStringLiteral("admin_name"), aac.getUsername());
+                        json.insert(QStringLiteral("admin_id"), static_cast<qint64>(aac.id()));
+                        json.insert(QStringLiteral("admin_name"), aac.username());
                     } else {
                         c->res()->redirect(c->uriFor(QStringLiteral("/admin"), StatusMessage::statusQuery(c, statusMsg)));
                     }
