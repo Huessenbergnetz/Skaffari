@@ -18,14 +18,6 @@
         <translation>E-Mail-Adressen</translation>
     </message>
     <message>
-        <source>Add address</source>
-        <translation>Adresse hinzufügen</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete the email address “$1” from this account?</source>
-        <translation>Wollen Sie die E-Mail-Adresse „$1“ wirklich von diesem Konto entfernen?</translation>
-    </message>
-    <message>
         <source>Actions</source>
         <translation>Aktionen</translation>
     </message>
@@ -46,10 +38,6 @@
         <translation>Adresse löschen</translation>
     </message>
     <message>
-        <source>Add new email address</source>
-        <translation>Neue E-Mail-Adresse hinzufügen</translation>
-    </message>
-    <message>
         <source>Edit email address</source>
         <translation>E-Mail-Adresse bearbeiten</translation>
     </message>
@@ -59,7 +47,7 @@
     </message>
     <message>
         <source>Local part</source>
-        <translation>Lokaler Tei</translation>
+        <translation>Lokaler Teil</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -68,10 +56,6 @@
     <message>
         <source>Add</source>
         <translation>Hinzufügen</translation>
-    </message>
-    <message>
-        <source>Change</source>
-        <translation>Ändern</translation>
     </message>
     <message>
         <source>Check account</source>
@@ -98,10 +82,6 @@
         <translation>Konto bearbeiten</translation>
     </message>
     <message>
-        <source>YYYY-MM-DD hh:mm:ss</source>
-        <translation>YYYY-MM-DD hh:mm:ss</translation>
-    </message>
-    <message>
         <source>Password</source>
         <translation>Passwort</translation>
     </message>
@@ -114,10 +94,6 @@
         <translation>Kontingent</translation>
     </message>
     <message>
-        <source>1 Kibibyte (KiB) = 1024 byte</source>
-        <translation>1 Kibibyte (KiB) = 1024 Byte</translation>
-    </message>
-    <message>
         <source>Update</source>
         <translation>Aktualisieren</translation>
     </message>
@@ -126,28 +102,12 @@
         <translation>Weiterleitungen</translation>
     </message>
     <message>
-        <source>Keep a copy in the user&apos;s mailbox</source>
-        <translation>Eine Kopie im Posteingang behalten</translation>
-    </message>
-    <message>
-        <source>Add forward</source>
-        <translation>Weiterleitung hinzufügen</translation>
-    </message>
-    <message>
         <source>Help</source>
         <translation>Hilfe</translation>
     </message>
     <message>
         <source>Simply add new email addresses as forwarding destinations for this account&apos;s email addresses.</source>
         <translation>Fügen Sie einfach neue E-Mail-Adressen als Weiterleitungsziele für die Adressen dieses Kontos hinzu.</translation>
-    </message>
-    <message>
-        <source>Optionally all incoming emails can be kept additionally in the account&apos;s inbox.</source>
-        <translation>Optional können alle eingehenden Nachrichten als zusätzliche Kopie im Posteingang dieses Kontos gespeichert werden.</translation>
-    </message>
-    <message>
-        <source>New email address</source>
-        <translation>Neue E-Mail-Adresse</translation>
     </message>
     <message>
         <source>Create</source>
@@ -166,28 +126,8 @@
         <translation>Entfernen</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete this email address?</source>
-        <translation>Wollen Sie diese E-Mail-Adresse wirklich löschen?</translation>
-    </message>
-    <message>
-        <source>To proceed, please enter the email address you want to delete.</source>
-        <translation>Um fortzufahren, geben Sie bitte die E-Mail-Adresse ein, die Sie löschen möchten.</translation>
-    </message>
-    <message>
         <source>Create new admin user</source>
         <translation>Neuen Administrator erstellen</translation>
-    </message>
-    <message>
-        <source>User name</source>
-        <translation>Benutzername</translation>
-    </message>
-    <message>
-        <source>Domain master</source>
-        <translation>Domänenverwalter</translation>
-    </message>
-    <message>
-        <source>Super user</source>
-        <translation>Superbenutzer</translation>
     </message>
     <message>
         <source>Edit admin</source>
@@ -262,10 +202,6 @@
         <translation>Konto bearbeiten</translation>
     </message>
     <message>
-        <source>Catch all</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
         <source>Delete account</source>
         <translation>Konto löschen</translation>
     </message>
@@ -294,56 +230,20 @@
         <translation>Willkommen zu Skaffari</translation>
     </message>
     <message>
-        <source>The dashboard has not yet been implemented. Head over to the domains to start managing your email server.</source>
-        <translation>Die Übersicht wurde bisher noch nicht eingebaut. Gehen Sie weiter zu den Domänen, um Ihren E-Mail-Server zu verwalten.</translation>
-    </message>
-    <message>
         <source>Delete</source>
         <translation>Löschen</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation>Bearbeiten</translation>
     </message>
     <message>
         <source>Username</source>
         <translation>Benutzername</translation>
     </message>
     <message>
-        <source>Quota used</source>
-        <translation>Genutztes Kontingent</translation>
-    </message>
-    <message>
         <source>Services</source>
         <translation>Dienste</translation>
     </message>
     <message>
-        <source>User account actions</source>
-        <translation>Aktionen für Benutzerkonto</translation>
-    </message>
-    <message>
-        <source>Edit email addresses</source>
-        <translation>E-Mail-Adressen bearbeiten</translation>
-    </message>
-    <message>
-        <source>Forward</source>
-        <translation>Weiterleitung</translation>
-    </message>
-    <message>
-        <source>Set catch all</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>keep local copy</source>
-        <translation>lokale Kopie behalten</translation>
-    </message>
-    <message>
         <source>No accounts for %1</source>
         <translation>Keine Konten für %1</translation>
-    </message>
-    <message>
-        <source>There are no user accounts for this domain. Add new email accounts by hitting the button below.</source>
-        <translation>In dieser Domäne gibt es keine Benutzerkonten. Fügen Sie neue E-Mail-Konten hinzu, indem sie auf den folgenden Knopf drücken.</translation>
     </message>
     <message>
         <source>Add Account</source>
@@ -352,14 +252,6 @@
     <message>
         <source>Create new account</source>
         <translation>Neues Konto erstellen</translation>
-    </message>
-    <message>
-        <source>YYYY-MM-DD HH:mm:ss</source>
-        <translation>YYYY-MM-DD HH:mm:ss</translation>
-    </message>
-    <message>
-        <source>Nothing to do. Everything seems to be ok with this account.</source>
-        <translation>Nichts zu tun. Mit diesem Konto scheint alles in Ordnung zu sein</translation>
     </message>
     <message>
         <source>Start check</source>
@@ -386,24 +278,12 @@
         <translation>Domänenname</translation>
     </message>
     <message>
-        <source>Prefix</source>
-        <translation>Vorspann</translation>
-    </message>
-    <message>
         <source>Default quota</source>
         <translation>Standardkontingent</translation>
     </message>
     <message>
         <source>Domain quota</source>
         <translation>Domänenkontingent</translation>
-    </message>
-    <message>
-        <source>Manage alias addresses</source>
-        <translation>Aliasadressen verwalten</translation>
-    </message>
-    <message>
-        <source>Check domain and accounts</source>
-        <translation>Domäne und Konten prüfen</translation>
     </message>
     <message>
         <source>Manage accounts</source>
@@ -442,28 +322,322 @@
         <translation>Mein Admin-Konto</translation>
     </message>
     <message>
-        <source>Created</source>
-        <translation>Erstellt</translation>
+        <source>About Skaffari</source>
+        <translation>Über Skaffari</translation>
     </message>
     <message>
-        <source>Updated</source>
-        <translation>Aktualisiert</translation>
+        <source>Core components</source>
+        <translation>Kernkomponenten</translation>
     </message>
     <message>
-        <source>Max display</source>
-        <translation>Maximal anzeigen</translation>
+        <source>Version</source>
+        <translation>Version</translation>
     </message>
     <message>
-        <source>Warn level</source>
-        <translation>Warnlevel</translation>
+        <source>License</source>
+        <translation>Lizenz</translation>
     </message>
     <message>
-        <source>Language</source>
-        <translation>Sprache</translation>
+        <source>Author</source>
+        <translation>Autor</translation>
     </message>
     <message>
-        <source>Time zone</source>
-        <translation>Zeitzone</translation>
+        <source>Template</source>
+        <translation>Template</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation>Beschreibung</translation>
+    </message>
+    <message>
+        <source>Template components</source>
+        <translation>Template-Komponenten</translation>
+    </message>
+    <message>
+        <source>Add email address</source>
+        <translation>E-Mail-Adresse hinzufügen</translation>
+    </message>
+    <message>
+        <source>Add forward address</source>
+        <translation>Weiterleitungsadresse hinzufügen</translation>
+    </message>
+    <message>
+        <source>Remove address</source>
+        <translation>Adresse entfernen</translation>
+    </message>
+    <message>
+        <source>Simply add new email addresses to an existing account. A single account can have multiple email addresses for which it receives emails.</source>
+        <translation>Fügen Sie einfach neue E-Mail-Adressen zu einem bestehenden Konto hinzu. Ein einzelnes Konto kann für mehrere Adressen E-Mails empfangen.</translation>
+    </message>
+    <message>
+        <source>MMMM d, yyyy hh:mmap</source>
+        <comment>Datetime format string to display created and updated times on edit pages</comment>
+        <translation>d. MMMM yyyy hh:mm</translation>
+    </message>
+    <message>
+        <source>e.g. 300M</source>
+        <translation>bspw. 300M</translation>
+    </message>
+    <message>
+        <source>Service access</source>
+        <translation>Dienstezugriff</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Speichern</translation>
+    </message>
+    <message>
+        <source>Edit forward address</source>
+        <translation>Weiterleitungsadresse bearbeiten</translation>
+    </message>
+    <message>
+        <source>Forward address</source>
+        <translation>Weiterleitungsadressen</translation>
+    </message>
+    <message>
+        <source>Forward address actions</source>
+        <translation>Aktionen für Weiterleitungsadressen</translation>
+    </message>
+    <message>
+        <source>Edit forward</source>
+        <translation>Weiterleitung bearbeiten</translation>
+    </message>
+    <message>
+        <source>Delete forward</source>
+        <translation>Weiterleitung entfernen</translation>
+    </message>
+    <message>
+        <source>Remove forward</source>
+        <translation>Weiterleitung entfernen</translation>
+    </message>
+    <message>
+        <source>keep forwarded emails in the local mailbox</source>
+        <translation>weitergeleitete E-Mails im lokalen Postfach behalten</translation>
+    </message>
+    <message>
+        <source>do not keep forwarded emails in the local mailbox</source>
+        <translation>weitergeleitete E-Mails nicht im lokalen Postfach behalten</translation>
+    </message>
+    <message>
+        <source>Forward email address</source>
+        <translation>Weiterleitungsadresse</translation>
+    </message>
+    <message>
+        <source>Keep forwarded mails</source>
+        <translation>Weitergeleitete E-Mails behalten</translation>
+    </message>
+    <message>
+        <source>keep forwarded emails in the local mailbox of this account</source>
+        <translation>weitergeleitete E-Mails im lokalen Postfach dieses Kontos behalten</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete this email address from account %1?</source>
+        <translation>Wollen Sie diese E-Mail-Adresse wirklich vom Benutzerkonto %1 entfernen?</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove this forward email address from account %1?</source>
+        <translation>Wollen Sie diese Weiterleitungsadresse wirklich vom Benutzerkonto %1 entfernen?</translation>
+    </message>
+    <message>
+        <source>Delete administrator</source>
+        <translation>Administrator löschen</translation>
+    </message>
+    <message>
+        <source>CSRF protection check failed</source>
+        <translation>CSRF-Schutzprüfung fehlgeschlagen</translation>
+    </message>
+    <message>
+        <source>Domain quota assigned</source>
+        <translation>Zugewiesenes Domänenkontingent</translation>
+    </message>
+    <message>
+        <source>Account quota assigned</source>
+        <translation>Zugewiesenes Benutzerkontingent</translation>
+    </message>
+    <message>
+        <source>Last added domains</source>
+        <translation>Zuletzt hinzugefügte Domäne</translation>
+    </message>
+    <message>
+        <source>You have not added any domain yet.</source>
+        <translation>Sie haben bisher keine Domäne hinzugefügt</translation>
+    </message>
+    <message>
+        <source>No domains have been assigned to you so far.</source>
+        <translation>Ihnen wurden bisher keine Domänen zugewiesen.</translation>
+    </message>
+    <message>
+        <source>Last added accounts</source>
+        <translation>Zuletzt hinzugefügte Konten</translation>
+    </message>
+    <message>
+        <source>Filter accounts</source>
+        <translation>Konten filtern</translation>
+    </message>
+    <message>
+        <source>Apply filters</source>
+        <translation>Filter anwenden</translation>
+    </message>
+    <message>
+        <source>Reset filters</source>
+        <translation>Filter zurücksetzen</translation>
+    </message>
+    <message>
+        <source>Filter user name</source>
+        <translation>Benutzername filtern</translation>
+    </message>
+    <message>
+        <source>Filter email address</source>
+        <translation>E-Mail-Adresse filtern</translation>
+    </message>
+    <message>
+        <source>Filter forward</source>
+        <translation>Weiterleitung filtern</translation>
+    </message>
+    <message>
+        <source>Times</source>
+        <translation>Zeiten</translation>
+    </message>
+    <message>
+        <source>Toggle dropdown</source>
+        <translation>Aus- oder Einklappen</translation>
+    </message>
+    <message>
+        <source>ID:</source>
+        <translation>ID:</translation>
+    </message>
+    <message>
+        <source>There are no user accounts for this domain. Add new email accounts by hitting the button below or change your filter settings.</source>
+        <translation>In dieser Domäne existieren keine Benutzerkonten. Fügen Sie neue E-Mail-Konten durch einen Klick auf den Knopf unten hinzu oder ändern Sie Ihre Filtereinstellungen.</translation>
+    </message>
+    <message>
+        <source>Check for missing child domain addresses</source>
+        <translation>Auf fehlende Adressen für Kinddomänen prüfen.</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Prüfen</translation>
+    </message>
+    <message>
+        <source>Account name</source>
+        <translation>Kontoname</translation>
+    </message>
+    <message>
+        <source>none</source>
+        <translation>nichts</translation>
+    </message>
+    <message>
+        <source>User name and address constraints</source>
+        <translation>Einschränkungen für Benutzernamen und Adressen</translation>
+    </message>
+    <message>
+        <source>Role accounts</source>
+        <translation>Rollenkonten</translation>
+    </message>
+    <message>
+        <source>Select an account</source>
+        <translation>Wählen Sie ein Konto</translation>
+    </message>
+    <message>
+        <source>Filter domain names</source>
+        <translation>Domänenname filtern</translation>
+    </message>
+    <message>
+        <source>Max. Accounts</source>
+        <translation>Max. Konten</translation>
+    </message>
+    <message>
+        <source>Quota usage</source>
+        <translation>Kontingentnutzung</translation>
+    </message>
+    <message>
+        <source>Edit domain</source>
+        <comment>Button text on the domain list page</comment>
+        <translation>Domäne bearbeiten</translation>
+    </message>
+    <message>
+        <source>Toggle dropdown</source>
+        <comment>Text for screen readers on dropdown menu</comment>
+        <translation>Ein- oder Ausklappen</translation>
+    </message>
+    <message>
+        <source>Add account</source>
+        <comment>Button text on the domain list page</comment>
+        <translation>Konto hinzufügen</translation>
+    </message>
+    <message>
+        <source>Manage accounts</source>
+        <comment>Button text on the domain list page</comment>
+        <translation>Konten verwalten</translation>
+    </message>
+    <message>
+        <source>Alias addresses</source>
+        <comment>Button text on the domain list page</comment>
+        <translation>Aliasadressen</translation>
+    </message>
+    <message>
+        <source>Check domain</source>
+        <comment>Button text on the domain list page</comment>
+        <translation>Domäne prüfen</translation>
+    </message>
+    <message>
+        <source>Delete domain</source>
+        <comment>Button text on the domain list page</comment>
+        <translation>Domäne löschen</translation>
+    </message>
+    <message>
+        <source>unlimited</source>
+        <comment>Used for unlimited accounts and domain quota on domain list page</comment>
+        <translation>unbegrenzt</translation>
+    </message>
+    <message>
+        <source>ID: %1, Prefix: %2</source>
+        <translation>ID: %1, Präfix: %2</translation>
+    </message>
+    <message>
+        <source>Parent:</source>
+        <translation>Elternteil:</translation>
+    </message>
+    <message>
+        <source>If you proceed you will delete the following number of user accounts:</source>
+        <translation>Falls Sie fortfahren, werden Sie die folgende Anzahl an Benutzerkonten löschen:</translation>
+    </message>
+    <message>
+        <source>Default values</source>
+        <translation>Standardwerte</translation>
+    </message>
+    <message>
+        <source>When deleting email addresses from an account, keep in mind that there has to be still one email address for the domain the account is assigned to.</source>
+        <translation>Wenn Sie E-Mail-Adressen von Benutzerkonten löschen, denken Sie daran, dass mindestens eine Adresse übrig bleiben muss, die zur gleichen Domäne gehört wie das Benutzerkonto.</translation>
+    </message>
+    <message>
+        <source>YYYY-MM-DDTHH:mm</source>
+        <comment>Placeholder for datetime inputs, shown to the user as a hint how to input datetimes</comment>
+        <translation>jjjj-mm-ttThh:mm</translation>
+    </message>
+    <message>
+        <source>Optionally all incoming emails can be kept additionally in the account&apos;s mailbox.</source>
+        <translation>Optional können alle eingehenden E-Mails im Postfach des Benutzers verbleiben.</translation>
+    </message>
+    <message>
+        <source>You can additionally store incoming emails that are to be forwarded to other addresses in the local mailbox of the account.</source>
+        <translation>Eingehende E-Mails, die an andere Adressen weitergeleitet werden, können zusätzlich auch im lokalen Postfach des Benutzerkontos verbleiben.</translation>
+    </message>
+    <message>
+        <source>CSRF protection check failed. Please check your cookie settings.</source>
+        <translation>CSRF-Schutzprüfung fehlgeschlagen. Bitte prüfen Sie Ihre Cookie-Einstellungen.</translation>
+    </message>
+    <message>
+        <source>Domain manager</source>
+        <translation>Domänenverwalter</translation>
+    </message>
+    <message>
+        <source>Administrator</source>
+        <translation>Administrator</translation>
+    </message>
+    <message>
+        <source>User name</source>
+        <translation>Benutzername</translation>
     </message>
 </context>
 </TS>

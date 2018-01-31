@@ -2,17 +2,91 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en" sourcelanguage="en">
 <context>
+    <name>AccountStatusUpdater</name>
+    <message>
+        <source>Start status check for all user accounts.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Establishing database connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fetching accounts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Found %1</source>
+        <extracomment>%1 will be the number of found accounts</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Checking account ID %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Account ID %1 has been expired at %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password for account ID %1 has been expired at %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>Finished updating status for %n account(s).</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>ConfigFile</name>
+    <message>
+        <source>Checking configuration file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Configuration file exists at %1 but is not readable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Configuration file exists at %1 but is not writable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Using existing configuration file at %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to create configuation directory at %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not write to configuration directory at %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Created</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Creating configuration file at %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not find configuration file at %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ConfigInput</name>
     <message>
         <source>DB Type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The type of database you are using, identified by the Qt driver name.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>See %1 for a list of drivers supported by Qt.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -21,14 +95,6 @@
     </message>
     <message>
         <source>DB Host</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The host your database server is running on. By default this is the local host.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You can use localhost, a remote host identified by hostname or IP address or an absolute path to a local socket file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -68,10 +134,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The host the IMAP server is running on.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>IMAP Port</source>
         <translation type="unfinished"></translation>
     </message>
@@ -84,15 +146,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The user name of the IMAP admin user.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>IMAP Password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Password for the IMAP admin user.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -116,10 +170,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The method to encrypt the connection to the IMAP server.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Available methods:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -132,16 +182,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>If you use a different host name to connect to your IMAP server than the one used in the certificate of the IMAP server, you can define this different peer name here. This can for example be used to establish an encrypted connection to an IMAP server running on your local host.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Enter the keyword &quot;none&quot; to disable the peer name.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Skaffari uses PBKDF2 to secure the administrator passwords. PBKDF2 can use different hashing algorithms and iteration counts to produce a derived key and to increase the cost for the derivation. To better secure your administartor passwords you should use values that lead to a time consumption of around 0.5s on your system for creating the derived key. This might be a good compromise between security and user experience. To test different settings with the PBKDF2 implementation of Cutelyst/Skaffari you can use %1. See %2 to learn more about PBKDF2.</source>
-        <extracomment>%1 will be substituted by a link to pbkdf2test GitHub repo, %2 will be substituded by an URL to a Wikipedia page about PBKDF2</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -157,10 +198,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>PBKDF2 iterations</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The iteration count is used to increase the cost for deriving the key from the password.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -170,6 +207,52 @@
     </message>
     <message>
         <source>Required minimum length for administrator passwords.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The database type you use, identified by the Qt driver name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>At %1 you will find a list of the database drivers supported by Qt.</source>
+        <extracomment>%1 will be substituded by a link to the Qt documentation</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The Host that runs your database server. By default, this is the local host.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can use localhost, a remote host identified by hostname or IP address, or an absolute path to a local socket file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The Host that runs your IMAP server.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The method for encryption of the connection to the IMAP server.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Skaffari uses PBKDF2 to secure administrator passwords. PBKDF2 can use different hash functions and multiple rounds to generate a derived key and increase the cost of derivation. To better protect your passwords, you should choose settings that cause your system to encrypt a password for about half a second. This should be a good compromise between security and user experience. You can use %1 to test different settings with the PBKDF2 implementation of Cutelyst/Skaffari. Learn more about PBKDF2 here %2.</source>
+        <extracomment>%1 will be substituted by a link to pbkdf2test GitHub repo, %2 will be substituded by an URL to a Wikipedia page about PBKDF2</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PBKDF2 rounds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The user name of the IMAP administrator user.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password for the IMAP administrator user.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>If you use a different host name to connect to your IMAP server than the one used in the certificate of the IMAP server, you can define this different name used in the certificate here. This can for example be used to establish an encrypted connection to an IMAP server running on your local host.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -224,35 +307,7 @@
 <context>
     <name>Imap</name>
     <message>
-        <source>Connection to IMAP server timed out while waiting for connection.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to established encrypted connection to the IMAP server: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connection to IMAP server timed out while waiting for SSL handshake to complete.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connection to IMAP server timed out while waiting for first response on login.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connection to IMAP server timed out while wating for response to STARTTLS.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>STARTTLS is not supported. Aborting.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to send command to IMAP server: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connection to IMAP server timed out while waiting for response to login data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -261,14 +316,6 @@
     </message>
     <message>
         <source>Failed to successfully log out from IMAP server.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connection to IMAP server timed out while waiting for disconnection.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connection to IMAP server timed out.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -304,14 +351,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>StartTLS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>IMAPS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Either IPv4 or IPv6</source>
         <translation type="unfinished"></translation>
     </message>
@@ -319,47 +358,47 @@
         <source>Other</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Connection to the IMAP server timed out while waiting for connection.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to establish encrypted connection to the IMAP server: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to the IMAP server timed out while waiting for SSL handshake to complete.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to the IMAP server timed out while waiting for first response on login.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to the IMAP server timed out while wating for response to STARTTLS.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to send login command to the IMAP server: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to the IMAP server timed out while waiting for a response to the login command.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to the IMAP server timed out while waiting for disconnection.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to the IMAP server timed out.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Setup</name>
     <message>
         <source>Start to configure Skaffari.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Checking configuration file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Configuration file exists at %1 but is not readable.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Configuration file exists at %1 but is not writable.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Found</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Using existing configuration file at %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to create configuation directory at %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Can not write to configuration directory at %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Created</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Creating configuration file at %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -399,66 +438,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>DB Type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The type of database you are using, identified by the Qt driver name.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>See %1 for a list of drivers supported by Qt.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Currently supported by Skaffari: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DB Host</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The host your database server is running on. By default this is the local host.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You can use localhost, a remote host identified by hostname or IP address or an absolute path to a local socket file.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DB Port</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The port your database server is listening on.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DB Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The name of the database used for Skaffari and the SMTP and POP/IMAP servers.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DB User</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The name of the database user that has read and write access to the database defined in the previous step.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DB Password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The password of the database user defined in the previous step.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Checking database layout</source>
         <translation type="unfinished"></translation>
     </message>
@@ -467,49 +446,15 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Searching for available admin accounts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Found %1</source>
+        <extracomment>%1 will be the number of found administartors</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>None</source>
-        <extracomment>status for not finding any IMAP admin users</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Skaffari uses PBKDF2 to secure the administrator passwords. PBKDF2 can use different hashing algorithms and iteration counts to produce a derived key and to increase the cost for the derivation. To better secure your administartor passwords you should use values that lead to a time consumption of around 0.5s on your system for creating the derived key. This might be a good compromise between security and user experience. To test different settings with the PBKDF2 implementation of Cutelyst/Skaffari you can use %1. See %2 to learn more about PBKDF2.</source>
-        <extracomment>%1 will be substituted by a link to pbkdf2test GitHub repo, %2 will be substituded by an URL to a Wikipedia page about PBKDF2</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>https://en.wikipedia.org/wiki/PBKDF2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The PBKDF2 implementation of Cutelyst/Skaffari supports the following hashing algorithms:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The iteration count is used to increase the cost for deriving the key from the password.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Required minimum length for administrator passwords.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Please configure your admin password settings and create a new admin user.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PBKDF2 algorithm</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PBKDF2 iterations</source>
+        <extracomment>no administrators have been found
+----------
+status for not finding any IMAP admin users</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -517,35 +462,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Create a super user administrator account to login into your Skaffari installation. This account can create further super user accounts and domain administrators.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>User name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Creating new admin account in database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Do you want to set the admin password settings?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Do you want to set the user password settings?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Skaffari is designed to work together with pam_mysql. Because of that, user account passwords are stored in a different format than the admin accounts. The format of the user account passwords has to be compatible to the password hashing methods supported by pam_mysql. See the README of your pam_mysql installation for the supported encryption methods.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Encryption type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The basic method to encrypt the user&apos;s password. Some methods support further settings that will be defined in the next steps. If it is possible to use for you, the recommended type is to use the crypt(3) function, because it supports modern hashing algorithms together with salts and an extensible storage format. The other encryption methods are there for backwards compatibility.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -577,10 +498,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The crypt(3) method supports different algorithms to derive a key from a password. To see which algorithms are supported on your system, use man crypt. Especially the bcrypt algorithm that uses Blowfish is not available on every system because it is not part of the default crypt(3) distribution. The not recommended hashing methods are provided for backwards compatibility and if you have to store passwords for use across different operating systems.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Supported algorithms:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -609,10 +526,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>MySQL supports two different password hashing methods, a new one and an old one. If possible, you should use the new method. The old method is provided for backwards compatibility.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>0: default - points to MySQL new</source>
         <translation type="unfinished"></translation>
     </message>
@@ -638,30 +551,6 @@
     </message>
     <message>
         <source>The required minimum length for user account passwords created or changed via Skaffari.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Checking for IMAP admin account</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The IMAP admin user is defined in the imapd.conf with the admins: key. The admin user name you enter here has also to be defined in the imapd.conf. It is used to perform administrative tasks on the IMAP server, like setting quotas and creating/deleting mailboxes and mailbox folders. The user will be created in the database defined for Skafarri.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>IMAP admin user</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>IMAP admin password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Creating Cyrus admin user in database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to encrypt Cyrus admin password.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -697,10 +586,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Connection to your IMAP server as admin is used to perform tasks like setting quotas and creating/deleting mailboxes and folders. The user account has to be defined as admin in the imapd.conf file in the admins: key.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Do you want to set the IMAP behavior settings?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -713,19 +598,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>If you want to use email addresses with dots in them such as john.doe@example.com you can activate this option.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>NOTE: you have to set the following line in your imapd.conf file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Fully qualified user name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>If you wish to use user names like email addresses you can activate this option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -761,55 +638,95 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Do you want to set the default values?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Default language</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The default language will be used as fallback language if the user&apos;s language is not set or can not be determined.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Currently supported languages: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Default timezone</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Default timezone for newly created administrators and as fallback option. The timezone will be used to show localized date and time values. Please enter a valid IANA timezone ID.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Default quota</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The default quota in KiB for new accounts when creating a new domain. This can be changed when creating a new domain or editing an exisiting one.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Default domain quota</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The default domain quota in KiB when creating new domains. This can be changed when creating a new domain or editing an exisiting one.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Default max accounts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The default number of maximum accounts for creating new domains. This can be changed when creating a new domain or editing an exisiting one.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Skaffari setup was successful.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Skaffari is designed to work together with pam_mysql. For this reason, passwords for user accounts are stored in a different format than those for administrator accounts. The format of the user passwords must be compatible with the methods supported by pam_mysql. You can find out more about the supported methods in the README of your pam_mysql installation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The basic method for encryption of user passwords. Some methods support additional settings and different algorithms which can be set in the next step. If possible, you should use crypt(3) because this method supports modern hash functions together with salts and an extensible storage format. The other methods are available for compatibility reasons.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Encryption algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The method crypt(3) supports different algorithms to derive a key from a password. To find out which algorithms are supported on your system, use man crypt. Especially bcrypt, which uses Blowfish, is not available on all systems because it is not part of the standard distribution of crypt(3). The non-recommended algorithms are available for compatibility reasons and to store passwords across operating system boundaries.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MySQL supports two different hash functions, a new and an old one. If possible, you should use the new function. The old function is provided for compatibility reasons.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The administrator user for the IMAP server is defined in the imapd.conf in the admins: key. The user name that you enter here must also be specified in the imapd.conf. The administrator is used to perform various tasks on the IMAP server, such as setting storage quotas and creating/deleting mailboxes and folders. The user is created in the database used for Skaffari.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>UNIX hierarchy separator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This setting should correspond to the value of the same setting in your imapd.conf(5) file and indicates that your imap server uses the UNIX separator character &apos;/&apos; for delimiting levels of mailbox hierarchy instead of the netnews separator character &apos;.&apos;. Up to Cyrus-IMAP 2.5.x the default value for this value in the IMAP server configuration is off, beginning with version 3.0.0 of Cyrus-IMAP the default has changed to on.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>If enabled, usernames will be composed from the email local part and the domain name, separated by a dot instead of an @ sign. Like user.example.com. If you want to use real email addresses (fully qualified user names aka. fqun) like user@example.com as user names, you also have to set fqun to true in the next step.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>For domains, the prefix will automatically be the same as the domain name when enabling this option.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>If you wish to use user names like email addresses (aka. fully qualified user name) you can activate this option.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create an administrator account to login into your Skaffari installation. This account can create further administrators and domain managers.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Searching for available administrator accounts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please configure your administrator password settings and create a new administrator user.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Creating new administrator account in database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you want to set the administrator password settings?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Checking for IMAP administrator account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IMAP administrator user</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IMAP administrator password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Creating IMAP administrator in database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to encrypt Cyrus administrator password.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to your IMAP server as administrator is used to perform tasks like setting quotas and creating/deleting mailboxes and folders. The user account has to be defined as administrator in the imapd.conf file in the admins: key.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -830,7 +747,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>No admin account available.</source>
+        <source>No administrator account available.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1199,31 +1116,12 @@
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Importing admin accounts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message numerus="yes">
-        <source>%n admin(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Importing admin to domain connections</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message numerus="yes">
         <source>%n connection(s)</source>
         <translation type="unfinished">
             <numerusform></numerusform>
             <numerusform></numerusform>
         </translation>
-    </message>
-    <message>
-        <source>Importing admin settings</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Importing user accounts and quota</source>
@@ -1287,11 +1185,30 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Unknown error occured while writing configuration to file.</source>
+        <source>Successfully configured Skaffari and imported web-cyradm data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Successfully configured Skaffari and imported web-cyradm data.</source>
+        <source>Unknown error occurred while writing configuration to file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Importing administrator accounts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n administrator(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Importing administrator to domain connections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Importing administrator settings</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1311,6 +1228,14 @@
     </message>
     <message>
         <source>Path to the configuration file. Default: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do not print any output.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Checks and updates the status column of every account.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

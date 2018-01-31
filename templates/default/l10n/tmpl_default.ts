@@ -20,14 +20,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete the email address “$1” from this account?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Actions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -48,10 +40,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add new email address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Edit email address</source>
         <translation type="unfinished"></translation>
     </message>
@@ -69,10 +57,6 @@
     </message>
     <message>
         <source>Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -100,10 +84,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>YYYY-MM-DD hh:mm:ss</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Password</source>
         <translation type="unfinished"></translation>
     </message>
@@ -116,10 +96,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>1 Kibibyte (KiB) = 1024 byte</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
@@ -128,27 +104,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Keep a copy in the user&apos;s mailbox</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add forward</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Simply add new email addresses as forwarding destinations for this account&apos;s email addresses.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Optionally all incoming emails can be kept additionally in the account&apos;s inbox.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>New email address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -168,27 +128,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Are you sure you want to delete this email address?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>To proceed, please enter the email address you want to delete.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Create new admin user</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>User name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Domain master</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Super user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -264,10 +204,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Catch all</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Delete account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -296,15 +232,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The dashboard has not yet been implemented. Head over to the domains to start managing your email server.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -312,39 +240,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Quota used</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Services</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>User account actions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit email addresses</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Forward</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Set catch all</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>keep local copy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>No accounts for %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There are no user accounts for this domain. Add new email accounts by hitting the button below.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -353,14 +253,6 @@
     </message>
     <message>
         <source>Create new account</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>YYYY-MM-DD HH:mm:ss</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Nothing to do. Everything seems to be ok with this account.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -388,23 +280,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Prefix</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Default quota</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Domain quota</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Manage alias addresses</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Check domain and accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -447,27 +327,321 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Created</source>
+        <source>About Skaffari</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Updated</source>
+        <source>Core components</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Max display</source>
+        <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Warn level</source>
+        <source>License</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Language</source>
+        <source>Author</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Time zone</source>
+        <source>Template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Template components</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add email address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add forward address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simply add new email addresses to an existing account. A single account can have multiple email addresses for which it receives emails.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MMMM d, yyyy hh:mmap</source>
+        <comment>Datetime format string to display created and updated times on edit pages</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>e.g. 300M</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Service access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit forward address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward address actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>keep forwarded emails in the local mailbox</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>do not keep forwarded emails in the local mailbox</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward email address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keep forwarded mails</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>keep forwarded emails in the local mailbox of this account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete this email address from account %1?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove this forward email address from account %1?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete administrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CSRF protection check failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain quota assigned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Account quota assigned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Last added domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You have not added any domain yet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No domains have been assigned to you so far.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Last added accounts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Filter accounts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Apply filters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset filters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Filter user name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Filter email address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Filter forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggle dropdown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are no user accounts for this domain. Add new email accounts by hitting the button below or change your filter settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check for missing child domain addresses</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Account name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>none</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User name and address constraints</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Role accounts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select an account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Filter domain names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Max. Accounts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quota usage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit domain</source>
+        <comment>Button text on the domain list page</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggle dropdown</source>
+        <comment>Text for screen readers on dropdown menu</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add account</source>
+        <comment>Button text on the domain list page</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manage accounts</source>
+        <comment>Button text on the domain list page</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alias addresses</source>
+        <comment>Button text on the domain list page</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check domain</source>
+        <comment>Button text on the domain list page</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete domain</source>
+        <comment>Button text on the domain list page</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>unlimited</source>
+        <comment>Used for unlimited accounts and domain quota on domain list page</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID: %1, Prefix: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parent:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>If you proceed you will delete the following number of user accounts:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>When deleting email addresses from an account, keep in mind that there has to be still one email address for the domain the account is assigned to.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>YYYY-MM-DDTHH:mm</source>
+        <comment>Placeholder for datetime inputs, shown to the user as a hint how to input datetimes</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Optionally all incoming emails can be kept additionally in the account&apos;s mailbox.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can additionally store incoming emails that are to be forwarded to other addresses in the local mailbox of the account.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CSRF protection check failed. Please check your cookie settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain manager</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Administrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User name</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
