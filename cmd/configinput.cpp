@@ -113,7 +113,7 @@ QVariantHash ConfigInput::askImapConfig(const QVariantHash &defaults) const
         const QString peerName = readString(tr("Peer name"),
                                             defaults.value(QStringLiteral("peername"), QStringLiteral("none")).toString(),
                                             QStringList({
-                                                            tr("If you use a different host name to connect to your IMAP server than the one used in the certificate of the IMAP server, you can define this different peer name here. This can for example be used to establish an encrypted connection to an IMAP server running on your local host."),
+                                                            tr("If you use a different host name to connect to your IMAP server than the one used in the certificate of the IMAP server, you can define this different name used in the certificate here. This can for example be used to establish an encrypted connection to an IMAP server running on your local host."),
                                                             QString(),
                                                             tr("Enter the keyword \"none\" to disable the peer name.")
                                                         })

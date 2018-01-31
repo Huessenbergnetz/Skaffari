@@ -126,8 +126,10 @@ int Setup::exec() const
     printStatus(tr("Searching for available administrator accounts"));
     const uint adminCount = db.checkAdmin();
     if (adminCount > 0) {
+        //: %1 will be the number of found administartors
         printDone(tr("Found %1").arg(adminCount));
     } else {
+        //: no administrators have been found
         printFailed(tr("None"));
     }
 

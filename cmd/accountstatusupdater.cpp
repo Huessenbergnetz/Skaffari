@@ -69,6 +69,7 @@ int AccountStatusUpdater::exec() const
         printFailed();
         return dbError(q.lastError());
     } else {
+        //: %1 will be the number of found accounts
         printDone(tr("Found %1").arg(q.size()));
     }
 
