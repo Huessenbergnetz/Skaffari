@@ -28,40 +28,40 @@ public:
     AdminAccountData() {}
 
     AdminAccountData(dbid_t _id, const QString &_username, qint16 _type, const QList<dbid_t> &_domains) :
-        id(_id),
+        domains(_domains),
         username(_username),
-        type(_type),
-        domains(_domains)
+        id(_id),
+        type(_type)
     {}
 
     AdminAccountData(const AdminAccountData &other) :
         QSharedData(other),
-        id(other.id),
-        username(other.username),
-        type(other.type),
         domains(other.domains),
+        username(other.username),
         lang(other.lang),
-        tz(other.tz),
-        maxDisplay(other.maxDisplay),
-        warnLevel(other.warnLevel),
         tmpl(other.tmpl),
+        tz(other.tz),
         created(other.created),
-        updated(other.updated)
+        updated(other.updated),
+        id(other.id),        
+        type(other.type),
+        maxDisplay(other.maxDisplay),
+        warnLevel(other.warnLevel)
     {}
 
     ~AdminAccountData() {}
 
-    dbid_t id;
-	QString username;
-    qint16 type;
     QList<dbid_t> domains;
+    QString username;
     QString lang;
-    QByteArray tz;
-    quint8 maxDisplay;
-    quint8 warnLevel;
     QString tmpl;
+    QByteArray tz;
     QDateTime created;
     QDateTime updated;
+    dbid_t id;
+    qint16 type;
+    quint8 maxDisplay;
+    quint8 warnLevel;
 };
 
 #endif // SKAFFAIR_ADMINACCOUNT_P_H

@@ -27,25 +27,25 @@ class SkaffariIMAPErrorData : public QSharedData
 {
 public:
     SkaffariIMAPErrorData(SkaffariIMAPError::ErrorType _errorType, const QString &_errorText) :
-        errorType(_errorType),
-        errorText(_errorText)
+        errorText(_errorText),
+        errorType(_errorType)
     {}
 
     explicit SkaffariIMAPErrorData(const QSslError &sslError) :
-        errorType(SkaffariIMAPError::EncryptionError),
-        errorText(sslError.errorString())
+        errorText(sslError.errorString()),
+        errorType(SkaffariIMAPError::EncryptionError)
     {}
 
     SkaffariIMAPErrorData(const SkaffariIMAPErrorData &other) :
         QSharedData(other),
-        errorType(other.errorType),
-        errorText(other.errorText)
+        errorText(other.errorText),
+        errorType(other.errorType)
     {}
 
     ~SkaffariIMAPErrorData() {}
 
+    QString errorText;
     SkaffariIMAPError::ErrorType errorType = SkaffariIMAPError::NoError;
-	QString errorText;
 };
 
 #endif // SKAFFARIIMAPERROR_P_H

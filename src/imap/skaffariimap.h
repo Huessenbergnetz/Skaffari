@@ -50,18 +50,18 @@ class Context;
  */
 class SkaffariIMAP : public QSslSocket
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	/*!
-	 * \brief Availbale methods of connection encryptions.
-	 */
+    /*!
+     * \brief Availbale methods of connection encryptions.
+     */
     enum EncryptionType : quint8 {
         Unsecured	= 0,	/**< no encryption, mostly on port 143 */
         StartTLS	= 1,	/**< use <A HREF="https://en.wikipedia.org/wiki/STARTTLS">StartTLS</A>, mostly on port 143 */
         IMAPS		= 2, 	/**< use <A HREF="https://en.wikipedia.org/wiki/IMAPS">IMAPS</A>, mostly on port 993 */
-	};
+    };
     Q_ENUM(EncryptionType)
-	
+
     /*!
      * \brief Types of IMAP4rev1 responses.
      */
@@ -70,7 +70,7 @@ public:
         NO			= 1,    /**< the request failed */
         BAD			= 2,    /**< indicates a protocol error such as unrecognized command or command syntax error */
         Undefined	= 3     /**< the response can not be parsed */
-	};
+    };
 
     /*!
      * \brief Constructs a new SkaffariIMAP object.
@@ -97,7 +97,7 @@ public:
      * \sa logout(), isLoggedIn()
      * \return True on success.
      */
-	bool login();
+    bool login();
 
     /*!
      * \brief Performs logout operation for the current user.
@@ -107,7 +107,7 @@ public:
      * \sa login(), isLoggedIn()
      * \return True on success.
      */
-	bool logout();
+    bool logout();
 
     /*!
      * \brief Returns true if the current user is logged in.
@@ -215,7 +215,7 @@ public:
      * \brief Returns the last occurred error.
      * \return Last error object.
      */
-	SkaffariIMAPError lastError() const;
+    SkaffariIMAPError lastError() const;
 
     /*!
      * \brief Sets the \a user to connect to the server.
@@ -224,7 +224,7 @@ public:
      *
      * \param user User name.
      */
-	void setUser(const QString &user);
+    void setUser(const QString &user);
     /*!
      * \brief Sets the user's \a password to connect to the server.
      *
@@ -232,7 +232,7 @@ public:
      *
      * \param password User's password.
      */
-	void setPassword(const QString &password);
+    void setPassword(const QString &password);
     /*!
      * \brief Sets the IMAP server \a host address.
      *
@@ -240,7 +240,7 @@ public:
      *
      * \param host IMAP server host address.
      */
-	void setHost(const QString &host);
+    void setHost(const QString &host);
     /*!
      * \brief Sets the IMAP server \a port.
      *
@@ -248,7 +248,7 @@ public:
      *
      * \param port IMAP server port.
      */
-	void setPort(const quint16 &port);
+    void setPort(const quint16 &port);
     /*!
      * \brief Sets the \a protocol to be used.
      *
@@ -256,7 +256,7 @@ public:
      *
      * \param protocol The protocol to use (IPv4 or IPv6 or any).
      */
-	void setProtocol(NetworkLayerProtocol protocol);
+    void setProtocol(NetworkLayerProtocol protocol);
     /*!
      * \brief Sets the encryption type.
      *
@@ -264,7 +264,7 @@ public:
      *
      * \param encType Encryption mechanism to use.
      */
-	void setEncryptionType(EncryptionType encType);
+    void setEncryptionType(EncryptionType encType);
 
     /*!
      * \brief Converts an UTF-8 string into UTF-7-IMAP
@@ -285,7 +285,7 @@ private:
      * \brief Sets the last error object to a timeout error and aborts the operation.
      * \return Always false.
      */
-	bool connectionTimeOut();
+    bool connectionTimeOut();
 
     /*!
      * \brief Checks the response of the IMAP server.
@@ -317,19 +317,20 @@ private:
      */
     bool sendCommand(const QString &command);
 
-	QString m_user;
-	QString m_password;
-	QString m_host;
+    static QStringList m_capabilities;
+    static const QString m_allAcl;
+
+    QString m_user;
+    QString m_password;
+    QString m_host;
+    SkaffariIMAPError m_imapError;
+    Cutelyst::Context *m_c;
+    quint32 m_tagSequence = 0;
     quint16 m_port = 143;
+    QChar m_hierarchysep = QLatin1Char('.');
     NetworkLayerProtocol m_protocol = QAbstractSocket::AnyIPProtocol;
     EncryptionType m_encType = StartTLS;
-    QChar m_hierarchysep = QLatin1Char('.');
-    Cutelyst::Context *m_c;
-	SkaffariIMAPError m_imapError;
     bool m_loggedIn = false;
-    static QStringList m_capabilities;
-    quint32 m_tagSequence = 0;
-    static const QString m_allAcl;
 
     Q_DISABLE_COPY(SkaffariIMAP)
 };

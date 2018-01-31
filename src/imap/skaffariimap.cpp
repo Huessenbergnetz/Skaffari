@@ -36,10 +36,10 @@ SkaffariIMAP::SkaffariIMAP(Cutelyst::Context *context, QObject *parent) :
     m_user(SkaffariConfig::imapUser()),
     m_password(SkaffariConfig::imapPassword()),
     m_host(SkaffariConfig::imapHost()),
+    m_c(context),
     m_port(SkaffariConfig::imapPort()),
     m_protocol(SkaffariConfig::imapProtocol()),
-    m_encType(SkaffariConfig::imapEncryption()),
-    m_c(context)
+    m_encType(SkaffariConfig::imapEncryption())
 {
     Q_ASSERT_X(m_c, "Skaffari IMAP", "invalid context");
 
@@ -551,7 +551,7 @@ bool SkaffariIMAP::connectionTimeOut()
     qCWarning(SK_IMAP) << "Connection to IMAP server timed out.";
     m_imapError = SkaffariIMAPError(SkaffariIMAPError::ConnectionTimeout, m_c->translate("SkaffariIMAP", "Connection to IMAP server timed out."));
     abort();
-	return false;
+    return false;
 }
 
 
@@ -626,52 +626,52 @@ bool SkaffariIMAP::checkResponse(const QByteArray &data, const QString &tag, QVe
 
 void SkaffariIMAP::setUser ( const QString& user )
 {
-	m_user = user;
+    m_user = user;
 }
 
 
 void SkaffariIMAP::setPassword ( const QString& password )
 {
-	m_password = password;
+    m_password = password;
 }
 
 
 void SkaffariIMAP::setHost ( const QString& host )
 {
-	m_host = host;
+    m_host = host;
 }
 
 
 void SkaffariIMAP::setPort ( const quint16& port )
 {
-	m_port = port;
+    m_port = port;
 }
 
 
 void SkaffariIMAP::setProtocol ( QAbstractSocket::NetworkLayerProtocol protocol )
 {
-	m_protocol = protocol;
+    m_protocol = protocol;
 }
 
 
 
 void SkaffariIMAP::setEncryptionType(SkaffariIMAP::EncryptionType encType)
 {
-	m_encType = encType;
+    m_encType = encType;
 }
 
 
 void SkaffariIMAP::setNoError()
 {
-	if (m_imapError.type() != SkaffariIMAPError::NoError) {
-		m_imapError = SkaffariIMAPError();
-	}
+    if (m_imapError.type() != SkaffariIMAPError::NoError) {
+        m_imapError = SkaffariIMAPError();
+    }
 }
 
 
 SkaffariIMAPError SkaffariIMAP::lastError() const
 {
-	return m_imapError;
+    return m_imapError;
 }
 
 

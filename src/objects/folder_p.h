@@ -28,23 +28,23 @@ public:
     FolderData() {}
 
     FolderData(dbid_t _id, dbid_t _domainId, const QString &_name) :
+        name(_name),
         id(_id),
-        domainId(_domainId),
-        name(_name)
+        domainId(_domainId)
     {}
 
     FolderData(const FolderData &other) :
         QSharedData(other),
+        name(other.name),
         id(other.id),
-        domainId(other.domainId),
-        name(other.name)
+        domainId(other.domainId)
     {}
 
     ~FolderData() {}
 
+    QString name;
     dbid_t id = 0;
     dbid_t domainId = 0;
-    QString name;
 };
 
 #endif // FOLDER_P_H

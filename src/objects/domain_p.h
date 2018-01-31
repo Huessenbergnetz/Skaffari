@@ -30,7 +30,7 @@ public:
         QCollator(locale)
     {}
 
-    bool operator() (const Domain &left, const Domain &right) { return (compare(left.getName(), right.getName()) < 0); }
+    bool operator() (const Domain &left, const Domain &right) { return (compare(left.name(), right.name()) < 0); }
 };
 
 class DomainData : public QSharedData
@@ -39,62 +39,63 @@ public:
     DomainData() {}
 
     DomainData(dbid_t _id, const QString &_name, const QString &_prefix, const QString &_transport, quota_size_t _quota, quint32 _maxAccounts, quota_size_t _domainQuota, quota_size_t _domainQuotaUsed, bool _freeNames, bool _freeAddress, const QVector<Folder> &_folders, quint32 _accounts, const QDateTime &_created, const QDateTime &_updated) :
-        id(_id),
+        quota(_quota),
+        domainQuota(_domainQuota),
+        domainQuotaUsed(_domainQuotaUsed),
+        folders(_folders),
         name(_name),
         prefix(_prefix),
         transport(_transport),
-        quota(_quota),
-        maxAccounts(_maxAccounts),
-        domainQuota(_domainQuota),
-        domainQuotaUsed(_domainQuotaUsed),
-        freeNames(_freeNames),
-        freeAddress(_freeAddress),
-        folders(_folders),
-        accounts(_accounts),
         created(_created),
-        updated(_updated)
+        updated(_updated),
+        id(_id),
+        maxAccounts(_maxAccounts),
+        accounts(_accounts),
+        freeNames(_freeNames),
+        freeAddress(_freeAddress)
     {}
 
     DomainData(const DomainData &other) :
         QSharedData(other),
-        id(other.id),
+        quota(other.quota),
+        domainQuota(other.domainQuota),
+        domainQuotaUsed(other.domainQuotaUsed),
+        children(other.children),
+        admins(other.admins),
+        folders(other.folders),
+        parent(other.parent),
         name(other.name),
         prefix(other.prefix),
         transport(other.transport),
-        quota(other.quota),
-        maxAccounts(other.maxAccounts),
-        domainQuota(other.domainQuota),
-        domainQuotaUsed(other.domainQuotaUsed),
-        freeNames(other.freeNames),
-        freeAddress(other.freeAddress),
-        folders(other.folders),
-        accounts(other.accounts),
         created(other.created),
         updated(other.updated),
-        parent(other.parent),
-        children(other.children),
-        admins(other.admins)
+        id(other.id),
+        maxAccounts(other.maxAccounts),
+        accounts(other.accounts),
+        freeNames(other.freeNames),
+        freeAddress(other.freeAddress)
     {}
 
     ~DomainData() {}
 
-    dbid_t id = 0;
+    quota_size_t quota = 0;
+    quota_size_t domainQuota = 0;
+    quota_size_t domainQuotaUsed = 0;
+    QVector<SimpleDomain> children;
+    QVector<SimpleAdmin> admins;
+    QVector<Folder> folders;
+    SimpleDomain parent;
     QString name;
     QString prefix;
     QString transport;
-    quota_size_t quota = 0;
-    quint32 maxAccounts = 0;
-    quota_size_t domainQuota = 0;
-    quota_size_t domainQuotaUsed = 0;
-    bool freeNames = false;
-    bool freeAddress = false;
-    QVector<Folder> folders;
-    quint32 accounts = 0;
     QDateTime created;
     QDateTime updated;
-    SimpleDomain parent;
-    QVector<SimpleDomain> children;
-    QVector<SimpleAdmin> admins;
+    dbid_t id = 0;
+    quint32 maxAccounts = 0;
+    quint32 accounts = 0;
+    bool freeNames = false;
+    bool freeAddress = false;
+
 };
 
 #endif // DOMAIN_P_H

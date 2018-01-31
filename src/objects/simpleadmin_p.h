@@ -28,20 +28,20 @@ public:
     SimpleAdminData() {}
 
     SimpleAdminData(dbid_t _id, const QString &_name) :
-        id(_id),
-        name(_name)
+        name(_name),
+        id(_id)
     {}
 
     SimpleAdminData(const SimpleAdminData &other) :
         QSharedData(other),
-        id(other.id),
-        name(other.name)
+        name(other.name),
+        id(other.id)
     {}
 
     ~SimpleAdminData() {}
 
-    dbid_t id = 0;
     QString name;
+    dbid_t id = 0;
 };
 
 #endif // SIMPLEADMIN_P_H

@@ -32,17 +32,17 @@ public:
 
     SkaffariErrorData(Cutelyst::Context *_c, SkaffariError::ErrorType _type , const QString _errorText, const QVariant _errorData) :
         c(_c),
-        errorType(_type),
         errorText(_errorText),
-        errorData(_errorData)
+        errorData(_errorData),
+        errorType(_type)
     {
 
     }
 
     SkaffariErrorData(Cutelyst::Context *_c, const QSqlError &_sqlError, const QString &_errorText) :
         c(_c),
-        errorType(SkaffariError::SqlError),
-        qSqlError(_sqlError)
+        qSqlError(_sqlError),
+        errorType(SkaffariError::SqlError)
     {
         if (_errorText.isEmpty()) {
             errorText = qSqlError.text();
@@ -55,8 +55,8 @@ public:
 
     SkaffariErrorData(Cutelyst::Context *_c, const SkaffariIMAPError& _imapError, const QString _errorText) :
         c(_c),
-        errorType(SkaffariError::ImapError),
-        imapError(_imapError)
+        imapError(_imapError),
+        errorType(SkaffariError::ImapError)
     {
         if (_errorText.isEmpty()) {
             errorText = imapError.errorText();
@@ -70,11 +70,11 @@ public:
     SkaffariErrorData(const SkaffariErrorData &other) :
         QSharedData(other),
         c(other.c),
-        errorType(other.errorType),
         qSqlError(other.qSqlError),
         errorText(other.errorText),
         errorData(other.errorData),
-        imapError(other.imapError)
+        imapError(other.imapError),
+        errorType(other.errorType)
     {}
 
     ~SkaffariErrorData() {}
@@ -82,11 +82,11 @@ public:
     QString databaseErrorText() const;
 
     Cutelyst::Context *c = nullptr;
-    SkaffariError::ErrorType errorType = SkaffariError::NoError;
     QSqlError qSqlError;
 	QString errorText;
 	QVariant errorData;
     SkaffariIMAPError imapError;
+    SkaffariError::ErrorType errorType = SkaffariError::NoError;
 };
 
 #endif // SKAFFARIERROR_P_H
