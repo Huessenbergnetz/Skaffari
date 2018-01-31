@@ -122,7 +122,8 @@ void AdminEditor::create(Context *c)
 
         QHash<QString,HelpEntry> help;
         help.insert(QStringLiteral("username"), HelpEntry(c->translate("AdminEditor", "User name"), c->translate("AdminEditor", "The user name for the new administrator. Can only contain alpha-numeric characters as well as dashes and underscores.")));
-        help.insert(QStringLiteral("password"), HelpEntry(c->translate("AdminEditor", "Password"), c->translate("AdminEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
+        const int pwMinLength = static_cast<int>(SkaffariConfig::admPwMinlength());
+        help.insert(QStringLiteral("password"), HelpEntry(c->translate("AdminEditor", "Password"), c->translate("AdminEditor", "Specify a password with a minimum length of %n character(s).", nullptr, pwMinLength)));
         help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AdminEditor", "Password confirmation"), c->translate("AdminEditor", "Confirm the password by entering it again.")));
         help.insert(QStringLiteral("type"), HelpEntry(c->translate("AdminEditor", "Type"), c->translate("AdminEditor", "An administrator has access to the whole system, while a domain manager only has access to the associated domains.")));
         help.insert(QStringLiteral("assocdomains"), HelpEntry(c->translate("AdminEditor", "Domains"), c->translate("AdminEditor", "For domain managers, select the associated domains the user is responsible for.")));
@@ -189,7 +190,8 @@ void AdminEditor::edit(Context *c)
         help.insert(QStringLiteral("created"), HelpEntry(c->translate("AdminEditor", "Created"), c->translate("AdminEditor", "Date and time this account was created.")));
         help.insert(QStringLiteral("updated"), HelpEntry(c->translate("AdminEditor", "Updated"), c->translate("AdminEditor", "Date and time this account was last updated.")));
         help.insert(QStringLiteral("username"), HelpEntry(c->translate("AdminEditor", "User name"), c->translate("AdminEditor", "The user name of the administrator.")));
-        help.insert(QStringLiteral("password"), HelpEntry(c->translate("AdminEditor", "New password"), c->translate("AdminEditor", "Enter a new password with a minimum length of %n character(s) or leave the field blank to avoid changing the password.", nullptr, SkaffariConfig::accPwMinlength())));
+        const int pwMinLength = static_cast<int>(SkaffariConfig::admPwMinlength());
+        help.insert(QStringLiteral("password"), HelpEntry(c->translate("AdminEditor", "New password"), c->translate("AdminEditor", "Enter a new password with a minimum length of %n character(s) or leave the field blank to avoid changing the password.", nullptr, pwMinLength)));
         help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AdminEditor", "Confirm new password"), c->translate("AdminEditor", "Confirm the new password by entering it again.")));
         help.insert(QStringLiteral("type"), HelpEntry(c->translate("AdminEditor", "Type"), c->translate("AdminEditor", "An administrator has access to the whole system, while a domain manager only has access to the associated domains.")));
         help.insert(QStringLiteral("assocdomains"), HelpEntry(c->translate("AdminEditor", "Domains"), c->translate("AdminEditor", "For domain managers, select the associated domains the user is responsible for.")));
