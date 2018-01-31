@@ -962,7 +962,7 @@ bool Domain::checkAccess(Cutelyst::Context *c, dbid_t domainId)
     }
 
     if (!allowed) {
-        if (c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive)) {
+        if (Utils::isAjax(c)) {
             QJsonObject json({
                                  {QStringLiteral("error_msg"), c->translate("Domain", "You are not authorized to access this resource or to perform this action.")}
                              });
