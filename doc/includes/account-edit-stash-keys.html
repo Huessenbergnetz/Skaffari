@@ -7,6 +7,16 @@
     <TR>
         <TD>help</TD>
         <TD>QHash&lt;QString,HelpEntry&gt;</TD>
-        <TD>Dictionary containing help entries and labels for the form fields. Available entries: created, updated, quota, humanQuota, password, password_confirmation, validUntil, passwordExpires, imap, pop, sieve, smtpauth, catchall</TD>
+        <TD>Dictionary containing help entries and labels for the form fields. Available entries: created, updated, quota, password, password_confirmation, validUntil, passwordExpires, imap, pop, sieve, smtpauth, catchall</TD>
+    </TR>
+    <TR>
+        <TD>freeQuota</TD>
+        <TD>quint64</TD>
+        <TD>free quota in this domain in Bytes</TD>
+    </TR>
+    <TR>
+        <TD>minQuota</TD>
+        <TD>int</TD>
+        <TD>minimum quota for the account, either 0 or 1024 Bytes</TD>
     </TR>
 </TABLE>

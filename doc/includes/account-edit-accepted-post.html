@@ -39,41 +39,41 @@
         <TD>bool</TD>
         <TD>no</TD>
         <TD>\link Cutelyst::ValidatorBoolean Boolean \endlink</TD>
-        <TD>set to true if IMAP access should be allowed</TD>
+        <TD>set to true if IMAP access should be allowed, false if not available</TD>
     </TR>
     <TR>
         <TD>pop</TD>
         <TD>bool</TD>
         <TD>no</TD>
         <TD>\link Cutelyst::ValidatorBoolean Boolean \endlink</TD>
-        <TD>set to true if POP3 access should be allowed</TD>
+        <TD>set to true if POP3 access should be allowed, false if not available</TD>
     </TR>
     <TR>
         <TD>sieve</TD>
         <TD>bool</TD>
         <TD>no</TD>
         <TD>\link Cutelyst::ValidatorBoolean Boolean \endlink</TD>
-        <TD>set to true if Sieve access should be allowed</TD>
+        <TD>set to true if Sieve access should be allowed, false if not available</TD>
     </TR>
     <TR>
         <TD>smtpauth</TD>
         <TD>bool</TD>
         <TD>no</TD>
         <TD>\link Cutelyst::ValidatorBoolean Boolean \endlink</TD>
-        <TD>set to true if SMTP authentication should be allowed</TD>
+        <TD>set to true if SMTP authentication should be allowed, false if not available</TD>
     </TR>
     <TR>
-        <TD>humanQuota</TD>
-        <TD>quota_size_t</TD>
+        <TD>catchall</TD>
+        <TD>bool<TD>
         <TD>no</TD>
-        <TD>\link SkValidatorFilesize Filesize \endlink</TD>
-        <TD>human readable quota value, preferred over plain quota</TD>
+        <TD>\link Cutelyst::ValidatorBoolean Boolean \endlink</TD>
+        <TD>set to true if this is an Catch-All account, false if not available</TD>
     </TR>
     <TR>
         <TD>quota</TD>
         <TD>quota_size_t</TD>
-        <TD>no</TD>
-        <TD>\link Cutelyst::ValidatorMin Min \endlink 0<BR>\link Cutelyst::ValidatorInteger Integer \endlink</TD>
+        <TD>yes</TD>
+        <TD>\link Cutelyst::ValidatorFileSize FileSize \endlink</TD>
         <TD>plain quota value in KiB</TD>
     </TR>
 </TABLE>
