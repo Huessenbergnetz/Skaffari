@@ -637,45 +637,44 @@ bool Domain::isAvailable(const QString &domainName)
     return available;
 }
 
-bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error, dbid_t newParentId, bool deleteChildren)
+bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParentId, bool deleteChildren)
 {
     bool ret = false;
 
     Q_ASSERT_X(error, "remove domain", "invalid errorData object");
     Q_ASSERT_X(c, "remove domain", "invalid Cutelyst context");
-    Q_ASSERT_X(domain, "remove domain", "invalid domain");
 
-    if (!Account::remove(c, error, domain)) {
-        qCCritical(SK_DOMAIN, "Failed to remove domain %s", domain->name().toUtf8().constData());
+    if (!Account::remove(c, error, this)) {
+        qCCritical(SK_DOMAIN, "Failed to remove domain %s", qUtf8Printable(d->name));
         return ret;
     }
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domainadmin WHERE domain_id = :domain_id"));
-    q.bindValue(QStringLiteral(":domain_id"), domain->id());
+    q.bindValue(QStringLiteral(":domain_id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
         error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain to domain manager connections from database."));
-        qCCritical(SK_DOMAIN, "Failed to remove domain to domain manager connections for domain %s from database: %s. Abort removing domain.", qUtf8Printable(domain->name()), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_DOMAIN, "Failed to remove domain to domain manager connections for domain %s from database: %s. Abort removing domain.", qUtf8Printable(d->name), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
-    q.bindValue(QStringLiteral(":domain_id"), domain->id());
+    q.bindValue(QStringLiteral(":domain_id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
         error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain default folders from database."));
-        qCCritical(SK_DOMAIN, "Failed to remove default folders for domain %s from database: %s. Abort removing domain.", domain->name().toUtf8().constData(), q.lastError().text().toUtf8().constData());
+        qCCritical(SK_DOMAIN, "Failed to remove default folders for domain %s from database: %s. Abort removing domain.", qUtf8Printable(d->name), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
     if (deleteChildren) {
-        if (!domain->children().empty()) {
-            const QVector<SimpleDomain> thekids = domain->children();
+        if (!d->children.empty()) {
+            const QVector<SimpleDomain> thekids = d->children;
             for (const SimpleDomain &kid : thekids) {
                 Domain child = Domain::get(c, kid.id(), error);
                 if (child) {
-                    if (Q_UNLIKELY(!Domain::remove(c, &child, error, 0, true))) {
-                        qCCritical(SK_DOMAIN, "Failed to remove child domains of domain %s (ID %u).", qUtf8Printable(domain->name()), domain->id());
+                    if (Q_UNLIKELY(!child.remove(c, error, 0, true))) {
+                        qCCritical(SK_DOMAIN, "Failed to remove child domains of domain %s (ID %u).", qUtf8Printable(d->name), d->id);
                         return ret;
                     }
                 }
@@ -684,34 +683,38 @@ bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error, 
     } else {
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET parent_id = :new_parent_id WHERE parent_id = :old_parent_id"));
         q.bindValue(QStringLiteral(":new_parent_id"), newParentId);
-        q.bindValue(QStringLiteral(":old_parent_id"), domain->id());
+        q.bindValue(QStringLiteral(":old_parent_id"), d->id);
 
         if (Q_UNLIKELY(!q.exec())) {
             error->setSqlError(q.lastError(), c->translate("Domain", "Failed to set new parent domain for child domains."));
-            qCCritical(SK_DOMAIN, "Failed to set new parent domain ID %u while removing domain %s (ID: %u): %s. Abort removing domain.", newParentId, qUtf8Printable(domain->name()), domain->id(), qUtf8Printable(q.lastError().text()));
+            qCCritical(SK_DOMAIN, "Failed to set new parent domain ID %u while removing domain %s (ID: %u): %s. Abort removing domain.", newParentId, qUtf8Printable(d->name), d->id, qUtf8Printable(q.lastError().text()));
             return ret;
         }
     }
 
-    if (Q_UNLIKELY(!q.exec(QStringLiteral("DELETE FROM virtual WHERE alias LIKE '%@%1'").arg(QString::fromLatin1(QUrl::toAce(domain->name())))))) {
+    if (Q_UNLIKELY(!q.exec(QStringLiteral("DELETE FROM virtual WHERE alias LIKE '%@%1'").arg(QString::fromLatin1(QUrl::toAce(d->name)))))) {
         error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove email addresses from database."));
-        qCCritical(SK_DOMAIN, "Failed to remove email addresses for domain %s (ID: %u) from database: %s", qUtf8Printable(domain->name()), domain->id(), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_DOMAIN, "Failed to remove email addresses for domain %s (ID: %u) from database: %s", qUtf8Printable(d->name), d->id, qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
 
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :id"));
-    q.bindValue(QStringLiteral(":id"), domain->id());
+    q.bindValue(QStringLiteral(":id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain %1 from database.").arg(domain->name()));
-        qCCritical(SK_DOMAIN, "Failed to remove domain %s from database: %s", domain->name().toUtf8().constData(), q.lastError().text().toUtf8().constData());
+        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain %1 from database.").arg(d->name));
+        qCCritical(SK_DOMAIN, "Failed to remove domain %s from database: %s", qUtf8Printable(d->name), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
     ret = true;
 
-    qCInfo(SK_DOMAIN, "%s removed domain %s (ID: %u)", c->stash(QStringLiteral("userName")).toString().toUtf8().constData(), domain->name().toUtf8().constData(), domain->id());
+    qCInfo(SK_DOMAIN, "%s removed domain %s (ID: %u)", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->name), d->id);
+
+    d->id = 0;
+    d->prefix.clear();
+    d->name.clear();
 
     return ret;
 }

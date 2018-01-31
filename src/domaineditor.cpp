@@ -371,7 +371,8 @@ void DomainEditor::create(Context* c)
                                    new SkValidatorAccountExists(QStringLiteral("webmasterAccount"))
                                });
 
-            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            vr.addValue(QStringLiteral("folders"), r->bodyParam(QStringLiteral("folders")));
             const auto params = vr.values();
             if (vr) {
                 SkaffariError e(c);
@@ -452,7 +453,7 @@ void DomainEditor::remove(Context* c)
                 if (dom.name() == req->bodyParam(QStringLiteral("domainName"))) {
 
                     SkaffariError e(c);
-                    if (Domain::remove(c, &dom, &e, req->bodyParam(QStringLiteral("newParentId"), QStringLiteral("0")).toULong(), false)) {
+                    if (dom.remove(c, &e, req->bodyParam(QStringLiteral("newParentId"), QStringLiteral("0")).toULong(), false)) {
 
                         const QString statusMsg = c->translate("DomainEditor", "The domain %1 has been successfully deleted.").arg(dom.name());
 

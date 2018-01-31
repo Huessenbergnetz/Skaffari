@@ -420,24 +420,25 @@ public:
     static bool isAvailable(const QString &domainName);
 
     /*!
-     * \brief Removes the \a domain and all of their accounts from the database and the IMAP server.
+     * \brief Removes the %Domain and all of their accounts from the database and the IMAP server.
+     *
+     * After successfull removing the domain from the database, the %Domain object will be \link isValid() invalid\endlink.
+     *
      * \param c                 Pointer to the current context, used for translations.
-     * \param domain            Pointer to the domain to remove.
      * \param error             Pointer to an error object to give feedback on database and IMAP errors.
      * \param newParent         Database ID of the new parent domain if the domain to remove has child domains.
      * \param deleteChildren    If \c true, child domains will be removed too.
-     * \return          True on success.
+     * \return \c true on success
      */
-    static bool remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error, dbid_t newParentId, bool deleteChildren);
+    bool remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParentId, bool deleteChildren);
 
     /*!
      * \brief Updates domain \a d in the database.
      * \param c Pointer to the current context, used for translations.
      * \param p Parameters from the HTML form to update in the database.
      * \param e Pointer to an error object to give feedback on database errors.
-     * \param d The domain to update.
      * \param u The user that wants to update the domain, used to decide which parameters could be updated.
-     * \return  True on success.
+     * \return \c true on success
      */
     bool update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *e, const Cutelyst::AuthenticationUser &u);
 
