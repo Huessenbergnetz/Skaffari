@@ -534,7 +534,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
         }
     }
 
-    // removing old catch all alias and setting a new one
+    // removing old catch-all alias and setting a new one
     if (_catchAll) {
         const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.getName()));
 

@@ -75,7 +75,7 @@ public:
      * \param validUntil    Date and time until this account is valid
      * \param pwdExpiration Date and time until the password for this account is valid
      * \param keepLocal     \c true if forwaded emails should be kept local too
-     * \param catchAll      \c true if this is the catch all account for the \a domainName
+     * \param catchAll      \c true if this is the catch-all account for the \a domainName
      * \param status        Status value saved in the database.
      */
     Account(dbid_t id, dbid_t domainId, const QString &username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const QDateTime &pwdExpiration, bool keepLocal, bool catchAll, quint8 status);
@@ -259,7 +259,7 @@ public:
      */
     bool keepLocal() const;
     /*!
-     * \brief Returns \c true if this account is for catch all.
+     * \brief Returns \c true if this account is for catch-all.
      *
      * Access from Grantlee: catchAll
      *
@@ -383,7 +383,7 @@ public:
      */
     void setKeepLocal(bool nKeepLocal);
     /*!
-     * \brief Set this to \c true if this is a catch all account.
+     * \brief Set this to \c true if this is a catch-all account.
      * \sa catchAll()
      */
     void setCatchAll(bool nCatchAll);
