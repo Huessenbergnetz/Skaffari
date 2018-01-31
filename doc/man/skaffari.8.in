@@ -20,7 +20,7 @@ It is inpired by the PHP web-cyradm web interface and can import the settings an
 
 Using administrators and domain managers,
 .B Skaffari
-provides a simple admin user management where administrators can change everything and domain managers are only responsible for their domains. Where administrators can create new domains to manage, domain managers can only change a limited set of options for their domains. Creating new accounts for a domain is restricted by per domain limitations that can be set by the administrators. A domain manager can only create and edit accounts that are inside domains the manager is responsible for. At least one administrator account is needed to run
+provides a simple administrator user management where administrators can change everything and domain managers are only responsible for their domains. Where administrators can create new domains to manage, domain managers can only change a limited set of options for their domains. Creating new accounts for a domain is restricted by per domain limitations that can be set by the administrators. A domain manager can only create and edit accounts that are inside domains the manager is responsible for. At least one administrator account is needed to run
 .BR "Skaffari",
 domain managers can be connected to multiple domains.
 

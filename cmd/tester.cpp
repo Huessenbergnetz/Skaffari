@@ -64,7 +64,7 @@ int Tester::exec() const
 
     const uint adminCount = db.checkAdmin();
     if (adminCount == 0) {
-        return error(tr("No admin account available."));
+        return error(tr("No administrator account available."));
     }
 
     conf.beginGroup(QStringLiteral("IMAP"));

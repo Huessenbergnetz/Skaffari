@@ -271,7 +271,7 @@ The port the IMAP server is listening on.
 .B user
 = <none>
 .RS 4
-The user name of the IAMP admin user. This user has to be defined as administrator in the configuration of your IMAP server. For Cyrus-IMAP this one of the users defined in the
+The user name of the IAMP administrator user. This user has to be defined as administrator in the configuration of your IMAP server. For Cyrus-IMAP this one of the users defined in the
 .I admins:
 key in the
 .B imapd.conf(5)

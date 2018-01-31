@@ -79,10 +79,10 @@ QVariantHash ConfigInput::askImapConfig(const QVariantHash &defaults) const
     const quint16 imapport = readPort(tr("IMAP Port"), defaults.value(QStringLiteral("port"), 143).value<quint16>(), QStringList(tr("The port your IMAP server is listening on.")));
     conf.insert(QStringLiteral("port"), imapport);
 
-    const QString imapuser = readString(tr("IMAP User"), defaults.value(QStringLiteral("user")).toString(), QStringList(tr("The user name of the IMAP admin user.")));
+    const QString imapuser = readString(tr("IMAP User"), defaults.value(QStringLiteral("user")).toString(), QStringList(tr("The user name of the IMAP administrator user.")));
     conf.insert(QStringLiteral("user"), imapuser);
 
-    const QString imappass = readString(tr("IMAP Password"), QString(), QStringList(tr("Password for the IMAP admin user.")));
+    const QString imappass = readString(tr("IMAP Password"), QString(), QStringList(tr("Password for the IMAP administrator user.")));
     conf.insert(QStringLiteral("password"), imappass);
 
     const quint8 imapprotocol = readChar(tr("IMAP Protocol"),

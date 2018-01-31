@@ -92,7 +92,7 @@ void MyAccount::index(Context *c)
                  });
 
     } else {
-        c->setStash(QStringLiteral("not_found_text"), c->translate("MyAccount", "There is no admin account with database ID %1.").arg(user.id()));
+        c->setStash(QStringLiteral("not_found_text"), c->translate("MyAccount", "There is no administrator account with database ID %1.").arg(user.id()));
         c->setStash(QStringLiteral("template"), QStringLiteral("404.html"));
         c->res()->setStatus(404);
     }

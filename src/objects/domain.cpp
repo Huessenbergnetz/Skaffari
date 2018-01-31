@@ -685,8 +685,8 @@ bool Domain::remove(Cutelyst::Context *c, Domain *domain, SkaffariError *error, 
     q.bindValue(QStringLiteral(":domain_id"), domain->id());
 
     if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain to admin connections from database."));
-        qCCritical(SK_DOMAIN, "Failed to remove domain to admin connections for domain %s from database: %s. Abort removing domain.", qUtf8Printable(domain->getName()), qUtf8Printable(q.lastError().text()));
+        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain to domain manager connections from database."));
+        qCCritical(SK_DOMAIN, "Failed to remove domain to domain manager connections for domain %s from database: %s. Abort removing domain.", qUtf8Printable(domain->getName()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 

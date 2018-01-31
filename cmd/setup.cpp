@@ -123,7 +123,7 @@ int Setup::exec() const
         }
     }
 
-    printStatus(tr("Searching for available admin accounts"));
+    printStatus(tr("Searching for available administrator accounts"));
     const uint adminCount = db.checkAdmin();
     if (adminCount > 0) {
         printDone(tr("Found %1").arg(adminCount));
@@ -140,7 +140,7 @@ int Setup::exec() const
     os.endGroup();
 
     if (adminCount == 0) {
-        printDesc(tr("Please configure your admin password settings and create a new admin user."));
+        printDesc(tr("Please configure your administrator password settings and create a new administrator user."));
         printDesc(QString());
 
         adminsParams = askPbkdf2Config(adminsParams);
@@ -158,7 +158,7 @@ int Setup::exec() const
                                                                            24,
                                                                            27);
 
-        printStatus(tr("Creating new admin account in database"));
+        printStatus(tr("Creating new administrator account in database"));
         if (!db.setAdmin(adminUser, pw)) {
             printFailed();
             return dbError(db.lastDbError());
@@ -175,7 +175,7 @@ int Setup::exec() const
         os.endGroup();
         os.sync();
 
-    } else if (readBool(tr("Do you want to set the admin password settings?"), false)) {
+    } else if (readBool(tr("Do you want to set the administrator password settings?"), false)) {
 
         adminsParams = askPbkdf2Config(adminsParams);
 
@@ -265,7 +265,7 @@ int Setup::exec() const
         os.sync();
     }
 
-    printStatus(tr("Checking for IMAP admin account"));
+    printStatus(tr("Checking for IMAP administrator account"));
     QString cyrusAdmin = db.checkCyrusAdmin();
     if (!cyrusAdmin.isEmpty()) {
         printDone(cyrusAdmin);
@@ -275,10 +275,10 @@ int Setup::exec() const
 
         printDesc(tr("The administrator user for the IMAP server is defined in the imapd.conf in the admins: key. The user name that you enter here must also be specified in the imapd.conf. The administrator is used to perform various tasks on the IMAP server, such as setting storage quotas and creating/deleting mailboxes and folders. The user is created in the database used for Skaffari."));
 
-        cyrusAdmin = readString(tr("IMAP admin user"), QStringLiteral("cyrus"));
-        Password cyrusAdminPw(readString(tr("IMAP admin password"), QString()));
+        cyrusAdmin = readString(tr("IMAP administrator user"), QStringLiteral("cyrus"));
+        Password cyrusAdminPw(readString(tr("IMAP administrator password"), QString()));
 
-        printStatus(tr("Creating IMAP admin user in database"));
+        printStatus(tr("Creating IMAP administrator in database"));
         os.beginGroup(QStringLiteral("Accounts"));
         Password::Method accountsPwMethod = static_cast<Password::Method>(os.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
         Password::Algorithm accountsPwAlgo = static_cast<Password::Algorithm>(os.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>());
@@ -287,7 +287,7 @@ int Setup::exec() const
         QByteArray cyrusAdminPwEnc = cyrusAdminPw.encrypt(accountsPwMethod, accountsPwAlgo, accountsPwRounds);
         if (cyrusAdminPwEnc.isEmpty()) {
             printFailed();
-            return configError(tr("Failed to encrypt Cyrus admin password."));
+            return configError(tr("Failed to encrypt Cyrus administrator password."));
         }
 
         if (!db.setCryusAdmin(cyrusAdmin, cyrusAdminPwEnc)) {
@@ -347,7 +347,7 @@ int Setup::exec() const
             printDesc(tr("Please enter the data to connect to your IMAP server."));
         }
         printDesc(QString());
-        printDesc(tr("Connection to your IMAP server as admin is used to perform tasks like setting quotas and creating/deleting mailboxes and folders. The user account has to be defined as admin in the imapd.conf file in the admins: key."));
+        printDesc(tr("Connection to your IMAP server as administrator is used to perform tasks like setting quotas and creating/deleting mailboxes and folders. The user account has to be defined as administrator in the imapd.conf file in the admins: key."));
         printDesc(QString());
 
         imapParams = askImapConfig(imapParams);

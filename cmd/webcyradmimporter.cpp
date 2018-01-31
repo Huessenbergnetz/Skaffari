@@ -538,7 +538,7 @@ int WebCyradmImporter::exec() const
     }
 
 
-    printStatus(tr("Importing admin accounts"));
+    printStatus(tr("Importing administrator accounts"));
 
     if (!wq.exec(QStringLiteral("SELECT username, password, type FROM adminuser"))) {
         printFailed();
@@ -563,13 +563,13 @@ int WebCyradmImporter::exec() const
                 return dbError(sq.lastError());
             }
         }
-        printDone(tr("%n admin(s)", "", adminNameIds.size()));
+        printDone(tr("%n administrator(s)", "", adminNameIds.size()));
     } else {
         printFailed();
         return dbError(sq.lastError());
     }
 
-    printStatus(tr("Importing admin to domain connections"));
+    printStatus(tr("Importing administrator to domain connections"));
 
     if (!wq.exec(QStringLiteral("SELECT domain_name, adminuser FROM domainadmin WHERE domain_name != '*'"))) {
         printFailed();
@@ -595,7 +595,7 @@ int WebCyradmImporter::exec() const
     }
 
 
-    printStatus(tr("Importing admin settings"));
+    printStatus(tr("Importing administrator settings"));
 
     if (!wq.exec(QStringLiteral("SELECT username, maxdisplay, warnlevel FROM settings"))) {
         printFailed();
@@ -615,7 +615,7 @@ int WebCyradmImporter::exec() const
                 return dbError(sq.lastError());
             }
         }
-        printDone(tr("%n admin(s)", "", adminNameIds.size()));
+        printDone(tr("%n administrator(s)", "", adminNameIds.size()));
     } else {
         printFailed();
         return dbError(sq.lastError());

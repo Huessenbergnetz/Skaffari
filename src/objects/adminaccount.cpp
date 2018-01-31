@@ -336,7 +336,7 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
     q.bindValue(QStringLiteral(":id"), id);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query admin account with ID %1 from database.").arg(id));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query administrator account with ID %1 from database.").arg(id));
         qCCritical(SK_ADMIN, "Failed to query admin account with ID %u from database: %s", id, qUtf8Printable(q.lastError().text()));
         return acc;
     }
@@ -369,7 +369,7 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
         q.bindValue(QStringLiteral(":admin_id"), id);
 
         if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query domain IDs from database this admin is responsible for."));
+            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query domain IDs from database this domain manager is responsible for."));
             qCCritical(SK_ADMIN, "Failed to query domain IDs from database admin %s is responsible for: %s", qUtf8Printable(acc.getUsername()), qUtf8Printable(q.lastError().text()));
             return acc;
         }
@@ -635,7 +635,7 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e, const AdminAcc
     q.bindValue(QStringLiteral(":admin_id"), a.getId());
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete domain manager to domain connections from database for admin %1.").arg(a.getUsername()));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete connections between domain manager %1 and associated domains from the database.").arg(a.getUsername()));
         qCCritical(SK_ADMIN, "Failed to delete admin to domain connections for admin %s from the database: %s", qUtf8Printable(a.getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
@@ -791,8 +791,8 @@ bool AdminAccount::rollbackAdminDomains(Cutelyst::Context *c, SkaffariError *err
     q.bindValue(QStringLiteral(":admin_id"), adminId);
 
     if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to revert omain manager to domain connections in database."));
-        qCCritical(SK_ADMIN) << "Failed to revert omain manager to domain connections in database." << q.lastError().text();
+        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to revert domain manager to domain connections in database."));
+        qCCritical(SK_ADMIN) << "Failed to revert domain manager to domain connections in database." << q.lastError().text();
         return ret;
     }
 
