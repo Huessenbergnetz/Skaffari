@@ -47,20 +47,44 @@ class SkaffariError;
 
 /*!
  * \ingroup skaffaricore
- * \brief Represents a domain
+ * \brief Represents a single domain that is managed by %Skaffari.
+ *
+ * \par Grantlee accessors
+ * Accessor                | Type                  | Method
+ * ------------------------|-----------------------|-------
+ * accounts                | quint32               | accounts()
+ * accountUsagePercent     | float                 | accountUsagePercent()
+ * admins                  | QVector<SimpleAdmin>  | admins()
+ * children                | QVector<SimpleDomain> | children()
+ * created                 | QDateTime             | created()
+ * domainQuota             | quota_size_t          | domainQuota()
+ * domainQuotaUsed         | quota_size_t          | domainQuotaUsed()
+ * domainQuotaUsagePercent | float                 | domainQuotaUsagePercent()
+ * id                      | dbid_t                | id()
+ * isValid                 | bool                  | isValid()
+ * folders                 | QVector<Folder>       | folders()
+ * freeNames               | bool                  | isFreeNamesEnabled()
+ * freeAddress             | bool                  | isFreeAddressEnabled()
+ * maxAccounts             | quint32               | maxAccounts()
+ * name                    | QString               | name()
+ * parent                  | SimpleDomain          | parent()
+ * prefix                  | QString               | prefix()
+ * quota                   | quota_size_t          | quota()
+ * transport               | QString               | transport()
+ * updated                 | QDateTime             | updated()
  */
 class Domain
 {
 public:
     /*!
-     * \brief Constructs a new Domain object with empty data.
+     * \brief Constructs a new %Domain object with empty data.
      *
      * isValid() will return \c false.
      */
     Domain();
 
     /*!
-     * \brief Constructs a new Domain object with the given parameters.
+     * \brief Constructs a new %Domain object with the given parameters.
      * \param id                database ID of the domain
      * \param name              the domain name
      * \param prefix            the prefix used for this domain
@@ -98,39 +122,69 @@ public:
      * \sa setId()
      */
     dbid_t id() const;
+    /*!
+     * \brief Sets the database ID of this domain.
+     * \sa id()
+     */
+    void setId(dbid_t nId);
 
     /*!
      * \brief Returns the domain name.
      * \sa setName()
      */
-    QString getName() const;
+    QString name() const;
+    /*!
+     * \brief Sets the domain name.
+     * \sa name()
+     */
+    void setName(const QString &nName);
 
     /*!
      * \brief Returns the prefix used for the domain.
      * \sa setPrefix()
      */
-    QString getPrefix() const;
+    QString prefix() const;
+    /*!
+     * \brief Sets the prefix used for this domain.
+     * \sa prefix()
+     */
+    void setPrefix(const QString &nPrefix);
 
     /*!
      * \brief Returns the transport method used for this domain.
      * \sa setTransport()
      */
-    QString getTransport() const;
+    QString transport() const;
+    /*!
+     * \brief Sets the transport method used for this domain.
+     * \sa transport()
+     */
+    void setTransport(const QString &nTransport);
 
     /*!
      * \brief Returns the default quota for new accounts in this domain.
      * \sa setQuota()
      */
-    quota_size_t getQuota() const;
+    quota_size_t quota() const;
+    /*!
+     * \brief Sets the default quota for new accounts in this domain.
+     * \sa quota()
+     */
+    void setQuota(quota_size_t nQuota);
 
     /*!
      * \brief Returns the number of maximum allowed accounts in this domain.
      *
-     * If this returns \c 0,  there is no limit.
+     * If this returns \c 0, there is no limit.
      *
      * \sa setMaxAccounts()
      */
-    quint32 getMaxAccounts() const;
+    quint32 maxAccounts() const;
+    /*!
+     * \brief Sets the maximum number of allowed accounts in this domain.
+     * \sa maxAccounts()
+     */
+    void setMaxAccounts(quint32 nMaxAccounts);
 
     /*!
      * \brief Returns the overall quota for all accounts in this domain in KiB.
@@ -139,38 +193,71 @@ public:
      *
      * \sa setDomainQuota()
      */
-    quota_size_t getDomainQuota() const;
+    quota_size_t domainQuota() const;
+    /*!
+     * \brief Sets the allowed overall account quota for this domain.
+     *
+     * If this is set to \c 0, there will be no limit.
+     *
+     * \sa domainQuota()
+     */
+    void setDomainQuota(quota_size_t nDomainQuota);
 
     /*!
      * \brief Returns the overall used quota for all accounts in this domain in KiB.
      *
      * \sa setDomainQuotaUsed()
      */
-    quota_size_t getDomainQuotaUsed() const;
+    quota_size_t domainQuotaUsed() const;
+    /*!
+     * \brief Sets the overall used quota of accounts in this domain.
+     * \sa domainQuotaUsed()
+     */
+    void setDomainQuotaUsed(quota_size_t nDomainQuotaUsed);
 
     /*!
      * \brief Returns \c true if free account user names are allowed for this domain.
      * \sa setFreeNamesEnabled()
      */
     bool isFreeNamesEnabled() const;
+    /*!
+     * \brief Set this to \c true if free account user names are allowed in this domain.
+     * \sa isFreeNamesEnabled()
+     */
+    void setFreeNamesEnabled(bool nFreeNames);
 
     /*!
      * \brief Returns \c true if free email addresses are allowed for this domain.
      * \sa setFreeAddressEnabled()
      */
     bool isFreeAddressEnabled() const;
+    /*!
+     * \brief Set this to \c true if free email addresses are allowed in this domain.
+     * \sa isFreeAddressEnabled()
+     */
+    void setFreeAddressEnabled(bool nFreeAddress);
 
     /*!
      * \brief Returns the list of default folders that will be created for new accounts in this domain.
      * \sa setFolders()
      */
-    QVector<Folder> getFolders() const;
+    QVector<Folder> folders() const;
+    /*!
+     * \brief Sets the default folders that will be created for new accounts in this domain.
+     * \sa folders()
+     */
+    void setFolders(const QVector<Folder> &nFolders);
 
     /*!
      * \brief Returns the number of accounts in this domain.
      * \sa setAccounts()
      */
-    quint32 getAccounts() const;
+    quint32 accounts() const;
+    /*!
+     * \brief Sets the number of accounts available in this domain.
+     * \sa accounts()
+     */
+    void setAccounts(quint32 nAccounts);
 
     /*!
      * \brief Returns a list of administrators that are responsible for this domain.
@@ -180,133 +267,74 @@ public:
      *
      * \sa setAdmins()
      */
-    QVector<SimpleAdmin> getAdmins() const;
-    /*!
-     * \brief Returns the date and time this domain has been created.
-     * \sa setCreated()
-     */
-    QDateTime created() const;
-    /*!
-     * \brief Returns the date and time this domain has been updated.
-     * \sa setUpdated()
-     */
-    QDateTime updated() const;
-    /*!
-     * \brief Returns information about the parent domain, if any has been set.
-     * \sa setParent()
-     */
-    SimpleDomain parent() const;
-    /*!
-     * \brief Returns a list of child domains if any.
-     * \sa setChildren()
-     */
-    QVector<SimpleDomain> children() const;
-    /*!
-     * \brief Returns the percental value of used domain quota if any quota is set.
-     *
-     * If there is no domain quota set (domain quota == 0), this will return \c 0.
-     */
-    float domainQuotaUsagePercent() const;
-    /*!
-     * \brief Returns the percental value of used maximum accounts if maximum account value is set.
-     *
-     * If there is no maximum account value set (maximum accounts == 0), this will return \c 0.
-     */
-    float accountUsagePercent() const;
-
-
-    /*!
-     * \brief Sets the database ID of this doain.
-     * \sa id()
-     */
-    void setId(dbid_t id);
-    /*!
-     * \brief Sets the domain name.
-     * \sa getName()
-     */
-    void setName(const QString &nName);
-    /*!
-     * \brief Sets the prefix used for this domain.
-     * \sa getPrefix()
-     */
-    void setPrefix(const QString &nPrefix);
-    /*!
-     * \brief Sets the transport method used for this domain.
-     * \sa getPrefix()
-     */
-    void setTransport(const QString &nTransport);
-    /*!
-     * \brief Sets the default quota for new accounts in this domain.
-     * \sa getQuota()
-     */
-    void setQuota(quota_size_t nQuota);
-    /*!
-     * \brief Sets the maximum number of allowed accounts in this domain.
-     * \sa getMaxAccounts()
-     */
-    void setMaxAccounts(quint32 nMaxAccounts);
-    /*!
-     * \brief Sets the allowed overall account quota for this domain.
-     *
-     * If this is set to \c 0, there will be no limit.
-     *
-     * \sa getDomainQuota()
-     */
-    void setDomainQuota(quota_size_t nDomainQuota);
-    /*!
-     * \brief Sets the overall used quota of accounts in this domain.
-     * \sa getDomainQuotaUsed()
-     */
-    void setDomainQuotaUsed(quota_size_t nDomainQuotaUsed);
-    /*!
-     * \brief Set this to \c true if free account user names are allowed in this domain.
-     * \sa isFreeNamesEnabled()
-     */
-    void setFreeNamesEnabled(bool nFreeNames);
-    /*!
-     * \brief Set this to \c true if free email addresses are allowed in this domain.
-     * \sa isFreeAddressEnabled()
-     */
-    void setFreeAddressEnabled(bool nFreeAddress);
-    /*!
-     * \brief Sets the default folders that will be created for new accounts in this domain.
-     * \sa getFolders()
-     */
-    void setFolders(const QVector<Folder> &nFolders);
-    /*!
-     * \brief Sets the number of accounts available in this domain.
-     * \sa getAccounts()
-     */
-    void setAccounts(quint32 nAccounts);
+    QVector<SimpleAdmin> admins() const;
     /*!
      * \brief Sets the list of admins that are responsible for this domain.
      *
      * The admins in this list should be admins of type AdminAccount::DomainMaster that are
      * associated to this domain.
      *
-     * \sa getAdmins()
+     * \sa admins()
      */
     void setAdmins(const QVector<SimpleAdmin> &adminList);
+
+    /*!
+     * \brief Returns the date and time this domain has been created.
+     * \sa setCreated()
+     */
+    QDateTime created() const;
     /*!
      * \brief Sets the date and time this domain has been created.
      * \sa created()
      */
     void setCreated(const QDateTime &dt);
+
+    /*!
+     * \brief Returns the date and time this domain has been updated.
+     * \sa setUpdated()
+     */
+    QDateTime updated() const;
     /*!
      * \brief Sets the date and time this domain has been updated.
      * \sa updated()
      */
     void setUpdated(const QDateTime &dt);
+
+    /*!
+     * \brief Returns information about the parent domain, if any has been set.
+     * \sa setParent()
+     */
+    SimpleDomain parent() const;
     /*!
      * \brief Sets the parent domain information.
      * \sa parent()
      */
     void setParent(const SimpleDomain &parent);
+
+    /*!
+     * \brief Returns a list of child domains if any.
+     * \sa setChildren()
+     */
+    QVector<SimpleDomain> children() const;
     /*!
      * \brief Sets the list of child domains.
      * \sa children()
      */
     void setChildren(const QVector<SimpleDomain> &children);
+
+    /*!
+     * \brief Returns the percental value of used domain quota if any quota is set.
+     *
+     * If there is no domain quota set (domain quota == 0), this will return \c 0.
+     */
+    float domainQuotaUsagePercent() const;
+
+    /*!
+     * \brief Returns the percental value of used maximum accounts if maximum account value is set.
+     *
+     * If there is no maximum account value set (maximum accounts == 0), this will return \c 0.
+     */
+    float accountUsagePercent() const;
 
     /*!
      * \brief Returns \c true if this domain is valid.
@@ -341,7 +369,7 @@ public:
      *
      * \par Keys in the params
      * Key               | Converted Type | Description
-     * ------------------|----------------|----------------------------------------------------------------
+     * ------------------|----------------|------------
      * domainName        | QString        | the name for the domain, will be trimmed and converted to lower case
      * prefix            | QString        | the prefix for the domain, will be trimmed and converted to lower case
      * quota             | quota_size_t   | default quota for new accounts
@@ -470,19 +498,19 @@ QVariant var;
 if (property == QLatin1String("id")) {
     var.setValue(object.id());
 } else if (property == QLatin1String("name")) {
-    var.setValue(object.getName());
+    var.setValue(object.name());
 } else if (property == QLatin1String("prefix")) {
-    var.setValue(object.getPrefix());
+    var.setValue(object.prefix());
 } else if (property == QLatin1String("transport")) {
-    var.setValue(object.getTransport());
+    var.setValue(object.transport());
 } else if (property == QLatin1String("quota")) {
-    var.setValue(object.getQuota());
+    var.setValue(object.quota());
 } else if (property == QLatin1String("maxAccounts")) {
-    var.setValue(object.getMaxAccounts());
+    var.setValue(object.maxAccounts());
 } else if (property == QLatin1String("domainQuota")) {
-    var.setValue(object.getDomainQuota());
+    var.setValue(object.domainQuota());
 } else if (property == QLatin1String("domainQuotaUsed")) {
-    var.setValue(object.getDomainQuotaUsed());
+    var.setValue(object.domainQuotaUsed());
 } else if (property == QLatin1String("domainQuotaUsagePercent")) {
     var.setValue(object.domainQuotaUsagePercent());
 }  else if (property == QLatin1String("freeNames")) {
@@ -490,11 +518,11 @@ if (property == QLatin1String("id")) {
 } else if (property == QLatin1String("freeAddress")) {
     var.setValue(object.isFreeAddressEnabled());
 } else if (property == QLatin1String("folders")) {
-    var.setValue(object.getFolders());
+    var.setValue(object.folders());
 } else if (property == QLatin1String("accounts")) {
-    var.setValue(object.getAccounts());
+    var.setValue(object.accounts());
 } else if (property == QLatin1String("admins")) {
-    var.setValue(object.getAdmins());
+    var.setValue(object.admins());
 } else if (property == QLatin1String("isValid")) {
     var.setValue(object.isValid());
 } else if (property == QLatin1String("created")) {

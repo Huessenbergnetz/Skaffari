@@ -129,7 +129,7 @@ void DomainEditor::edit(Context *c)
                 if (Domain::update(c, vr.values(), &e, &dom, user)) {
                     c->stash({
                                  {QStringLiteral("domain"), QVariant::fromValue<Domain>(dom)},
-                                 {QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated domain %1.").arg(dom.getName())}
+                                 {QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated domain %1.").arg(dom.name())}
                              });
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -237,7 +237,7 @@ void DomainEditor::accounts(Context* c)
             currentPage = QStringLiteral("1");
         }
 
-        Pagination pag(dom.getAccounts(),
+        Pagination pag(dom.accounts(),
                        accountsPerPage.toInt(),
                        currentPage.toInt());
 
@@ -377,7 +377,7 @@ void DomainEditor::create(Context* c)
                 SkaffariError e(c);
                 auto dom = Domain::create(c, params, &e);
                 if (dom.isValid()) {
-                    c->res()->redirect(c->uriForAction(QStringLiteral("/domain/edit"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, c->translate("DomainEditor", "Successfully created new domain %1").arg(dom.getName()))));
+                    c->res()->redirect(c->uriForAction(QStringLiteral("/domain/edit"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, c->translate("DomainEditor", "Successfully created new domain %1").arg(dom.name()))));
                     return;
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -449,17 +449,17 @@ void DomainEditor::remove(Context* c)
             if (req->isPost()) {
                 auto dom = Domain::fromStash(c);
 
-                if (dom.getName() == req->bodyParam(QStringLiteral("domainName"))) {
+                if (dom.name() == req->bodyParam(QStringLiteral("domainName"))) {
 
                     SkaffariError e(c);
                     if (Domain::remove(c, &dom, &e, req->bodyParam(QStringLiteral("newParentId"), QStringLiteral("0")).toULong(), false)) {
 
-                        const QString statusMsg = c->translate("DomainEditor", "The domain %1 has been successfully deleted.").arg(dom.getName());
+                        const QString statusMsg = c->translate("DomainEditor", "The domain %1 has been successfully deleted.").arg(dom.name());
 
                         if (isAjax) {
                             json.insert(QStringLiteral("status_msg"), statusMsg);
                             json.insert(QStringLiteral("deleted_id"), static_cast<qint64>(dom.id()));
-                            json.insert(QStringLiteral("deleted_name"), dom.getName());
+                            json.insert(QStringLiteral("deleted_name"), dom.name());
                         } else {
                             c->res()->redirect(c->uriFor(QStringLiteral("/domain"), StatusMessage::statusQuery(c, statusMsg)));
                         }
@@ -533,9 +533,9 @@ void DomainEditor::add_account(Context* c)
 
     if (Q_LIKELY((user.value(QStringLiteral("type")).value<qint16>() == 0) || user.value(QStringLiteral("domains")).value<QVariantList>().contains(dom.id()))) {
 
-        const quota_size_t freeQuota = (dom.getDomainQuota() > 0) ? ((dom.getDomainQuota() - dom.getDomainQuotaUsed()) * Q_UINT64_C(1024)) : std::numeric_limits<quota_size_t>::max();
+        const quota_size_t freeQuota = (dom.domainQuota() > 0) ? ((dom.domainQuota() - dom.domainQuotaUsed()) * Q_UINT64_C(1024)) : std::numeric_limits<quota_size_t>::max();
         c->setStash(QStringLiteral("_freeQuota"), freeQuota);
-        c->setStash(QStringLiteral("_minQuota"), (dom.getDomainQuota() > 0) ? 1024 : 0);
+        c->setStash(QStringLiteral("_minQuota"), (dom.domainQuota() > 0) ? 1024 : 0);
 
         auto req = c->req();
 
@@ -582,7 +582,7 @@ void DomainEditor::add_account(Context* c)
                 // quota that is left
                 bool enoughQuotaLeft = true;
 
-                if (dom.getDomainQuota() > 0) {
+                if (dom.domainQuota() > 0) {
 
                     const quota_size_t accQuota = vr.value(QStringLiteral("quota")).value<quota_size_t>();
 
@@ -595,13 +595,13 @@ void DomainEditor::add_account(Context* c)
                                     c->translate("DomainEditor", "There is not enough free quota on this domain. Please lower the quota for the new account to a maximum of %1.").arg(Utils::humanBinarySize(c, freeQuota)));
                     }
 
-                    if ((dom.getDomainQuota() > 0) && (accQuota <= 0)) {
+                    if ((dom.domainQuota() > 0) && (accQuota <= 0)) {
 
                         enoughQuotaLeft = false;
 
                         c->setStash(QStringLiteral("error_msg"),
                                     //: %1 will be the overall domain quota limit as string like 1.5 GiB
-                                    c->translate("DomainEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(Utils::humanBinarySize(c, dom.getDomainQuota())));
+                                    c->translate("DomainEditor", "As this domain has an overall domain quota limit of %1, you have to specify a quota limit for every account that is part of this domain.").arg(Utils::humanBinarySize(c, dom.domainQuota())));
                     }
                 }
 
@@ -636,7 +636,7 @@ void DomainEditor::add_account(Context* c)
                          {QStringLiteral("catchall"), false}
                      });
 
-             QString username = dom.getPrefix();
+             QString username = dom.prefix();
 
             // if domainasprefix option is not set, user names can be either set free
             // (if they are not used by someone else and the domain has free names enabled),
@@ -647,7 +647,7 @@ void DomainEditor::add_account(Context* c)
                 if (dom.isFreeNamesEnabled()) {
                     // if the domain allows free names, we only generate a proposal starting with 0000
 
-                    const QString cntStr = QString::number(dom.getAccounts());
+                    const QString cntStr = QString::number(dom.accounts());
                     const quint8 digits = cntStr.size();
                     if (Q_LIKELY(digits < 4)) {
                         username.append(QString(4 - digits, QLatin1Char('0')));
@@ -658,7 +658,7 @@ void DomainEditor::add_account(Context* c)
                     // if the domain does not allow free names, we generate a username
                     // based on the domain prefix and an automatically incremented number
 
-                    if (Q_LIKELY(dom.getAccounts() > 0)) {
+                    if (Q_LIKELY(dom.accounts() > 0)) {
 
                         // lets get the last added account
                         QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM accountuser WHERE domain_id = :domain_id ORDER BY id DESC LIMIT 1"));
@@ -711,7 +711,7 @@ void DomainEditor::add_account(Context* c)
         QString quotaText;
         const QString domainQuotaTitle = c->translate("DomainEditor", "Domain quota");
         QString domainQuotaText;
-        if (dom.getDomainQuota() > 0) {
+        if (dom.domainQuota() > 0) {
             domainQuotaText = c->translate("DomainEditor", "Used and total storage quota for this domain.");
             //: %1 will be the maximum quota as string like 1.5 GiB
             quotaText = c->translate("DomainEditor", "You must set a storage quota for this user account that does not exceed %1. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.").arg(Utils::humanBinarySize(c, freeQuota));
@@ -786,8 +786,8 @@ void DomainEditor::check(Context *c)
             }
             c->setStash(QStringLiteral("accountids"), accountIds.join(QLatin1Char(',')));
         } else {
-            c->setStash(QStringLiteral("error_msg"), c->translate("DomainEditor", "Failed to query all account IDs for domain %1 from database: %2").arg(d.getName(), q.lastError().text()));
-            qCCritical(SK_DOMAIN, "Failed to query all account IDs for domain %s from database: %s", d.getName().toUtf8().constData(), q.lastError().text().toUtf8().constData());
+            c->setStash(QStringLiteral("error_msg"), c->translate("DomainEditor", "Failed to query all account IDs for domain %1 from database: %2").arg(d.name(), q.lastError().text()));
+            qCCritical(SK_DOMAIN, "Failed to query all account IDs for domain %s from database: %s", d.name().toUtf8().constData(), q.lastError().text().toUtf8().constData());
         }
 
         c->setStash(QStringLiteral("template"), QStringLiteral("domain/check.html"));

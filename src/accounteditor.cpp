@@ -68,8 +68,8 @@ void AccountEditor::edit(Context* c)
         Account a = Account::fromStash(c);
         Domain dom = Domain::fromStash(c);
 
-        const quota_size_t freeQuota = (dom.getDomainQuota() - dom.getDomainQuotaUsed() + a.getQuota());
-        if (dom.getDomainQuota() > 0) {
+        const quota_size_t freeQuota = (dom.domainQuota() - dom.domainQuotaUsed() + a.getQuota());
+        if (dom.domainQuota() > 0) {
             c->setStash(QStringLiteral("freeQuota"), freeQuota * Q_UINT64_C(1024));
             c->setStash(QStringLiteral("minQuota"), 1024);
         } else {
@@ -95,6 +95,7 @@ void AccountEditor::edit(Context* c)
                                    new ValidatorBoolean(QStringLiteral("sieve"), ValidatorMessages(), QStringLiteral("_def_boolean")),
                                    new ValidatorBoolean(QStringLiteral("smtpauth"), ValidatorMessages(), QStringLiteral("_def_boolean")),
                                    new ValidatorBoolean(QStringLiteral("catchall"), ValidatorMessages(), QStringLiteral("_def_boolean")),
+                                   new ValidatorRequired(QStringLiteral("quota")),
                                    new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, QStringLiteral("minQuota"), QStringLiteral("freeQuota"))
                                });
 
@@ -126,7 +127,7 @@ void AccountEditor::edit(Context* c)
         help.insert(QStringLiteral("updated"), HelpEntry(c->translate("AccountEditor", "Updated"), c->translate("AccountEditor", "Date and time this user account was last updated.")));
 
         const QString quotaTitle = c->translate("DomainEditor", "Quota");
-        if (dom.getDomainQuota() > 0) {
+        if (dom.domainQuota() > 0) {
             // %1 will be something like 1.5 GB
             help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You must set a storage quota for this account that does not exceed %1. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.").arg(Utils::humanBinarySize(c, freeQuota * Q_UINT64_C(1024)))));
         } else {
@@ -192,7 +193,7 @@ void AccountEditor::remove(Context* c)
                                                {QStringLiteral("account_id"), static_cast<qint64>(a.getId())},
                                                {QStringLiteral("account_name"), a.getUsername()},
                                                {QStringLiteral("domain_id"), static_cast<qint64>(dom.id())},
-                                               {QStringLiteral("domain_name"), dom.getName()}
+                                               {QStringLiteral("domain_name"), dom.name()}
                                            });
 
                     } else {
@@ -327,7 +328,7 @@ void AccountEditor::edit_address(Context *c, const QString &address)
 
                 const ParamsMultiMap p = c->req()->bodyParams();
 
-                if (!d.isFreeNamesEnabled() && (p.value(QStringLiteral("newmaildomain")) != d.getName())) {
+                if (!d.isFreeNamesEnabled() && (p.value(QStringLiteral("newmaildomain")) != d.name())) {
 
                     const QString errorMsg = c->translate("AccountEditor", "You can not create email addresses for other domains as long as free addresses are not allowed for this domain.");
 
@@ -583,7 +584,7 @@ void AccountEditor::add_address(Context *c)
                 const ParamsMultiMap p = c->req()->bodyParams();
                 const QString newMailDomain = p.value(QStringLiteral("newmaildomain"));
 
-                if (!d.isFreeNamesEnabled() && (newMailDomain != d.getName())) {
+                if (!d.isFreeNamesEnabled() && (newMailDomain != d.name())) {
 
                     const QString errorMsg = c->translate("AccountEditor", "You can not create email addresses for other domains as long as free addresses are not allowed for this domain.");
 
