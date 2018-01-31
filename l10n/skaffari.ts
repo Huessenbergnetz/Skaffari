@@ -250,14 +250,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Password confirmation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Valid until</source>
         <translation type="unfinished"></translation>
     </message>
@@ -351,10 +343,6 @@
     </message>
     <message>
         <source>You can optionally set a storage quota for this account that does not exceed %1. To disable the storage quota, set it to 0. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Confirm the new password.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -454,18 +442,29 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Date and time this account was last updated.</source>
+        <source>New password</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New password confirmation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Confirm the new password by entering it again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>Enter a new password with a minimum length of %n character(s) or leave the field blank to avoid changing the password.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>
     <name>AcountEditor</name>
     <message>
         <source>Enter a valid email address to which you want to forward emails received for account %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Date and time this account was created.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -657,6 +656,40 @@
     <message>
         <source>The entered user name does not match the user name of the administrator you want to delete.</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Created</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Date and time this account was created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Updated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Date and time this account was last updated.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The user name of the administrator.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>Specify a password with a minimum length of %n character(s).</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Enter a new password with a minimum length of %n character(s) or leave the field blank to avoid changing the password.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -873,10 +906,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Confirm your entered password.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Valid until</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1086,6 +1115,17 @@
     <message>
         <source>Used to report issues with sending and receiving emails from and to this domain. Will create postmaster@domain.name address for the selected account.</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Confirm the password by entering it again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>Specify a password with a minimum length of %n character(s).</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>

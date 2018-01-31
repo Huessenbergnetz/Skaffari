@@ -456,7 +456,7 @@
     </message>
     <message>
         <source>Last added domains</source>
-        <translation>Zuletzt hinzugefügte Domäne</translation>
+        <translation>Zuletzt hinzugefügte Domänen</translation>
     </message>
     <message>
         <source>You have not added any domain yet.</source>
@@ -521,10 +521,6 @@
     <message>
         <source>Account name</source>
         <translation>Kontoname</translation>
-    </message>
-    <message>
-        <source>none</source>
-        <translation>nichts</translation>
     </message>
     <message>
         <source>User name and address constraints</source>
@@ -638,6 +634,11 @@
     <message>
         <source>User name</source>
         <translation>Benutzername</translation>
+    </message>
+    <message>
+        <source>none</source>
+        <comment>parent domain</comment>
+        <translation>Keine</translation>
     </message>
 </context>
 </TS>

@@ -528,10 +528,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>none</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>User name and address constraints</source>
         <translation type="unfinished"></translation>
     </message>
@@ -642,6 +638,11 @@
     </message>
     <message>
         <source>User name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>none</source>
+        <comment>parent domain</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>
