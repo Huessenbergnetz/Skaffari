@@ -165,7 +165,7 @@ void AdminEditor::edit(Context *c)
                 if (e.type() == SkaffariError::NoError) {
                     c->stash({
                                  {QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac)},
-                                 {QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated admin %1.").arg(aac.getUsername())}
+                                 {QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated administrator %1.").arg(aac.getUsername())}
                              });
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
