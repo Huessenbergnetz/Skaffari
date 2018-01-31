@@ -31,7 +31,7 @@
                             </div>
                         </td>
                         <td><a href="/admin/{{ admin.id }}/edit">{{ admin.username }}</a></td>
-                        <td>{% if admin.isSuperUser %}{{ _("Super user") }}{% else %}{{ _("Domain master") }}{% endif %}</td>
+                        <td>{% if admin.isSuperUser %}{{ _("Administrator") }}{% else %}{{ _("Domain manager") }}{% endif %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -57,7 +57,7 @@
                     <p class="text-warning">{{ _("Are you sure you want to delete this administrator?") }}</p>
                     <p>{{ _("To proceed, please enter the user name of the administrator you want to delete.") }}</p>
                     <form id="removeAdminForm">
-                        <input type="text" id="adminName" name="adminName" class="form-control" placeholder="{{ _("Administrator user name") }}" value="" required>
+                        <input type="text" id="adminName" name="adminName" class="form-control" placeholder="{{ _("User name") }}" value="" required>
                     </form>
                 </div>
                 <div class="container-fluid">

@@ -287,9 +287,9 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const Cutelyst::ParamsMu
     aa.setUpdated(currentUtc);
 
     if (type == 0) {
-        qCInfo(SK_ADMIN, "%s created a new super user account: %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(username));
+        qCInfo(SK_ADMIN, "%s created a new administrator account: %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(username));
     } else {
-        qCInfo(SK_ADMIN, "%s created a new domain master account: %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(username));
+        qCInfo(SK_ADMIN, "%s created a new domain manager account: %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(username));
     }
 
     return aa;
@@ -407,21 +407,21 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT COUNT(id) FROM adminuser WHERE type = 0"));
 
         if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of super users to check if this is the last super user account."));
-            qCCritical(SK_ADMIN) << "Failed to query count of super users to check if thi is the last super user account." << q.lastError().text();
+            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of administrators to check if this is the last administrator account."));
+            qCCritical(SK_ADMIN) << "Failed to query count of administrators to check if this is the last administrator account." << q.lastError().text();
             return ret;
         }
 
         if (Q_UNLIKELY(!q.next())) {
-            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of super users to check if this is the last super user account."));
-            qCCritical(SK_ADMIN) << "Failed to query count of super users to check if thi is the last super user account." << q.lastError().text();
+            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of administrators to check if this is the last administrator account."));
+            qCCritical(SK_ADMIN) << "Failed to query count of administrators to check if this is the last administrator account." << q.lastError().text();
             return ret;
         }
 
         if (q.value(0).toInt() <= 1) {
             e->setErrorType(SkaffariError::InputError);
-            e->setErrorText(c->translate("AdminAccount", "You can not remove the last super user."));
-            qCWarning(SK_ADMIN, "%s tried to remove the last super user account.", qUtf8Printable(Utils::getUserName(c)));
+            e->setErrorText(c->translate("AdminAccount", "You can not remove the last administrator."));
+            qCWarning(SK_ADMIN, "%s tried to remove the last administrator account.", qUtf8Printable(Utils::getUserName(c)));
             return ret;
         }
     }
@@ -452,8 +452,8 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     q.bindValue(QStringLiteral(":id"), a->getId());
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update admin account in database."));
-        qCCritical(SK_ADMIN, "Failed to update admin account %s in database: %s", qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update administrator account in database."));
+        qCCritical(SK_ADMIN, "Failed to update administrator account %s in database: %s", qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -469,8 +469,8 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     q.bindValue(QStringLiteral(":id"), a->getId());
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update admin to domain connections in database."));
-        qCCritical(SK_ADMIN, "Failed to update connections between admin %s and domains in database: %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update domain manager to domain connections in database."));
+        qCCritical(SK_ADMIN, "Failed to update connections between domain manager %s and domains in database: %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -482,8 +482,8 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
             q.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue<dbid_t>(did));
             q.bindValue(QStringLiteral(":admin_id"), a->getId());
             if (Q_UNLIKELY(!q.exec())) {
-                e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update admin to domain connections in database."));
-                qCCritical(SK_ADMIN, "Failed to update connections between admin %s and domains in database: %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(q.lastError().text()));
+                e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update domain manager to domain connections in database."));
+                qCCritical(SK_ADMIN, "Failed to update connections between domain manager %s and domains in database: %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(q.lastError().text()));
                 return ret;
             }
             domIds << did;
@@ -495,9 +495,9 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     ret = true;
 
     if (a->getType() == 0) {
-        qCInfo(SK_ADMIN, "%s updated super user %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a->getUsername()));
+        qCInfo(SK_ADMIN, "%s updated administrator user %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a->getUsername()));
     } else {
-        qCInfo(SK_ADMIN, "%s updated domain master %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a->getUsername()));
+        qCInfo(SK_ADMIN, "%s updated domain manager %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a->getUsername()));
     }
 
 
@@ -544,8 +544,8 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     q.bindValue(QStringLiteral(":id"), id);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update admin in database."));
-        qCCritical(SK_ADMIN, "Failed to update admin %s in database: %s", qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update administrator in database."));
+        qCCritical(SK_ADMIN, "Failed to update administrator %s in database: %s", qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -562,8 +562,8 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     q.bindValue(QStringLiteral(":tz"), tz);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update admin settings in database."));
-        qCCritical(SK_ADMIN, "Failed to update settings for admin %s in database: %s", qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update administrator settings in database."));
+        qCCritical(SK_ADMIN, "Failed to update settings for administrator %s in database: %s", qUtf8Printable(a->getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -592,9 +592,9 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, AdminAccount *
     ret = true;
 
     if (a->getType() == 0) {
-        qCInfo(SK_ADMIN, "%s updated super user %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a->getUsername()));
+        qCInfo(SK_ADMIN, "%s updated administrator user %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a->getUsername()));
     } else {
-        qCInfo(SK_ADMIN, "%s updated domain master %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a->getUsername()));
+        qCInfo(SK_ADMIN, "%s updated domain manager %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a->getUsername()));
     }
 
     return ret;
@@ -612,20 +612,20 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e, const AdminAcc
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT COUNT(id) FROM adminuser WHERE type = 0"));
 
         if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of super users to check if thi is the last super user account."));
-            qCCritical(SK_ADMIN) << "Failed to query count of super users to check if thi is the last super user account." << q.lastError().text();
+            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of administrators to check if this is the last administrator account."));
+            qCCritical(SK_ADMIN) << "Failed to query count of administrators to check if this is the last administrator account." << q.lastError().text();
             return ret;
         }
 
         if (Q_UNLIKELY(!q.next())) {
-            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of super users to check if thi is the last super user account."));
-            qCCritical(SK_ADMIN) << "Failed to query count of super users to check if thi is the last super user account." << q.lastError().text();
+            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of administrators to check if this is the last administrator account."));
+            qCCritical(SK_ADMIN) << "Failed to query count of administrators to check if this is the last administrator account." << q.lastError().text();
             return ret;
         }
 
         if (q.value(0).toInt() <= 1) {
             e->setErrorType(SkaffariError::InputError);
-            e->setErrorText(c->translate("AdminAccount", "You can not remove the last super user."));
+            e->setErrorText(c->translate("AdminAccount", "You can not remove the last administrator."));
             return ret;
         }
 
@@ -635,7 +635,7 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e, const AdminAcc
     q.bindValue(QStringLiteral(":admin_id"), a.getId());
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete admin to domain connections from database for admin %1.").arg(a.getUsername()));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete domain manager to domain connections from database for admin %1.").arg(a.getUsername()));
         qCCritical(SK_ADMIN, "Failed to delete admin to domain connections for admin %s from the database: %s", qUtf8Printable(a.getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
@@ -644,7 +644,7 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e, const AdminAcc
     q.bindValue(QStringLiteral(":admin_id"), a.getId());
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete admin settings from database for admin %1.").arg(a.getUsername()));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete administrator settings from database for administrator %1.").arg(a.getUsername()));
         qCCritical(SK_ADMIN, "Failed to delete settings for admin %s from database: %s", qUtf8Printable(a.getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
@@ -653,7 +653,7 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e, const AdminAcc
     q.bindValue(QStringLiteral(":id"), a.getId());
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete admin %1 from database.").arg(a.getUsername()));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete administrator %1 from database.").arg(a.getUsername()));
         qCCritical(SK_ADMIN, "Failed to delete admin %s from database: %s", qUtf8Printable(a.getUsername()), qUtf8Printable(q.lastError().text()));
         return ret;
     }
@@ -661,9 +661,9 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e, const AdminAcc
     ret = true;
 
     if (a.getType() == 0) {
-        qCInfo(SK_ADMIN, "%s removed super user %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a.getUsername()));
+        qCInfo(SK_ADMIN, "%s removed administrator %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a.getUsername()));
     } else {
-        qCInfo(SK_ADMIN, "%s removed domain master %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a.getUsername()));
+        qCInfo(SK_ADMIN, "%s removed domain manager %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a.getUsername()));
     }
 
     return ret;
@@ -685,7 +685,7 @@ dbid_t AdminAccount::setAdminAccount(Cutelyst::Context *c, SkaffariError *error,
     q.bindValue(QStringLiteral(":updated_at"), currentUtc);
 
     if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to create admin account in database."));
+        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to create administrator account in database."));
         qCCritical(SK_ADMIN) << "Failed to insert new admin account into database." << q.lastError().text();
         return id;
     }
@@ -704,7 +704,7 @@ bool AdminAccount::rollbackAdminAccount(Cutelyst::Context *c, SkaffariError *err
     q.bindValue(QStringLiteral(":id"), adminId);
 
     if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to revert admin account changes in database."));
+        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to revert administrator account changes in database."));
         qCCritical(SK_ADMIN) << "Failed to revert admin account changes in database." << q.lastError().text();
         return ret;
     }
@@ -723,7 +723,7 @@ bool AdminAccount::setAdminSettings(Cutelyst::Context *c, SkaffariError *error, 
     q.bindValue(QStringLiteral(":id"), adminId);
 
     if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to insert admin settings into database."));
+        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to insert administrator settings into database."));
         qCCritical(SK_ADMIN) << "Failed to insert settings for new administrator into database." << q.lastError().text();
         return ret;
     }
@@ -743,7 +743,7 @@ bool AdminAccount::rollbackAdminSettings(Cutelyst::Context *c, SkaffariError *er
     q.addBindValue(adminId);
 
     if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to revert admin settings in database."));
+        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to revert administrator settings in database."));
         qCCritical(SK_ADMIN) << "Failed to revert admin settings in database." << q.lastError().text();
         return ret;
     }
@@ -768,8 +768,8 @@ bool AdminAccount::setAdminDomains(Cutelyst::Context *c, SkaffariError *error, d
             q.bindValue(QStringLiteral(":admin_id"), adminId);
 
             if (Q_UNLIKELY(!q.exec())) {
-                error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to insert admin to domain connection into database."));
-                qCCritical(SK_ADMIN) << "Failed to insert admin to domain connection into database." << q.lastError().text();
+                error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to insert domain manager to domain connection into database."));
+                qCCritical(SK_ADMIN) << "Failed to insert omain manager to domain connection into database." << q.lastError().text();
                 return ret;
             }
 
@@ -791,8 +791,8 @@ bool AdminAccount::rollbackAdminDomains(Cutelyst::Context *c, SkaffariError *err
     q.bindValue(QStringLiteral(":admin_id"), adminId);
 
     if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to revert admin to domain connections in database."));
-        qCCritical(SK_ADMIN) << "Failed to revert admin to domain connections in database." << q.lastError().text();
+        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to revert omain manager to domain connections in database."));
+        qCCritical(SK_ADMIN) << "Failed to revert omain manager to domain connections in database." << q.lastError().text();
         return ret;
     }
 
@@ -818,7 +818,7 @@ void AdminAccount::toStash(Cutelyst::Context *c, dbid_t adminId)
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("404.html")},
                      {QStringLiteral("site_title"), c->translate("AdminAccount", "Not found")},
-                     {QStringLiteral("not_found_text"), c->translate("AdminAccount", "There is no admin account with database ID %1.").arg(adminId)}
+                     {QStringLiteral("not_found_text"), c->translate("AdminAccount", "There is no administrator account with database ID %1.").arg(adminId)}
                  });
         c->res()->setStatus(404);
     }

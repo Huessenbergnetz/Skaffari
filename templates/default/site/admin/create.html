@@ -38,8 +38,8 @@
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="type" class="col-form-label">{{ help.type.title }}</label>
                 <select class="form-control{% if validationErrors.type.count %} is-invalid{% endif %}" id="type" name="type" aria-describedby="typeDesc">
-                    <option value="1"{% if type == 1 %} selected{% endif %}>{{ _("Domain master") }}</option>
-                    <option value="0"{% if type == 0 %} selected{% endif %}>{{ _("Super user") }}</option>
+                    <option value="1"{% if type == 1 %} selected{% endif %}>{{ _("Domain manager") }}</option>
+                    <option value="0"{% if type == 0 %} selected{% endif %}>{{ _("Administrator") }}</option>
                 </select>
                 {% if validationErrors.type.count %}<div class="invalid-feedback"><small>{{ validationErrors.type.0 }}</small></div>{% endif %}
                 <small id="typeDesc" class="form-text text-muted">{{ help.type.text }}</small>

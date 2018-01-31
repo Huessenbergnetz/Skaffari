@@ -148,7 +148,7 @@ void DomainEditor::edit(Context *c)
         const QString domainQuotaTitle = c->translate("DomainEditor", "Domain quota");
         QString domainQuotaText;
         if (c->stash(QStringLiteral("userType")).value<qint16>() == 0) {
-            // current user is a super administrator
+            // current user is an administrator
             help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Maximum accounts"), c->translate("DomainEditor", "Limits the maximum number of user accounts that can be created in this domain. Set the value to 0 to disable the limit.")));
             domainQuotaText = c->translate("DomainEditor", "Total storage quota for all user accounts belonging to this domain. If the domain quota is set (not 0), each user account in the domain must have set its own quota. Set it to 0 to disable the domain quota. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.");
         } else {
@@ -497,12 +497,12 @@ void DomainEditor::remove(Context* c)
             }
 
         } else {
-            // userType is not 0, so we are not a super user and are not allowed to delete a domain
+            // userType is not 0, so we are not an administrator and are not allowed to delete a domain
 
             c->res()->setStatus(Response::Forbidden);
             if (isAjax) {
 
-                json.insert(QStringLiteral("error_msg"), c->translate("Domain", "Access denied. Only super users are allowed to delete domains."));
+                json.insert(QStringLiteral("error_msg"), c->translate("Domain", "Access denied. Only administrator users are allowed to delete domains."));
 
             } else {
                 c->stash({

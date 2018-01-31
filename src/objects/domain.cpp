@@ -954,10 +954,10 @@ bool Domain::checkAccess(Cutelyst::Context *c, dbid_t domainId)
     const Cutelyst::AuthenticationUser user = Cutelyst::Authentication::user(c);
 
     if (user.value(QStringLiteral("type")).value<qint16>() == 0) {
-        // this is a super administrator, access granted for all domains
+        // this is an administrator, access granted for all domains
         allowed = true;
     } else if (domainId > 0) {
-        // this is a domain administrator, access granted only for connected domains
+        // this is a domain manager, access granted only for connected domains
         allowed = (user.value(QStringLiteral("domains")).value<QVariantList>().contains(domainId));
     }
 

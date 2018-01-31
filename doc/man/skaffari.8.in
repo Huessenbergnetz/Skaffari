@@ -18,13 +18,13 @@ authentication daemon and
 It is inpired by the PHP web-cyradm web interface and can import the settings and database from web-cyradm for an easy migration to
 .BR "Skaffari".
 
-Using super administrators and domain administrators,
+Using administrators and domain managers,
 .B Skaffari
-provides a simple admin user management where super administrators can change everything and domain administrators are only responsible for their domains. Where super administrators can create new domains to manage, domain administrators can only change a limited set of options for their domains. Creating new accounts for a domain is restricted by per domain limitations that can be set by the super administrators. A domain administrator can only create and edit accounts that are inside domains the admin is responsible for. At least one super administrator account is needed to run
+provides a simple admin user management where administrators can change everything and domain managers are only responsible for their domains. Where administrators can create new domains to manage, domain managers can only change a limited set of options for their domains. Creating new accounts for a domain is restricted by per domain limitations that can be set by the administrators. A domain manager can only create and edit accounts that are inside domains the manager is responsible for. At least one administrator account is needed to run
 .BR "Skaffari",
-domain administrators can be connected to multiple domains.
+domain managers can be connected to multiple domains.
 
-Multiple domains can be managed, each with its own set of administrators and accounts. Domains can be limited by super administrators to not exceed a defined amount of accounts and/or disk quota. Single accounts can have individual storage quotas (needed, if there is a domain quota) as well as individual access to IMAP, POP, Sieve and SMTP (has to be also configured in
+Multiple domains can be managed, each with its own set of managers and accounts. Domains can be limited by administrators to not exceed a defined amount of accounts and/or disk quota. Single accounts can have individual storage quotas (needed, if there is a domain quota) as well as individual access to IMAP, POP, Sieve and SMTP (has to be also configured in
 .IR "pam_mysql").
 Also every account can have multiple email addresses and forwards defined.
 

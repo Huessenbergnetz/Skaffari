@@ -124,8 +124,8 @@ void AdminEditor::create(Context *c)
         help.insert(QStringLiteral("username"), HelpEntry(c->translate("AdminEditor", "User name"), c->translate("AdminEditor", "The user name for the new administrator. Can only contain alpha-numeric characters as well as dashes and underscores.")));
         help.insert(QStringLiteral("password"), HelpEntry(c->translate("AdminEditor", "Password"), c->translate("AdminEditor", "Specify a password with a minimum length of %n character(s).", "", SkaffariConfig::accPwMinlength())));
         help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AdminEditor", "Password confirmation"), c->translate("AdminEditor", "Confirm the password by entering it again.")));
-        help.insert(QStringLiteral("type"), HelpEntry(c->translate("AdminEditor", "Type"), c->translate("AdminEditor", "A super user has access to the whole system, while a domain master only has access to the associated domains.")));
-        help.insert(QStringLiteral("assocdomains"), HelpEntry(c->translate("AdminEditor", "Domains"), c->translate("AdminEditor", "For domain masters, select the associated domains the user is responsible for.")));
+        help.insert(QStringLiteral("type"), HelpEntry(c->translate("AdminEditor", "Type"), c->translate("AdminEditor", "An administrator user has access to the whole system, while a domain manager only has access to the associated domains.")));
+        help.insert(QStringLiteral("assocdomains"), HelpEntry(c->translate("AdminEditor", "Domains"), c->translate("AdminEditor", "For domain managers, select the associated domains the user is responsible for.")));
 
         c->stash({
                      {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)},
@@ -191,7 +191,7 @@ void AdminEditor::edit(Context *c)
         help.insert(QStringLiteral("username"), HelpEntry(c->translate("AdminEditor", "User name"), c->translate("AdminEditor", "The user name for the new administrator. Can only contain alpha-numeric characters as well as dashes and underscores.")));
         help.insert(QStringLiteral("password"), HelpEntry(c->translate("AdminEditor", "New password"), c->translate("AdminEditor", "Enter a new password with a minimum length of %n character(s) or leave the field blank to avoid changing the password.", "", SkaffariConfig::accPwMinlength())));
         help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AdminEditor", "Confirm new password"), c->translate("AdminEditor", "Confirm the new password by entering it again.")));
-        help.insert(QStringLiteral("type"), HelpEntry(c->translate("AdminEditor", "Type"), c->translate("AdminEditor", "A super user has access to the whole system, while a domain master only has access to the associated domains.")));
+        help.insert(QStringLiteral("type"), HelpEntry(c->translate("AdminEditor", "Type"), c->translate("AdminEditor", "An administrator has access to the whole system, while a domain master only has access to the associated domains.")));
         help.insert(QStringLiteral("assocdomains"), HelpEntry(c->translate("AdminEditor", "Domains"), c->translate("AdminEditor", "For domain masters, select the associated domains the user is responsible for.")));
 
         c->stash({

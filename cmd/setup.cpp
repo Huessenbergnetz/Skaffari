@@ -147,7 +147,7 @@ int Setup::exec() const
 
         printMessage(QString());
 
-        printDesc(tr("Create a super user administrator account to login into your Skaffari installation. This account can create further super user accounts and domain administrators."));
+        printDesc(tr("Create an administrator account to login into your Skaffari installation. This account can create further administrators and domain managers."));
 
         const QString adminUser = readString(tr("User name"), QStringLiteral("admin"));
         const QString adminPass = readString(tr("Password"), QString());

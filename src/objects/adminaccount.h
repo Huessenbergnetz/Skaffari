@@ -43,7 +43,7 @@ class SkaffariError;
  * \brief Represents an administrator account.
  *
  * The %AdminAccount class represents an administrator account object.
- * There are currently two types of administrators, superusers and domain admins.
+ * There are currently two types of admins, administrators and domain managers.
  * Superusers can modify anything and can also create new domains and deleting existing
  * ones, as well as adding and removing new admin accounts.
  *
@@ -77,7 +77,7 @@ public:
 	 */
     enum AdminAccountType : qint16 {
 		SuperUser = 0,		/**< a super user account, that has all rights */
-        DomainMaster = 1    /**< a domain account, that can only modify certain domains */
+        DomainMaster = 1    /**< a domain manager, that can only modify certain domains */
 	};
     Q_ENUM(AdminAccountType)
 
@@ -90,7 +90,7 @@ public:
 	 *
 	 * Constructs a new administrator account object from the given parameters.
 	 * Most important are the username and the password, by default it constructs
-	 * an account of type superuser. The type can be changed by the type parameter.
+     * an account of type administrator. The type can be changed by the type parameter.
      * \param id the database id of the admin account
 	 * \param username the user name of the administrator
 	 * \param type the admin account type, can not be AllAdmins
@@ -175,7 +175,7 @@ public:
     void setType(qint16 nType);
 
     /*!
-     * \brief Returns \c true if this admin is a super user.
+     * \brief Returns \c true if this admin is a super user (administrator, not domain manager).
      */
     bool isSuperUser() const;
 
