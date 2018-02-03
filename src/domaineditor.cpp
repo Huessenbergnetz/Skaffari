@@ -614,7 +614,7 @@ void DomainEditor::add_account(Context* c)
 
                         Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
                         //: %1 will be the user name of the new account, %2 will be the added email address
-                        c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, c->translate("DomainEditor", "User account %1 successfully created with email address %2.").arg(account.getUsername(), account.getAddresses().at(0)))));
+                        c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, c->translate("DomainEditor", "User account %1 successfully created with email address %2.").arg(account.username(), account.addresses().at(0)))));
                         return;
 
                     } else {

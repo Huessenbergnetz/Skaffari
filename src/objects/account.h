@@ -45,7 +45,7 @@ class SkaffariError;
  * \ingroup skaffaricore
  * \brief Represents an user account
  *
- * A user account contains information about a single email user account, inlcuding associated addresses and forwards.
+ * An user account contains information about a single email user account, inlcuding associated addresses and forwards.
  */
 class Account
 {
@@ -112,7 +112,7 @@ public:
      *
      * \sa setId()
      */
-    dbid_t getId() const;
+    dbid_t id() const;
     /*!
      * \brief Returns the database ID of the domain the account belongs to.
      *
@@ -120,7 +120,7 @@ public:
      *
      * \sa setDomainId()
      */
-    dbid_t getDomainId() const;
+    dbid_t domainId() const;
     /*!
      * \brief Returns the username of the account.
      *
@@ -128,7 +128,7 @@ public:
      *
      * \sa setUsername()
      */
-    QString getUsername() const;
+    QString username() const;
     /*!
      * \brief Returns the prefix of the domain the account belongs to.
      *
@@ -136,7 +136,7 @@ public:
      *
      * \sa setPrefix()
      */
-    QString getPrefix() const;
+    QString prefix() const;
     /*!
      * \brief Returns the name of the domain the account belongs to.
      *
@@ -144,7 +144,7 @@ public:
      *
      * \sa setDomainName()
      */
-    QString getDomainName() const;
+    QString domainName() const;
     /*!
      * \brief Returns \c true if IMAP access is enabled for this account.
      *
@@ -184,7 +184,7 @@ public:
      *
      * \sa setAddresses()
      */
-    QStringList getAddresses() const;
+    QStringList addresses() const;
     /*!
      * \brief Returns the emal forwards that are defined for this account.
      *
@@ -192,31 +192,31 @@ public:
      *
      * \sa setForwards()
      */
-    QStringList getForwards() const;
+    QStringList forwards() const;
     /*!
      * \brief Returns the quota defined for this account in KiB.
      *
      * Access from Grantlee: quota
      *
-     * \sa getHumanQuota(), setQuota()
+     * \sa setQuota()
      */
-    quota_size_t getQuota() const;
+    quota_size_t quota() const;
     /*!
      * \brief Returns the quota used by this account in KiB.
      *
      * Access from Grantlee: usage
      *
-     * \sa getHumanUsage(), setUsage()
+     * \sa setUsage()
      */
-    quota_size_t getUsage() const;
+    quota_size_t usage() const;
     /*!
      * \brief Returns a percentage value of the used quota.
      *
      * Access from Grantlee: usagePercent
      *
-     * \sa getQuota(), getUsage(), setUsagePercent()
+     * \sa quota(), usage(), setUsagePercent()
      */
-	float getUsagePercent() const;
+    float usagePercent() const;
     /*!
      * \brief Returns \c true if this account is valid.
      *
@@ -233,7 +233,7 @@ public:
      *
      * \sa setCreated()
      */
-    QDateTime getCreated() const;
+    QDateTime created() const;
     /*!
      * \brief Returns the date and time this account has been updated the last time.
      *
@@ -241,7 +241,7 @@ public:
      *
      * \sa setUpdated()
      */
-    QDateTime getUpdated() const;
+    QDateTime updated() const;
     /*!
      * \brief Returns the date and time until this account is valid.
      *
@@ -249,7 +249,7 @@ public:
      *
      * \sa setValidUntil()
      */
-    QDateTime getValidUntil() const;
+    QDateTime validUntil() const;
     /*!
      * \brief Returns \c true if forwarded emails should be kept local too.
      *
@@ -292,6 +292,7 @@ public:
     bool expired() const;
     /*!
      * \brief Returns the status as it is saved in the database.
+     * \sa setStatus()
      */
     quint8 status() const;
 
@@ -299,27 +300,27 @@ public:
 
     /*!
      * \brief Sets the database ID of this account.
-     * \sa getId()
+     * \sa id()
      */
     void setId(dbid_t nId);
     /*!
      * \brief Sets the databsae ID of the domain this account belongs to.
-     * \sa getDomainId()
+     * \sa domainId()
      */
     void setDomainId(dbid_t nDomainId);
     /*!
      * \brief Sets the username of this account.
-     * \sa getUsername()
+     * \sa username()
      */
     void setUsername(const QString &nUsername);
     /*!
      * \brief Sets the prefix of the domain this account belongs to.
-     * \sa getPrefix()
+     * \sa prefix()
      */
     void setPrefix(const QString &nPrefix);
     /*!
      * \brief Sets the name of the domain this account belongs to.
-     * \sa getDomainName()
+     * \sa domainName()
      */
     void setDomainName(const QString &nDomainName);
     /*!
@@ -344,32 +345,32 @@ public:
     void setSmtpauthEnabled(bool nSmtpauth);
     /*!
      * \brief Sets the list of email addresses that are connected to this account.
-     * \sa getAddresses()
+     * \sa addresses()
      */
     void setAddresses(const QStringList &nAddresses);
     /*!
      * \brief Sets the list of email forwards that are defined for this account.
-     * \sa getForwards()
+     * \sa forwards()
      */
     void setForwards(const QStringList &nForwards);
     /*!
      * \brief Sets the quota in KiB that is defined for this account.
-     * \sa getQuota()
+     * \sa quota()
      */
     void setQuota(quota_size_t nQuota);
     /*!
      * \brief Sets the amount of quota used by this account in KiB.
-     * \sa getUsage()
+     * \sa usage()
      */
     void setUsage(quota_size_t nUsage);
     /*!
      * \brief Sets the date and time this account has been created.
-     * \sa getCreated()
+     * \sa created()
      */
     void setCreated(const QDateTime &created);
     /*!
      * \brief Sets the date and time this account has been updated the last time.
-     * \sa getUpdated()
+     * \sa updated()
      */
     void setUpdated(const QDateTime &updated);
     /*!
@@ -394,9 +395,10 @@ public:
     void setPasswordExpires(const QDateTime &expirationDate);
     /*!
      * \brief Sets the status as it is saved in the database.
+     * \sa status()
      */
     void setStatus(quint8 status);
-    
+
     /*!
      * \brief Converts the account data into a JSON object.
      */
@@ -646,15 +648,15 @@ Q_DECLARE_TYPEINFO(Account, Q_MOVABLE_TYPE);
 GRANTLEE_BEGIN_LOOKUP(Account)
 QVariant var;
 if (property == QLatin1String("id")) {
-    var.setValue(object.getId());
+    var.setValue(object.id());
 } else if (property == QLatin1String("domainId")) {
-    var.setValue(object.getDomainId());
+    var.setValue(object.domainId());
 } else if (property == QLatin1String("username")) {
-    var.setValue(object.getUsername());
+    var.setValue(object.username());
 } else if (property == QLatin1String("prefix")) {
-    var.setValue(object.getPrefix());
+    var.setValue(object.prefix());
 } else if (property == QLatin1String("domainName")) {
-    var.setValue(object.getDomainName());
+    var.setValue(object.domainName());
 } else if (property == QLatin1String("imap")) {
     var.setValue(object.isImapEnabled());
 } else if (property == QLatin1String("pop")) {
@@ -664,23 +666,23 @@ if (property == QLatin1String("id")) {
 } else if (property == QLatin1String("smtpauth")) {
     var.setValue(object.isSmtpauthEnabled());
 } else if (property == QLatin1String("addresses")) {
-    var.setValue(object.getAddresses());
+    var.setValue(object.addresses());
 } else if (property == QLatin1String("forwards")) {
-    var.setValue(object.getForwards());
+    var.setValue(object.forwards());
 } else if (property == QLatin1String("quota")) {
-    var.setValue(object.getQuota());
+    var.setValue(object.quota());
 } else if (property == QLatin1String("usage")) {
-    var.setValue(object.getUsage());
+    var.setValue(object.usage());
 } else if (property == QLatin1String("usagePercent")) {
-    var.setValue(object.getUsagePercent());
+    var.setValue(object.usagePercent());
 } else if (property == QLatin1String("isValid")) {
     var.setValue(object.isValid());
 } else if (property == QLatin1String("created")) {
-    var.setValue(object.getCreated());
+    var.setValue(object.created());
 } else if (property == QLatin1String("updated")) {
-    var.setValue(object.getUpdated());
+    var.setValue(object.updated());
 } else if (property == QLatin1String("validUntil")) {
-    var.setValue(object.getValidUntil());
+    var.setValue(object.validUntil());
 } else if (property == QLatin1String("keepLocal")) {
     var.setValue(object.keepLocal());
 } else if (property == QLatin1String("catchAll")) {
