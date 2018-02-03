@@ -739,7 +739,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
 
 
 
-bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &username, Domain *domain)
+bool Account::remove(Cutelyst::Context *c, SkaffariError *e) const
 {
     bool ret = false;
 
@@ -748,28 +748,28 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
 
     SkaffariIMAP imap(c);
     if (Q_UNLIKELY(!imap.login())) {
-        e->setImapError(imap.lastError(), c->translate("Account", "Logging in to IMAP server to delete the mailbox %1 failed.").arg(username));
-        qCCritical(SK_ACCOUNT, "Logging in to IMAP server to delete the mailbox %s failed: %s", qUtf8Printable(username), qUtf8Printable(imap.lastError().errorText()));
+        e->setImapError(imap.lastError(), c->translate("Account", "Logging in to IMAP server to delete the mailbox %1 failed.").arg(d->username));
+        qCCritical(SK_ACCOUNT, "Logging in to IMAP server to delete the mailbox %s failed: %s", qUtf8Printable(d->username), qUtf8Printable(imap.lastError().errorText()));
         return ret;
     }
 
-    if (Q_UNLIKELY(!imap.setAcl(username, SkaffariConfig::imapUser()))) {
+    if (Q_UNLIKELY(!imap.setAcl(d->username, SkaffariConfig::imapUser()))) {
         // if Skaffari is responsible for mailbox creation, direct or indirect,
         // remove will fail if we can not delete the mailbox on the IMAP server
         if (SkaffariConfig::imapCreatemailbox() > DoNotCreate) {
-            e->setImapError(imap.lastError(), c->translate("Account", "Setting the access rights for the IMAP administrator to delete the mailbox %1 failed.").arg(username));
-            qCCritical(SK_ACCOUNT, "Setting the access rights for the IMAP administrator to delete the mailbox %s failed: %s", qUtf8Printable(username), qUtf8Printable(imap.lastError().errorText()));
+            e->setImapError(imap.lastError(), c->translate("Account", "Setting the access rights for the IMAP administrator to delete the mailbox %1 failed.").arg(d->username));
+            qCCritical(SK_ACCOUNT, "Setting the access rights for the IMAP administrator to delete the mailbox %s failed: %s", qUtf8Printable(d->username), qUtf8Printable(imap.lastError().errorText()));
             imap.logout();
             return ret;
         }
     }
 
-    if (!imap.deleteMailbox(username) && (SkaffariConfig::imapCreatemailbox() != DoNotCreate)) {
+    if (!imap.deleteMailbox(d->username) && (SkaffariConfig::imapCreatemailbox() != DoNotCreate)) {
         // if Skaffari is responsible for mailbox creation, direct or indirect,
         // remove will fail if we can not delete the mailbox on the IMAP server
         if (SkaffariConfig::imapCreatemailbox() > DoNotCreate) {
-            e->setImapError(imap.lastError(), c->translate("Account", "Mailbox %1 could not be deleted from the IMAP server.").arg(username));
-            qCCritical(SK_ACCOUNT, "Mailbox %s could not be deleted from the IMAP server: %s", qUtf8Printable(username), qUtf8Printable(imap.lastError().errorText()));
+            e->setImapError(imap.lastError(), c->translate("Account", "Mailbox %1 could not be deleted from the IMAP server.").arg(d->username));
+            qCCritical(SK_ACCOUNT, "Mailbox %s could not be deleted from the IMAP server: %s", qUtf8Printable(d->username), qUtf8Printable(imap.lastError().errorText()));
             imap.logout();
             return ret;
         }
@@ -778,112 +778,69 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e, const QString &user
     imap.logout();
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT quota FROM accountuser WHERE username = :username"));
-    q.bindValue(QStringLiteral(":username"), username);
+    q.bindValue(QStringLiteral(":username"), d->username);
 
     const quota_size_t quota = (q.exec() && q.next()) ? q.value(0).value<quota_size_t>() : 0;
 
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM alias WHERE username = :username"));
-    q.bindValue(QStringLiteral(":username"), username);
+    q.bindValue(QStringLiteral(":username"), d->username);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Alias addresses for user account %1 could not be deleted from the database.").arg(username));
-        qCCritical(SK_ACCOUNT, "Alias addresses for user account %s could not be deleted from the database: %s", qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("Account", "Alias addresses for user account %1 could not be deleted from the database.").arg(d->username));
+        qCCritical(SK_ACCOUNT, "Alias addresses for user account %s could not be deleted from the database: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE username = :username"));
-    q.bindValue(QStringLiteral(":username"), username);
+    q.bindValue(QStringLiteral(":username"), d->username);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Email addresses for user account %1 could not be deleted from the database.").arg(username));
-        qCCritical(SK_ACCOUNT, "Email addresses for user account %s could not be deleted from the database: %s", qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("Account", "Email addresses for user account %1 could not be deleted from the database.").arg(d->username));
+        qCCritical(SK_ACCOUNT, "Email addresses for user account %s could not be deleted from the database: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :username AND username = ''"));
-    q.bindValue(QStringLiteral(":username"), username);
+    q.bindValue(QStringLiteral(":username"), d->username);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Forward addresses for user account %1 could not be deleted from the database.").arg(username));
-        qCCritical(SK_ACCOUNT, "Forward addresses for user account %s could not be deleted from the database: %s", qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("Account", "Forward addresses for user account %1 could not be deleted from the database.").arg(d->username));
+        qCCritical(SK_ACCOUNT, "Forward addresses for user account %s could not be deleted from the database: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE username = :username"));
-    q.bindValue(QStringLiteral(":username"), username);
+    q.bindValue(QStringLiteral(":username"), d->username);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "User account %1 could not be deleted from the database.").arg(username));
-        qCCritical(SK_ACCOUNT, "User account %s could not be deleted from the database.: %s", qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("Account", "User account %1 could not be deleted from the database.").arg(d->username));
+        qCCritical(SK_ACCOUNT, "User account %s could not be deleted from the database.: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM log WHERE user = :username"));
-    q.bindValue(QStringLiteral(":username"), username);
+    q.bindValue(QStringLiteral(":username"), d->username);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Log entries for user account %1 could not be deleted from the database.").arg(username));
-        qCWarning(SK_ACCOUNT, "Log entries for user account %s could not be deleted from the database.: %s", qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("Account", "Log entries for user account %1 could not be deleted from the database.").arg(d->username));
+        qCWarning(SK_ACCOUNT, "Log entries for user account %s could not be deleted from the database.: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET accountcount = accountcount - 1, domainquotaused = domainquotaused - :quota WHERE id = :id"));
     q.bindValue(QStringLiteral(":quota"), quota);
-    q.bindValue(QStringLiteral(":id"), domain->id());
+    q.bindValue(QStringLiteral(":id"), d->domainId);
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Number of user accounts in the domain and domain quota used could not be updated in the database."));
-        qCWarning(SK_ACCOUNT, "Failed to update count of domain accounts and used quota for domain %s in database: %s", qUtf8Printable(domain->name()), qUtf8Printable(q.lastError().text()));
+        qCWarning(SK_ACCOUNT, "Failed to update count of domain accounts and used quota for domain ID %lu in database: %s", d->domainId, qUtf8Printable(q.lastError().text()));
     }
 
-    domain->setAccounts(domain->accounts() - 1);
-    domain->setDomainQuotaUsed(domain->domainQuotaUsed() - quota);
-
-    qCInfo(SK_ACCOUNT, "%s deleted account %s that was part of domain %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(username), qUtf8Printable(domain->name()));
+    qCInfo(SK_ACCOUNT, "%s deleted account %s (ID: %lu, domain ID: %lu).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->username), d->id, d->domainId);
 
     ret = true;
 
     return ret;
 }
-
-
-bool Account::remove(Cutelyst::Context *c, SkaffariError *e, Domain *d)
-{
-    bool ret = false;
-
-    Q_ASSERT_X(c, "remove account", "invalid context object");
-    Q_ASSERT_X(e, "remove account", "invalid error object");
-
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM accountuser WHERE domain_id = :domain_id"));
-    q.bindValue(QStringLiteral(":domain_id"), d->id());
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "User accounts of the domain %1 could not be queried from the database.").arg(d->name()));
-        qCCritical(SK_ACCOUNT, "User accounts of the domain %s (ID: %lu) could not be queried from the database: %s", qUtf8Printable(d->name()), d->id(), qUtf8Printable(q.lastError().text()));
-        return ret;
-    }
-
-    QStringList usernames;
-    while (q.next()) {
-        usernames << q.value(0).toString();
-    }
-
-    if (!usernames.empty()) {
-        SkaffariError e2(c);
-        for (int i = 0; i < usernames.size(); ++i) {
-            if (!Account::remove(c, &e2, usernames.at(i), d)) {
-                e->setErrorType(SkaffariError::ApplicationError);
-                e->setErrorText(c->translate("Account", "Abort deleting user accounts in the domain %1 due to the previous error: %2").arg(d->name(), e2.errorText()));
-                return ret;
-            }
-        }
-    }
-
-    ret = true;
-
-    return ret;
-}
-
-
 
 Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const Domain &d, const Cutelyst::Pagination &p, const QString &sortBy, const QString &sortOrder, const QString &searchRole, const QString &searchString)
 {
@@ -1064,7 +1021,6 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
     return pag;
 }
 
-
 Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
 {
     Account a;
@@ -1195,7 +1151,6 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
     return a;
 }
 
-
 void Account::toStash(Cutelyst::Context *c, dbid_t accountId)
 {
     Q_ASSERT_X(c, "account to stash", "invalid context object");
@@ -1217,7 +1172,6 @@ void Account::toStash(Cutelyst::Context *c, dbid_t accountId)
     }
 }
 
-
 void Account::toStash(Cutelyst::Context *c, const Account &a)
 {
     Q_ASSERT_X(c, "account to stash", "invalid context object");
@@ -1228,15 +1182,12 @@ void Account::toStash(Cutelyst::Context *c, const Account &a)
              });
 }
 
-
 Account Account::fromStash(Cutelyst::Context *c)
 {
     Account a;
     a = c->stash(QStringLiteral(ACCOUNT_STASH_KEY)).value<Account>();
     return a;
 }
-
-
 
 bool Account::update(Cutelyst::Context *c, SkaffariError *e, Domain *dom, const QVariantHash &p)
 {
@@ -1590,8 +1541,6 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
     return actions;
 }
 
-
-
 bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const Domain &d, const Cutelyst::ParamsMultiMap &p, const QString &oldAddress)
 {
     bool ret = false;
@@ -1676,7 +1625,6 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
     return ret;
 }
 
-
 bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const Domain &d, const Cutelyst::ParamsMultiMap &p)
 {
     bool ret = false;
@@ -1746,7 +1694,6 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const
     return ret;
 }
 
-
 bool Account::removeEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &address)
 {
     bool ret = false;
@@ -1774,7 +1721,6 @@ bool Account::removeEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
 
     return ret;
 }
-
 
 bool Account::addForward(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p)
 {
@@ -1836,7 +1782,6 @@ bool Account::addForward(Cutelyst::Context *c, SkaffariError *e, Account *a, con
 
     return ret;
 }
-
 
 bool Account::removeForward(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &forward)
 {
@@ -1914,7 +1859,6 @@ bool Account::removeForward(Cutelyst::Context *c, SkaffariError *e, Account *a, 
     return ret;
 }
 
-
 bool Account::editForward(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &oldForward, const QString &newForward)
 {
     bool ret = false;
@@ -1977,7 +1921,6 @@ bool Account::editForward(Cutelyst::Context *c, SkaffariError *e, Account *a, co
     return ret;
 }
 
-
 bool Account::changeKeepLocal(Cutelyst::Context *c, SkaffariError *e, Account *a, bool keepLocal)
 {
     bool ret = false;
@@ -2034,7 +1977,6 @@ bool Account::changeKeepLocal(Cutelyst::Context *c, SkaffariError *e, Account *a
     return ret;
 }
 
-
 QString Account::addressFromACE(const QString &address)
 {
     QString addressUtf8;
@@ -2047,7 +1989,6 @@ QString Account::addressFromACE(const QString &address)
     return addressUtf8;
 }
 
-
 QString Account::addressToACE(const QString &address)
 {
     QString addressACE;
@@ -2059,7 +2000,6 @@ QString Account::addressToACE(const QString &address)
 
     return addressACE;
 }
-
 
 quint8 Account::calcStatus(const QDateTime validUntil, const QDateTime pwExpires)
 {
@@ -2079,7 +2019,6 @@ quint8 Account::calcStatus(const QDateTime validUntil, const QDateTime pwExpires
 
     return _stat;
 }
-
 
 std::pair<QString,QString> Account::addressParts(const QString &address)
 {

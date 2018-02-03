@@ -423,7 +423,7 @@ public:
     static Account create(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p, const Domain &d, const QStringList &selectedKids);
 
     /*!
-     * \brief Removes the account defined by \a username from the database and the IMAP server.
+     * \brief Removes the account from the database and the IMAP server.
      *
      * Will at first try to delete the account's mailbox from the IMAP server, if that succeeds, the account will
      * be deleted from the database.
@@ -432,23 +432,10 @@ public:
      *
      * \param c         Pointer to the current context, used for string translation and user authentication.
      * \param e         Pointer to an object taking information about occurring errors.
-     * \param username  The username of the account to delete.
      * \param domain    The domain the account to delete belongs to.
      * \return \c true on success.
      */
-    static bool remove(Cutelyst::Context *c, SkaffariError *e, const QString &username, Domain *domain);
-
-    /*!
-     * \brief Removes all accounts that belong to the domain defined by \a d.
-     *
-     * If deletion fails, the SkaffariError object pointed to by \a e will contain information about the error.
-     *
-     * \param c Pointer to the current context, used for string translation and user authentication.
-     * \param e Pointer to an object taking information about occurring errors.
-     * \param d Pointer to the domain object the accounts to delete belong to.
-     * \return \c true on success.
-     */
-    static bool remove(Cutelyst::Context *c, SkaffariError *e, Domain *d);
+    bool remove(Cutelyst::Context *c, SkaffariError *e) const;
 
     /*!
      * \brief Lists all accounts belonging to the domain \a d.
