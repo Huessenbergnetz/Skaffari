@@ -265,7 +265,7 @@ public:
      *
      * \sa setCatchAll()
      */
-    bool cathAll() const;
+    bool catchAll() const;
     /*!
      * \brief Returns the date and time when the current password of this user expires.
      *
@@ -508,12 +508,11 @@ public:
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
      * \param e Pointer to an object taking information about occurring errors.
-     * \param a Pointer to an Account object that should be updated.
-     * \param d Pointer to an Domain object that will have it's used domain quota updated.
+     * \param dom Pointer to an Domain object that will have it's used domain quota updated.
      * \param p Updated parameters for this account.
      * \return \c true on success.
      */
-    static bool update(Cutelyst::Context *c, SkaffariError *e, Account *a, Domain *d, const QVariantHash &p);
+    bool update(Cutelyst::Context *c, SkaffariError *e, Domain *dom, const QVariantHash &p);
 
     /*!
      * \brief Checks if all account data is available and creates missing data.
@@ -686,7 +685,7 @@ if (property == QLatin1String("id")) {
 } else if (property == QLatin1String("keepLocal")) {
     var.setValue(object.keepLocal());
 } else if (property == QLatin1String("catchAll")) {
-    var.setValue(object.cathAll());
+    var.setValue(object.catchAll());
 } else if (property == QLatin1String("passwordExpires")) {
     var.setValue(object.passwordExpires());
 } else if (property == QLatin1String("passwordExpired")) {

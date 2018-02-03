@@ -102,12 +102,7 @@ void AccountEditor::edit(Context* c)
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
                 SkaffariError e(c);
-                if (Account::update(c,
-                                    &e,
-                                    &a,
-                                    &dom,
-                                    vr.values())) {
-
+                if (a.update(c, &e, &dom, vr.values())) {
                     c->stash({
                                  {QStringLiteral("status_msg"), c->translate("AccountEditor", "User account %1 successfully updated.").arg(a.username())},
                                  {QStringLiteral("account"), QVariant::fromValue<Account>(a)},
