@@ -178,7 +178,7 @@ void AccountEditor::remove(Context* c)
             if (c->req()->bodyParam(QStringLiteral("accountName")) == a.username()) {
 
                 SkaffariError e(c);
-                if (Account::remove(c, &e, a.username(), &dom)) {
+                if (a.remove(c, &e)) {
 
                     const QString statusMsg = c->translate("AccountEditor", "User account %1 successfully removed.").arg(a.username());
 
