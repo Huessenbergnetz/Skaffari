@@ -637,19 +637,34 @@ bool Domain::isAvailable(const QString &domainName)
     return available;
 }
 
-bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParentId, bool deleteChildren)
+bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParentId, bool deleteChildren) const
 {
     bool ret = false;
 
     Q_ASSERT_X(error, "remove domain", "invalid errorData object");
     Q_ASSERT_X(c, "remove domain", "invalid Cutelyst context");
 
-    if (!Account::remove(c, error, this)) {
-        qCCritical(SK_DOMAIN, "Failed to remove domain %s", qUtf8Printable(d->name));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id FROM accountuser WHERE domain_id = :domain_id"));
+    q.bindValue(QStringLiteral(":domain_id"), d->id);
+
+    if (Q_UNLIKELY(!q.exec())) {
+        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to get database IDs of the accounts for this domain."));
+        qCCritical(SK_DOMAIN, "Can not get account IDs for domain %s (ID: %lu) from the database to delete them and the domain: %s", qUtf8Printable(d->name), d->id, qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domainadmin WHERE domain_id = :domain_id"));
+    while (q.next() && (error->type() == SkaffariError::NoError)) {
+        Account a = Account::get(c, error, q.value(0).value<dbid_t>());
+        if (a.isValid()) {
+            a.remove(c, error);
+        }
+    }
+
+    if (error->type() != SkaffariError::NoError) {
+        return ret;
+    }
+
+    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domainadmin WHERE domain_id = :domain_id"));
     q.bindValue(QStringLiteral(":domain_id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
@@ -711,10 +726,6 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
     ret = true;
 
     qCInfo(SK_DOMAIN, "%s removed domain %s (ID: %u)", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->name), d->id);
-
-    d->id = 0;
-    d->prefix.clear();
-    d->name.clear();
 
     return ret;
 }

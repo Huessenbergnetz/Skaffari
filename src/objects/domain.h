@@ -430,7 +430,7 @@ public:
      * \param deleteChildren    If \c true, child domains will be removed too.
      * \return \c true on success
      */
-    bool remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParentId, bool deleteChildren);
+    bool remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParentId, bool deleteChildren) const;
 
     /*!
      * \brief Updates domain \a d in the database.
