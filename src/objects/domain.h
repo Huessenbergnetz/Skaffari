@@ -422,8 +422,6 @@ public:
     /*!
      * \brief Removes the %Domain and all of their accounts from the database and the IMAP server.
      *
-     * After successfull removing the domain from the database, the %Domain object will be \link isValid() invalid\endlink.
-     *
      * \param c                 Pointer to the current context, used for translations.
      * \param error             Pointer to an error object to give feedback on database and IMAP errors.
      * \param newParent         Database ID of the new parent domain if the domain to remove has child domains.
