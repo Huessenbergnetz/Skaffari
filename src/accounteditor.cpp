@@ -26,6 +26,7 @@
 #include "objects/helpentry.h"
 #include "utils/skaffariconfig.h"
 #include "utils/utils.h"
+#include "validators/skvalidatordomainexists.h"
 #include "../common/global.h"
 
 #include <Cutelyst/Plugins/Session/Session>
@@ -338,7 +339,7 @@ void AccountEditor::edit_address(Context *c, const QString &address)
                 } else {
 
                     SkaffariError e(c);
-                    if (Account::updateEmail(c, &e, &a, d, p, address)) {
+                    if (a.updateEmail(c, &e, p, address)) {
 
                         const QString newAddress = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"));
                         const QString statusMsg = c->translate("AccountEditor", "Successfully changed email address from %1 to %2.").arg(address, newAddress);
@@ -591,22 +592,10 @@ void AccountEditor::add_address(Context *c)
 
                     c->res()->setStatus(Response::BadRequest);
 
-                } else if (!Domain::isAvailable(newMailDomain)) {
-
-                    const QString errorMsg = c->translate("AccountEditor", "You can not create email addresses for domains you are not responsible for. Please create domain %1 before adding email addresses for this domain.").arg(newMailDomain);
-
-                    if (isAjax) {
-                        json.insert(QStringLiteral("error_msg"), QJsonValue(errorMsg));
-                    } else {
-                        c->setStash(QStringLiteral("error_msg"), errorMsg);
-                    }
-
-                    c->res()->setStatus(Response::BadRequest);
-
                 } else {
 
                     SkaffariError e(c);
-                    if (Account::addEmail(c, &e, &a, d, p)) {
+                    if (a.addEmail(c, &e, p)) {
 
                         const QString newEmailAddress = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + newMailDomain;
                         const QString statusMsg = c->translate("AccountEditor", "Successfully added email address %1 to account %2.").arg(newEmailAddress, a.username());

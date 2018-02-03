@@ -1541,19 +1541,27 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
     return actions;
 }
 
-bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const Domain &d, const Cutelyst::ParamsMultiMap &p, const QString &oldAddress)
+bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p, const QString &oldAddress)
 {
     bool ret = false;
 
     Q_ASSERT_X(c, "update email", "invalid context object");
     Q_ASSERT_X(e, "update email", "invalid error object");
-    Q_ASSERT_X(a, "update email", "invalid account object");
+
+    Domain dom = Domain::fromStash(c);
+    if (dom.id() != d->domainId) {
+        dom = Domain::get(c, d->domainId, e);
+    }
+
+    if (e->type() != SkaffariError::NoError) {
+        return ret;
+    }
 
     QString address;
-    if (d.isFreeNamesEnabled()) {
+    if (dom.isFreeNamesEnabled()) {
         address = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"));
     } else {
-        address = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + a->domainName();
+        address = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + dom.name();
     }
 
     if (address == oldAddress) {
@@ -1563,10 +1571,10 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
         return ret;
     }
 
-    if (a->addresses().contains(address)) {
+    if (d->addresses.contains(address)) {
         e->setErrorType(SkaffariError::InputError);
         e->setErrorText(c->translate("Account", "The email address %1 is already part of this account.").arg(address));
-        qCWarning(SK_ACCOUNT, "Updating email address failed: address %s is already part of account %s.", qUtf8Printable(address), qUtf8Printable(a->username()));
+        qCWarning(SK_ACCOUNT, "Updating email address failed: address %s is already part of account %s.", qUtf8Printable(address), qUtf8Printable(d->username));
         return ret;
     }
 
@@ -1601,47 +1609,40 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, co
     q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET alias = :aliasnew WHERE alias = :aliasold AND username = :username"));
     q.bindValue(QStringLiteral(":aliasnew"), addressToACE(address));
     q.bindValue(QStringLiteral(":aliasold"), addressToACE(oldAddress));
-    q.bindValue(QStringLiteral(":username"), a->username());
+    q.bindValue(QStringLiteral(":username"), d->username);
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Failed to update email address %1.").arg(oldAddress));
-        qCCritical(SK_ACCOUNT, "Failed to change email address %s of account ID %u (%s) to %s: %s", qUtf8Printable(oldAddress), a->id(), qUtf8Printable(a->username()), qUtf8Printable(address), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_ACCOUNT, "Failed to change email address %s of account ID %u (%s) to %s: %s", qUtf8Printable(oldAddress), d->id, qUtf8Printable(d->username), qUtf8Printable(address), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
-    QStringList addresses = a->addresses();
-    addresses.removeOne(oldAddress);
-    addresses.push_back(address);
-    if (addresses.size() > 1) {
+    d->addresses.removeOne(oldAddress);
+    d->addresses.push_back(address);
+    if (d->addresses.size() > 1) {
         QCollator col(c->locale());
-        std::sort(addresses.begin(), addresses.end(), col);
+        std::sort(d->addresses.begin(), d->addresses.end(), col);
     }
-    a->setAddresses(addresses);
 
-    qCInfo(SK_ACCOUNT, "%s updated email address %s of account %s (ID %lu) to %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(oldAddress), qUtf8Printable(a->username()), a->id(), qUtf8Printable(address));
+    qCInfo(SK_ACCOUNT, "%s updated email address %s of account %s (ID %lu) to %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(oldAddress), qUtf8Printable(d->username), d->id, qUtf8Printable(address));
 
     ret = true;
 
     return ret;
 }
 
-bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const Domain &d, const Cutelyst::ParamsMultiMap &p)
+bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p)
 {
     bool ret = false;
 
     Q_ASSERT_X(c, "update email", "invalid context object");
     Q_ASSERT_X(e, "update email", "invalid error object");
-    Q_ASSERT_X(a, "update email", "invalid account object");
 
-    QString address;
-    if (d.isFreeNamesEnabled()) {
-        address = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"));
-    } else {
-        address = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + a->domainName();
-    }
+    const QString address = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"));
+    const QString aceAddress = Account::addressToACE(address);
 
     QList<Cutelyst::ValidatorEmail::Diagnose> diags;
-    if (!Cutelyst::ValidatorEmail::validate(address, Cutelyst::ValidatorEmail::Valid, false, &diags)) {
+    if (!Cutelyst::ValidatorEmail::validate(aceAddress, Cutelyst::ValidatorEmail::Valid, false, &diags)) {
         e->setErrorType(SkaffariError::InputError);
         e->setErrorText(Cutelyst::ValidatorEmail::diagnoseString(c, diags.at(0)));
         qCWarning(SK_ACCOUNT, "Adding email address failed: new address %s is not valid.", qUtf8Printable(address));
@@ -1649,11 +1650,11 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const
     }
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias, dest, username FROM virtual WHERE alias = :address"));
-    q.bindValue(QStringLiteral(":address"), addressToACE(address));
+    q.bindValue(QStringLiteral(":address"), aceAddress);
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Unable to check if the new email address %1 is already assigned to another user account.").arg(address));
-        qCCritical(SK_ACCOUNT, "Unable to check if the new email address %s for account %s (ID: %lu) is already assigned to another user account: %s", qUtf8Printable(address), qUtf8Printable(a->username()), a->id(), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_ACCOUNT, "Unable to check if the new email address %s for account %s (ID: %lu) is already assigned to another user account: %s", qUtf8Printable(address), qUtf8Printable(d->username), d->id, qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -1664,30 +1665,28 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const
         }
         e->setErrorType(SkaffariError::InputError);
         e->setErrorText(c->translate("Account", "Email address %1 is already assigned to another user account.").arg(address));
-        qCWarning(SK_ACCOUNT, "%s tried to add email address %s to account %s (ID: %lu) that is already assigned to %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(address), qUtf8Printable(a->username()), a->id(), qUtf8Printable(otherUser));
+        qCWarning(SK_ACCOUNT, "%s tried to add email address %s to account %s (ID: %lu) that is already assigned to %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(address), qUtf8Printable(d->username), d->id, qUtf8Printable(otherUser));
         return ret;
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
-    q.bindValue(QStringLiteral(":alias"), addressToACE(address));
-    q.bindValue(QStringLiteral(":dest"), a->username());
-    q.bindValue(QStringLiteral(":username"), a->username());
+    q.bindValue(QStringLiteral(":alias"), aceAddress);
+    q.bindValue(QStringLiteral(":dest"), d->username);
+    q.bindValue(QStringLiteral(":username"), d->username);
     q.bindValue(QStringLiteral(":status"), 1);
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "New email address could not be added to database."));
-        qCCritical(SK_ACCOUNT, "Failed to insert new email address %s for account ID %u (%s) into database: %s", qUtf8Printable(address), a->id(), qUtf8Printable(a->username()), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_ACCOUNT, "Failed to insert new email address %s for account ID %u (%s) into database: %s", qUtf8Printable(address), d->id, qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
-    QStringList addresses = a->addresses();
-    addresses.push_back(address);
-    if (address.size() > 1) {
-        addresses.sort();
+    d->addresses.push_back(address);
+    if (d->addresses.size() > 1) {
+        d->addresses.sort();
     }
-    a->setAddresses(addresses);
 
-    qCInfo(SK_ACCOUNT, "%s added new email address %s to account %s (ID: %lu).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(address), qUtf8Printable(a->username()), a->id());
+    qCInfo(SK_ACCOUNT, "%s added new email address %s to account %s (ID: %lu).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(address), qUtf8Printable(d->username), d->id);
 
     ret = true;
 

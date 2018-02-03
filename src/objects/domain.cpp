@@ -405,22 +405,17 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
         if (roleAccId > 0) {
             auto roleAcc = Account::get(c, errorData, roleAccId);
             if (Q_LIKELY(roleAcc.id() > 0)) {
-                const QString email = i.value() + QLatin1Char('@') + dom.name();
-                if (Cutelyst::ValidatorEmail::validate(email, Cutelyst::ValidatorEmail::Valid)) {
-                    const Cutelyst::ParamsMultiMap roleAccParams({
-                                                                     {QStringLiteral("newlocalpart"), i.value()},
-                                                                     {QStringLiteral("newmaildomain"), dom.name()}
-                                                                 });
-                    auto roleDom = Domain::get(c, roleAcc.domainId(), errorData);
-                    if (Q_LIKELY(roleDom)) {
-                        if (Account::addEmail(c, errorData, &roleAcc, roleDom, roleAccParams)) {
-                            qCInfo(SK_DOMAIN, "%s created a new email address for the %s role of new domain %s in account %s (ID: %u).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(roleAcc.username()), roleAcc.id());
-                        }
-                    } else {
-                        qCWarning(SK_DOMAIN, "Failed to query domain with ID %u of account with ID %u to use as %s account for new domain %s: %s", roleAcc.domainId(), roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(errorData->errorText()));
+                const Cutelyst::ParamsMultiMap roleAccParams({
+                                                                 {QStringLiteral("newlocalpart"), i.value()},
+                                                                 {QStringLiteral("newmaildomain"), dom.name()}
+                                                             });
+                auto roleDom = Domain::get(c, roleAcc.domainId(), errorData);
+                if (Q_LIKELY(roleDom)) {
+                    if (roleAcc.addEmail(c, errorData, roleAccParams)) {
+                        qCInfo(SK_DOMAIN, "%s created a new email address for the %s role of new domain %s in account %s (ID: %u).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(roleAcc.username()), roleAcc.id());
                     }
                 } else {
-                    qCWarning(SK_DOMAIN, "Can not add invalid email address \"%s\" of new domain %s to account %s (ID: %u).", qUtf8Printable(email), qUtf8Printable(dom.name()), qUtf8Printable(roleAcc.username()), roleAcc.id());
+                    qCWarning(SK_DOMAIN, "Failed to query domain with ID %u of account with ID %u to use as %s account for new domain %s: %s", roleAcc.domainId(), roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(errorData->errorText()));
                 }
             } else {
                 qCWarning(SK_DOMAIN, "Failed to query account with ID %u to use as %s account for new domain %s: %s", roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(errorData->errorText()));

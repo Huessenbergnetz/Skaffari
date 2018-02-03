@@ -522,12 +522,11 @@ public:
      * \param c             Pointer to the current context, used for string translation and user authentication.
      * \param e             Pointer to an object taking information about occurring errors.
      * \param a             Pointer to the Account object the email address should be updated for.
-     * \param d             The domain the account belongs to.
      * \param p             Input parameters containing the updated email address.
      * \param oldAddress    The old email address.
      * \return \c true on success.
      */
-    static bool updateEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const Domain &d, const Cutelyst::ParamsMultiMap &p, const QString &oldAddress);
+    bool updateEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p, const QString &oldAddress);
 
     /*!
      * \brief Adds a new email address to the account pointed to by \a a.
@@ -537,12 +536,10 @@ public:
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
      * \param e Pointer to an object taking information about occurring errors.
-     * \param a Pointer to the Account object the new email address should be added to.
-     * \param d The domain this account belongs to.
      * \param p Input parameters containing the new email address.
      * \return \c true on success.
      */
-    static bool addEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const Domain &d, const Cutelyst::ParamsMultiMap &p);
+    bool addEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p);
 
     /*!
      * \brief Removes an email address from the account pointed to by \a a.
