@@ -156,6 +156,10 @@ public:
      * Accounts/pwminlength
      */
     static quint8 accPwMinlength();
+#ifdef PWQUALITY_ENABLED
+    static QString accPwSettingsFile();
+    static int accPwThreshold();
+#endif
 
     /*!
      * \brief Password encryption algorithm for admin accounts.
@@ -188,6 +192,10 @@ public:
      * Admins/pwminlength
      */
     static quint8 admPwMinlength();
+#ifdef PWQUALITY_ENABLED
+    static QString admPwSettingsFile();
+    static int admPwThreshold();
+#endif
 
     /*!
      * \brief The default domain quota for new domains.
@@ -419,6 +427,10 @@ public:
      */
     static bool useMemcachedSession();
 
+#ifdef PWQUALITY_ENABLED
+    static int pwqDifok();
+#endif
+
 private:
     static Password::Method m_accPwMethod;
     static Password::Algorithm m_accPwAlgorithm;
@@ -461,6 +473,13 @@ private:
 
     static bool m_useMemcached;
     static bool m_useMemcachedSession;
+
+#ifdef PWQUALITY_ENABLED
+    static QString m_accPwSettingsFile;
+    static int m_accPwThreshold;
+    static QString m_admPwSettingsFile;
+    static int m_admPwThreshold;
+#endif
 
     static QVariant loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal = QVariant());
     static SimpleAccount loadDefaultAccount(const QString &optionName);

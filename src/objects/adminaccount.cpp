@@ -574,13 +574,13 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, Cutelyst::Auth
     return ret;
 }
 
-bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e, const AdminAccount &a)
+bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e)
 {
     bool ret = false;
 
     QSqlQuery q;
 
-    if (a.isSuperUser()) {
+    if (isSuperUser()) {
 
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT COUNT(id) FROM adminuser WHERE type = 0"));
 
@@ -604,39 +604,39 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e, const AdminAcc
 
     }
 
-    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domainadmin WHERE admin_id = :admin_id"));
-    q.bindValue(QStringLiteral(":admin_id"), a.id());
+    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM settings WHERE admin_id = :admin_id"));
+    q.bindValue(QStringLiteral(":admin_id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete connections between domain manager %1 and associated domains from the database.").arg(a.username()));
-        qCCritical(SK_ADMIN, "Failed to delete admin to domain connections for admin %s from the database: %s", qUtf8Printable(a.username()), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete administrator settings from database for administrator %1.").arg(d->username));
+        qCCritical(SK_ADMIN, "Failed to delete settings for admin %s from database: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
-    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM settings WHERE admin_id = :admin_id"));
-    q.bindValue(QStringLiteral(":admin_id"), a.id());
+    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domainadmin WHERE admin_id = :admin_id"));
+    q.bindValue(QStringLiteral(":admin_id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete administrator settings from database for administrator %1.").arg(a.username()));
-        qCCritical(SK_ADMIN, "Failed to delete settings for admin %s from database: %s", qUtf8Printable(a.username()), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete connections between domain manager %1 and associated domains from the database.").arg(d->username));
+        qCCritical(SK_ADMIN, "Failed to delete admin to domain connections for admin %s from the database: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM adminuser WHERE id = :id"));
-    q.bindValue(QStringLiteral(":id"), a.id());
+    q.bindValue(QStringLiteral(":id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete administrator %1 from database.").arg(a.username()));
-        qCCritical(SK_ADMIN, "Failed to delete admin %s from database: %s", qUtf8Printable(a.username()), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete administrator %1 from database.").arg(d->username));
+        qCCritical(SK_ADMIN, "Failed to delete admin %s from database: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
     ret = true;
 
-    if (a.type() == 0) {
-        qCInfo(SK_ADMIN, "%s removed administrator %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a.username()));
+    if (isSuperUser()) {
+        qCInfo(SK_ADMIN, "%s removed administrator %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->username));
     } else {
-        qCInfo(SK_ADMIN, "%s removed domain manager %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(a.username()));
+        qCInfo(SK_ADMIN, "%s removed domain manager %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->username));
     }
 
     return ret;

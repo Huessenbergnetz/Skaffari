@@ -31,8 +31,15 @@
 
 #include <Cutelyst/Plugins/Session/Session>
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
-#include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result
+#include <Cutelyst/Plugins/Utils/validatorconfirmed.h>
+#include <Cutelyst/Plugins/Utils/validatorrequired.h>
+#include <Cutelyst/Plugins/Utils/validatordatetime.h>
+#include <Cutelyst/Plugins/Utils/validatorboolean.h>
+#include <Cutelyst/Plugins/Utils/validatorfilesize.h>
+#include <Cutelyst/Plugins/Utils/validatormin.h>
+#include <Cutelyst/Plugins/Utils/validatorpwquality.h>
+#include <Cutelyst/Plugins/Utils/validatoremail.h>
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 
@@ -84,10 +91,15 @@ void AccountEditor::edit(Context* c)
         if (req->isPost()) {
 
             c->setStash(QStringLiteral("_def_boolean"), false);
+            c->setStash(QStringLiteral("_pwq_username"), a.username());
 
             static Validator v({
                                    new ValidatorConfirmed(QStringLiteral("password")),
+                       #ifdef PWQUALITY_ENABLED
+                                   new ValidatorPwQuality(QStringLiteral("password"), SkaffariConfig::accPwThreshold(), SkaffariConfig::accPwSettingsFile(), QStringLiteral("_pwq_username")),
+                       #else
                                    new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::accPwMinlength()),
+                       #endif
                                    new ValidatorRequired(QStringLiteral("validUntil")),
                                    new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("userTz"), "yyyy-MM-ddTHH:mm"),
                                    new ValidatorRequired(QStringLiteral("passwordExpires")),
@@ -101,7 +113,7 @@ void AccountEditor::edit(Context* c)
                                    new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, QStringLiteral("minQuota"), QStringLiteral("freeQuota"))
                                });
 
-            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
             if (vr) {
                 SkaffariError e(c);
                 if (a.update(c, &e, &dom, vr.values())) {
@@ -554,7 +566,7 @@ void AccountEditor::add_address(Context *c)
                                    new SkValidatorDomainExists(QStringLiteral("newmaildomain"))
                                });
 
-            const ValidatorResult vr = isAjax ? v.validate(c) : v.validate(c, Validator::FillStashOnError);
+            const ValidatorResult vr = isAjax ? v.validate(c) : v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
 
             if (vr) {
 
@@ -740,7 +752,7 @@ void AccountEditor::add_forward(Context *c)
                                    new ValidatorEmail(QStringLiteral("newforward"))
                                });
 
-            const ValidatorResult vr = isAjax ? v.validate(c) : v.validate(c, Validator::FillStashOnError);
+            const ValidatorResult vr = isAjax ? v.validate(c) : v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
 
             if (vr) {
 
@@ -832,7 +844,7 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
                                    new ValidatorEmail(QStringLiteral("newforward"))
                                });
 
-            const ValidatorResult vr = isAjax ? v.validate(c) : v.validate(c, Validator::FillStashOnError);
+            const ValidatorResult vr = isAjax ? v.validate(c) : v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
 
             if (vr) {
 
@@ -983,7 +995,7 @@ void AccountEditor::check(Context *c)
                                new ValidatorBoolean(QStringLiteral("checkChildAddresses"))
                            });
 
-        const ValidatorResult vr = isAjax ? v.validate(c) : v.validate(c, Validator::FillStashOnError);
+        const ValidatorResult vr = isAjax ? v.validate(c) : v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
 
         auto a = Account::fromStash(c);
 

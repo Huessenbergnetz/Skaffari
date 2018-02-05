@@ -32,6 +32,8 @@
 #include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result
 #include <Cutelyst/Plugins/Utils/validatorrequiredifstash.h>
+#include <Cutelyst/Plugins/Utils/validatorpwquality.h>
+#include <Cutelyst/Plugins/Utils/validatordomain.h>
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/Utils/Sql>
@@ -112,7 +114,7 @@ void DomainEditor::edit(Context *c)
                                 new SkValidatorDomainExists(QStringLiteral("parent"))
                             });
 
-                vr = v.validate(c, Validator::FillStashOnError);
+                vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
 
             } else {
 
@@ -120,7 +122,7 @@ void DomainEditor::edit(Context *c)
                                 new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, QVariant(), std::numeric_limits<quota_size_t>::max())
                             });
 
-                vr = v.validate(c, Validator::FillStashOnError);
+                vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
             }
 
             if (vr) {
@@ -371,7 +373,7 @@ void DomainEditor::create(Context* c)
                                    new SkValidatorAccountExists(QStringLiteral("webmasterAccount"))
                                });
 
-            ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
             vr.addValue(QStringLiteral("folders"), r->bodyParam(QStringLiteral("folders")));
             const auto params = vr.values();
             if (vr) {
@@ -562,7 +564,11 @@ void DomainEditor::add_account(Context* c)
                                    new ValidatorRequired(QStringLiteral("localpart")),
                                    new ValidatorRegularExpression(QStringLiteral("localpart"), QRegularExpression(QStringLiteral("[^@]"))),
                                    new ValidatorRequired(QStringLiteral("password")),
+                       #ifdef PWQUALITY_ENABLED
+                                   new ValidatorPwQuality(QStringLiteral("password"), SkaffariConfig::accPwThreshold(), SkaffariConfig::accPwSettingsFile(), QStringLiteral("username")),
+                       #else
                                    new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::accPwMinlength()),
+                       #endif
                                    new ValidatorConfirmed(QStringLiteral("password")),
                                    new ValidatorRequired(QStringLiteral("validUntil")),
                                    new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("userTz"), "yyyy-MM-ddTHH:mm"),
@@ -576,7 +582,7 @@ void DomainEditor::add_account(Context* c)
                                    new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, QStringLiteral("_minQuota"), QStringLiteral("_freeQuota"))
                                });
 
-            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
             if (vr) {
 
                 // if this domain has a global quota limit, we have to calculate the

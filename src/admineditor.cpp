@@ -25,8 +25,15 @@
 #include "utils/utils.h"
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
-#include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result
+#include <Cutelyst/Plugins/Utils/validatorrequired.h>
+#include <Cutelyst/Plugins/Utils/validatoralphadash.h>
+#include <Cutelyst/Plugins/Utils/validatorconfirmed.h>
+#ifdef PWQUALITY_ENABLED
+#include <Cutelyst/Plugins/Utils/validatorpwquality.h>
+#else
+#include <Cutelyst/Plugins/Utils/validatormin.h>
+#endif
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <QVector>
 #include <QVariant>
@@ -88,11 +95,15 @@ void AdminEditor::create(Context *c)
                                    new ValidatorRequired(QStringLiteral("username")),
                                    new ValidatorAlphaDash(QStringLiteral("username")),
                                    new ValidatorRequired(QStringLiteral("password")),
-                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),
-                                   new ValidatorConfirmed(QStringLiteral("password"))
+                                   new ValidatorConfirmed(QStringLiteral("password")),
+                       #ifdef PWQUALITY_ENABLED
+                                   new ValidatorPwQuality(QStringLiteral("password"), SkaffariConfig::admPwThreshold(), SkaffariConfig::admPwSettingsFile(), QStringLiteral("username"))
+                       #else
+                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength())
+                       #endif
                                });
 
-            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
             if (vr) {
                 SkaffariError e(c);
                 AdminAccount::create(c, req->bodyParameters(), &e);
@@ -146,16 +157,24 @@ void AdminEditor::edit(Context *c)
         auto req = c->req();
         if (req->isPost()) {
 
+            auto aac = AdminAccount::fromStash(c);
+            c->setStash(QStringLiteral("_pwq_username"), aac.username());
+
             static Validator v({
                                    new ValidatorConfirmed(QStringLiteral("password")),
+                       #ifdef PWQUALITY_ENABLED
+                                   new ValidatorPwQuality(QStringLiteral("password"),
+                                   SkaffariConfig::admPwThreshold(),
+                                   SkaffariConfig::admPwSettingsFile(),
+                                   QStringLiteral("_pwq_username"))
+                       #else
                                    new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength())
+                       #endif
                                });
 
-            ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
 
             if (vr) {
-
-                auto aac = AdminAccount::fromStash(c);
 
                 SkaffariError e(c);
                 if (aac.update(c, &e, req->bodyParameters())) {
@@ -212,10 +231,10 @@ void AdminEditor::remove(Context *c)
 
             auto aac = AdminAccount::fromStash(c);
 
-            if (aac.username() == req->param(QStringLiteral("adminName"))) {
+            if (aac.username() == req->bodyParam(QStringLiteral("adminName"))) {
 
                 SkaffariError e(c);
-                if (AdminAccount::remove(c, &e, aac)) {
+                if (aac.remove(c, &e)) {
 
                     const QString statusMsg = c->translate("AdminEditor", "Successfully removed administrator %1.").arg(aac.username());
 

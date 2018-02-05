@@ -67,24 +67,11 @@ void SettingsEditor::index(Context *c)
                                    new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC))
                                });
 
-            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
             if (vr) {
-                const ParamsMultiMap p = c->req()->bodyParams();
-                settings.insert(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), p.value(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), settings.value(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE)).toString()));
-                settings.insert(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), p.value(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), settings.value(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE)).toString()).toLatin1());
-                settings.insert(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), p.value(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), settings.value(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL)).toString()).toUInt());
-                settings.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), p.value(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), settings.value(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY)).toString()).toUInt());
-                settings.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), QVariant::fromValue<ulong>(p.value(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), settings.value(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS)).toString()).toULong()));
-
-                bool convertQuotas = true;
-                settings.insert(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), Utils::humanToIntSize(c, p.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), Utils::humanBinarySize(c, settings.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA)).value<quota_size_t>())), &convertQuotas));
-                settings.insert(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), Utils::humanToIntSize(c, p.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), Utils::humanBinarySize(c, settings.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA)).value<quota_size_t>())), &convertQuotas));
-
-                for (const QString &role : {QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC)}) {
-                    settings.insert(role, QVariant::fromValue<ulong>(SKAFFARI_STRING_TO_DBID(p.value(role, QStringLiteral("0")))));
-                }
-
-                SkaffariConfig::saveSettingsToDB(settings);
+                vr.addValue(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), static_cast<quota_size_t>(vr.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA)).value<quota_size_t>() / Q_UINT64_C(1024)));
+                vr.addValue(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), static_cast<quota_size_t>(vr.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA)).value<quota_size_t>() / Q_UINT64_C(1024)));
+                SkaffariConfig::saveSettingsToDB(vr.values());
                 c->setStash(QStringLiteral("status_msg"), c->translate("SettingsEditor", "Settings successfully saved."));
                 settings = SkaffariConfig::getSettingsFromDB();
             }
@@ -105,7 +92,7 @@ void SettingsEditor::index(Context *c)
         help.insert(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), HelpEntry(c->translate("SettingsEditor", "Hostmaster account"), c->translate("SettingsEditor", "Used as default account for hostmaster role email address when creating new domains.")));
         help.insert(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), HelpEntry(c->translate("SettingsEditor", "Webmaster account"), c->translate("SettingsEditor", "Used as default account for webmaster role email address when creating new domains.")));
 
-        c->stash(settings);        
+        c->stash(settings);
         c->stash({
                      {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)},
                      {QStringLiteral("timezones"), QVariant::fromValue<QList<QByteArray>>(QTimeZone::availableTimeZoneIds())},

@@ -24,25 +24,28 @@
 #include "objects/helpentry.h"
 
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
-#include <Cutelyst/Plugins/Utils/Validators> // includes all validator rules
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result
+#include <Cutelyst/Plugins/Utils/validatorconfirmed.h>
+#include <Cutelyst/Plugins/Utils/validatorbetween.h>
+#include <Cutelyst/Plugins/Utils/validatorin.h>
+#ifdef PWQUALITY_ENABLED
+#include <Cutelyst/Plugins/Utils/validatorpwquality.h>
+#else
+#include <Cutelyst/Plugins/Utils/validatormin.h>
+#endif
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <QTimeZone>
-
 
 MyAccount::MyAccount(QObject *parent) : Controller(parent)
 {
 
 }
 
-
 MyAccount::~MyAccount()
 {
 
 }
-
-
 
 void MyAccount::index(Context *c)
 {
@@ -55,13 +58,17 @@ void MyAccount::index(Context *c)
         if (req->isPost()) {
             static Validator v({
                                    new ValidatorConfirmed(QStringLiteral("password")),
+                       #ifdef PWQUALITY_ENABLED
+                                   new ValidatorPwQuality(QStringLiteral("password"), SkaffariConfig::admPwThreshold(), SkaffariConfig::admPwSettingsFile(), QStringLiteral("userName")),
+                       #else
                                    new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),
+                       #endif
                                    new ValidatorBetween(QStringLiteral("maxdisplay"), QMetaType::UShort, 0, 255),
                                    new ValidatorBetween(QStringLiteral("warnlevel"), QMetaType::UShort, 0, 100),
                                    new ValidatorIn(QStringLiteral("lang"), Language::supportedLangsList())
                                });
 
-            ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
             if (vr) {
                 SkaffariError e(c);
                 if (aac.update(c, &e, &user, req->bodyParameters())) {

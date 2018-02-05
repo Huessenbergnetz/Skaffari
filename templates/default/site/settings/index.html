@@ -64,14 +64,14 @@
 
                     <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                         <label for="default_domainquota" class="col-form-label">{{ help.default_domainquota.title }}</label>
-                        <input type="text" id="default_domainquota" name="default_domainquota" class="form-control{% if validationErrors.default_domainquota.count %} is-invalid{% endif %}" value="{% sk_fsf default_domainquota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="default_domainquotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+                        <input type="text" id="default_domainquota" name="default_domainquota" class="form-control{% if validationErrors.default_domainquota.count %} is-invalid{% endif %}" value="{% sk_fsf default_domainquota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="default_domainquotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTtPpEe]?[Ii]?[Bb]?">
                         {% if validationErrors.default_domainquota.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_domainquota.0 }}</small></div>{% endif %}
                         <small id="default_domainquotaDesc" class="form-text text-muted">{{ help.default_domainquota.text }}</small>
                     </div>
 
                     <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                         <label for="default_quota" class="col-form-label">{{ help.default_quota.title }}</label>
-                        <input type="text" id="default_quota" name="default_quota" class="form-control{% if validationErrors.default_quota.count %} is-invalid{% endif %}" value="{% sk_fsf default_quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="default_quotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
+                        <input type="text" id="default_quota" name="default_quota" class="form-control{% if validationErrors.default_quota.count %} is-invalid{% endif %}" value="{% sk_fsf default_quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="default_quotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTtPpEe]?[Ii]?[Bb]?">
                         {% if validationErrors.default_quota.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_quota.0 }}</small></div>{% endif %}
                         <small id="default_quotaDesc" class="form-text text-muted">{{ help.default_quota.text }}</small>
                     </div>

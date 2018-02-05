@@ -322,13 +322,12 @@ public:
     bool update(Cutelyst::Context *c, SkaffariError *e, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p);
 
     /*!
-     * \brief Removes the administrator account \a a and returns \c true on success.
+     * \brief Removes the administrator account and returns \c true on success.
      * \param c pointer to the current context, used for translating strings
      * \param e pointer to an object taking error information
-     * \param a the account to remove
      * \return \c true on success
      */
-    static bool remove(Cutelyst::Context *c, SkaffariError *e, const AdminAccount &a);
+    bool remove(Cutelyst::Context *c, SkaffariError *e);
 
     /*!
      * \brief Puts the admin account identified by \a adminId into the stash of the current context \a c.

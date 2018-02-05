@@ -38,6 +38,11 @@ set(BUILD_TEMPLATES OFF CACHE BOOL "If enabled, template assests will be build")
 set(Grantlee5_MAJOR_MINOR_VERSION_STRING "${Grantlee5_VERSION_MAJOR}.${Grantlee5_VERSION_MINOR}" )
 set(GRANTLEE_PLUGIN_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/grantlee/${Grantlee5_MAJOR_MINOR_VERSION_STRING} )
 
+option(ENABLE_PWQUALITY "Enables the usage of ValidatorPwQuality" OFF)
+if (ENABLE_PWQUALITY)
+    add_definitions(-DPWQUALITY_ENABLED)
+endif (ENABLE_PWQUALITY)
+
 # Enable C++11 features
 add_definitions(-std=c++11)
 
@@ -58,9 +63,11 @@ set(DEFVAL_ACC_PWMETHOD 1 CACHE INTERNAL "Default accounts password method")
 set(DEFVAL_ACC_PWALGORITHM 0 CACHE INTERNAL "Default accounts password algorithm")
 set(DEFVAL_ACC_PWROUNDS 32000 CACHE INTERNAL "Default accounts password iteration count")
 set(DEFVAL_ACC_PWMINLENGTH 8 CACHE INTERNAL "Default accounts password minimum length")
+set(DEFVAL_ACC_PWTHRESHOLD 30 CACHE INTERNAL "Default accounts password quality threshold")
 set(DEFVAL_ADM_PWALGORITHM 4 CACHE INTERNAL "Default admin password algorithm")
 set(DEFVAL_ADM_PWROUNDS 32000 CACHE INTERNAL "Default admin password iteration count")
 set(DEFVAL_ADM_PWMINLENGTH 8 CACHE INTERNAL "Default admin password minimum length")
+set(DEFVAL_ADM_PWTHRESHOLD 50 CACHE INTERNAL "Default admin password quality threshold")
 set(DEFVAL_DEF_DOMAINQUOTA 0 CACHE INTERNAL "Default domain quota for new domains in KiB")
 set(DEFVAL_DEF_LANGUAGE "en" CACHE INTERNAL "Default language")
 set(DEFVAL_DEF_MAXACCOUNTS 1000 CACHE INTERNAL "Default maximum accounts for new domains")
