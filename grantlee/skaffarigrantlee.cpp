@@ -22,6 +22,7 @@
 #include "timezoneconverttag.h"
 #include "urlencodefilter.h"
 #include "acedecodefilter.h"
+#include "stringlistsortfilter.h"
 
 SkaffariGrantlee::SkaffariGrantlee(QObject *parent) : QObject(parent)
 {
@@ -50,6 +51,7 @@ QHash<QString, Grantlee::Filter *> SkaffariGrantlee::filters(const QString &name
 
     ret.insert(QStringLiteral("sk_urlencode"), new UrlEncodeFilter());
     ret.insert(QStringLiteral("sk_acedecode"), new AceDecodeFilter());
+    ret.insert(QStringLiteral("sk_stringlistsort"), new StringListSortFilter());
 
     return ret;
 }

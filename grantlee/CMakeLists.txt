@@ -7,6 +7,8 @@ add_library(grantlee_skaffari MODULE
     urlencodefilter.h
     acedecodefilter.cpp
     acedecodefilter.h
+    stringlistsortfilter.cpp
+    stringlistsortfilter.h
     skaffarigrantlee.cpp
 )
 
