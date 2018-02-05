@@ -113,7 +113,22 @@ Skaffari.DefaultTmpl.AddressList.init = function() {
                 Skaffari.DefaultTmpl.AddressList.actionRoute =  '/account/' + Skaffari.DefaultTmpl.AddressList.domainId + '/' + Skaffari.DefaultTmpl.AddressList.accountId + '/edit_address/' + encodeURIComponent(address).replace(".", "%2E");
                 var parts = address.split('@');
                 Skaffari.DefaultTmpl.AddressList.localInput.val(parts[0]);
-                Skaffari.DefaultTmpl.AddressList.domainInput.val(parts[1]);
+                var opts = Skaffari.DefaultTmpl.AddressList.domainInput.children('option');
+                var optsLength = opts.length;
+                if (optsLength > 0) {
+                    var domainPart = parts[1];
+                    var atDomainPart = '@' + domainPart;
+                    var selVal = 0;
+                    for (var i = 0; i < optsLength; ++i) {
+                        if (opts[i].text === atDomainPart) {
+                            selVal = parseInt(opts[i].value);
+                            break;
+                        }
+                    }
+                    if (selVal > 0) {
+                        Skaffari.DefaultTmpl.AddressList.domainInput.val(selVal);
+                    }
+                }
             }
         });
 
@@ -151,6 +166,16 @@ Skaffari.DefaultTmpl.AddressList.init = function() {
             }).fail(function(jqXHR) {
                 if (jqXHR.responseJSON.error_msg) {
                     Skaffari.DefaultTmpl.createAlert('warning', jqXHR.responseJSON.error_msg, '#modal-message-container', 'mt-1');
+                } else if (jqXHR.responseJSON.field_errors) {
+                    var fe = jqXHR.responseJSON.field_errors;
+                    var errorStrings = [];
+                    for (var key in fe) {
+                        var fes = fe[key];
+                        for (var i = 0; i < fes.length; i++) {
+                            errorStrings.push(fes[i]);
+                        }
+                    }
+                    Skaffari.DefaultTmpl.createAlert('warning', errorStrings, '#modal-message-container', 'mt-1');
                 }
             });
 

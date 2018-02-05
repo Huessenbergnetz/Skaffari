@@ -81,7 +81,22 @@ Skaffari.DefaultTmpl.createAlert = function(type, text, target, classes) {
     warnDivSpan.html('&times;')
     warnDivCb.append(warnDivSpan);
     warnDiv.append(warnDivCb);
-    warnDiv.append(text);
+    if (typeof text === 'object') {
+        if (Array.isArray(text)) {
+            if (text.length > 1) {
+                var ul = $('<ul>');
+                for (var i = 0; i < text.length; i++) {
+                    var li = $('<li>');
+                    li.text(text[i]);
+                }
+                warnDiv.append(ul);
+            } else {
+                warnDiv.append(text[0]);
+            }
+        }
+    } else {
+        warnDiv.append(text);
+    }
     warnDiv.hide();
     $(target).append(warnDiv);
     warnDiv.show(300);

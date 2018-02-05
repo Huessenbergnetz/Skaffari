@@ -16,7 +16,7 @@
                 <div class="col-6">
                     <select class="form-control" id="newmaildomain" name="newmaildomain" class="form-control">
                         {% for dom in maildomains %}
-                        <option value="{{ dom.name }}"{% if dom.name == newmaildomain|default:domain.name %} selected{% endif %}>@{{ dom.name }}</option>
+                        <option value="{{ dom.id }}"{% if dom.name == newmaildomain|default:domain.name %} selected{% endif %}>@{{ dom.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -30,7 +30,7 @@
                     </div>
                 </div>
             </div>
-            <input type="hidden" name="newmaildomain" value="{{ domain.name }}">
+            <input type="hidden" name="newmaildomain" value="{{ domain.id }}">
             {% endif %}
         </form>
     </div>

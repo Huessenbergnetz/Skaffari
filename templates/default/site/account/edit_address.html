@@ -18,7 +18,7 @@
                     <label for="newmaildomain">@{{ maildomain }}</label>
                     <select class="form-control" id="newmaildomain" name="newmaildomain" class="form-control">
                         {% for dom in maildomains %}
-                        <option value="{{ dom.name }}"{% if dom.name == maildomain %} selected{% endif %}>@{{ dom.name }}</option>
+                        <option value="{{ dom.id }}"{% if dom.name == maildomain %} selected{% endif %}>@{{ dom.name }}</option>
                         {% endfor %}
                     </select>
                 </div>

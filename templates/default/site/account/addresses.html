@@ -84,7 +84,7 @@
                             <div class="col-12 col-md-6">
                                 <select class="form-control" id="newmaildomain" name="newmaildomain">
                                     {% for dom in maildomains %}
-                                    <option value="{{ dom.name }}"{% if dom.name == newmaildomain|default:domain.name %} selected{% endif %}>@{{ dom.name }}</option>
+                                    <option value="{{ dom.id }}"{% if dom.id == newmaildomain|default:domain.id %} selected{% endif %}>@{{ dom.name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -95,7 +95,7 @@
                                     <div class="input-group-append"><span class="input-group-text">@{{ domain.name }}</span></div>
                                 </div>
                             </div>
-                            <input type="hidden" id="newmaildomain" name="newmaildomain" value="{{ domain.name }}">
+                            <input type="hidden" id="newmaildomain" name="newmaildomain" value="{{ domain.id }}">
                             {% endif %}
                         </div>
                         <div class="row">
