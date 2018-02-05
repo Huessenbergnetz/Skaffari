@@ -55,13 +55,11 @@ Account::Account() :
 
 }
 
-
 Account::Account(dbid_t id, dbid_t domainId, const QString& username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const QDateTime &pwdExpiration, bool keepLocal, bool catchAll, quint8 status) :
     d(new AccountData(id, domainId, username, prefix, domainName, imap, pop, sieve, smtpauth, addresses, forwards, quota, usage, created, updated, validUntil, pwdExpiration, keepLocal, catchAll, status))
 {
 
 }
-
 
 Account::Account(const Account &other) :
     d(other.d)
@@ -69,13 +67,11 @@ Account::Account(const Account &other) :
 
 }
 
-
 Account& Account::operator=(const Account &other)
 {
     d = other.d;
     return *this;
 }
-
 
 Account::~Account()
 {
@@ -87,64 +83,50 @@ dbid_t Account::id() const
     return d->id;
 }
 
-
 void Account::setId(dbid_t nId)
 {
     d->id = nId;
 }
-
 
 dbid_t Account::domainId() const
 {
     return d->domainId;
 }
 
-
 void Account::setDomainId(dbid_t nDomainId)
 {
     d->domainId = nDomainId;
 }
-
 
 QString Account::username() const
 {
     return d->username;
 }
 
-
 void Account::setUsername(const QString& nUsername)
 {
     d->username = nUsername;
 }
-
-
 
 QString Account::prefix() const
 {
     return d->prefix;
 }
 
-
-
 void Account::setPrefix(const QString &nPrefix)
 {
     d->prefix = nPrefix;
 }
-
-
 
 QString Account::domainName() const
 {
     return d->domainName;
 }
 
-
 void Account::setDomainName(const QString &nDomainName)
 {
     d->domainName = nDomainName;
 }
-
-
 
 bool Account::isImapEnabled() const
 {
@@ -157,98 +139,75 @@ void Account::setImapEnabled(bool nImap)
     d->imap = nImap;
 }
 
-
-
 bool Account::isPopEnabled() const
 {
     return d->pop;
 }
-
 
 void Account::setPopEnabled(bool nPop)
 {
     d->pop = nPop;
 }
 
-
-
 bool Account::isSieveEnabled() const
 {
     return d->sieve;
 }
-
 
 void Account::setSieveEnabled(bool nSieve)
 {
     d->sieve = nSieve;
 }
 
-
-
 bool Account::isSmtpauthEnabled() const
 {
     return d->smtpauth;
 }
-
 
 void Account::setSmtpauthEnabled(bool nSmtpauth)
 {
     d->smtpauth = nSmtpauth;
 }
 
-
-
 QStringList Account::addresses() const
 {
     return d->addresses;
 }
-
 
 void Account::setAddresses(const QStringList &nAddresses)
 {
     d->addresses = nAddresses;
 }
 
-
-
 QStringList Account::forwards() const
 {
     return d->forwards;
 }
-
-
 
 void Account::setForwards(const QStringList &nForwards)
 {
     d->forwards = nForwards;
 }
 
-
-
-
 quota_size_t Account::quota() const
 {
     return d->quota;
 }
-
 
 void Account::setQuota(quota_size_t nQuota)
 {
     d->quota = nQuota;
 }
 
-
 quota_size_t Account::usage() const
 {
     return d->usage;
 }
 
-
 void Account::setUsage(quota_size_t nUsage)
 {
     d->usage = nUsage;
 }
-
 
 float Account::usagePercent() const
 {
@@ -258,12 +217,10 @@ float Account::usagePercent() const
     return ((float)usage() / (float)quota()) * (float)100;
 }
 
-
 bool Account::isValid() const
 {
     return ((d->id > 0) && (d->domainId > 0));
 }
-
 
 QDateTime Account::created() const
 {
@@ -275,7 +232,6 @@ void Account::setCreated(const QDateTime &created)
     d->created = created;
 }
 
-
 QDateTime Account::updated() const
 {
     return d->updated;
@@ -286,12 +242,10 @@ void Account::setUpdated(const QDateTime &updated)
     d->updated = updated;
 }
 
-
 QDateTime Account::validUntil() const
 {
     return d->validUntil;
 }
-
 
 void Account::setValidUntil(const QDateTime &validUntil)
 {
@@ -304,60 +258,50 @@ bool Account::keepLocal() const
     return d->keepLocal;
 }
 
-
 void Account::setKeepLocal(bool nKeepLocal)
 {
     d->keepLocal = nKeepLocal;
 }
-
 
 bool Account::catchAll() const
 {
     return d->catchAll;
 }
 
-
 void Account::setCatchAll(bool nCatchAll)
 {
     d->catchAll = nCatchAll;
 }
-
 
 QDateTime Account::passwordExpires() const
 {
     return d->passwordExpires;
 }
 
-
 void Account::setPasswordExpires(const QDateTime &expirationDate)
 {
     d->passwordExpires = expirationDate;
 }
-
 
 bool Account::passwordExpired() const
 {
     return (d->passwordExpires < QDateTime::currentDateTimeUtc());
 }
 
-
 bool Account::expired() const
 {
     return (d->validUntil < QDateTime::currentDateTimeUtc());
 }
-
 
 quint8 Account::status() const
 {
     return d->status;
 }
 
-
 void Account::setStatus(quint8 status)
 {
     d->status = status;
 }
-
 
 QJsonObject Account::toJson() const
 {
@@ -388,7 +332,6 @@ QJsonObject Account::toJson() const
 
     return ao;
 }
-
 
 Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p, const Domain &d, const QStringList &selectedKids)
 {
@@ -736,8 +679,6 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
 
     return a;
 }
-
-
 
 bool Account::remove(Cutelyst::Context *c, SkaffariError *e) const
 {
