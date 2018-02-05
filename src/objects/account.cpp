@@ -17,20 +17,20 @@
  */
 
 #include "account_p.h"
-#include "skaffarierror.h"
 #include "../utils/utils.h"
 #include "../imap/skaffariimap.h"
 #include "../../common/password.h"
 #include "../utils/skaffariconfig.h"
+#include "skaffarierror.h"
 #include <Cutelyst/Context>
-#include <Cutelyst/Response>
 #include <Cutelyst/Plugins/Utils/Sql>
+#include <Cutelyst/Response>
 #include <Cutelyst/Plugins/Session/Session>
 #include <Cutelyst/Plugins/Memcached/Memcached>
 #include <Cutelyst/Plugins/Utils/validatoremail.h>
+#include <QTimeZone>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QTimeZone>
 #include <QSqlDatabase>
 #include <QRegularExpression>
 #include <QUrl>
@@ -1530,6 +1530,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
     } else {
         d->usage = quota.first;
         d->status = newStatus;
+        markUpdated();
     }
 
     if (SkaffariConfig::useMemcached()) {
@@ -1642,6 +1643,8 @@ QString Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, const QVari
 
     ret = address;
 
+    markUpdated();
+
     return ret;
 }
 
@@ -1733,6 +1736,8 @@ QString Account::addEmail(Cutelyst::Context *c, SkaffariError *e, const QVariant
 
     ret = address;
 
+    markUpdated();
+
     return ret;
 }
 
@@ -1765,116 +1770,100 @@ bool Account::removeEmail(Cutelyst::Context *c, SkaffariError *e, const QString 
 
     ret = true;
 
+    markUpdated();
+
     return ret;
 }
 
-bool Account::addForward(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p)
+bool Account::addForward(Cutelyst::Context *c, SkaffariError *e, const QString &forward)
 {
     bool ret = false;
 
     Q_ASSERT_X(c, "add forward", "invalid context object");
     Q_ASSERT_X(e, "add forward", "invalid error object");
-    Q_ASSERT_X(a, "add forward", "invalid account object");
-    Q_ASSERT_X(!p.empty(), "add forward", "empty input parameters");
+    Q_ASSERT_X(!forward.isEmpty(), "add forward", "empty new forward");
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
-    q.bindValue(QStringLiteral(":username"), a->username());
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Cannot retrieve current list of forwarding addresses for user account %1 from the database.").arg(a->username()));
-        qCCritical(SK_ACCOUNT, "Cannot retrieve current list of forwarding addresses for user account %s (ID: %lu) from the database: %s", qUtf8Printable(a->username()), a->id(), qUtf8Printable(q.lastError().text()));
+    QStringList forwards = queryFowards(c, e);
+    if (e->type() != SkaffariError::NoError) {
         return ret;
     }
 
-    QStringList forwards;
-    bool oldDataAvailable = false;
-    if (q.next()) {
-        oldDataAvailable = true;
-        forwards = q.value(0).toString().split(QLatin1Char(','), QString::SkipEmptyParts);
-    }
+    const bool oldDataAvailable = !forwards.empty();
 
-    const QString newForward = p.value(QStringLiteral("newforward"));
-
-    if (forwards.contains(newForward, Qt::CaseInsensitive)) {
+    if (Q_UNLIKELY(forwards.contains(forward, Qt::CaseInsensitive))) {
         e->setErrorType(SkaffariError::InputError);
-        e->setErrorText(c->translate("Account", "Emails to account %1 are already forwarded to %2.").arg(a->username(), newForward));
-        qCWarning(SK_ACCOUNT, "%s tried to add already existing forward email address to account %s (ID: %u).", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(a->username()), a->id());
+        e->setErrorText(c->translate("Account", "Emails to account %1 are already forwarded to %2.").arg(d->username, forward));
+        qCWarning(SK_ACCOUNT, "%s tried to add already existing forward email address to account %s (ID: %u).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->username), d->id);
         return ret;
     }
 
-    forwards.prepend(newForward);
+    forwards.prepend(forward);
 
+    QSqlQuery q;
     if (oldDataAvailable) {
         q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET dest = :dest WHERE alias = :alias AND username = ''"));
     } else {
         q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username) VALUES (:alias, :dest, '')"));
     }
     q.bindValue(QStringLiteral(":dest"), forwards.join(QLatin1Char(',')));
-    q.bindValue(QStringLiteral(":alias"), a->username());
+    q.bindValue(QStringLiteral(":alias"), d->username);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Cannot update the list of forwarding addresses for user account %1 in the database.").arg(a->username()));
-        qCCritical(SK_ACCOUNT, "Cannot update the list of forwarding addresses for user account %s (ID: %u) in the database: %s", qUtf8Printable(a->username()), a->id(), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("Account", "Cannot update the list of forwarding addresses for user account %1 in the database.").arg(d->username));
+        qCCritical(SK_ACCOUNT, "Cannot update the list of forwarding addresses for user account %s (ID: %u) in the database: %s", qUtf8Printable(d->username), d->id, qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
-    forwards.removeAll(a->username());
+    forwards.removeAll(d->username);
 
-    a->setForwards(forwards);
+    d->forwards = forwards;
 
-    qCInfo(SK_ACCOUNT, "%s added new forward address %s to account %s (ID: %u)", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(newForward), qUtf8Printable(a->username()), a->id());
+    qCInfo(SK_ACCOUNT, "%s added new forward address %s to account %s (ID: %u)", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(forward), qUtf8Printable(d->username), d->id);
 
     ret = true;
+
+    markUpdated();
 
     return ret;
 }
 
-bool Account::removeForward(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &forward)
+bool Account::removeForward(Cutelyst::Context *c, SkaffariError *e, const QString &forward)
 {
     bool ret = false;
 
     Q_ASSERT_X(c, "add forward", "invalid context object");
     Q_ASSERT_X(e, "add forward", "invalid error object");
-    Q_ASSERT_X(a, "add forward", "invalid account object");
     Q_ASSERT_X(!forward.isEmpty(), "add forward", "empty input parameters");
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
-    q.bindValue(QStringLiteral(":username"), a->username());
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Cannot retrieve current list of forwarding addresses for user account %1 from the database.").arg(a->username()));
-        qCCritical(SK_ACCOUNT, "Cannot retrieve current list of forwarding addresses for user account %s (ID: %lu) from the database: %s", qUtf8Printable(a->username()), a->id(), qUtf8Printable(q.lastError().text()));
+    QStringList forwards = queryFowards(c, e);
+    if (e->type() != SkaffariError::NoError) {
         return ret;
     }
 
-    QStringList forwards;
-    bool oldDataAvailable = false;
-    if (q.next()) {
-        forwards = q.value(0).toString().split(QLatin1Char(','), QString::SkipEmptyParts);
-        oldDataAvailable = true;
-    }
+    const bool oldDataAvailable = !forwards.empty();
 
     if (Q_UNLIKELY(!forwards.contains(forward, Qt::CaseInsensitive))) {
         e->setErrorType(SkaffariError::InputError);
-        e->setErrorText(c->translate("Account", "Forwarding address %1 cannot be removed from user account %2. Forwarding does not exist for this account.").arg(forward, a->username()));
-        qCWarning(SK_ACCOUNT, "%s tried to remove not existing forward email address from account %s (ID: %u).", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(a->username()), a->id());
+        e->setErrorText(c->translate("Account", "Forwarding address %1 cannot be removed from user account %2. Forwarding does not exist for this account.").arg(forward, d->username));
+        qCWarning(SK_ACCOUNT, "%s tried to remove not existing forward email address from account %s (ID: %u).", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(d->username), d->id);
         return ret;
     }
 
     forwards.removeAll(forward);
 
-    if (forwards.empty() || ((forwards.size() == 1) && (forwards.at(0) == a->username()))) {
+    QSqlQuery q;
+    if (forwards.empty() || ((forwards.size() == 1) && (forwards.at(0) == d->username))) {
 
         q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :username AND username = ''"));
-        q.bindValue(QStringLiteral(":username"), a->username());
+        q.bindValue(QStringLiteral(":username"), d->username);
 
         if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("Account", "Forwarding addresses for user account %1 cannot be deleted from the database.").arg(a->username()));
-            qCCritical(SK_ACCOUNT, "Failed to remove all forwards of account %s (ID: %u) in the database: %s", qUtf8Printable(a->username()), a->id(), qUtf8Printable(q.lastError().text()));
+            e->setSqlError(q.lastError(), c->translate("Account", "Forwarding addresses for user account %1 cannot be deleted from the database.").arg(d->username));
+            qCCritical(SK_ACCOUNT, "Failed to remove all forwards of account %s (ID: %u) in the database: %s", qUtf8Printable(d->username), d->id, qUtf8Printable(q.lastError().text()));
             return ret;
         }
 
-        a->setKeepLocal(false);
+        d->keepLocal = false;
 
     } else {
 
@@ -1883,142 +1872,128 @@ bool Account::removeForward(Cutelyst::Context *c, SkaffariError *e, Account *a, 
         } else {
             q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username) VALUES (:alias, :dest, '')"));
         }
-        q.bindValue(QStringLiteral(":alias"), a->username());
+        q.bindValue(QStringLiteral(":alias"), d->username);
         q.bindValue(QStringLiteral(":dest"), forwards.join(QLatin1Char(',')));
 
         if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("Account", "Cannot update the list of forwarding addresses for user account %1 in the database.").arg(a->username()));
-            qCCritical(SK_ACCOUNT, "Failed to update list of forward email addresses for account %s (ID: %u) in the database after removing one forward address: %s", qUtf8Printable(a->username()), a->id(), qUtf8Printable(q.lastError().text()));
+            e->setSqlError(q.lastError(), c->translate("Account", "Cannot update the list of forwarding addresses for user account %1 in the database.").arg(d->username));
+            qCCritical(SK_ACCOUNT, "Failed to update list of forward email addresses for account %s (ID: %u) in the database after removing one forward address: %s", qUtf8Printable(d->username), d->id, qUtf8Printable(q.lastError().text()));
             return ret;
         }
 
     }
 
-    forwards.removeAll(a->username());
+    forwards.removeAll(d->username);
 
-    a->setForwards(forwards);
+    d->forwards = forwards;
 
-    qCInfo(SK_ACCOUNT, "%s removed forward address %s from account %s (ID: %u).", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(forward), qUtf8Printable(a->username()), a->id());
+    qCInfo(SK_ACCOUNT, "%s removed forward address %s from account %s (ID: %u).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(forward), qUtf8Printable(d->username), d->id);
 
     ret = true;
+
+    markUpdated();
 
     return ret;
 }
 
-bool Account::editForward(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &oldForward, const QString &newForward)
+bool Account::editForward(Cutelyst::Context *c, SkaffariError *e, const QString &oldForward, const QString &newForward)
 {
     bool ret = false;
 
     Q_ASSERT_X(c, "edit forward", "invalid context object");
     Q_ASSERT_X(e, "edit forward", "invalid error object");
-    Q_ASSERT_X(a, "edit forward", "invalid account object");
     Q_ASSERT_X(!oldForward.isEmpty(), "edit forward", "old forward address can not be empty");
     Q_ASSERT_X(!newForward.isEmpty(), "edit forward", "new forward address can not be empty");
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
-    q.bindValue(QStringLiteral(":username"), a->username());
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Cannot retrieve current list of forwarding addresses for user account %1 from the database.").arg(a->username()));
-        qCCritical(SK_ACCOUNT, "Cannot retrieve current list of forwarding addresses for user account %s (ID: %lu) from the database: %s", qUtf8Printable(a->username()), a->id(), qUtf8Printable(q.lastError().text()));
+    QStringList forwards = queryFowards(c, e);
+    if (e->type() != SkaffariError::NoError) {
         return ret;
-    }
-
-    QStringList forwards;
-    if (q.next()) {
-        forwards = q.value(0).toString().split(QLatin1Char(','), QString::SkipEmptyParts);
     }
 
     if (Q_UNLIKELY(!forwards.contains(oldForward, Qt::CaseInsensitive))) {
         e->setErrorType(SkaffariError::InputError);
-        e->setErrorText(c->translate("Account", "Can not change forward email address %1 from account %2. The forward does not exist.").arg(oldForward, a->username()));
-        qCWarning(SK_ACCOUNT, "%s tried to change not existing forward email address %s on account %s (ID: %u).", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(oldForward), qUtf8Printable(a->username()), a->id());
+        e->setErrorText(c->translate("Account", "Can not change forward email address %1 from account %2. The forward does not exist.").arg(oldForward, d->username));
+        qCWarning(SK_ACCOUNT, "%s tried to change not existing forward email address %s on account %s (ID: %u).", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(oldForward), qUtf8Printable(d->username), d->id);
         return ret;
     }
 
     if (Q_UNLIKELY(forwards.contains(newForward, Qt::CaseInsensitive))) {
         e->setErrorType(SkaffariError::InputError);
-        e->setErrorText(c->translate("Account", "Forwarding address %1 for user account %2 cannot be changed to %3. The new forwarding already exists.").arg(oldForward, a->username(), newForward));
-        qCWarning(SK_ACCOUNT, "%s tried to change forward email address %s to already existing forward %s on account %s (ID: %u).", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(oldForward), qUtf8Printable(newForward), qUtf8Printable(a->username()), a->id());
+        e->setErrorText(c->translate("Account", "Forwarding address %1 for user account %2 cannot be changed to %3. The new forwarding already exists.").arg(oldForward, d->username, newForward));
+        qCWarning(SK_ACCOUNT, "%s tried to change forward email address %s to already existing forward %s on account %s (ID: %u).", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(oldForward), qUtf8Printable(newForward), qUtf8Printable(d->username), d->id);
         return ret;
     }
 
     forwards.removeAll(oldForward);
     forwards.prepend(newForward);
 
-    q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET dest = :dest WHERE alias = :alias AND username = ''"));
-    q.bindValue(QStringLiteral(":alias"), a->username());
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET dest = :dest WHERE alias = :alias AND username = ''"));
+    q.bindValue(QStringLiteral(":alias"), d->username);
     q.bindValue(QStringLiteral(":dest"), forwards.join(QLatin1Char(',')));
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Cannot update the list of forwarding addresses for user account %1 in the database.").arg(a->username()));
-        qCCritical(SK_ACCOUNT, "Failed to update list of forward email addresses for account %s (ID: %u) in the database after changing one forward address: %s", qUtf8Printable(a->username()), a->id(), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("Account", "Cannot update the list of forwarding addresses for user account %1 in the database.").arg(d->username));
+        qCCritical(SK_ACCOUNT, "Failed to update list of forward email addresses for account %s (ID: %u) in the database after changing one forward address: %s", qUtf8Printable(d->username), d->id, qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
-    forwards.removeAll(a->username());
+    forwards.removeAll(d->username);
 
-    a->setForwards(forwards);
+    d->forwards = forwards;
 
-    qCInfo(SK_ACCOUNT, "%s changed forward address %s to %s for account %s (ID: %u).", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(oldForward), qUtf8Printable(newForward), qUtf8Printable(a->username()), a->id());
+    qCInfo(SK_ACCOUNT, "%s changed forward address %s to %s for account %s (ID: %u).", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(oldForward), qUtf8Printable(newForward), qUtf8Printable(d->username), d->id);
 
     ret = true;
+
+    markUpdated();
 
     return ret;
 }
 
-bool Account::changeKeepLocal(Cutelyst::Context *c, SkaffariError *e, Account *a, bool keepLocal)
+bool Account::changeKeepLocal(Cutelyst::Context *c, SkaffariError *e, bool keepLocal)
 {
     bool ret = false;
 
     Q_ASSERT_X(c, "edit forward", "invalid context object");
     Q_ASSERT_X(e, "edit forward", "invalid error object");
-    Q_ASSERT_X(a, "edit forward", "invalid account object");
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
-    q.bindValue(QStringLiteral(":username"), a->username());
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Cannot retrieve current list of forwarding addresses for user account %1 from the database.").arg(a->username()));
-        qCCritical(SK_ACCOUNT, "Cannot retrieve current list of forwarding addresses for user account %s (ID: %lu) from the database: %s", qUtf8Printable(a->username()), a->id(), qUtf8Printable(q.lastError().text()));
+    QStringList forwards = queryFowards(c, e);
+    if (e->type() != SkaffariError::NoError) {
         return ret;
     }
 
-    QStringList forwards;
-    if (q.next()) {
-        forwards = q.value(0).toString().split(QLatin1Char(','), QString::SkipEmptyParts);
-    }
-
-    if ((keepLocal && (!forwards.contains(a->username()))) || (!keepLocal && (forwards.contains(a->username())))) {
+    if ((keepLocal && (!forwards.contains(d->username))) || (!keepLocal && (forwards.contains(d->username)))) {
 
         if (keepLocal) {
-            forwards.append(a->username());
+            forwards.append(d->username);
         } else {
-            forwards.removeAll(a->username());
+            forwards.removeAll(d->username);
         }
 
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET dest = :dest WHERE alias = :alias AND username = ''"));
-        q.bindValue(QStringLiteral(":alias"), a->username());
+        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET dest = :dest WHERE alias = :alias AND username = ''"));
+        q.bindValue(QStringLiteral(":alias"), d->username);
         q.bindValue(QStringLiteral(":dest"), forwards.join(QLatin1Char(',')));
 
         if (Q_UNLIKELY(!q.exec())) {
             if (keepLocal) {
-                e->setSqlError(q.lastError(), c->translate("Account", "Failed to enable the keeping of forwarded emails in the local mail box for account %1 in the database.").arg(a->username()));
-                qCCritical(SK_ACCOUNT, "Failed to enable the keeping of forwarded emails in the local mail box for account %s (ID: %u) in the database: %s", qUtf8Printable(a->username()), a->id(), qUtf8Printable(q.lastError().text()));
+                e->setSqlError(q.lastError(), c->translate("Account", "Failed to enable the keeping of forwarded emails in the local mail box for account %1 in the database.").arg(d->username));
+                qCCritical(SK_ACCOUNT, "Failed to enable the keeping of forwarded emails in the local mail box for account %s (ID: %u) in the database: %s", qUtf8Printable(d->username), d->id, qUtf8Printable(q.lastError().text()));
             } else {
-                e->setSqlError(q.lastError(), c->translate("Account", "Failed to disable the keeping of forwarded emails in the local mail box for account %1 in the database.").arg(a->username()));
-                qCCritical(SK_ACCOUNT, "Failed to disable the keeping of forwarded emails in the local mail box for account %s (ID: %u) in the database: %s", qUtf8Printable(a->username()), a->id(), qUtf8Printable(q.lastError().text()));
+                e->setSqlError(q.lastError(), c->translate("Account", "Failed to disable the keeping of forwarded emails in the local mail box for account %1 in the database.").arg(d->username));
+                qCCritical(SK_ACCOUNT, "Failed to disable the keeping of forwarded emails in the local mail box for account %s (ID: %u) in the database: %s", qUtf8Printable(d->username), d->id, qUtf8Printable(q.lastError().text()));
             }
             return ret;
         }
 
-        a->setKeepLocal(keepLocal);
+        d->keepLocal = keepLocal;
 
-        qCInfo(SK_ACCOUNT, "%s changed keep local of account %s (ID: %u) to %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(a->username()), a->id(), a->keepLocal() ? "true" : "false");
+        qCInfo(SK_ACCOUNT, "%s changed keep local of account %s (ID: %u) to %s.", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(d->username), d->id, d->keepLocal ? "true" : "false");
 
     }
 
     ret = true;
+
+    markUpdated();
 
     return ret;
 }
@@ -2079,4 +2054,44 @@ std::pair<QString,QString> Account::addressParts(const QString &address)
     parts.second = address.mid(atIdx + 1);
 
     return parts;
+}
+
+void Account::markUpdated()
+{
+    const QDateTime current = QDateTime::currentDateTimeUtc();
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("UPDATE accountuser SET updated_at = :updated_at WHERE id = :id"));
+    q.bindValue(QStringLiteral(":updated_at"), current);
+    q.bindValue(QStringLiteral(":id"), d->id);
+
+    if (Q_UNLIKELY(!q.exec())) {
+        qCCritical(SK_ACCOUNT, "Failed to update date and time account %s (ID: %lu) has been last updated in database: %s", qUtf8Printable(d->username), d->id, qUtf8Printable(q.lastError().text()));
+    }
+
+    d->updated = current;
+}
+
+QStringList Account::queryFowards(Cutelyst::Context *c, SkaffariError *e) const
+{
+    QStringList forwards;
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
+    q.bindValue(QStringLiteral(":username"), d->username);
+
+    if (Q_UNLIKELY(!q.exec())) {
+        e->setSqlError(q.lastError(), c->translate("Account", "Cannot retrieve current list of forwarding addresses for user account %1 from the database.").arg(d->username));
+        qCCritical(SK_ACCOUNT, "Cannot retrieve current list of forwarding addresses for user account %s (ID: %lu) from the database: %s", qUtf8Printable(d->username), d->id, qUtf8Printable(q.lastError().text()));
+    } else {
+        if (q.next()) {
+            forwards = q.value(0).toString().split(QLatin1Char(','), QString::SkipEmptyParts);
+        }
+    }
+
+    return forwards;
+}
+
+QStringList Account::queryAddresses(Cutelyst::Context *c, SkaffariError *e) const
+{
+    QStringList list;
+
+    return list;
 }

@@ -551,49 +551,45 @@ public:
     bool removeEmail(Cutelyst::Context *c, SkaffariError *e, const QString &address);
 
     /*!
-     * \brief Adds a new forward address to the account pointed to by \a a.
+     * \brief Adds a new \a forward address to the account pointed to by \a a.
      *
      * If adding the forward email address fails, the SkaffariError object pointed to by \a e will contain information
      * about occurred errors.
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
      * \param e Pointer to an object taking information about occurring errors.
-     * \param a Pointer to the Account object the new forward address should be added to.
-     * \param p INput parameters containing the new forward email address.
+     * \param forward The new forward to add.
      * \return \c true on success.
      */
-    static bool addForward(Cutelyst::Context *c, SkaffariError *e, Account *a, const Cutelyst::ParamsMultiMap &p);
+    bool addForward(Cutelyst::Context *c, SkaffariError *e, const QString &forward);
 
     /*!
-     * \brief Removes an forward email address from the account pointed to by \a a.
+     * \brief Removes a \a forward email address from the account.
      * \param c         Pointer to the current context, used for string translation and user authentication.
      * \param e         Pointer to an object taking information about occurring errors.
-     * \param a         Pointer to the Account object the forward address should be deleted from.
      * \param forward   The forward address that should be removed.
      * \return \c true on success
      */
-    static bool removeForward(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &forward);
+    bool removeForward(Cutelyst::Context *c, SkaffariError *e, const QString &forward);
 
     /*!
-     * \brief Edits a forward address on the account pointer to by \a a.
+     * \brief Edits a forward address on the account.
      * \param c             Pointer to the current context, used for string translation and user authentication.
      * \param e             Pointer to an object taking information about occurring errors.
-     * \param a             Pointer to the Account object the forward address should edited on.
      * \param oldForward    Old forward address that should be changed.
      * \param newForward    New forward address the old one should be changed to.
      * \return              \c true on succes
      */
-    static bool editForward(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &oldForward, const QString &newForward);
+    bool editForward(Cutelyst::Context *c, SkaffariError *e, const QString &oldForward, const QString &newForward);
 
     /*!
-     * \brief Changes the keeping of forwarded mails of account \a to \a keepLocal.
+     * \brief Changes the keeping of forwarded mails of the account to \a keepLocal.
      * \param c         Pointer to the current context, used for string translation and user authentication.
      * \param e         Pointer to an object taking information about occurring errors.
-     * \param a         Pointer to the Account object the keepLocal setting should changed on.
      * \param keepLocal Set to \c true if forwarded mails should be kept in local mail box, to \c false otherwise.
      * \return          \c true on success
      */
-    static bool changeKeepLocal(Cutelyst::Context *c, SkaffariError *e, Account *a, bool keepLocal);
+    bool changeKeepLocal(Cutelyst::Context *c, SkaffariError *e, bool keepLocal);
 
     /*!
      * \brief Converts an email address from ACE into UTF-8.
@@ -622,6 +618,32 @@ public:
 
 protected:
     QSharedDataPointer<AccountData> d;
+
+private:
+    /*!
+     * \internal
+     * \brief Sets the date and time the account has been last updated.
+     */
+    void markUpdated();
+
+    /*!
+     * \internal
+     * \brief Queries the current list of forwards for the account from the database.
+     * \note The returned list might also contain the user name if keep local is set to \c true.
+     * \param c Current context, used for translations.
+     * \param e Pointer to an object taking error information.
+     * \return List of forward addresses.
+     */
+    QStringList queryFowards(Cutelyst::Context *c, SkaffariError *e) const;
+
+    /*!
+     * \brief Queries the current list of email addreses associted with the account from the database.
+     * \note The returned list might also contain the catch-all adress for the account's domain (@domain.name).
+     * \param c Current context, used for translations.
+     * \param e Pointer to an object taking error information.
+     * \return List of email addresses of the account.
+     */
+    QStringList queryAddresses(Cutelyst::Context *c, SkaffariError *e) const;
 };
 
 Q_DECLARE_METATYPE(Account)

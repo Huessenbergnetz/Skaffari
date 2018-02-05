@@ -678,7 +678,7 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
 
             } else {
                 SkaffariError e(c);
-                if (Account::removeForward(c, &e, &a, forward)) {
+                if (a.removeForward(c, &e, forward)) {
 
                     const QString statusMsg = c->translate("AccountEditor", "Successfully removed forward email address %1 from account %2.").arg(forward, a.username());
 
@@ -745,10 +745,9 @@ void AccountEditor::add_forward(Context *c)
             if (vr) {
 
                 SkaffariError e(c);
-                const ParamsMultiMap p = c->req()->bodyParams();
-                if (Account::addForward(c, &e, &a, p)) {
+                const QString newForward = vr.value(QStringLiteral("newforward")).toString();
+                if (a.addForward(c, &e, newForward)) {
 
-                    const QString newForward = p.value(QStringLiteral("newforward"));
                     const QString statusMsg = c->translate("AccountEditor", "Successfully added forward email address %1 to account %2.").arg(newForward, a.username());
 
                     if (isAjax) {
@@ -839,7 +838,7 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
 
                 SkaffariError e(c);
                 const QString newForward = c->req()->bodyParam(QStringLiteral("newforward"));
-                if (Account::editForward(c, &e, &a, oldForward, newForward)) {
+                if (a.editForward(c, &e, oldForward, newForward)) {
 
                     const QString statusMsg = c->translate("AccountEditor", "Successfully changed forward %1 into %2 for account %3.").arg(oldForward, newForward, a.username());
                     auto d = Domain::fromStash(c);
@@ -927,7 +926,7 @@ void AccountEditor::keep_local(Context *c)
             const bool _keepLocal = (c->req()->bodyParameter(QStringLiteral("keeplocal"), QStringLiteral("false")) == QLatin1String("true"));
 
             SkaffariError e(c);
-            if (Account::changeKeepLocal(c, &e, &a, _keepLocal)) {
+            if (a.changeKeepLocal(c, &e, _keepLocal)) {
 
                 const QString statusMsg = _keepLocal
                         ? c->translate("AccountEditor", "Successfully enabled the keeping of forwarded emails in the local mailbox of account %1.").arg(a.username())
