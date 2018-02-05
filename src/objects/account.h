@@ -524,9 +524,9 @@ public:
      * \param a             Pointer to the Account object the email address should be updated for.
      * \param p             Input parameters containing the updated email address.
      * \param oldAddress    The old email address.
-     * \return \c true on success.
+     * \return \c updated email address
      */
-    bool updateEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p, const QString &oldAddress);
+    QString updateEmail(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p, const QString &oldAddress);
 
     /*!
      * \brief Adds a new email address to the account pointed to by \a a.
@@ -537,19 +537,18 @@ public:
      * \param c Pointer to the current context, used for string translation and user authentication.
      * \param e Pointer to an object taking information about occurring errors.
      * \param p Input parameters containing the new email address.
-     * \return \c true on success.
+     * \return \c added email address
      */
-    bool addEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p);
+    QString addEmail(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p);
 
     /*!
      * \brief Removes an email address from the account pointed to by \a a.
      * \param c         Pointer to the current context, used for string translation and user authentication.
      * \param e         Pointer to an object taking information about occurring errors.
-     * \param a         Pointer to the Account object the email address should be removed from.
      * \param address   The address that should be removed.
      * \return \c true on success.
      */
-    static bool removeEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &address);
+    bool removeEmail(Cutelyst::Context *c, SkaffariError *e, const QString &address);
 
     /*!
      * \brief Adds a new forward address to the account pointed to by \a a.

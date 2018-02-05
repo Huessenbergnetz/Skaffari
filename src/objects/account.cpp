@@ -1541,27 +1541,27 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
     return actions;
 }
 
-bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p, const QString &oldAddress)
+QString Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p, const QString &oldAddress)
 {
-    bool ret = false;
+    QString ret;
 
     Q_ASSERT_X(c, "update email", "invalid context object");
     Q_ASSERT_X(e, "update email", "invalid error object");
 
-    Domain dom = Domain::fromStash(c);
-    if (dom.id() != d->domainId) {
-        dom = Domain::get(c, d->domainId, e);
-    }
+    const dbid_t domId = p.value(QStringLiteral("newmaildomain")).value<dbid_t>();
+    const Domain dom = Domain::get(c, domId, e);
 
     if (e->type() != SkaffariError::NoError) {
         return ret;
     }
 
-    QString address;
-    if (dom.isFreeNamesEnabled()) {
-        address = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"));
-    } else {
-        address = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + dom.name();
+    const QString address = p.value(QStringLiteral("newlocalpart")).toString() + QLatin1Char('@') + dom.name();
+
+    if (!dom.isFreeAddressEnabled() && (dom.id() != d->domainId)) {
+        e->setErrorText(c->translate("Account", "You can not create email addresses for other domains as long as free addresses are not allowed for this domain."));
+        e->setErrorType(SkaffariError::AutorizationError);
+        qCWarning(SK_ACCOUNT, "Updating email address failed: can not create email address %s because domain %s (ID: %lu) is not allowed to have free addresses.", qUtf8Printable(address), qUtf8Printable(dom.name()), dom.id());
+        return ret;
     }
 
     if (address == oldAddress) {
@@ -1571,15 +1571,29 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst
         return ret;
     }
 
+    if (!d->addresses.contains(oldAddress)) {
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(c->translate("Account", "The email address %1 is not part of this account.").arg(oldAddress));
+        qCWarning(SK_ACCOUNT, "Updating email address failed: address %s is not part of account %s (ID: %lu).", qUtf8Printable(oldAddress), qUtf8Printable(d->username), d->id);
+        return ret;
+    }
+
     if (d->addresses.contains(address)) {
         e->setErrorType(SkaffariError::InputError);
         e->setErrorText(c->translate("Account", "The email address %1 is already part of this account.").arg(address));
-        qCWarning(SK_ACCOUNT, "Updating email address failed: address %s is already part of account %s.", qUtf8Printable(address), qUtf8Printable(d->username));
+        qCWarning(SK_ACCOUNT, "Updating email address failed: address %s is already part of account %s (ID: %lu).", qUtf8Printable(address), qUtf8Printable(d->username), d->id);
+        return ret;
+    }
+
+    const QString aceAddress = Account::addressToACE(address);
+    if (aceAddress.isEmpty()) {
+        e->setErrorText(c->translate("Account", "Can not convert email address %1 into a ACE string.").arg(address));
+        e->setErrorType(SkaffariError::InputError);
         return ret;
     }
 
     QList<Cutelyst::ValidatorEmail::Diagnose> diags;
-    if (!Cutelyst::ValidatorEmail::validate(address, Cutelyst::ValidatorEmail::Valid, false, &diags)) {
+    if (!Cutelyst::ValidatorEmail::validate(aceAddress, Cutelyst::ValidatorEmail::Valid, false, &diags)) {
         e->setErrorType(SkaffariError::InputError);
         e->setErrorText(Cutelyst::ValidatorEmail::diagnoseString(c, diags.at(0)));
         qCWarning(SK_ACCOUNT, "Updating email address failed: new address %s is not valid.", qUtf8Printable(address));
@@ -1587,7 +1601,7 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst
     }
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias, dest, username FROM virtual WHERE alias = :address"));
-    q.bindValue(QStringLiteral(":address"), addressToACE(address));
+    q.bindValue(QStringLiteral(":address"), aceAddress);
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Account", "Unable to check if the new email address %1 is already assigned to another user account.").arg(address));
@@ -1607,7 +1621,7 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET alias = :aliasnew WHERE alias = :aliasold AND username = :username"));
-    q.bindValue(QStringLiteral(":aliasnew"), addressToACE(address));
+    q.bindValue(QStringLiteral(":aliasnew"), aceAddress);
     q.bindValue(QStringLiteral(":aliasold"), addressToACE(oldAddress));
     q.bindValue(QStringLiteral(":username"), d->username);
 
@@ -1626,20 +1640,48 @@ bool Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst
 
     qCInfo(SK_ACCOUNT, "%s updated email address %s of account %s (ID %lu) to %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(oldAddress), qUtf8Printable(d->username), d->id, qUtf8Printable(address));
 
-    ret = true;
+    ret = address;
 
     return ret;
 }
 
-bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &p)
+QString Account::addEmail(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p)
 {
-    bool ret = false;
+    QString ret;
 
     Q_ASSERT_X(c, "update email", "invalid context object");
     Q_ASSERT_X(e, "update email", "invalid error object");
 
-    const QString address = p.value(QStringLiteral("newlocalpart")) + QLatin1Char('@') + p.value(QStringLiteral("newmaildomain"));
+    const dbid_t domId = p.value(QStringLiteral("newmaildomain")).value<dbid_t>();
+    const Domain dom = Domain::get(c, domId, e);
+
+    if (e->type() != SkaffariError::NoError) {
+        return ret;
+    }
+
+    const QString address = p.value(QStringLiteral("newlocalpart")).toString() + QLatin1Char('@') + dom.name();
+
+    if (!dom.isFreeAddressEnabled() && (dom.id() != d->domainId)) {
+        e->setErrorText(c->translate("Account", "You can not create email addresses for other domains as long as free addresses are not allowed for this domain."));
+        e->setErrorType(SkaffariError::AutorizationError);
+        qCWarning(SK_ACCOUNT, "Adding email address failed: can not create email address %s because domain %s (ID: %lu) is not allowed to have free addresses.", qUtf8Printable(address), qUtf8Printable(dom.name()), dom.id());
+        return ret;
+    }
+
     const QString aceAddress = Account::addressToACE(address);
+
+    if (aceAddress.isEmpty()) {
+        e->setErrorText(c->translate("Account", "Can not convert email address %1 into a ACE string.").arg(address));
+        e->setErrorType(SkaffariError::InputError);
+        return ret;
+    }
+
+    if (d->addresses.contains(address)) {
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(c->translate("Account", "The email address %1 is already part of this account.").arg(address));
+        qCWarning(SK_ACCOUNT, "Updating email address failed: address %s is already part of account %s.", qUtf8Printable(address), qUtf8Printable(d->username));
+        return ret;
+    }
 
     QList<Cutelyst::ValidatorEmail::Diagnose> diags;
     if (!Cutelyst::ValidatorEmail::validate(aceAddress, Cutelyst::ValidatorEmail::Valid, false, &diags)) {
@@ -1683,38 +1725,43 @@ bool Account::addEmail(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::P
 
     d->addresses.push_back(address);
     if (d->addresses.size() > 1) {
-        d->addresses.sort();
+        QCollator col(c->locale());
+        std::sort(d->addresses.begin(), d->addresses.end(), col);
     }
 
     qCInfo(SK_ACCOUNT, "%s added new email address %s to account %s (ID: %lu).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(address), qUtf8Printable(d->username), d->id);
 
-    ret = true;
+    ret = address;
 
     return ret;
 }
 
-bool Account::removeEmail(Cutelyst::Context *c, SkaffariError *e, Account *a, const QString &address)
+bool Account::removeEmail(Cutelyst::Context *c, SkaffariError *e, const QString &address)
 {
     bool ret = false;
 
     Q_ASSERT_X(c, "update email", "invalid context object");
     Q_ASSERT_X(e, "update email", "invalid error object");
-    Q_ASSERT_X(a, "update email", "invalid account object");
+
+    if (!d->addresses.contains(address)) {
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(c->translate("Account", "The email address %1 is not part of this account.").arg(address));
+        qCWarning(SK_ACCOUNT, "Removing email address failed: address %s is not part of account %s (ID: %lu).", qUtf8Printable(address), qUtf8Printable(d->username), d->id);
+        return ret;
+    }
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :address"));
     q.bindValue(QStringLiteral(":address"), addressToACE(address));
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Email address %1 could not be removed from user account %2.").arg(address, a->username()));
-        qCCritical(SK_ACCOUNT, "Email address %s could not be removed from user account %s (ID: %lu): %s", qUtf8Printable(address), qUtf8Printable(a->username()), a->id(), qUtf8Printable(q.lastError().text()));
+        e->setSqlError(q.lastError(), c->translate("Account", "Email address %1 could not be removed from user account %2.").arg(address, d->username));
+        qCCritical(SK_ACCOUNT, "Email address %s could not be removed from user account %s (ID: %lu): %s", qUtf8Printable(address), qUtf8Printable(d->username), d->id, qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
-    QStringList addresses = a->addresses();
-    addresses.removeOne(address);
-    a->setAddresses(addresses);
+    d->addresses.removeOne(address);
 
-    qCInfo(SK_ACCOUNT, "%s removed email address %s from account %s (ID: %lu).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(address), qUtf8Printable(a->username()), a->id());
+    qCInfo(SK_ACCOUNT, "%s removed email address %s from account %s (ID: %lu).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(address), qUtf8Printable(d->username), d->id);
 
     ret = true;
 
@@ -1994,8 +2041,12 @@ QString Account::addressToACE(const QString &address)
 
     const int atIdx = address.lastIndexOf(QLatin1Char('@'));
     const QStringRef addressDomainPart = address.midRef(atIdx + 1);
-    const QStringRef addressLocalPart = address.leftRef(atIdx);
-    addressACE = addressLocalPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(addressDomainPart.toString()));
+    if (!addressDomainPart.isEmpty()) {
+        const QStringRef addressLocalPart = address.leftRef(atIdx);
+        if (!addressLocalPart.isEmpty()) {
+            addressACE = addressLocalPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(addressDomainPart.toString()));
+        }
+    }
 
     return addressACE;
 }

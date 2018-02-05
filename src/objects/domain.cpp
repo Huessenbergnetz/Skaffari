@@ -388,40 +388,38 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     }
 
     if (dom.isValid()) {
-        qCInfo(SK_DOMAIN, "%s created domain %s (ID: %u)", qUtf8Printable(c->stash(QStringLiteral("userName")).toString()), qUtf8Printable(domainName), dom.id());
-    }
+        qCInfo(SK_DOMAIN, "%s created domain %s (ID: %u)", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(domainName), dom.id());
 
-    static const QHash<QString,QString> roleAccounts({
-                                                         {QStringLiteral("abuseAccount"), QStringLiteral("abuse")},
-                                                         {QStringLiteral("nocAccount"), QStringLiteral("noc")},
-                                                         {QStringLiteral("securityAccount"), QStringLiteral("security")},
-                                                         {QStringLiteral("postmasterAccount"), QStringLiteral("postmaster")},
-                                                         {QStringLiteral("hostmasterAccount"), QStringLiteral("hostmaster")},
-                                                         {QStringLiteral("webmasterAccount"), QStringLiteral("webmaster")}
+        static const QHash<QString,QString> roleAccounts({
+                                                             {QStringLiteral("abuseAccount"), QStringLiteral("abuse")},
+                                                             {QStringLiteral("nocAccount"), QStringLiteral("noc")},
+                                                             {QStringLiteral("securityAccount"), QStringLiteral("security")},
+                                                             {QStringLiteral("postmasterAccount"), QStringLiteral("postmaster")},
+                                                             {QStringLiteral("hostmasterAccount"), QStringLiteral("hostmaster")},
+                                                             {QStringLiteral("webmasterAccount"), QStringLiteral("webmaster")}
+                                                         });
+        QHash<QString,QString>::const_iterator i = roleAccounts.constBegin();
+        while (i != roleAccounts.constEnd()) {
+            dbid_t roleAccId = params.value(i.key(), QStringLiteral("0")).value<dbid_t>();
+            if (roleAccId > 0) {
+                auto roleAcc = Account::get(c, errorData, roleAccId);
+                if (Q_LIKELY(roleAcc.id() > 0)) {
+                    const QVariantHash roleAccParams({
+                                                         {QStringLiteral("newlocalpart"), i.value()},
+                                                         {QStringLiteral("newmaildomain"), dom.id()}
                                                      });
-    QHash<QString,QString>::const_iterator i = roleAccounts.constBegin();
-    while (i != roleAccounts.constEnd()) {
-        dbid_t roleAccId = params.value(i.key(), QStringLiteral("0")).value<dbid_t>();
-        if (roleAccId > 0) {
-            auto roleAcc = Account::get(c, errorData, roleAccId);
-            if (Q_LIKELY(roleAcc.id() > 0)) {
-                const Cutelyst::ParamsMultiMap roleAccParams({
-                                                                 {QStringLiteral("newlocalpart"), i.value()},
-                                                                 {QStringLiteral("newmaildomain"), dom.name()}
-                                                             });
-                auto roleDom = Domain::get(c, roleAcc.domainId(), errorData);
-                if (Q_LIKELY(roleDom)) {
-                    if (roleAcc.addEmail(c, errorData, roleAccParams)) {
+                    const QString roleAddress = roleAcc.addEmail(c, errorData, roleAccParams);
+                    if (!roleAddress.isEmpty()) {
                         qCInfo(SK_DOMAIN, "%s created a new email address for the %s role of new domain %s in account %s (ID: %u).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(roleAcc.username()), roleAcc.id());
+                    } else {
+                        qCWarning(SK_DOMAIN, "Failed to add role account email address %s for new domain %s (ID: %lu) to account %s (ID: %lu): %s", qUtf8Printable(roleAddress), qUtf8Printable(dom.name()), dom.id(), qUtf8Printable(roleAcc.username()), roleAcc.id(), qUtf8Printable(errorData->errorText()));
                     }
                 } else {
-                    qCWarning(SK_DOMAIN, "Failed to query domain with ID %u of account with ID %u to use as %s account for new domain %s: %s", roleAcc.domainId(), roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(errorData->errorText()));
+                    qCWarning(SK_DOMAIN, "Failed to query account with ID %u to use as %s account for new domain %s: %s", roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(errorData->errorText()));
                 }
-            } else {
-                qCWarning(SK_DOMAIN, "Failed to query account with ID %u to use as %s account for new domain %s: %s", roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(errorData->errorText()));
             }
+            ++i;
         }
-        ++i;
     }
 
     return dom;
