@@ -550,7 +550,7 @@ public:
     QString updateEmail(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p, const QString &oldAddress);
 
     /*!
-     * \brief Adds a new email address to the account pointed to by \a a.
+     * \brief Adds a new email address to the account.
      *
      * If adding the email address fails, the SkaffariError object pointed to by \a e will contain information
      * about occurred errors.
