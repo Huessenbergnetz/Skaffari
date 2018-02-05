@@ -930,50 +930,7 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
 
         std::pair<QStringList,bool> emailAddresses = a.queryAddresses(c);
 
-//        QStringList emailAddresses;
-//        bool _catchAll = false;
-
-//        QSqlQuery q2 = CPreparedSqlQueryThread(QStringLiteral("SELECT alias FROM virtual WHERE dest = :username AND username = :username"));
-//        q2.bindValue(QStringLiteral(":username"), username);
-
-//        if (Q_LIKELY(q2.exec())) {
-//            while (q2.next()) {
-//                const QString address = q2.value(0).toString();
-//                if (!address.startsWith(QLatin1Char('@'))) {
-//                    emailAddresses << addressFromACE(address);
-//                } else {
-//                    if (address == catchAllAlias) {
-//                        _catchAll = true;
-//                    }
-//                }
-//            }
-//        } else {
-//            qCWarning(SK_ACCOUNT, "Failed to query email addresses of account ID %u (%s) from the database: %s", id, qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
-//        }
-
-
         std::pair<QStringList,bool> forwards = a.queryFowards(c);
-//        QStringList aliases;
-//        bool _keepLocal = false;
-
-//        q2 = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
-//        q2.bindValue(QStringLiteral(":username"), username);
-//        if (Q_LIKELY(q2.exec())) {
-//            while (q2.next()) {
-//                const QStringList destinations = q2.value(0).toString().split(QLatin1Char(','));
-//                if (!destinations.empty()) {
-//                    for (const QString &dest : destinations) {
-//                        if (dest != username) {
-//                            aliases << dest;
-//                        } else {
-//                            _keepLocal = true;
-//                        }
-//                    }
-//                }
-//            }
-//        } else {
-//            qCWarning(SK_ACCOUNT, "Failed to query forward email addresses of account ID %u (%s) from the database: %s", id, qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
-//        }
 
         if ((emailAddresses.first.size() > 1) || (forwards.first.size() > 1)) {
 
@@ -1073,46 +1030,9 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
 
     std::pair<QStringList,bool> emailAddresses = a.queryAddresses(c);
     a.setCatchAll(emailAddresses.second);
-//    QStringList emailAddresses;
-//    q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias FROM virtual WHERE dest = :username AND username = :username ORDER BY alias ASC"));
-//    q.bindValue(QStringLiteral(":username"), a.username());
-//    if (Q_LIKELY(q.exec())) {
-//        const QString catchAllAlias = QLatin1Char('@') + domainNameAce;
-//        while (q.next()) {
-//            const QString address = q.value(0).toString();
-//            if (!address.startsWith(QLatin1Char('@'))) {
-//                emailAddresses << addressFromACE(address);
-//            } else {
-//                if (address == catchAllAlias) {
-//                    a.setCatchAll(true);
-//                }
-//            }
-//        }
-//    } else {
-//        qCWarning(SK_ACCOUNT, "Failed to query email addresses for account ID %u (%s) from the database: %s", id, qUtf8Printable(a.username()), qUtf8Printable(q.lastError().text()));
-//    }
 
     std::pair<QStringList,bool> forwards = a.queryFowards(c);
     a.setKeepLocal(forwards.second);
-//    QStringList aliases;
-//    q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
-//    q.bindValue(QStringLiteral(":username"), a.username());
-//    if (Q_LIKELY(q.exec())) {
-//        while (q.next()) {
-//            const QStringList destinations = q.value(0).toString().split(QLatin1Char(','));
-//            if (!destinations.empty()) {
-//                for (const QString &dest : destinations) {
-//                    if (dest != a.username()) {
-//                        aliases << dest;
-//                    } else {
-//                        a.setKeepLocal(true);
-//                    }
-//                }
-//            }
-//        }
-//    } else {
-//        qCWarning(SK_ACCOUNT, "Failed to query email forwards for account ID %u (%s) from the database: %s", id, qUtf8Printable(a.username()), qUtf8Printable(q.lastError().text()));
-//    }
 
     if ((emailAddresses.first.size() > 1) || (forwards.first.size() > 1)) {
         QCollator col(c->locale());
