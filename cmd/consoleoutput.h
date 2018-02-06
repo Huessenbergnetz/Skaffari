@@ -202,6 +202,8 @@ protected:
      */
     bool readBool(const QString &name, bool defaultVal, const QStringList &desc = QStringList()) const;
 
+    QString readFilePath(const QString &name, const QString &defaultVal, const QStringList &desc = QStringList(), bool canBeEmpty = false) const;
+
 private:
     bool m_quiet = false;
 };

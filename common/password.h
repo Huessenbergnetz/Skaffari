@@ -35,6 +35,7 @@ Q_DECLARE_LOGGING_CATEGORY(SK_PASSWORD)
  */
 class Password
 {
+    Q_GADGET
 public:
     /*!
      * \brief Different methods for password hashing.
@@ -46,6 +47,7 @@ public:
         MD5             = 3,    /**< Use plain hex MD5. Not recommended.*/
         SHA1            = 4     /**< Use plain hex SHA1. */
     };
+    Q_ENUM(Method)
 
     /*!
      * \brief Different algorithms for crpyt(3) and MySQL password hashing methods.
@@ -60,6 +62,7 @@ public:
         MySQLNew        = 6,    /**< New hashing algorithm of the MySQL PASSWORD() function. */
         MySQLOld        = 7     /**< Old hashing algorithm of the MySQL PASSWORD() function. */
     };
+    Q_ENUM(Algorithm)
 
     /*!
      * \brief Constructs a new Password object.

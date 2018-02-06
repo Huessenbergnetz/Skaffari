@@ -18,13 +18,13 @@
 
 #include "configinput.h"
 #include "../common/config.h"
+#include "../common/password.h"
 
 ConfigInput::ConfigInput(bool quiet) :
     ConsoleOutput(quiet)
 {
 
 }
-
 
 QVariantHash ConfigInput::askDatabaseConfig(const QVariantHash &defaults) const
 {
@@ -67,8 +67,6 @@ QVariantHash ConfigInput::askDatabaseConfig(const QVariantHash &defaults) const
     return conf;
 }
 
-
-
 QVariantHash ConfigInput::askImapConfig(const QVariantHash &defaults) const
 {
     QVariantHash conf;
@@ -76,7 +74,7 @@ QVariantHash ConfigInput::askImapConfig(const QVariantHash &defaults) const
     const QString imaphost = readString(tr("IMAP Host"), defaults.value(QStringLiteral("host"), QStringLiteral("localhost")).toString(), QStringList(tr("The Host that runs your IMAP server.")));
     conf.insert(QStringLiteral("host"), imaphost);
 
-    const quint16 imapport = readPort(tr("IMAP Port"), defaults.value(QStringLiteral("port"), 143).value<quint16>(), QStringList(tr("The port your IMAP server is listening on.")));
+    const quint16 imapport = readPort(tr("IMAP Port"), defaults.value(QStringLiteral("port"), 143).value<quint16>(), QStringList(tr("The port your IMAP server is listening on. The default port for IMAP without encryption or with STARTTLS encryption is 143, the default port for IMAPS is 993.")));
     conf.insert(QStringLiteral("port"), imapport);
 
     const QString imapuser = readString(tr("IMAP User"), defaults.value(QStringLiteral("user")).toString(), QStringList(tr("The user name of the IMAP administrator user.")));
@@ -128,8 +126,6 @@ QVariantHash ConfigInput::askImapConfig(const QVariantHash &defaults) const
     return conf;
 }
 
-
-
 QVariantHash ConfigInput::askPbkdf2Config(const QVariantHash &defaults) const
 {
     QVariantHash conf;
@@ -155,11 +151,116 @@ QVariantHash ConfigInput::askPbkdf2Config(const QVariantHash &defaults) const
 
     quint8 method = readChar(tr("PBKDF2 algorithm"), defaults.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM).value<quint8>(), pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10}));
     quint32 rounds = readInt(tr("PBKDF2 rounds"), defaults.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>(), QStringList(tr("The iteration count is used to increase the cost for deriving the key from the password.")));
+#ifdef PWQUALITY_ENABLED
+    quint8 threshold = readChar(tr("Password quality threshold"), defaults.value(QStringLiteral("pwthreshold"), SK_DEF_ADM_PWTHRESHOLD).value<quint8>(), QStringList(tr("Threshold for the password quality. Skaffari uses libpwquality to calculate a quality score for passwords. Passwords with scores below this threshold will not be accepted.")));
+    QString settingsFile = readFilePath(tr("Password quality settings file"), defaults.value(QStringLiteral("pwsettingsfile")).toString(), QStringList(tr("Absolute path to the configuration file that contains the settings for libpwquality. If the path is empty, the default configuration file will be used. Use man 5 pwquality.conf to learn more about the configuration options.")), true);
+#else
     quint8 minLength = readChar(tr("Password minimum length"), defaults.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>(), QStringList(tr("Required minimum length for administrator passwords.")));
+#endif
 
     conf.insert(QStringLiteral("pwalgorithm"), method);
     conf.insert(QStringLiteral("pwrounds"), rounds);
+#ifdef PWQUALITY_ENABLED
+    conf.insert(QStringLiteral("pwthreshold"), threshold);
+    conf.insert(QStringLiteral("pwsettingsfile"), settingsFile);
+#else
     conf.insert(QStringLiteral("pwminlength"), minLength);
+#endif
+
+    return conf;
+}
+
+QVariantHash ConfigInput::askPamPwConfig(const QVariantHash &defaults) const
+{
+    QVariantHash conf;
+
+    printDesc(tr("Skaffari is designed to work together with pam_mysql. For this reason, passwords for user accounts are stored in a different format than those for administrator accounts. The format of the user passwords must be compatible with the methods supported by pam_mysql. You can find out more about the supported methods in the README of your pam_mysql installation."));
+
+    printDesc(QString());
+
+    const QStringList methodDesc({
+                                     tr("The basic method for encryption of user passwords. Some methods support additional settings and different algorithms which can be set in the next step. If possible, you should use crypt(3) because this method supports modern hash functions together with salts and an extensible storage format. The other methods are available for compatibility reasons."),
+                                     tr("Supported methods:"),
+                                     QString(),
+                                     tr("0: no encryption - highly discouraged"),
+                                     tr("1: crypt(3) function - recommended"),
+                                     tr("2: MySQL password function"),
+                                     tr("3: plain hex MD5 - not recommended"),
+                                     tr("4: plain hex SHA1 - not recommended")
+                                 });
+
+    Password::Method method = static_cast<Password::Method>(readChar(tr("Encryption method"),
+                                                                     defaults.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>(),
+                                                                     methodDesc,
+                                                                     QList<quint8>({0,1,2,3,4})));
+
+    Password::Algorithm algo = Password::Default;
+
+    if (method == Password::Crypt) {
+        const QStringList cryptAlgoDesc({
+                                            tr("The method crypt(3) supports different algorithms to derive a key from a password. To find out which algorithms are supported on your system, use man crypt. Especially bcrypt, which uses Blowfish, is not available on all systems because it is not part of the standard distribution of crypt(3). The non-recommended algorithms are available for compatibility reasons and to store passwords across operating system boundaries."),
+                                            QString(),
+                                            tr("Supported algorithms:"),
+                                            tr("0: Default - points to SHA-256"),
+                                            tr("1: Traditional DES-based - not recommended"),
+                                            tr("2: FreeBSD-style MD5-based - not recommended"),
+                                            tr("3: SHA-256 based"),
+                                            tr("4: SHA-512 based"),
+                                            tr("5: OpenBSD-style Blowfish-based (bcrypt) - not supported everywhere")
+                                        });
+
+        algo = static_cast<Password::Algorithm>(readChar(tr("Encryption algorithm"),
+                                                         defaults.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>(),
+                                                         cryptAlgoDesc,
+                                                         QList<quint8>({0,1,2,3,4,5})));
+    } else  if (method == Password::MySQL) {
+        const QStringList mysqlAlgoDesc({
+                                            tr("MySQL supports two different hash functions, a new and an old one. If possible, you should use the new function. The old function is provided for compatibility reasons."),
+                                            QString(),
+                                            tr("Supported algorithms:"),
+                                            tr("0: default - points to MySQL new"),
+                                            tr("6: MySQL new"),
+                                            tr("7: MySQL old")
+                                        });
+
+        algo = static_cast<Password::Algorithm>(readChar(tr("Encryption algorithm"),
+                                                         defaults.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>(),
+                                                         mysqlAlgoDesc,
+                                                         QList<quint8>({0,6,7})));
+    }
+
+    quint32 rounds = defaults.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>();
+    if (method == Password::Crypt) {
+        if ((algo == Password::CryptSHA256) || (algo == Password::CryptSHA512) || (algo == Password::CryptBcrypt)) {
+            const QStringList roundsDesc = (algo == Password::CryptBcrypt) ? QStringList(tr("Crypt(3) with bcrypt supports an iteration count to increase the time cost for creating the derived key. The iteration count passed to the crypt function is the base-2 logarithm of the actual iteration count. Supported values are between 4 and 31.")) : QStringList(tr("Crypt(3) with SHA-256 and SHA-512 supports an iteration count from 1000 to 999999999. The iterations are used to increase the time cost for creating the derived key."));
+
+            if ((algo == Password::CryptBcrypt) && ((rounds < 4) || (rounds > 31))) {
+                rounds = 12;
+            }
+            if ((algo != Password::CryptBcrypt) && ((rounds < 1000) || (rounds > 999999999))) {
+                rounds = 5000;
+            }
+
+            rounds = readInt(tr("Encryption rounds"), rounds, roundsDesc);
+        }
+    }
+
+#ifdef PWQUALITY_ENABLED
+    quint8 threshold = readChar(tr("Password quality threshold"), defaults.value(QStringLiteral("pwthreshold"), SK_DEF_ADM_PWTHRESHOLD).value<quint8>(), QStringList(tr("Threshold for the password quality. Skaffari uses libpwquality to calculate a quality score for passwords. Passwords with scores below this threshold will not be accepted.")));
+    QString settingsFile = readFilePath(tr("Password quality settings file"), defaults.value(QStringLiteral("pwsettingsfile")).toString(), QStringList(tr("Absolute path to the configuration file that contains the settings for libpwquality. If the path is empty, the default configuration file will be used. Use man 5 pwquality.conf to learn more about the configuration options.")), true);
+#else
+    quint8 minLength = readChar(tr("Password minimum length"), defaults.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>(), QStringList(tr("Required minimum length for administrator passwords.")));
+#endif
+
+    conf.insert(QStringLiteral("pwmethod"), method);
+    conf.insert(QStringLiteral("pwalgorithm"), algo);
+    conf.insert(QStringLiteral("pwrounds"), rounds);
+#ifdef PWQUALITY_ENABLED
+    conf.insert(QStringLiteral("pwthreshold"), threshold);
+    conf.insert(QStringLiteral("pwsettingsfile"), settingsFile);
+#else
+    conf.insert(QStringLiteral("pwminlength"), minLength);
+#endif
 
     return conf;
 }

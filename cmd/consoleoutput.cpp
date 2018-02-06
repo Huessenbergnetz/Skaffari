@@ -24,6 +24,7 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QStringList>
+#include <QFileInfo>
 
 ConsoleOutput::ConsoleOutput(bool quiet) :
     m_quiet(quiet)
@@ -418,4 +419,56 @@ bool ConsoleOutput::readBool(const QString &name, bool defaultVal, const QString
     retVal = ((inStr.compare(tr("Y"), Qt::CaseInsensitive) == 0) || (inStr.compare(tr("Yes"), Qt::CaseInsensitive) == 0));
 
     return retVal;
+}
+
+QString ConsoleOutput::readFilePath(const QString &name, const QString &defaultVal, const QStringList &desc, bool canBeEmpty) const
+{
+    QString ret;
+
+    printDesc(desc);
+
+    QFileInfo fi;
+    if (canBeEmpty) {
+        QString inStr = QStringLiteral("asdfads");
+        while (!inStr.isEmpty() && !fi.exists()) {
+            printf("%s [%s]: ", qUtf8Printable(name), qUtf8Printable(defaultVal));
+            std::string in;
+            std::getline(std::cin, in);
+            inStr = QString::fromStdString(in);
+            if (inStr.isEmpty() && !defaultVal.isEmpty()) {
+                inStr = defaultVal;
+            }
+            if (!inStr.isEmpty()) {
+                fi.setFile(inStr);
+                if (!fi.exists()) {
+                    printFailed(tr("File %1 does not exist.").arg(inStr));
+                } else if (!fi.isReadable()) {
+                    printFailed(tr("File %1 is not readable.").arg(inStr));
+                }
+            }
+        }
+        ret = inStr;
+    } else {
+        QString inStr;
+        while (!fi.exists()) {
+            printf("%s [%s]: ", qUtf8Printable(name), qUtf8Printable(defaultVal));
+            std::string in;
+            std::getline(std::cin, in);
+            inStr = QString::fromStdString(in);
+            if (inStr.isEmpty() && !defaultVal.isEmpty()) {
+                inStr = defaultVal;
+            }
+            if (!inStr.isEmpty()) {
+                fi.setFile(inStr);
+                if (!fi.exists()) {
+                    printFailed(tr("File %1 does not exist.").arg(inStr));
+                } else if (!fi.isReadable()) {
+                    printFailed(tr("File %1 is not readable.").arg(inStr));
+                }
+            }
+        }
+        ret = inStr;
+    }
+
+    return ret;
 }

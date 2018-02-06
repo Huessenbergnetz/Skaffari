@@ -79,13 +79,17 @@ public:
      * Can take a set of defaults that will be used for the questions.
      *
      * \par Keys in the hash (defaults and return value)
-     * Key         | Type    | Description
-     * ------------|---------|-------------
-     * pwalgorithm | quint8  | QCryptographicHash::Algorithm
-     * pwrounds    | quint32 | number of rounds used for the hashing
-     * pwminlength | quint8  | minimum password length
+     * Key            | Type    | Description
+     * ---------------|---------|-------------
+     * pwalgorithm    | quint8  | QCryptographicHash::Algorithm
+     * pwrounds       | quint32 | number of rounds used for the hashing
+     * pwminlength    | quint8  | minimum password length (if compiled with <code>PWQUALITY_ENABLED=OFF</code>)
+     * pwthreshold    | quint8  | password quality threshold (if compiled with <code>PWQUALITY_ENABLED=ON</code>)
+     * pwsettingsfile | QString | absolute path to the libpwquality configuration file (if compiled with <code>PWQUALITY_ENABLED=ON</code>)
      */
     QVariantHash askPbkdf2Config(const QVariantHash &defaults = QVariantHash()) const;
+
+    QVariantHash askPamPwConfig(const QVariantHash &defaults = QVariantHash()) const;
 };
 
 #endif // CONFIGINPUT_H
