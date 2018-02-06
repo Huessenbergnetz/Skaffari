@@ -361,7 +361,7 @@ bool Database::setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusP
     bool ret = false;
 
     QSqlQuery q(m_db);
-    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO accountuser (username, domain_id, password, prefix, domain_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)")))) {
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO accountuser (username, domain_id, password, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")))) {
         m_lastError = q.lastError();
         return ret;
     }
@@ -371,8 +371,6 @@ bool Database::setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusP
     q.addBindValue(cyrusAdmin);
     q.addBindValue(0);
     q.addBindValue(cyrusPassword);
-    q.addBindValue(QStringLiteral(""));
-    q.addBindValue(QStringLiteral(""));
     q.addBindValue(current);
     q.addBindValue(current);
 
@@ -391,7 +389,7 @@ QString Database::checkCyrusAdmin() const
 
     QSqlQuery q(m_db);
 
-    q.exec(QStringLiteral("SELECT username FROM accountuser WHERE prefix = '' AND domain_name = ''"));
+    q.exec(QStringLiteral("SELECT username FROM accountuser WHERE domain_id = 0"));
 
     if (Q_LIKELY(q.next())) {
         admin = q.value(0).toString();
