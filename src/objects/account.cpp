@@ -900,7 +900,7 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
     Q_ASSERT_X(c, "get account", "invalid context object");
     Q_ASSERT_X(e, "get account", "invalid error object");
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire, au.status, au.domain_id, au.prefix, au.domain_name FROM accountuser au WHERE id = :id"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire, au.status, au.domain_id FROM accountuser au WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), id);
 
     if (Q_UNLIKELY(!q.exec())) {
