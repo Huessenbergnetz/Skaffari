@@ -74,6 +74,10 @@ add_library(skaffari SHARED ${skaffari_SRCS})
 
 pkg_search_module(ICU REQUIRED icu-io)
 
+if (ENABLE_PWQUALITY)
+    pkg_search_module(PWQUALITY REQUIRED pwquality>=1.2.2)
+endif (ENABLE_PWQUALITY)
+
 # Link to Cutelyst
 target_link_libraries(skaffari
     Cutelyst::Core
@@ -94,6 +98,7 @@ target_link_libraries(skaffari
     Qt5::Sql
     crypt
     ${ICU_LIBRARIES}
+    ${PWQUALITY_LIBRARIES}
 )
 
 find_package(PkgConfig QUIET)

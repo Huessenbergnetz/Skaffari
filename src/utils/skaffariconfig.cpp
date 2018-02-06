@@ -21,19 +21,30 @@
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <QSqlQuery>
 #include <QSqlError>
+#ifdef PWQUALITY_ENABLED
+#include <pwquality.h>
+#endif
 
 Q_LOGGING_CATEGORY(SK_CONFIG, "skaffari.config")
-
-#define SK_CONF_KEY_PWMINLENGTH "password_minimum_length"
 
 Password::Method SkaffariConfig::m_accPwMethod = static_cast<Password::Method>(SK_DEF_ACC_PWMETHOD);
 Password::Algorithm SkaffariConfig::m_accPwAlgorithm = static_cast<Password::Algorithm>(SK_DEF_ACC_PWALGORITHM);
 quint32 SkaffariConfig::m_accPwRounds = SK_DEF_ACC_PWROUNDS;
+#ifdef PWQUALITY_ENABLED
+QString SkaffariConfig::m_accPwSettingsFile;
+int SkaffariConfig::m_accPwThreshold = SK_DEF_ACC_PWTHRESHOLD;
+#else
 quint8 SkaffariConfig::m_accPwMinlength = SK_DEF_ACC_PWMINLENGTH;
+#endif
 
 QCryptographicHash::Algorithm SkaffariConfig::m_admPwAlgorithm = static_cast<QCryptographicHash::Algorithm>(SK_DEF_ADM_PWALGORITHM);
 quint32 SkaffariConfig::m_admPwRounds = SK_DEF_ADM_PWROUNDS;
+#ifdef PWQUALITY_ENABLED
+QString SkaffariConfig::m_admPwSettingsFile;
+int SkaffariConfig::m_admPwThreshold = SK_DEF_ADM_PWTHRESHOLD;
+#else
 quint8 SkaffariConfig::m_admPwMinlength = SK_DEF_ADM_PWMINLENGTH;
+#endif
 
 quota_size_t SkaffariConfig::m_defDomainquota = SK_DEF_DEF_DOMAINQUOTA;
 quota_size_t SkaffariConfig::m_defQuota = SK_DEF_DEF_QUOTA;
@@ -68,13 +79,6 @@ bool SkaffariConfig::m_tmplAsyncAccountList = SK_DEF_TMPL_ASYNCACCOUNTLIST;
 bool SkaffariConfig::m_useMemcached = false;
 bool SkaffariConfig::m_useMemcachedSession = false;
 
-#ifdef PWQUALITY_ENABLED
-QString SkaffariConfig::m_accPwSettingsFile;
-int SkaffariConfig::m_accPwThreshold = SK_DEF_ACC_PWTHRESHOLD;
-QString SkaffariConfig::m_admPwSettingsFile;
-int SkaffariConfig::m_admPwThreshold = SK_DEF_ADM_PWTHRESHOLD;
-#endif
-
 SkaffariConfig::SkaffariConfig()
 {
 
@@ -89,18 +93,20 @@ void SkaffariConfig::load(const QVariantMap &general, const QVariantMap &account
     SkaffariConfig::m_accPwMethod = static_cast<Password::Method>(accounts.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
     SkaffariConfig::m_accPwAlgorithm = static_cast<Password::Algorithm>(accounts.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>());
     SkaffariConfig::m_accPwRounds = accounts.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>();
-    SkaffariConfig::m_accPwMinlength = accounts.value(QStringLiteral("pwminlength"), SK_DEF_ACC_PWMINLENGTH).value<quint8>();
 #ifdef PWQUALITY_ENABLED
     SkaffariConfig::m_accPwSettingsFile = accounts.value(QStringLiteral("pwsettingsfile")).toString();
     SkaffariConfig::m_accPwThreshold = accounts.value(QStringLiteral("pwthreshold"), SK_DEF_ACC_PWTHRESHOLD).toInt();
+#else
+    SkaffariConfig::m_accPwMinlength = accounts.value(QStringLiteral("pwminlength"), SK_DEF_ACC_PWMINLENGTH).value<quint8>();
 #endif
 
     SkaffariConfig::m_admPwAlgorithm = static_cast<QCryptographicHash::Algorithm>(admins.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM).value<quint8>());
     SkaffariConfig::m_admPwRounds = admins.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>();
-    SkaffariConfig::m_admPwMinlength = admins.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>();
 #ifdef PWQUALITY_ENABLED
     SkaffariConfig::m_admPwSettingsFile = admins.value(QStringLiteral("pwsettingsfile")).toString();
     SkaffariConfig::m_admPwThreshold = admins.value(QStringLiteral("pwthreshold"), SK_DEF_ADM_PWTHRESHOLD).toInt();
+#else
+    SkaffariConfig::m_admPwMinlength = admins.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>();
 #endif
 
     SkaffariConfig::m_imapHost = imap.value(QStringLiteral("host")).toString();
@@ -207,7 +213,28 @@ bool SkaffariConfig::useMemcachedSession() { return (m_useMemcached && m_useMemc
 Password::Method SkaffariConfig::accPwMethod() { return m_accPwMethod; }
 Password::Algorithm SkaffariConfig::accPwAlgorithm() { return m_accPwAlgorithm; }
 quint32 SkaffariConfig::accPwRounds() { return m_accPwRounds; }
-quint8 SkaffariConfig::accPwMinlength() { return m_accPwMinlength; }
+quint8 SkaffariConfig::accPwMinlength()
+{
+#ifdef PWQUALITY_ENABLED
+    pwquality_settings_t *pwq;
+    pwq = pwquality_default_settings();
+    if (!SkaffariConfig::m_accPwSettingsFile.isEmpty()) {
+        if (pwquality_read_config(pwq, SkaffariConfig::m_accPwSettingsFile.toUtf8().constData(), nullptr) != 0) {
+            pwquality_read_config(pwq, nullptr, nullptr);
+        }
+    } else {
+        pwquality_read_config(pwq, nullptr, nullptr);
+    }
+    int minLen = SK_DEF_ACC_PWMINLENGTH;
+    if (pwquality_get_int_value(pwq, PWQ_SETTING_MIN_LENGTH, &minLen) != 0) {
+        minLen = SK_DEF_ACC_PWMINLENGTH;
+    }
+    pwquality_free_settings(pwq);
+    return static_cast<quint8>(minLen);
+#else
+    return m_accPwMinlength;
+#endif
+}
 #ifdef PWQUALITY_ENABLED
 QString SkaffariConfig::accPwSettingsFile() { return m_accPwSettingsFile; }
 int SkaffariConfig::accPwThreshold() { return m_accPwThreshold; }
@@ -215,7 +242,28 @@ int SkaffariConfig::accPwThreshold() { return m_accPwThreshold; }
 
 QCryptographicHash::Algorithm SkaffariConfig::admPwAlgorithm() { return m_admPwAlgorithm; }
 quint32 SkaffariConfig::admPwRounds() { return m_admPwRounds; }
-quint8 SkaffariConfig::admPwMinlength() { return m_admPwMinlength; }
+quint8 SkaffariConfig::admPwMinlength()
+{
+#ifdef PWQUALITY_ENABLED
+    pwquality_settings_t *pwq;
+    pwq = pwquality_default_settings();
+    if (!SkaffariConfig::m_admPwSettingsFile.isEmpty()) {
+        if (pwquality_read_config(pwq, SkaffariConfig::m_admPwSettingsFile.toUtf8().constData(), nullptr) != 0) {
+            pwquality_read_config(pwq, nullptr, nullptr);
+        }
+    } else {
+        pwquality_read_config(pwq, nullptr, nullptr);
+    }
+    int minLen = SK_DEF_ADM_PWMINLENGTH;
+    if (pwquality_get_int_value(pwq, PWQ_SETTING_MIN_LENGTH, &minLen) != 0) {
+        minLen = SK_DEF_ADM_PWMINLENGTH;
+    }
+    pwquality_free_settings(pwq);
+    return static_cast<quint8>(minLen);
+#else
+    return m_admPwMinlength;
+#endif
+}
 #ifdef PWQUALITY_ENABLED
 QString SkaffariConfig::admPwSettingsFile() { return m_admPwSettingsFile; }
 int SkaffariConfig::admPwThreshold() { return m_admPwThreshold; }

@@ -435,11 +435,21 @@ private:
     static Password::Method m_accPwMethod;
     static Password::Algorithm m_accPwAlgorithm;
     static quint32 m_accPwRounds;
+#ifdef PWQUALITY_ENABLED
+    static QString m_accPwSettingsFile;
+    static int m_accPwThreshold;
+#else
     static quint8 m_accPwMinlength;
+#endif
 
     static QCryptographicHash::Algorithm m_admPwAlgorithm;
     static quint32 m_admPwRounds;
+#ifdef PWQUALITY_ENABLED
+    static QString m_admPwSettingsFile;
+    static int m_admPwThreshold;
+#else
     static quint8 m_admPwMinlength;
+#endif
 
     static quota_size_t m_defDomainquota;
     static quota_size_t m_defQuota;
@@ -475,10 +485,8 @@ private:
     static bool m_useMemcachedSession;
 
 #ifdef PWQUALITY_ENABLED
-    static QString m_accPwSettingsFile;
-    static int m_accPwThreshold;
-    static QString m_admPwSettingsFile;
-    static int m_admPwThreshold;
+
+
 #endif
 
     static QVariant loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal = QVariant());
