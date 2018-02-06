@@ -272,7 +272,7 @@ SimpleAccount SkaffariConfig::loadDefaultAccount(const QString &optionName)
 {
     SimpleAccount acc;
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id, au.username, au.domain_name FROM accountuser au LEFT JOIN options op ON op.option_value = au.id WHERE op.option_name = :option_name"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username, d.domain_name FROM accountuser a LEFT JOIN options op ON op.option_value = a.id LEFT JOIN domain d ON a.domain_id = d.id WHERE op.option_name = :option_name"));
     q.bindValue(QStringLiteral(":option_name"), optionName);
 
     if (Q_LIKELY(q.exec())) {
@@ -292,7 +292,7 @@ SimpleAccount SkaffariConfig::loadDefaultAccount(dbid_t accountId)
     SimpleAccount acc;
 
     if (accountId > 0) {
-        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, domain_name FROM accountuser WHERE id = :id"));
+        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username, d.domain_name FROM accountuser a LEFT JOIN domain d ON a.domain_id = d.id WHERE a.id = :id"));
         q.bindValue(QStringLiteral(":id"), accountId);
 
         if (Q_LIKELY(q.exec())) {

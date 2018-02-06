@@ -629,8 +629,8 @@ int WebCyradmImporter::exec() const
         return dbError(wq.lastError());
     }
 
-    if (sq.prepare(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, prefix, domain_name, imap, pop, sieve, smtpauth, quota, created_at, updated_at) "
-                                  "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"))) {
+    if (sq.prepare(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, imap, pop, sieve, smtpauth, quota, created_at, updated_at) "
+                                  "VALUES (?,?,?,?,?,?,?,?,?,?)"))) {
 
         int usercount = 0;
         imap.login();
@@ -641,8 +641,6 @@ int WebCyradmImporter::exec() const
             sq.addBindValue(domainNameId.value(domainName));
             sq.addBindValue(username);
             sq.addBindValue(wq.value(1));
-            sq.addBindValue(wq.value(2));
-            sq.addBindValue(domainName);
             sq.addBindValue(wq.value(4));
             sq.addBindValue(wq.value(5));
             sq.addBindValue(wq.value(6));

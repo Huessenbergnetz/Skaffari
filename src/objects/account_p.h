@@ -27,14 +27,12 @@ class AccountData: public QSharedData
 public:
     AccountData() {}
 
-    AccountData(dbid_t _id, dbid_t _domainId, const QString &_username, const QString &_prefix, const QString &_domainName, bool _imap, bool _pop, bool _sieve, bool _smptauth, const QStringList &_addresses, const QStringList _forwards, quota_size_t _quota, quota_size_t _usage, const QDateTime &_created, const QDateTime &_updated, const QDateTime &_validUntil, const QDateTime &_pwExpires, bool _keepLocal, bool _catchAll, quint8 _status) :
+    AccountData(dbid_t _id, dbid_t _domainId, const QString &_username, bool _imap, bool _pop, bool _sieve, bool _smptauth, const QStringList &_addresses, const QStringList _forwards, quota_size_t _quota, quota_size_t _usage, const QDateTime &_created, const QDateTime &_updated, const QDateTime &_validUntil, const QDateTime &_pwExpires, bool _keepLocal, bool _catchAll, quint8 _status) :
         quota(_quota),
         usage(_usage),
         addresses(_addresses),
         forwards(_forwards),
         username(_username),
-        prefix(_prefix),
-        domainName(_domainName),
         created(_created),
         updated(_updated),
         validUntil(_validUntil),
@@ -57,8 +55,6 @@ public:
         addresses(other.addresses),
         forwards(other.forwards),
         username(other.username),
-        prefix(other.prefix),
-        domainName(other.domainName),
         created(other.created),
         updated(other.updated),
         validUntil(other.validUntil),
@@ -81,8 +77,6 @@ public:
     QStringList addresses;
     QStringList forwards;
     QString username;
-    QString prefix;
-    QString domainName;
     QDateTime created;
     QDateTime updated;
     QDateTime validUntil;

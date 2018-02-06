@@ -33,13 +33,11 @@ SimpleAccount::SimpleAccount() : d(new SimpleAccountData)
 
 }
 
-
 SimpleAccount::SimpleAccount(dbid_t id, const QString &username, const QString &domainname) :
     d(new SimpleAccountData(id, username, domainname))
 {
 
 }
-
 
 SimpleAccount::SimpleAccount(const SimpleAccount &other) :
     d(other.d)
@@ -47,37 +45,31 @@ SimpleAccount::SimpleAccount(const SimpleAccount &other) :
 
 }
 
-
 SimpleAccount& SimpleAccount::operator=(const SimpleAccount &other)
 {
     d = other.d;
     return *this;
 }
 
-
 SimpleAccount::~SimpleAccount()
 {
 
 }
-
 
 dbid_t SimpleAccount::id() const
 {
     return d->id;
 }
 
-
 QString SimpleAccount::username() const
 {
     return d->username;
 }
 
-
 QString SimpleAccount::domainname() const
 {
     return d->domainname;
 }
-
 
 void SimpleAccount::setData(dbid_t id, const QString &username, const QString &domainname)
 {
@@ -86,12 +78,10 @@ void SimpleAccount::setData(dbid_t id, const QString &username, const QString &d
     d->domainname = domainname;
 }
 
-
 bool SimpleAccount::isValid() const
 {
     return ((d->id > 0) && !d->username.isEmpty() && !d->domainname.isEmpty());
 }
-
 
 QJsonObject SimpleAccount::toJson() const
 {
@@ -103,7 +93,6 @@ QJsonObject SimpleAccount::toJson() const
 
     return o;
 }
-
 
 std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, dbid_t domainId, const QString searchString)
 {
@@ -122,16 +111,16 @@ std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariErr
     if (userType == 0) {
         if (domainId == 0) {
             if (searchString.isEmpty()) {
-                q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, domain_name FROM accountuser ORDER BY username ASC"));
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username, d.domain_name FROM accountuser a LEFT JOIN domain d ON a.domain_id = d.id ORDER BY username ASC"));
             } else {
-                q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, domain_name FROM accountuser WHERE username LIKE :search ORDER BY username ASC"));
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username, d.domain_name FROM accountuser a LEFT JOIN domain d ON a.domain_id = d.id WHERE a.username LIKE :search ORDER BY a.username ASC"));
                 q.bindValue(QStringLiteral(":search"), _search);
             }
         } else {
             if (searchString.isEmpty()) {
-                q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, domain_name FROM accountuser WHERE domain_id = :domain_id ORDER BY username ASC"));
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username, d.domain_name FROM accountuser a LEFT JOIN domain d ON a.domain_id = d.id WHERE a.domain_id = :domain_id ORDER BY a.username ASC"));
             } else {
-                q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, domain_name FROM accountuser WHERE username LIKE :search AND domain_id = :domain_id ORDER BY username ASC"));
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username, d.domain_name FROM accountuser a LEFT JOIN domain d ON a.domain_id = d.id WHERE a.username LIKE :search AND a.domain_id = :domain_id ORDER BY a.username ASC"));
                 q.bindValue(QStringLiteral(":search"), _search);
             }
             q.bindValue(QStringLiteral(":domain_id"), domainId);
@@ -139,19 +128,20 @@ std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariErr
     } else {
         if (domainId == 0) {
             if (searchString.isEmpty()) {
-                q = CPreparedSqlQueryThread(QStringLiteral("SELECT ac.id, ac.username, ac.domain_name FROM accountuser ac LEFT JOIN domainadmin da ON ac.domain_id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY username ASC"));
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT ac.id, ac.username, do.domain_name FROM accountuser ac LEFT JOIN domainadmin da ON ac.domain_id = da.domain_id LEFT JOIN domain do ON ac.domain_id = do.id WHERE da.admin_id = :admin_id ORDER BY ac.username ASC"));
             } else {
-                q = CPreparedSqlQueryThread(QStringLiteral("SELECT ac.id, ac.username, ac.domain_name FROM accountuser ac LEFT JOIN domainadmin da ON ac.domain_id = da.domain_id WHERE ac.username LIKE :search AND da.admin_id = :admin_id ORDER BY username ASC"));
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT ac.id, ac.username, do.domain_name FROM accountuser ac LEFT JOIN domainadmin da ON ac.domain_id = da.domain_id LEFT JOIN domain do ON ac.domain_id = do.id WHERE da.admin_id = :admin_id AND ac.username LIKE :search ORDER BY ac.username ASC"));
                 q.bindValue(QStringLiteral(":search"), _search);
             }
             q.bindValue(QStringLiteral(":admin_id"), adminId);
         } else {
             if (searchString.isEmpty()) {
-                q = CPreparedSqlQueryThread(QStringLiteral("SELECT ac.id, ac.username, ac.domain_name FROM accountuser ac LEFT JOIN domainadmin da ON ac.domain_id = da.domain_id WHERE da.admin_id = :admin_id AND da.domain_id = :domain_id ORDER BY username ASC"));
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT ac.id, ac.username, do.domain_name FROM accountuser ac LEFT JOIN domainadmin da on ac.domain_id = da.domain_id LEFT JOIN domain do ON ac.domain_id = do.id WHERE da.admin_id = :admin_id AND da.domain_id = :domain_id ORDER BY ac.username ASC"));
             } else {
-                q = CPreparedSqlQueryThread(QStringLiteral("SELECT ac.id, ac.username, ac.domain_name FROM accountuser ac LEFT JOIN domainadmin da ON ac.domain_id = da.domain_id WHERE ac.username LIKE :search AND da.admin_id = :admin_id AND da.domain_id = :domain_id ORDER BY username ASC"));
+                q = CPreparedSqlQueryThread(QStringLiteral("SELECT ac.id, ac.username, do.domain_name FROM accountuser ac LEFT JOIN domainadmin da on ac.domain_id = da.domain_id LEFT JOIN domain do ON ac.domain_id = do.id WHERE da.admin_id = :admin_id AND da.domain_id = :domain_id AND ac.username LIKE :search ORDER BY ac.username ASC"));
                 q.bindValue(QStringLiteral(":search"), _search);
             }
+            q.bindValue(QStringLiteral(":admin_id"), adminId);
             q.bindValue(QStringLiteral(":domain_id"), domainId);
         }
     }
@@ -175,7 +165,6 @@ std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariErr
     return lst;
 }
 
-
 QJsonArray SimpleAccount::listJson(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, dbid_t domainId, const QString searchString)
 {
     QJsonArray lst;
@@ -194,7 +183,6 @@ QJsonArray SimpleAccount::listJson(Cutelyst::Context *c, SkaffariError *e, qint1
     return lst;
 }
 
-
 SimpleAccount SimpleAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
 {
     SimpleAccount a;
@@ -204,7 +192,7 @@ SimpleAccount SimpleAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t 
 
     if (id > 0) {
 
-        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, domain_name FROM accountuser WHERE id = :id"));
+        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username, d.domain_name FROM accountuser a LEFT JOIN domain d ON a.domain_id = d.id WHERE a.id = :id"));
         q.bindValue(QStringLiteral(":id"), id);
 
         if (Q_LIKELY(q.exec())) {

@@ -3,8 +3,6 @@ CREATE TABLE IF NOT EXISTS accountuser (
   domain_id int(10) unsigned NOT NULL,
   username varchar(255)  NOT NULL,
   password varchar(255) NOT NULL,
-  prefix varchar(50) NOT NULL,
-  domain_name varchar(255) NOT NULL,
   imap tinyint(1) unsigned NOT NULL DEFAULT 1,
   pop tinyint(1) unsigned NOT NULL DEFAULT 1,
   sieve tinyint(1) unsigned NOT NULL DEFAULT 1,

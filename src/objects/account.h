@@ -61,8 +61,6 @@ public:
      * \param id            Database ID
      * \param domainId      Database ID of the domain the account belongs to
      * \param username      Account user name
-     * \param prefix        Prefix of the domain the account belongs to
-     * \param domainName    Name of the domain the account belongs to
      * \param imap          \c true if IMAP access is enabled
      * \param pop           \c true if POP3 access is enabled
      * \param sieve         \c true if access to Sieve is enabled
@@ -79,7 +77,7 @@ public:
      * \param catchAll      \c true if this is the catch-all account for the \a domainName
      * \param status        Status value saved in the database.
      */
-    Account(dbid_t id, dbid_t domainId, const QString &username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const QDateTime &pwdExpiration, bool keepLocal, bool catchAll, quint8 status);
+    Account(dbid_t id, dbid_t domainId, const QString &username, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const QDateTime &pwdExpiration, bool keepLocal, bool catchAll, quint8 status);
 
     /*!
      * \brief Creates a copy of \a other.
@@ -100,10 +98,10 @@ public:
      * \brief Strategy for mailbox creation on IMAP server.
      */
     enum CreateMailbox : quint8 {
-        DoNotCreate         = 0,    /**< Skaffari will not create anything on the IMAP server. */
-        LoginAfterCreation  = 1,    /**< Skaffari will login to the new account after creation to let the IMAP server create the mailbox and set the quota. */
-        OnlySetQuota        = 2,    /**< Skaffari will login to the new account after creation to let the IMAP server create the mailbox and will than set the account quota. */
-        CreateBySkaffari    = 3     /**< Skaffari will create the account, including the domain's default folders and will set the quota. */
+        DoNotCreate         = 0,    /**< %Skaffari will not create anything on the IMAP server. */
+        LoginAfterCreation  = 1,    /**< %Skaffari will login to the new account after creation to let the IMAP server create the mailbox and set the quota. */
+        OnlySetQuota        = 2,    /**< %Skaffari will login to the new account after creation to let the IMAP server create the mailbox and will than set the account quota. */
+        CreateBySkaffari    = 3     /**< %Skaffari will create the account, including the domain's default folders and will set the quota. */
     };
 
     /*!
@@ -147,34 +145,6 @@ public:
      * \sa username()
      */
     void setUsername(const QString &nUsername);
-
-    /*!
-     * \brief Returns the prefix of the domain the account belongs to.
-     *
-     * Access from Grantlee: prefix
-     *
-     * \sa setPrefix()
-     */
-    QString prefix() const;
-    /*!
-     * \brief Sets the prefix of the domain this account belongs to.
-     * \sa prefix()
-     */
-    void setPrefix(const QString &nPrefix);
-
-    /*!
-     * \brief Returns the name of the domain the account belongs to.
-     *
-     * Access from Grantlee: domainName
-     *
-     * \sa setDomainName()
-     */
-    QString domainName() const;
-    /*!
-     * \brief Sets the name of the domain this account belongs to.
-     * \sa domainName()
-     */
-    void setDomainName(const QString &nDomainName);
 
     /*!
      * \brief Returns \c true if IMAP access is enabled for this account.
@@ -684,10 +654,6 @@ if (property == QLatin1String("id")) {
     var.setValue(object.domainId());
 } else if (property == QLatin1String("username")) {
     var.setValue(object.username());
-} else if (property == QLatin1String("prefix")) {
-    var.setValue(object.prefix());
-} else if (property == QLatin1String("domainName")) {
-    var.setValue(object.domainName());
 } else if (property == QLatin1String("imap")) {
     var.setValue(object.isImapEnabled());
 } else if (property == QLatin1String("pop")) {

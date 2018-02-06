@@ -55,8 +55,8 @@ Account::Account() :
 
 }
 
-Account::Account(dbid_t id, dbid_t domainId, const QString& username, const QString &prefix, const QString &domainName, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const QDateTime &pwdExpiration, bool keepLocal, bool catchAll, quint8 status) :
-    d(new AccountData(id, domainId, username, prefix, domainName, imap, pop, sieve, smtpauth, addresses, forwards, quota, usage, created, updated, validUntil, pwdExpiration, keepLocal, catchAll, status))
+Account::Account(dbid_t id, dbid_t domainId, const QString& username, bool imap, bool pop, bool sieve, bool smtpauth, const QStringList &addresses, const QStringList &forwards, quota_size_t quota, quota_size_t usage, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const QDateTime &pwdExpiration, bool keepLocal, bool catchAll, quint8 status) :
+    d(new AccountData(id, domainId, username, imap, pop, sieve, smtpauth, addresses, forwards, quota, usage, created, updated, validUntil, pwdExpiration, keepLocal, catchAll, status))
 {
 
 }
@@ -106,26 +106,6 @@ QString Account::username() const
 void Account::setUsername(const QString& nUsername)
 {
     d->username = nUsername;
-}
-
-QString Account::prefix() const
-{
-    return d->prefix;
-}
-
-void Account::setPrefix(const QString &nPrefix)
-{
-    d->prefix = nPrefix;
-}
-
-QString Account::domainName() const
-{
-    return d->domainName;
-}
-
-void Account::setDomainName(const QString &nDomainName)
-{
-    d->domainName = nDomainName;
 }
 
 bool Account::isImapEnabled() const
@@ -310,8 +290,6 @@ QJsonObject Account::toJson() const
     ao.insert(QStringLiteral("id"), static_cast<qint64>(d->id));
     ao.insert(QStringLiteral("domainId"), static_cast<qint64>(d->domainId));
     ao.insert(QStringLiteral("username"), d->username);
-    ao.insert(QStringLiteral("prefix"), d->prefix);
-    ao.insert(QStringLiteral("domainName"), d->domainName);
     ao.insert(QStringLiteral("imap"), d->imap);
     ao.insert(QStringLiteral("pop"), d->pop);
     ao.insert(QStringLiteral("sieve"), d->sieve);
@@ -403,14 +381,12 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
 
     const quint8 accountStatus = Account::calcStatus(validUntil, pwExpires);
 
-    q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, prefix, domain_name, imap, pop, sieve, smtpauth, quota, created_at, updated_at, valid_until, pwd_expire, status) "
-                                         "VALUES (:domain_id, :username, :password, :prefix, :domain_name, :imap, :pop, :sieve, :smtpauth, :quota, :created_at, :updated_at, :valid_until, :pwd_expire, :status)"));
+    q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, imap, pop, sieve, smtpauth, quota, created_at, updated_at, valid_until, pwd_expire, status) "
+                                         "VALUES (:domain_id, :username, :password, :imap, :pop, :sieve, :smtpauth, :quota, :created_at, :updated_at, :valid_until, :pwd_expire, :status)"));
 
     q.bindValue(QStringLiteral(":domain_id"), d.id());
     q.bindValue(QStringLiteral(":username"), username);
     q.bindValue(QStringLiteral(":password"), encpw);
-    q.bindValue(QStringLiteral(":prefix"), d.prefix());
-    q.bindValue(QStringLiteral(":domain_name"), QUrl::toAce(d.name()));
     q.bindValue(QStringLiteral(":imap"), imap);
     q.bindValue(QStringLiteral(":pop"), pop);
     q.bindValue(QStringLiteral(":sieve"), sieve);
@@ -446,7 +422,6 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
     }
 
     if (!d.children().empty()) {
-//        const QStringList selectedKids = p.values(QStringLiteral("children"));
         if (!selectedKids.empty()) {
             const QVector<SimpleDomain> thekids = d.children();
             for (const SimpleDomain &kid : thekids) {
@@ -657,8 +632,6 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
     a.setId(id);
     a.setDomainId(d.id());
     a.setUsername(username);
-    a.setPrefix(d.prefix());
-    a.setDomainName(d.name());
     a.setImapEnabled(imap);
     a.setPopEnabled(pop);
     a.setSieveEnabled(sieve);
@@ -851,8 +824,6 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
         Account a(q.value(0).value<dbid_t>(),
                   d.id(),
                   q.value(1).toString(),
-                  d.prefix(),
-                  d.name(),
                   q.value(2).toBool(),
                   q.value(3).toBool(),
                   q.value(4).toBool(),
@@ -965,9 +936,6 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
     a.setPasswordExpires(accPwdExpires);
     a.setStatus(q.value(11).value<quint8>());
     a.setDomainId(q.value(12).value<dbid_t>());
-    a.setPrefix(q.value(13).toString());
-    const QString domainNameAce = q.value(14).toString();
-    a.setDomainName(QUrl::fromAce(domainNameAce.toLatin1()));
 
     std::pair<QStringList,bool> emailAddresses = a.queryAddresses(c);
     a.setCatchAll(emailAddresses.second);
@@ -1158,7 +1126,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Domain *dom, const 
 
             if (Q_UNLIKELY(!q.exec())) {
                 e->setSqlError(q.lastError(), c->translate("Account", "User account could not be removed as a catch-all account for this domain."));
-                qCWarning(SK_ACCOUNT, "User account %s could not be removed as a catch-all account for domain %s: %s", qUtf8Printable(d->username), qUtf8Printable(d->domainName), qUtf8Printable(q.lastError().text()));
+                qCWarning(SK_ACCOUNT, "User account %s could not be removed as a catch-all account for domain %s: %s", qUtf8Printable(d->username), qUtf8Printable(dom->name()), qUtf8Printable(q.lastError().text()));
             } else {
                 setCatchAll(false);
             }
@@ -1191,7 +1159,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Domain *dom, const 
         }
     }
 
-    qCInfo(SK_ACCOUNT, "%s updated account %s for domain %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->username), qUtf8Printable(d->domainName));
+    qCInfo(SK_ACCOUNT, "%s updated account %s for domain %s", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->username), qUtf8Printable(dom->name()));
 
     ret = true;
 
@@ -1212,9 +1180,9 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
 
     Domain dom = domain;
 
-    if (!dom.isValid()) {
+    if (!dom.isValid() || (dom.id() != d->domainId)) {
         dom = Domain::fromStash(c);
-        if (!dom.isValid()) {
+        if (!dom.isValid() || (dom.id() != d->domainId)) {
             dom = Domain::get(c, d->domainId, e);
             if (!dom.isValid()) {
                 return actions;
@@ -1346,15 +1314,15 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
         }
     }
 
-    if (Utils::checkCheckbox(p, QStringLiteral("checkChildAddresses")) && !domain.children().empty()) {
+    if (Utils::checkCheckbox(p, QStringLiteral("checkChildAddresses")) && !dom.children().empty()) {
         const QStringList addresses = d->addresses;
         if (!addresses.empty()) {
             QSqlQuery q;
             QStringList newAddresses;
             for (const QString &address : addresses) {
                 std::pair<QString,QString> parts = addressParts(address);
-                if (parts.second == d->domainName) {
-                    const QVector<SimpleDomain> thekids = domain.children();
+                if (parts.second == dom.name()) {
+                    const QVector<SimpleDomain> thekids = dom.children();
                     for (const SimpleDomain &kid : thekids) {
                         const QString childAddress = parts.first + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(kid.name()));
                         q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :alias"));

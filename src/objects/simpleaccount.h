@@ -45,12 +45,12 @@ class SimpleAccount
 {
 public:
     /*!
-     * \brief Constructs an invalid, empty SimpleAccount.
+     * \brief Constructs an invalid, empty %SimpleAccount.
      */
     SimpleAccount();
 
     /*!
-     * \brief Constructs a new SimpleAccount with the given parameters.
+     * \brief Constructs a new %SimpleAccount with the given parameters.
      * \param id            Database ID.
      * \param username      Account user name.
      * \param domainname    Name of the domain the account belongs to.

@@ -59,22 +59,6 @@
          <td>the user's password</td>
      </tr>
      <tr>
-         <td>prefix</td>
-         <td>varchar(50)</td>
-         <td>NO</td>
-         <td></td>
-         <td>NULL</td>
-         <td>prefix of the domain the account belongs to</td>
-     </tr>
-     <tr>
-         <td>domain_name</td>
-         <td>varchar(255)</td>
-         <td>NO</td>
-         <td></td>
-         <td>NULL</td>
-         <td>name of the domain the account belongs to</td>
-     </tr>
-     <tr>
          <td>imap</td>
          <td>bool</td>
          <td>NO</td>
