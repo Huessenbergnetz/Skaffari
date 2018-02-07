@@ -39,7 +39,7 @@ As this file contains information about user access to your database and IMAP se
 .SH "FIELD DESCRIPTIONS"
 Below you find the different configuration sections and entries used by Skaffari in
 .B @CMAKE_INSTALL_SYSCONFDIR@/skaffari.ini.
-Every entry shows the key name and the option's default value. Some options have no default value, these are listed with ``<no default>''. Some options default to the empty string, these are listed with ``<none>''.
+Every entry shows the key name and the option's default value. Some options have no default value, these are listed with ``<no default>''. Some options default to an empty string, these are listed with ``<none>''.
 
 .B [Skaffari]
 This section contains general configuration options.
@@ -77,12 +77,19 @@ has to be enabled for this. See man 5 cutelyst_memcachedsessionstore_plugin to l
 Defines the logging backend used by Skaffari.
 
 Supported backends:
-.IP syslog
+
+syslog
+.RS 4
 the traditional syslog backend.
-.IP journald
+.RE
+journald
+.RS 4
 the systemd journald backend
-.IP stdout
+.RE
+stdout
+.RS 4
 prints to stdout
+.RE
 .RE
 .RE
 
@@ -154,7 +161,19 @@ is the base-2 logarithm of the actual iteration count. Supported values for bcry
 .B pwminlength
 = @DEFVAL_ACC_PWMINLENGTH@
 .RS 4
-The required minimum length for user account passwords created or changed via Skaffari.
+The required minimum length for user account passwords created or changed via Skaffari. This option will only be available if Skaffari has been build with -DENABLE_PWQUALITY:BOOL=OFF.
+.RE
+
+.B pwthreshold
+= @DEFVAL_ACC_PWTHRESHOLD@
+.RS 4
+The required minimum password quality score. I the password has a quality score below the threshold it will not be accepted. This option will only be available if Skaffari has been build with -DENABLE_PWQUALITY:BOOL=ON.
+.RE
+
+.B pwsettingsfile
+= <none>
+.RS 4
+Absolute path to a file that contains the settings for libpwquality. This option will only be available if Skaffari has been build with -DENABLE_PWQUALITY:BOOL=ON.
 .RE
 .RE
 
@@ -201,7 +220,19 @@ The iteration count used by the PBKDF2 implementation to increase the cost for t
 .B pwminlength
 = @DEFVAL_ADM_PWMINLENGTH@
 .RS 4
-The required minimum length for adiminstrator account passwords.
+The required minimum length for user account passwords created or changed via Skaffari. This option will only be available if Skaffari has been build with -DENABLE_PWQUALITY:BOOL=OFF.
+.RE
+
+.B pwthreshold
+= @DEFVAL_ADM_PWTHRESHOLD@
+.RS 4
+The required minimum password quality score. I the password has a quality score below the threshold it will not be accepted. This option will only be available if Skaffari has been build with -DENABLE_PWQUALITY:BOOL=ON.
+.RE
+
+.B pwsettingsfile
+= <none>
+.RS 4
+Absolute path to a file that contains the settings for libpwquality. This option will only be available if Skaffari has been build with -DENABLE_PWQUALITY:BOOL=ON.
 .RE
 .RE
 
