@@ -138,10 +138,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The port your IMAP server is listening on.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>IMAP User</source>
         <translation type="unfinished"></translation>
     </message>
@@ -255,6 +251,126 @@
         <source>If you use a different host name to connect to your IMAP server than the one used in the certificate of the IMAP server, you can define this different name used in the certificate here. This can for example be used to establish an encrypted connection to an IMAP server running on your local host.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>The port your IMAP server is listening on. The default port for IMAP without encryption or with STARTTLS encryption is 143, the default port for IMAPS is 993.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password quality threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Threshold for the password quality. Skaffari uses libpwquality to calculate a quality score for passwords. Passwords with scores below this threshold will not be accepted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password quality settings file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute path to the configuration file that contains the settings for libpwquality. If the path is empty, the default configuration file will be used. Use man 5 pwquality.conf to learn more about the configuration options.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Skaffari is designed to work together with pam_mysql. For this reason, passwords for user accounts are stored in a different format than those for administrator accounts. The format of the user passwords must be compatible with the methods supported by pam_mysql. You can find out more about the supported methods in the README of your pam_mysql installation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The basic method for encryption of user passwords. Some methods support additional settings and different algorithms which can be set in the next step. If possible, you should use crypt(3) because this method supports modern hash functions together with salts and an extensible storage format. The other methods are available for compatibility reasons.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Supported methods:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>0: no encryption - highly discouraged</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1: crypt(3) function - recommended</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2: MySQL password function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3: plain hex MD5 - not recommended</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>4: plain hex SHA1 - not recommended</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Encryption method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The method crypt(3) supports different algorithms to derive a key from a password. To find out which algorithms are supported on your system, use man crypt. Especially bcrypt, which uses Blowfish, is not available on all systems because it is not part of the standard distribution of crypt(3). The non-recommended algorithms are available for compatibility reasons and to store passwords across operating system boundaries.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Supported algorithms:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>0: Default - points to SHA-256</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1: Traditional DES-based - not recommended</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2: FreeBSD-style MD5-based - not recommended</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3: SHA-256 based</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>4: SHA-512 based</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>5: OpenBSD-style Blowfish-based (bcrypt) - not supported everywhere</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Encryption algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MySQL supports two different hash functions, a new and an old one. If possible, you should use the new function. The old function is provided for compatibility reasons.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>0: default - points to MySQL new</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>6: MySQL new</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>7: MySQL old</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Crypt(3) with bcrypt supports an iteration count to increase the time cost for creating the derived key. The iteration count passed to the crypt function is the base-2 logarithm of the actual iteration count. Supported values are between 4 and 31.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Crypt(3) with SHA-256 and SHA-512 supports an iteration count from 1000 to 999999999. The iterations are used to increase the time cost for creating the derived key.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Encryption rounds</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ConsoleOutput</name>
@@ -286,6 +402,14 @@
     </message>
     <message>
         <source>No</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File %1 does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File %1 is not readable.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -458,99 +582,11 @@ status for not finding any IMAP admin users</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Password minimum length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>User name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Do you want to set the user password settings?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Supported methods:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>0: no encryption - highly discouraged</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>1: crypt(3) function - recommended</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>2: MySQL password function</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>3: plain hex MD5 - not recommended</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>4: plain hex SHA1 - not recommended</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Encryption method</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Supported algorithms:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>0: Default - points to SHA-256</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>1: Traditional DES-based - not recommended</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>2: FreeBSD-style MD5-based - not recommended</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>3: SHA-256 based</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>4: SHA-512 based</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>5: OpenBSD-style Blowfish-based (bcrypt) - not supported everywhere</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>0: default - points to MySQL new</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>6: MySQL new</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>7: MySQL old</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Crypt(3) with bcrypt supports an iteration count to increase the time cost for creating the derived key. The iteration count passed to the crypt function is the base-2 logarithm of the actual iteration count. Supported values are between 4 and 31.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Crypt(3) with SHA-256 and SHA-512 supports an iteration count from 1000 to 999999999. The iterations are used to increase the time cost for creating the derived key.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Encryption rounds</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The required minimum length for user account passwords created or changed via Skaffari.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -639,26 +675,6 @@ status for not finding any IMAP admin users</extracomment>
     </message>
     <message>
         <source>Skaffari setup was successful.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Skaffari is designed to work together with pam_mysql. For this reason, passwords for user accounts are stored in a different format than those for administrator accounts. The format of the user passwords must be compatible with the methods supported by pam_mysql. You can find out more about the supported methods in the README of your pam_mysql installation.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The basic method for encryption of user passwords. Some methods support additional settings and different algorithms which can be set in the next step. If possible, you should use crypt(3) because this method supports modern hash functions together with salts and an extensible storage format. The other methods are available for compatibility reasons.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Encryption algorithm</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The method crypt(3) supports different algorithms to derive a key from a password. To find out which algorithms are supported on your system, use man crypt. Especially bcrypt, which uses Blowfish, is not available on all systems because it is not part of the standard distribution of crypt(3). The non-recommended algorithms are available for compatibility reasons and to store passwords across operating system boundaries.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>MySQL supports two different hash functions, a new and an old one. If possible, you should use the new function. The old function is provided for compatibility reasons.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

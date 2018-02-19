@@ -102,14 +102,6 @@
         <translation>Anzahl der Benutzerkonten in der Domäne und das genutzte Domänenkontingent konnten nicht in der Datenbank aktualisiert werden.</translation>
     </message>
     <message>
-        <source>User accounts of the domain %1 could not be queried from the database.</source>
-        <translation>Benutzerkonten der Domäne %1 konnten nicht aus der Datenbank abgefragt werden.</translation>
-    </message>
-    <message>
-        <source>Abort deleting user accounts in the domain %1 due to the previous error: %2</source>
-        <translation>Breche das Löschen der Benutzerkonten in Domäne %1 auf Grund des vorherigen Fehlers ab: %2</translation>
-    </message>
-    <message>
         <source>User accounts could not be queried from the database.</source>
         <translation>Benutzerkonten konnten nicht aus der Datenbank abgefragt werden.</translation>
     </message>
@@ -236,6 +228,22 @@
         <source>Failed to disable the keeping of forwarded emails in the local mail box for account %1 in the database.</source>
         <translation>Kann das Behalten weitergeleiteter E-Mail im lokalen Postfach für Benutzerkonto %1 nicht in der Datenbank deaktivieren.</translation>
     </message>
+    <message>
+        <source>You can not create email addresses for other domains as long as free addresses are not allowed for this domain.</source>
+        <translation>So lange für diese Domäne keine freien Adressen erlaubt sind, können Sie keine E-Mail-Adressen für andere Domänen als diese erstellen.</translation>
+    </message>
+    <message>
+        <source>The email address %1 is not part of this account.</source>
+        <translation>Die E-Mail-Adresse %1 gehört nicht zu diesem Benutzerkonto.</translation>
+    </message>
+    <message>
+        <source>Can not convert email address %1 into a ACE string.</source>
+        <translation>Kann E-Mail-Adresse %1 nicht in eine ACE-Zeichenkette konvertieren.</translation>
+    </message>
+    <message>
+        <source>Cannot retrieve current list of email addresses for user account %1 from the database.</source>
+        <translation>Kann die aktuelle List der E-Mail-Adressen für Benutzerkonto %1 nicht aus der Datenbank abfragen.</translation>
+    </message>
 </context>
 <context>
     <name>AccountEditor</name>
@@ -292,10 +300,6 @@
         <translation>Der eingegebene Benutzername stimmt nicht mit dem Benutzernamen des Kontos überein, welches Sie löschen möchten.</translation>
     </message>
     <message>
-        <source>You can not create email addresses for other domains as long as free addresses are not allowed for this domain.</source>
-        <translation>So lange für diese Domäne keine freien Adressen erlaubt sind, können Sie keine E-Mail-Adressen für andere Domänen als diese erstellen.</translation>
-    </message>
-    <message>
         <source>Successfully changed email address from %1 to %2.</source>
         <translation>E-Mail-Adresse erfolgreiche von %1 zu %2 geändert.</translation>
     </message>
@@ -314,10 +318,6 @@
     <message>
         <source>Successfully removed email address %1 from account %2.</source>
         <translation>E-Mail-Adresse %1 erfolgreich von Konto %2 entfernt.</translation>
-    </message>
-    <message>
-        <source>You can not create email addresses for domains you are not responsible for. Please create domain %1 before adding email addresses for this domain.</source>
-        <translation>Sie können keine E-Mail-Adressen für Domänen erstellen für die Sie nicht verantwortlich sind. Bitte erstellen Sie zuerst die Domäne %1 bevor Sie E-Mail-Adressen für diese anlegen.</translation>
     </message>
     <message>
         <source>Successfully added email address %1 to account %2.</source>
@@ -561,6 +561,10 @@
         <source>Failed to revert domain manager to domain connections in database.</source>
         <translation>Konnte Verbindungen zwischen Domänenverwalter und zugehörigen Domänen nicht in der Datenbank zurücksetzen</translation>
     </message>
+    <message>
+        <source>%1 is not a valid IANA time zone ID.</source>
+        <translation>%1 ist keine gültige IANA-Zeitzonen-ID.</translation>
+    </message>
 </context>
 <context>
     <name>AdminEditor</name>
@@ -749,6 +753,10 @@
     <message>
         <source>Failed to remove domain to domain manager connections from database.</source>
         <translation>Konnte Verbindungen zwischen Domänenverwalter und zugehörigen Domänen nicht aus der Datenbank entfernen</translation>
+    </message>
+    <message>
+        <source>Failed to get database IDs of the accounts for this domain.</source>
+        <translation>Kann die Datenbank-IDs der Konten in dieser Domäne nicht abfragen.</translation>
     </message>
 </context>
 <context>
@@ -1036,7 +1044,7 @@
     </message>
     <message>
         <source>The domain %1 has been successfully deleted.</source>
-        <translation>Die Domäne %1 wurde erfolgreich erstellt.</translation>
+        <translation>Die Domäne %1 wurde erfolgreich entfernt.</translation>
     </message>
     <message>
         <source>The specified name does not match the domain name.</source>
@@ -1444,6 +1452,14 @@
     <message>
         <source>Failed to convert the input data of the “%1” field into a database ID.</source>
         <translation>Eingabedaten für das Feld „%1“ konnten nicht in eine Datenbank-ID konvertiert werden.</translation>
+    </message>
+    <message>
+        <source>The domain with ID %1 either does not exist or you do not have access rights for it.</source>
+        <translation>Die Domäne mit ID %1 existiert entweder nicht oder Sie sind nicht Zugriffsberechtigt.</translation>
+    </message>
+    <message>
+        <source>The domain with ID %1 selected for the “%2“ field either does not exist or you do not have access rights for it.</source>
+        <translation>Die für das Feld „%2“ ausgewählte Domäne mit ID %1 existiert entweder nicht oder Sie sind nicht zugriffsberechtigt.</translation>
     </message>
 </context>
 <context>

@@ -104,14 +104,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>User accounts of the domain %1 could not be queried from the database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Abort deleting user accounts in the domain %1 due to the previous error: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>User accounts could not be queried from the database.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -238,6 +230,22 @@
         <source>Failed to disable the keeping of forwarded emails in the local mail box for account %1 in the database.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>You can not create email addresses for other domains as long as free addresses are not allowed for this domain.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The email address %1 is not part of this account.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not convert email address %1 into a ACE string.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot retrieve current list of email addresses for user account %1 from the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AccountEditor</name>
@@ -294,10 +302,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>You can not create email addresses for other domains as long as free addresses are not allowed for this domain.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Successfully changed email address from %1 to %2.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -315,10 +319,6 @@
     </message>
     <message>
         <source>Successfully removed email address %1 from account %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You can not create email addresses for domains you are not responsible for. Please create domain %1 before adding email addresses for this domain.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -566,6 +566,10 @@
         <source>Failed to revert domain manager to domain connections in database.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>%1 is not a valid IANA time zone ID.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AdminEditor</name>
@@ -759,6 +763,10 @@
     </message>
     <message>
         <source>Failed to remove domain to domain manager connections from database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to get database IDs of the accounts for this domain.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1457,6 +1465,14 @@
     </message>
     <message>
         <source>Failed to convert the input data of the “%1” field into a database ID.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The domain with ID %1 either does not exist or you do not have access rights for it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The domain with ID %1 selected for the “%2“ field either does not exist or you do not have access rights for it.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
