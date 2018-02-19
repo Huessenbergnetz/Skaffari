@@ -115,7 +115,7 @@ void Root::index(Context *c)
         c->setStash(QStringLiteral("accounts_last_added_error"), c->translate("Root", "Failed to query last added accounts from the database: %1").arg(q.lastError().text()));
     }
 
-	c->stash({
+    c->stash({
                  {QStringLiteral("template"), QStringLiteral("dashboard.html")},
                  {QStringLiteral("site_title"), c->translate("Root", "Dashboard")},
                  {QStringLiteral("account_count"), QVariant::fromValue<dbid_t>(accounts)},
@@ -261,7 +261,7 @@ bool Root::Auto(Context* c)
     StatusMessage::load(c);
 
     c->stash({
-                 {QStringLiteral("userId"), QVariant::fromValue<dbid_t>(user.id().toULong())},
+                 {QStringLiteral("userId"), user.id()},
                  {QStringLiteral("userType"), user.value(QStringLiteral("type"))},
                  {QStringLiteral("userName"), user.value(QStringLiteral("username"))},
                  {QStringLiteral("userMaxDisplay"), Session::value(c, QStringLiteral("maxdisplay"), SkaffariConfig::defMaxdisplay()).value<quint8>()},
