@@ -171,7 +171,7 @@ void DomainEditor::edit(Context *c)
         help.insert(QStringLiteral("freeAddress"), HelpEntry(c->translate("DomainEditor", "Allow free addresses"), c->translate("DomainEditor", "If enabled, user accounts in this domain can have email addresses for all domains managed by Skaffari. If disabled, only email addresses for this domain can be added to user accounts in this domain.")));
 
         SkaffariError e(c);
-        const std::vector<SimpleDomain> doms = SimpleDomain::list(c, &e, user.value(QStringLiteral("type")).value<qint16>(), user.id().toULong(), true);
+        const std::vector<SimpleDomain> doms = SimpleDomain::list(c, &e, user.value(QStringLiteral("type")).value<qint16>(), user.id().value<dbid_t>(), true);
         if (e.type() != SkaffariError::NoError) {
             c->setStash(QStringLiteral("error_msg"), e.errorText());
         }
@@ -420,7 +420,7 @@ void DomainEditor::create(Context* c)
 
         SkaffariError e(c);
         AuthenticationUser user = Authentication::user(c);
-        const std::vector<SimpleDomain> doms = SimpleDomain::list(c, &e, user.value(QStringLiteral("type")).value<qint16>(), user.id().toULong(), true);
+        const std::vector<SimpleDomain> doms = SimpleDomain::list(c, &e, user.value(QStringLiteral("type")).value<qint16>(), user.id().value<dbid_t>(), true);
         if (e.type() != SkaffariError::NoError) {
             c->setStash(QStringLiteral("error_msg"), e.errorText());
         }

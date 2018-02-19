@@ -550,7 +550,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
         return lst;
     }
     if (!isSuperUser) {
-        q.bindValue(QStringLiteral(":admin_id"), QVariant::fromValue<dbid_t>(user.id().toULong()));
+        q.bindValue(QStringLiteral(":admin_id"), user.id());
     }
 
     if (Q_LIKELY(q.exec())) {

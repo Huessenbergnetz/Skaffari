@@ -51,7 +51,7 @@ void MyAccount::index(Context *c)
 {
     AuthenticationUser user = Authentication::user(c);
     SkaffariError e(c);
-    AdminAccount aac = AdminAccount::get(c, &e, user.id().toULong());
+    AdminAccount aac = AdminAccount::get(c, &e, user.id().value<dbid_t>());
     if (aac.isValid()) {
 
         auto req = c->req();
@@ -99,7 +99,7 @@ void MyAccount::index(Context *c)
                  });
 
     } else {
-        c->setStash(QStringLiteral("not_found_text"), c->translate("MyAccount", "There is no administrator account with database ID %1.").arg(user.id()));
+        c->setStash(QStringLiteral("not_found_text"), c->translate("MyAccount", "There is no administrator account with database ID %1.").arg(user.id().toString()));
         c->setStash(QStringLiteral("template"), QStringLiteral("404.html"));
         c->res()->setStatus(404);
     }

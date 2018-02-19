@@ -480,7 +480,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, Cutelyst::Auth
     Q_ASSERT_X(!p.empty(), "update own account", "empty parameters");
     Q_ASSERT_X(u, "update own account", "invalid authentication user object");
 
-    const dbid_t id = u->id().toULong();
+    const dbid_t id = u->id().value<dbid_t>();
     const QString password = p.value(QStringLiteral("password"));
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
     const QByteArray tz = p.value(QStringLiteral("tz"), u->value(QStringLiteral("tz")).toString()).toLatin1();

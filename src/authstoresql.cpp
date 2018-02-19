@@ -41,7 +41,7 @@ AuthenticationUser AuthStoreSql::findUser(Context *c, const ParamsMultiMap &user
     q.bindValue(QStringLiteral(":username"), username);
 
     if (q.exec() && q.next()) {
-        user.setId(q.value(0).toString());
+        user.setId(q.value(0));
         user.insert(QStringLiteral("username"), q.value(1).toString());
         user.insert(QStringLiteral("password"), q.value(2).toString());
         user.insert(QStringLiteral("type"), q.value(3).value<qint16>());
@@ -53,7 +53,7 @@ AuthenticationUser AuthStoreSql::findUser(Context *c, const ParamsMultiMap &user
     }
 
     q = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_id FROM domainadmin WHERE admin_id = :admin_id"));
-    q.bindValue(QStringLiteral(":admin_id"), QVariant::fromValue<dbid_t>(user.id().toULong()));
+    q.bindValue(QStringLiteral(":admin_id"), user.id());
 
     q.exec();
 

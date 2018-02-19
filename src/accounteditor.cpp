@@ -264,7 +264,7 @@ void AccountEditor::addresses(Context *c)
             AuthenticationUser user = Authentication::user(c);
             SkaffariError sde(c);
             const qint16 userType = user.value(QStringLiteral("type")).value<qint16>();
-            const std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, userType, user.id().toULong());
+            const std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, userType, user.id().value<dbid_t>());
             c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
         }
 
@@ -319,7 +319,7 @@ void AccountEditor::edit_address(Context *c, const QString &address)
             if (d.isFreeAddressEnabled()) {
                 AuthenticationUser user = Authentication::user(c);
                 SkaffariError sde(c);
-                std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().toULong());
+                std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().value<dbid_t>());
                 c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
             }
         }
@@ -630,7 +630,7 @@ void AccountEditor::add_address(Context *c)
         if (d.isFreeAddressEnabled()) {
             AuthenticationUser user = Authentication::user(c);
             SkaffariError sde(c);
-            std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().toULong());
+            std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().value<dbid_t>());
             c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
         }
 
@@ -1061,8 +1061,8 @@ void AccountEditor::list(Context *c)
 
     const dbid_t domainId = SKAFFARI_STRING_TO_DBID(c->req()->param(QStringLiteral("domainId"), QStringLiteral("0")));
     const QString searchString = c->req()->param(QStringLiteral("searchString"));
-    const dbid_t adminId = SKAFFARI_STRING_TO_DBID(user.id());
-    const qint64 userType = user.value(QStringLiteral("type")).value<qint64>();
+    const dbid_t adminId = user.id().value<dbid_t>();
+    const qint16 userType = user.value(QStringLiteral("type")).value<qint16>();
 
     SkaffariError e(c);
     const QJsonArray accounts = SimpleAccount::listJson(c, &e, userType, adminId, domainId, searchString);
