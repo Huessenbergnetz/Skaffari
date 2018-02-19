@@ -210,7 +210,7 @@ bool Skaffari::init()
     const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + tmplName;
     SkaffariConfig::setTmplBasePath(tmplBasePath);
 
-    if (!isInitialized) {        
+    if (!isInitialized) {
         QVariantMap tmplConfig;
         QFile tmplConfigFile(tmplBasePath + QLatin1String("/metadata.json"));
         if (tmplConfigFile.exists()) {
@@ -262,7 +262,7 @@ bool Skaffari::init()
     auto view = new GrantleeView(this);
     view->setTemplateExtension(QStringLiteral(".html"));
     view->setWrapper(QStringLiteral("wrapper.html"));
-	view->setCache(false);
+    view->setCache(false);
     view->setIncludePaths({sitePath});
     view->engine()->addDefaultLibrary(QStringLiteral("grantlee_i18ntags"));
     view->engine()->addDefaultLibrary(QStringLiteral("grantlee_skaffari"));
@@ -298,11 +298,11 @@ bool Skaffari::init()
     }
     /* End loading translations */
 
-	new Root(this);
-	new Login(this);
-	new Logout(this);
-	new DomainEditor(this);
-	new AccountEditor(this);
+    new Root(this);
+    new Login(this);
+    new Logout(this);
+    new DomainEditor(this);
+    new AccountEditor(this);
     new AdminEditor(this);
     new MyAccount(this);
     new SettingsEditor(this);
@@ -330,12 +330,10 @@ bool Skaffari::init()
     new StatusMessage(this);
 
     auto auth = new Authentication(this);
-    auto credential = new CredentialPassword(auth);
-    credential->setPasswordType(CredentialPassword::Hashed);
-    auto store = new AuthStoreSql(this);
-    auto realm = new AuthenticationRealm(store, credential, auth);
-    store->setParent(realm);
-    auth->addRealm(store, credential);
+    auto cred = new CredentialPassword;
+    cred->setPasswordType(CredentialPassword::Hashed);
+    auto store = new AuthStoreSql;
+    auth->addRealm(store, cred);
 
     defaultHeaders().setHeader(QStringLiteral("X-Frame-Options"), QStringLiteral("DENY"));
     defaultHeaders().setHeader(QStringLiteral("X-Content-Type-Options"), QStringLiteral("nosniff"));
