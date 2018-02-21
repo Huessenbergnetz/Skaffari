@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS adminuser (
 
 CREATE TABLE IF NOT EXISTS alias (
   id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  idn_id int(10) unsigned NOT NULL DEFAULT 0,
+  ace_id int(10) unsigned NOT NULL DEFAULT 0,
   alias varchar(255) NOT NULL DEFAULT '',
   dest longtext,
   username varchar(50) NOT NULL DEFAULT '',
@@ -44,6 +46,8 @@ CREATE TABLE IF NOT EXISTS alias (
 CREATE TABLE IF NOT EXISTS domain (
   id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
   parent_id int(10) unsigned NOT NULL DEFAULT 0,
+  idn_id int(10) unsigned NOT NULL DEFAULT 0,
+  ace_id int(10) unsigned NOT NULL DEFAULT 0,
   domain_name varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   prefix varchar(50) NOT NULL,
   maxaccounts int(11) NOT NULL DEFAULT 20,
@@ -103,6 +107,9 @@ CREATE TABLE IF NOT EXISTS settings (
 
 
 CREATE TABLE IF NOT EXISTS virtual (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  idn_id int(10) unsigned NOT NULL DEFAULT 0,
+  ace_id int(10) unsigned NOT NULL DEFAULT 0,
   alias varchar(255) NOT NULL,
   dest longtext,
   username varchar(255) NOT NULL DEFAULT '',
