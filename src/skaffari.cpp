@@ -61,6 +61,7 @@ extern "C"
 #include "objects/account.h"
 #include "objects/folder.h"
 #include "objects/helpentry.h"
+#include "objects/emailaddress.h"
 
 #include "utils/language.h"
 #include "utils/skaffariconfig.h"
@@ -195,6 +196,7 @@ bool Skaffari::init()
     qRegisterMetaType<Account>();
     qRegisterMetaType<HelpEntry>();
     qRegisterMetaType<HelpHash>("HelpHash");
+    qRegisterMetaType<EmailAddress>();
 
     Grantlee::registerMetaType<Folder>();
     Grantlee::registerMetaType<Domain>();
@@ -205,6 +207,7 @@ bool Skaffari::init()
     Grantlee::registerMetaType<Language>();
     Grantlee::registerMetaType<Account>();
     Grantlee::registerMetaType<HelpEntry>();
+    Grantlee::registerMetaType<EmailAddress>();
 
     const QString tmplName = generalConfig.value(QStringLiteral("template"), QStringLiteral("default")).toString();
     const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + tmplName;
