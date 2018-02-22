@@ -116,6 +116,8 @@ public:
     ErrorType type() const;
     /*!
      * \brief Sets the type of the error.
+     *
+     * This will also implicitely set the status().
      */
     void setErrorType(ErrorType nType);
 

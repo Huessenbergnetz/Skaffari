@@ -78,6 +78,23 @@ SkaffariError::ErrorType SkaffariError::type() const
 void SkaffariError::setErrorType(ErrorType nType)
 {
     d->errorType = nType;
+    switch (nType) {
+    case SkaffariError::AuthenticationError:
+        d->status = Cutelyst::Response::Unauthorized;
+        break;
+    case SkaffariError::AuthorizationError:
+        d->status = Cutelyst::Response::Forbidden;
+        break;
+    case SkaffariError::NotFound:
+        d->status = Cutelyst::Response::NotFound;
+        break;
+    case SkaffariError::InputError:
+        d->status = Cutelyst::Response::BadRequest;
+        break;
+    default:
+        d->status = Cutelyst::Response::InternalServerError;
+        break;
+    }
 }
 
 Cutelyst::Response::HttpStatus SkaffariError::status() const
