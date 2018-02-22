@@ -1,6 +1,6 @@
 /*
  * Skaffari - a mail account administration web interface based on Cutelyst
- * Copyright (C) 2017 Matthias Fehring <kontakt@buschmann23.de>
+ * Copyright (C) 2017-2018 Matthias Fehring <kontakt@buschmann23.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -26,7 +26,6 @@ QString SkaffariErrorData::databaseErrorText() const
         case QSqlError::ConnectionError: es = c->translate("SkaffariErrorData", "Database connection error:");
         case QSqlError::StatementError: es = c->translate("SkaffariErrorData", "SQL statement syntax error:");
         case QSqlError::TransactionError: es = c->translate("SkaffariErrorData", "Database transaction failed error:");
-        case QSqlError::UnknownError: es = c->translate("SkaffariErrorData", "Unknown database error:");
         default: es = c->translate("SkaffariErrorData", "Unknown database error:");
     }
     return es;
@@ -60,36 +59,41 @@ SkaffariError::SkaffariError(Cutelyst::Context *c, const SkaffariIMAPError& imap
     Q_ASSERT_X(d->c, "creating new SkaffariError", "invalid context");
 }
 
-
 SkaffariError::SkaffariError(const SkaffariError& other) :
     d(other.d)
 {
 
 }
 
-
-
 SkaffariError::~SkaffariError()
 {
 
 }
-
-
-
 
 SkaffariError::ErrorType SkaffariError::type() const
 {
     return d->errorType;
 }
 
+void SkaffariError::setErrorType(ErrorType nType)
+{
+    d->errorType = nType;
+}
 
+Cutelyst::Response::HttpStatus SkaffariError::status() const
+{
+    return d->status;
+}
+
+void SkaffariError::setStatus(Cutelyst::Response::HttpStatus status)
+{
+    d->status = status;
+}
 
 QSqlError SkaffariError::qSqlError() const
 {
     return d->qSqlError;
 }
-
-
 
 QString SkaffariError::errorText() const
 {
@@ -132,29 +136,26 @@ QString SkaffariError::errorText() const
     return text;
 }
 
-
+void SkaffariError::setErrorText(const QString &nText)
+{
+    d->errorText = nText;
+}
 
 QVariant SkaffariError::errorData() const
 {
     return d->errorData;
 }
 
-
-
 SkaffariIMAPError SkaffariError::imapError() const
 {
     return d->imapError;
 }
-
-
 
 SkaffariError& SkaffariError::operator=(const SkaffariError& other)
 {
     d = other.d;
     return *this;
 }
-
-
 
 SkaffariError& SkaffariError::operator=(const QSqlError& sqlError)
 {
@@ -163,35 +164,18 @@ SkaffariError& SkaffariError::operator=(const QSqlError& sqlError)
     d->qSqlError = sqlError;
     d->errorText = sqlError.text();
     d->errorData.clear();
+    d->status = Cutelyst::Response::InternalServerError;
     return *this;
 }
 
-
-
-
 bool SkaffariError::operator==(const SkaffariError& other) const
 {
-    return ((d->errorType == other.d->errorType) && (d->qSqlError == other.d->qSqlError));
+    return ((d->errorType == other.d->errorType) && (d->qSqlError == other.d->qSqlError) && (d->status == other.d->status));
 }
-
-
 
 bool SkaffariError::operator!=(const SkaffariError& other) const
 {
-    return ((d->errorType != other.d->errorType) || (d->qSqlError != other.d->qSqlError));
-}
-
-
-
-void SkaffariError::setErrorType(ErrorType nType)
-{
-    d->errorType = nType;
-}
-
-
-void SkaffariError::setErrorText(const QString &nText)
-{
-    d->errorText = nText;
+    return ((d->errorType != other.d->errorType) || (d->qSqlError != other.d->qSqlError) || (d->status != other.d->status));
 }
 
 void SkaffariError::setSqlError(const QSqlError &error, const QString &text)
@@ -207,8 +191,8 @@ void SkaffariError::setSqlError(const QSqlError &error, const QString &text)
     }
     d->errorData.clear();
     d->imapError.clear();
+    d->status = Cutelyst::Response::InternalServerError;
 }
-
 
 void SkaffariError::setImapError(const SkaffariIMAPError &error, const QString &text)
 {
@@ -223,4 +207,5 @@ void SkaffariError::setImapError(const SkaffariIMAPError &error, const QString &
         d->errorText.append(error.errorText());
     }
     d->errorData.clear();
+    d->status = Cutelyst::Response::InternalServerError;
 }

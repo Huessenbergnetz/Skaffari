@@ -1,6 +1,6 @@
 /*
  * Skaffari - a mail account administration web interface based on Cutelyst
- * Copyright (C) 2017 Matthias Fehring <kontakt@buschmann23.de>
+ * Copyright (C) 2017-2018 Matthias Fehring <kontakt@buschmann23.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -19,12 +19,12 @@
 #ifndef SKAFFARIERROR_H
 #define SKAFFARIERROR_H
 
+#include "../imap/skaffariimaperror.h"
 #include <QSharedDataPointer>
 #include <QString>
 #include <QVariant>
-#include <QtSql/QSqlError>
-
-#include "../imap/skaffariimaperror.h"
+#include <QSqlError>
+#include <Cutelyst/Response>
 
 namespace Cutelyst {
 class Context;
@@ -110,13 +110,23 @@ public:
      */
     ~SkaffariError();
 
-
-
     /*!
      * \brief Returns the type of this error.
      */
     ErrorType type() const;
+    /*!
+     * \brief Sets the type of the error.
+     */
+    void setErrorType(ErrorType nType);
 
+    /*!
+     * \brief Returns a HTTP response status appropriate to the current error.
+     */
+    Cutelyst::Response::HttpStatus status() const;
+    /*!
+     * \brief Sets a HTTP response status appropriate to the current error.
+     */
+    void setStatus(Cutelyst::Response::HttpStatus status);
 
     /*!
      * \brief Returns a human readable error text.
@@ -127,6 +137,10 @@ public:
      * \return QString of human readable error text.
      */
     QString errorText() const;
+    /*!
+     * \brief Sets the human readable error text.
+     */
+    void setErrorText(const QString &nText);
 
     /*!
      * \brief Returns error data.
@@ -147,6 +161,10 @@ public:
      * \return The QSqlError used for constructing this SkaffariError.
      */
     QSqlError qSqlError() const;
+    /*!
+     * \brief Sets the SQL \a error and an optional additional \a text.
+     */
+    void setSqlError(const QSqlError &error, const QString &text = QString());
 
     /*!
      * \brief Returns the SkaffariIMAPError.
@@ -157,14 +175,10 @@ public:
      * \return The SkaffariIMAPError used for constructing this SkaffariError.
      */
     SkaffariIMAPError imapError() const;
-
-
-    void setErrorType(ErrorType nType);
-    void setErrorText(const QString &nText);
-    void setSqlError(const QSqlError &error, const QString &text = QString());
+    /*!
+     * \brief Sets the IMAP \a error and an optional additional \a text.
+     */
     void setImapError(const SkaffariIMAPError &error, const QString &text = QString());
-
-
 
     /*!
      * \brief Assigns the value of the error \e other to this error.

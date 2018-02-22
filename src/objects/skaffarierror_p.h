@@ -1,6 +1,6 @@
 /*
  * Skaffari - a mail account administration web interface based on Cutelyst
- * Copyright (C) 2017 Matthias Fehring <kontakt@buschmann23.de>
+ * Copyright (C) 2017-2018 Matthias Fehring <kontakt@buschmann23.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -36,13 +36,30 @@ public:
         errorData(_errorData),
         errorType(_type)
     {
-
+        switch (errorType) {
+        case SkaffariError::AuthenticationError:
+            status = Cutelyst::Response::Unauthorized;
+            break;
+        case SkaffariError::AuthorizationError:
+            status = Cutelyst::Response::Forbidden;
+            break;
+        case SkaffariError::NotFound:
+            status = Cutelyst::Response::NotFound;
+            break;
+        case SkaffariError::InputError:
+            status = Cutelyst::Response::BadRequest;
+            break;
+        default:
+            status = Cutelyst::Response::InternalServerError;
+            break;
+        }
     }
 
     SkaffariErrorData(Cutelyst::Context *_c, const QSqlError &_sqlError, const QString &_errorText) :
         c(_c),
         qSqlError(_sqlError),
-        errorType(SkaffariError::SqlError)
+        errorType(SkaffariError::SqlError),
+        status(Cutelyst::Response::InternalServerError)
     {
         if (_errorText.isEmpty()) {
             errorText = qSqlError.text();
@@ -56,7 +73,8 @@ public:
     SkaffariErrorData(Cutelyst::Context *_c, const SkaffariIMAPError& _imapError, const QString _errorText) :
         c(_c),
         imapError(_imapError),
-        errorType(SkaffariError::ImapError)
+        errorType(SkaffariError::ImapError),
+        status(Cutelyst::Response::InternalServerError)
     {
         if (_errorText.isEmpty()) {
             errorText = imapError.errorText();
@@ -74,7 +92,8 @@ public:
         errorText(other.errorText),
         errorData(other.errorData),
         imapError(other.imapError),
-        errorType(other.errorType)
+        errorType(other.errorType),
+        status(other.status)
     {}
 
     ~SkaffariErrorData() {}
@@ -83,10 +102,11 @@ public:
 
     Cutelyst::Context *c = nullptr;
     QSqlError qSqlError;
-	QString errorText;
-	QVariant errorData;
+    QString errorText;
+    QVariant errorData;
     SkaffariIMAPError imapError;
     SkaffariError::ErrorType errorType = SkaffariError::NoError;
+    Cutelyst::Response::HttpStatus status = Cutelyst::Response::OK;
 };
 
 #endif // SKAFFARIERROR_P_H
