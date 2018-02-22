@@ -573,7 +573,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
             errorData->setSqlError(q.lastError());
             qCCritical(SK_DOMAIN, "Failed to query database for domain with ID %u: %s", domId, qUtf8Printable(q.lastError().text()));
         } else {
-            errorData->setErrorType(SkaffariError::ApplicationError);
+            errorData->setErrorType(SkaffariError::NotFound);
             errorData->setErrorText(c->translate("Domain", "The domain with ID %1 could not be found in the database.").arg(domId));
             qCWarning(SK_DOMAIN, "Domain ID %u not found in database.", domId);
         }
@@ -1082,6 +1082,7 @@ QStringList Domain::trimStringList(const QStringList &list)
 
     if (!list.empty()) {
 
+        tlist.reserve(list.size());
         for (const QString &str : list) {
             tlist << str.trimmed();
         }

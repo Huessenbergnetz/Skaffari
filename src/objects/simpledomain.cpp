@@ -169,7 +169,7 @@ SimpleDomain SimpleDomain::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
     }
 
     if (Q_UNLIKELY(!q.next())) {
-        e->setErrorType(SkaffariError::InputError);
+        e->setErrorType(SkaffariError::NotFound);
         e->setErrorText(c->translate("SimpleDomain", "Can not find domain with database ID %1.").arg(id));
         return dom;
     }

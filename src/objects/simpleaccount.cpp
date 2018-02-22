@@ -200,6 +200,8 @@ SimpleAccount SimpleAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t 
                 a.setData(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
             } else {
                 qCWarning(SK_SIMPLEACCOUNT, "Can not find account with ID %u in database.", id);
+                e->setErrorType(SkaffariError::NotFound);
+                e->setErrorText(c->translate("SimpleAccount", "Can not find account with database ID %1.").arg(id));
             }
         } else {
             e->setSqlError(q.lastError(), c->translate("SimpleAccount", "Failed to query account from database."));

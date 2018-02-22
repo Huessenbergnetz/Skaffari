@@ -313,7 +313,7 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
     }
 
     if (Q_UNLIKELY(!q.next())) {
-        e->setErrorType(SkaffariError::InputError);
+        e->setErrorType(SkaffariError::NotFound);
         e->setErrorText(c->translate("AdminAccount", "Can not find administrator account with database ID %1.").arg(id));
         qCWarning(SK_ADMIN) << "Failed to find admin account with database ID" << id;
         return acc;
@@ -584,13 +584,7 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e)
 
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT COUNT(id) FROM adminuser WHERE type = 0"));
 
-        if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of administrators to check if this is the last administrator account."));
-            qCCritical(SK_ADMIN) << "Failed to query count of administrators to check if this is the last administrator account." << q.lastError().text();
-            return ret;
-        }
-
-        if (Q_UNLIKELY(!q.next())) {
+        if (Q_UNLIKELY(!(q.exec() && q.next()))) {
             e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of administrators to check if this is the last administrator account."));
             qCCritical(SK_ADMIN) << "Failed to query count of administrators to check if this is the last administrator account." << q.lastError().text();
             return ret;
