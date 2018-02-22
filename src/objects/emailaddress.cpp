@@ -72,6 +72,34 @@ QString EmailAddress::name() const
     return d->name;
 }
 
+QString EmailAddress::localPart() const
+{
+    QString ret;
+
+    if (!d->name.isEmpty()) {
+        const int atIdx = d->name.lastIndexOf(QLatin1Char('@'));
+        if (atIdx > 1) {
+            ret = d->name.left(atIdx);
+        }
+    }
+
+    return ret;
+}
+
+QString EmailAddress::domainPart() const
+{
+    QString ret;
+
+    if (!d->name.isEmpty()) {
+        const int atIdx = d->name.lastIndexOf(QLatin1Char('@'));
+        if (atIdx < -1) {
+            ret = d->name.mid(atIdx + 1);
+        }
+    }
+
+    return ret;
+}
+
 bool EmailAddress::isValid() const
 {
     return ((d->id > 0) && !d->name.isEmpty());
@@ -125,6 +153,9 @@ EmailAddress EmailAddress::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
     if (Q_LIKELY(q.exec())) {
         if (q.next()) {
             address = EmailAddress(id, q.value(0).value<dbid_t>(), q.value(1).toString());
+        } else {
+            e->setErrorType(SkaffariError::NotFound);
+            e->setErrorText(c->translate("EmailAddress", "Can not find email address with database ID %1.").arg(id));
         }
     } else {
         e->setSqlError(q.lastError(), c->translate("EmailAddress", "Failed to query email address with ID %1 from the database.").arg(id));
@@ -146,6 +177,9 @@ EmailAddress EmailAddress::get(Cutelyst::Context *c, SkaffariError *e, const QSt
     if (Q_LIKELY(q.exec())) {
         if (q.next()) {
             address = EmailAddress(q.value(0).value<dbid_t>(), q.value(1).value<dbid_t>(), alias);
+        } else {
+            e->setErrorType(SkaffariError::NotFound);
+            e->setErrorText(c->translate("EmailAddress", "Can not find email address %1.").arg(alias));
         }
     } else {
         e->setSqlError(q.lastError(), c->translate("EmailAddress", "Failed to query email address %1 from the database.").arg(alias));

@@ -84,6 +84,16 @@ public:
     QString name() const;
 
     /*!
+     * \brief Returns the local part of the email address.
+     */
+    QString localPart() const;
+
+    /*!
+     * \brief Returns the domain part of the email address.
+     */
+    QString domainPart() const;
+
+    /*!
      * \brief Returns \c true if this email address uses an internationalized domain name (IDN).
      */
     bool isIdn() const;
