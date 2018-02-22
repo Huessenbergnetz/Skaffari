@@ -527,7 +527,7 @@ void AccountEditor::remove_address(Context *c, const QString &address)
                     }
 
                 } else {
-                    c->res()->setStatus(Response::InternalServerError);
+                    c->res()->setStatus(e.status());
                     if (isAjax) {
                         json.insert(QStringLiteral("error_msg"), e.errorText());
                     } else {

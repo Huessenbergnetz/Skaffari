@@ -1080,7 +1080,9 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
         return a;
     }
 
-    if (!q.next()) {
+    if (Q_UNLIKELY(!q.next())) {
+        e->setErrorType(SkaffariError::NotFound);
+        e->setErrorText(c->translate("Account", "Can not find account with database ID %lu.").arg(id));
         qCWarning(SK_ACCOUNT, "Account with ID %u not found in database.", id);
         return a;
     }
@@ -1795,6 +1797,13 @@ bool Account::removeEmail(Cutelyst::Context *c, SkaffariError *e, const QString 
     Q_ASSERT_X(c, "update email", "invalid context object");
     Q_ASSERT_X(e, "update email", "invalid error object");
 
+    if (d->addresses.size() <= 1) {
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(c->translate("Account", "You can not remove the last email address for this account. Remove the entire account instead."));
+        qCWarning(SK_ACCOUNT, "Removing email address failed: %s is the last address of account %s (ID: %lu).", qUtf8Printable(address), qUtf8Printable(d->username), d->id);
+        return ret;
+    }
+
     if (!d->addresses.contains(address)) {
         e->setErrorType(SkaffariError::InputError);
         e->setErrorText(c->translate("Account", "The email address %1 is not part of this account.").arg(address));
@@ -1805,6 +1814,27 @@ bool Account::removeEmail(Cutelyst::Context *c, SkaffariError *e, const QString 
     const EmailAddress a = EmailAddress::get(c, e, address);
     if (!a) {
         return ret;
+    }
+
+    const Domain myDomain = Domain::get(c, domainId(), e);
+    if (!myDomain.isValid() || (e->type() != SkaffariError::NoError)) {
+        return ret;
+    }
+
+    if (a.domainPart() == myDomain.name()) {
+        int domainAddressCount = 0;
+        const QStringList myAddresses = d->addresses;
+        for (const QString &addr : myAddresses) {
+            if (Account::addressParts(addr).second == myDomain.name()) {
+                domainAddressCount++;
+            }
+        }
+
+        if (domainAddressCount < 2) {
+            e->setErrorType(SkaffariError::InputError);
+            e->setErrorText(c->translate("Account", "You can not remove the last email address that matches the domain this account belongs to."));
+            return ret;
+        }
     }
 
     QSqlError sqlError;
