@@ -77,7 +77,7 @@
                 <form id="addressForm" data-addaction="/account/{{ domain.id }}/{{ account.id }}/add_address">
                     <div class="container-fluid">
                         <div class="row">
-                            {% if domain.freeAddress %}
+                            {% if maildomains.count %}
                             <div class="col-12 col-md-6">
                                 <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" placeholder="{{ _("Local part") }}" required>
                             </div>

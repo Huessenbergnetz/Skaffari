@@ -8,7 +8,7 @@
     <div class="col-12 col-sm-12 col-md-8 col-lg-6">
         <form id="editAddressForm" method="post">
             {% c_csrf_token %}
-            {% if domain.freeAddress %}
+            {% if maildomains.count %}
             <div class="row form-group">
                 <div class="col-6">
                     <label for="newlocalpart">{{ localpart }}</label>
@@ -28,7 +28,7 @@
                 <div class="col">
                     <label for="newlocalpart">{{ localpart}}@{{ maildomain }}</label>
                     <div class="input-group">
-                        <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" value="{{ newlocalpart|default:localpart }} placeholder="{{ _("Local part") }}"">
+                        <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" value="{{ newlocalpart|default:localpart }}" placeholder="{{ _("Local part") }}"">
                         <div class="input-group-append"><span class="input-group-text">@{{ maildomain }}</span></div>
                     </div>
                 </div>

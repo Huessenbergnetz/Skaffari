@@ -8,7 +8,7 @@
     <div class="col-12 col-sm-12 col-md-8 col-lg-6">
         <form id="createAddressForm" method="post">
             {% c_csrf_token %}
-            {% if domain.freeAddress %}
+            {% if maildomains.count %}
             <div class="row form-group">
                 <div class="col-6">
                     <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" value="{{ newlocalpart }}" placeholder="{{  _("Local part") }}">
