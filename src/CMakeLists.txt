@@ -1,4 +1,4 @@
-set(skaffari_SRCS
+add_library(skaffari SHARED
     imap/skaffariimap.cpp
     imap/skaffariimap.h
     imap/skaffariimaperror.cpp
@@ -72,45 +72,79 @@ set(skaffari_SRCS
     validators/skvalidatordomainexists.h
 )
 
-# Create the application
-add_library(skaffari SHARED ${skaffari_SRCS})
+target_include_directories(skaffari PRIVATE ${Cutelyst2Qt5_INCLUDE_DIR})
+
+target_compile_features(skaffari
+    PRIVATE
+        cxx_auto_type
+        cxx_lambdas
+        cxx_long_long_type
+        cxx_nonstatic_member_init
+        cxx_nullptr
+        cxx_override
+        cxx_range_for
+        cxx_right_angle_brackets
+)
+
+target_compile_definitions(skaffari
+    PRIVATE
+        QT_NO_KEYWORDS
+        QT_NO_CAST_TO_ASCII
+        QT_NO_CAST_FROM_ASCII
+        QT_STRICT_ITERATORS
+        QT_NO_URL_CAST_FROM_STRING
+        QT_NO_CAST_FROM_BYTEARRAY
+        QT_USE_QSTRINGBUILDER
+)
+
+target_compile_options(skaffari
+    PRIVATE
+        -Wall
+        -Wcast-align
+        -Wno-uninitialized
+        -Wempty-body
+        -Wformat-security
+        -Wformat
+        -Winit-self
+)
 
 pkg_search_module(ICU REQUIRED icu-io)
 
-if (ENABLE_PWQUALITY)
-    pkg_search_module(PWQUALITY REQUIRED pwquality>=1.2.2)
-endif (ENABLE_PWQUALITY)
-
 # Link to Cutelyst
 target_link_libraries(skaffari
-    Cutelyst::Core
-    Cutelyst::View::Grantlee
-    Cutelyst::StaticSimple
-    Cutelyst::Utils::Validator
-    Cutelyst::Utils::Sql
-    Cutelyst::Session
-    Cutelyst::Authentication
-    Cutelyst::StatusMessage
-    Cutelyst::Utils::Pagination
-    Cutelyst::Memcached
-    Cutelyst::MemcachedSessionStore
-    Cutelyst::CSRFProtection
-    Grantlee5::Templates
-    Qt5::Core
-    Qt5::Network
-    Qt5::Sql
-    crypt
-    ${ICU_LIBRARIES}
-    ${PWQUALITY_LIBRARIES}
+    PRIVATE
+        Qt5::Core
+        Qt5::Network
+        Qt5::Sql
+        Cutelyst::Core
+        Cutelyst::Session
+        Cutelyst::Authentication
+        Cutelyst::StatusMessage
+        Cutelyst::View::Grantlee
+        Cutelyst::StaticSimple
+        Cutelyst::Utils::Validator
+        Cutelyst::Utils::Sql
+        Cutelyst::Utils::Pagination
+        Cutelyst::Memcached
+        Cutelyst::MemcachedSessionStore
+        Cutelyst::CSRFProtection
+        Grantlee5::Templates
+        crypt
+        ${ICU_LIBRARIES}
 )
+
+if (ENABLE_PWQUALITY)
+    target_link_libraries(skaffari PRIVATE ${PWQUALITY_LIBRARIES})
+    target_compile_definitions(skaffari PRIVATE PWQUALITY_ENABLED)
+endif (ENABLE_PWQUALITY)
 
 find_package(PkgConfig QUIET)
 if (PKG_CONFIG_FOUND)
     pkg_search_module(SYSTEMD QUIET systemd libsystemd)
     if (SYSTEMD_FOUND)
         message(STATUS "Found systemd version ${SYSTEMD_VERSION}. Enabling systemd journal support.")
-        add_definitions("-DWITH_SYSTEMD")
-        target_link_libraries(skaffari systemd)
+        target_compile_definitions(skaffari PRIVATE WITH_SYSTEMD)
+        target_link_libraries(skaffari PRIVATE systemd)
     else(SYSTEMD_FOUND)
         message(STATUS "Can not find systemd. Disabling systemd journal support.")
     endif(SYSTEMD_FOUND)

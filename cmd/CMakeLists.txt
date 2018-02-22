@@ -1,9 +1,4 @@
-include_directories(
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-) 
-
-set(skaffaricmd_SRCS
+add_executable(skaffaricmd
     main.cpp
     consoleoutput.cpp
     consoleoutput.h
@@ -28,15 +23,54 @@ set(skaffaricmd_SRCS
     configfile.h
 )
 
-add_executable(skaffaricmd ${skaffaricmd_SRCS})
+target_include_directories(skaffaricmd PRIVATE ${Cutelyst2Qt5_INCLUDE_DIR})
+
+target_compile_features(skaffaricmd
+    PRIVATE
+        cxx_auto_type
+        cxx_lambdas
+        cxx_long_long_type
+        cxx_nonstatic_member_init
+        cxx_nullptr
+        cxx_override
+        cxx_range_for
+        cxx_right_angle_brackets
+)
+
+target_compile_options(skaffaricmd
+    PRIVATE
+        -Wall
+        -Wcast-align
+        -Wno-uninitialized
+        -Wempty-body
+        -Wformat-security
+        -Wformat
+        -Winit-self
+)
+
+target_compile_definitions(skaffaricmd
+    PRIVATE
+        QT_NO_KEYWORDS
+        QT_NO_CAST_TO_ASCII
+        QT_NO_CAST_FROM_ASCII
+        QT_STRICT_ITERATORS
+        QT_NO_URL_CAST_FROM_STRING
+        QT_NO_CAST_FROM_BYTEARRAY
+        QT_USE_QSTRINGBUILDER
+)
+
+if (ENABLE_PWQUALITY)
+    target_compile_definitions(skaffaricmd PRIVATE PWQUALITY_ENABLED)
+endif (ENABLE_PWQUALITY)
 
 target_link_libraries(skaffaricmd
-    Qt5::Core
-    Qt5::Sql
-    Qt5::Network
-    Cutelyst::Authentication
-    Cutelyst::Utils::Sql
-    crypt
+    PRIVATE
+        Qt5::Core
+        Qt5::Sql
+        Qt5::Network
+        Cutelyst::Authentication
+        Cutelyst::Utils::Sql
+        crypt
 )
 
 install(TARGETS skaffaricmd DESTINATION ${CMAKE_INSTALL_BINDIR})

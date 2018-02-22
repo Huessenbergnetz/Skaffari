@@ -1,4 +1,4 @@
-.TH skaffari.ini 5 "2017-12-21" "Skaffari @SKAFFARI_VERSION@"
+.TH skaffari.ini 5 "2017-12-21" "Skaffari @skaffari_VERSION@"
 
 .SH "NAME"
 skaffari.ini - Skaffari configuration file

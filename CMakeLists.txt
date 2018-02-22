@@ -1,11 +1,7 @@
-project(skaffari)
-
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
+cmake_policy(SET CMP0048 NEW)
 
-set(SKAFFARI_VERSION_MAJOR "1")
-set(SKAFFARI_VERSION_MINOR "0")
-set(SKAFFARI_VERSION_PATCH "0")
-set(SKAFFARI_VERSION "${SKAFFARI_VERSION_MAJOR}.${SKAFFARI_VERSION_MINOR}.${SKAFFARI_VERSION_PATCH}")
+project(skaffari VERSION 1.0.0)
 
 find_package(Qt5 5.6.0 COMPONENTS Core Network Sql)
 find_package(Cutelyst2Qt5 2.0.0 REQUIRED)
@@ -40,23 +36,8 @@ set(GRANTLEE_PLUGIN_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/grantlee/${Grantlee5_MAJ
 
 option(ENABLE_PWQUALITY "Enables the usage of ValidatorPwQuality" OFF)
 if (ENABLE_PWQUALITY)
-    add_definitions(-DPWQUALITY_ENABLED)
+    pkg_search_module(PWQUALITY REQUIRED pwquality>=1.2.2)
 endif (ENABLE_PWQUALITY)
-
-# Enable C++11 features
-add_definitions(-std=c++11)
-
-add_definitions("-Wall -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Wformat -Winit-self")
-
-add_definitions(
-    -DQT_NO_KEYWORDS
-    -DQT_NO_CAST_TO_ASCII
-    -DQT_NO_CAST_FROM_ASCII
-    -DQT_STRICT_ITERATORS
-    -DQT_NO_URL_CAST_FROM_STRING
-    -DQT_NO_CAST_FROM_BYTEARRAY
-    -DQT_USE_QSTRINGBUILDER
-)
 
 # set default configuration values
 set(DEFVAL_ACC_PWMETHOD 1 CACHE INTERNAL "Default accounts password method")
@@ -83,14 +64,7 @@ set(DEFVAL_IMAP_DOMAINASPREFIX false CACHE INTERNAL "Default value for domain as
 set(DEFVAL_IMAP_FQUN false CACHE INTERNAL "Default value for fqun")
 set(DEFVAL_TMPL_ASYNCACCOUNTLIST false CACHE INTERNAL "Default value for async account list")
 
-
 configure_file(common/config.h.in ${CMAKE_BINARY_DIR}/common/config.h)
-
-include_directories(
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${Cutelyst2Qt5_INCLUDE_DIR}
-)
 
 find_program(LRELEASE_CMD_PATH NAMES lrelease-qt5 lrelease)
 set(LRELEASE_CMD ${LRELEASE_CMD_PATH})

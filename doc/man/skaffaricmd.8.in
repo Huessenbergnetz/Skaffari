@@ -1,4 +1,4 @@
-.TH skaffaricmd 8 "2017-05-08" "Skaffari @SKAFFARI_VERSION@"
+.TH skaffaricmd 8 "2017-05-08" "Skaffari @skaffari_VERSION@"
 
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '

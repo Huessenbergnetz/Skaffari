@@ -25,7 +25,7 @@
 #include <iostream>
 #include <string>
 
-#include "common/config.h"
+#include "../common/config.h"
 #include "setup.h"
 #include "webcyradmimporter.h"
 #include "tester.h"
