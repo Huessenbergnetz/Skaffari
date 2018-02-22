@@ -110,7 +110,7 @@ void AdminEditor::create(Context *c)
 
                 if (e.type() == SkaffariError::NoError) {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/admin/index"),
-                                                       StatusMessage::statusQuery(c, c->translate("AdminEditor", "Successfully created new administrator %1.").arg(req->param(QStringLiteral("username"))))
+                                                       StatusMessage::statusQuery(c, c->translate("AdminEditor", "Successfully created new administrator %1.").arg(req->bodyParam(QStringLiteral("username"))))
                                                        )
                                        );
                 } else {

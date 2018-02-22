@@ -200,7 +200,7 @@ void DomainEditor::accounts(Context* c)
 
         auto dom = Domain::fromStash(c);
 
-        const ParamsMultiMap p = c->req()->parameters();
+        const ParamsMultiMap p = c->req()->queryParameters();
 
         const QString cookieData = c->req()->cookie(QStringLiteral(SK_DOM_FILTER_COOKIE_NAME));
         QStringList cookieDataList;
