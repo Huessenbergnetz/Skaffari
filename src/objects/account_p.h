@@ -72,6 +72,8 @@ public:
 
     ~AccountData() {}
 
+    bool canAddAddress(Cutelyst::Context *c, SkaffariError *e, const Domain &targetDomain, const QString &address) const;
+
     quota_size_t quota = 0;
     quota_size_t usage = 0;
     QStringList addresses;

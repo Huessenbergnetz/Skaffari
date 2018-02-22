@@ -28,6 +28,7 @@
 
 namespace Cutelyst {
 class Context;
+class AuthenticationUser;
 }
 
 class SkaffariError;
@@ -112,6 +113,11 @@ public:
      * \return          List of simple domain objects.
      */
     static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, bool orphansOnly = false);
+
+    /*!
+     * \overload
+     */
+    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::AuthenticationUser &admin);
 
     /*!
      * \brief Returns a JSON array of domains for the admin defined by \a adminId.

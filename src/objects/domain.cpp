@@ -37,6 +37,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QTimeZone>
 
 Q_LOGGING_CATEGORY(SK_DOMAIN, "skaffari.domain")
 
@@ -101,6 +102,11 @@ QString Domain::name() const
 void Domain::setName(const QString &nName)
 {
     d->name = nName;
+}
+
+QString Domain::aceName() const
+{
+    return QString::fromLatin1(QUrl::toAce(d->name));
 }
 
 QString Domain::prefix() const
@@ -243,6 +249,16 @@ void Domain::setUpdated(const QDateTime &dt)
     d->updated = dt;
 }
 
+QDateTime Domain::validUntil() const
+{
+    return d->validUntil;
+}
+
+void Domain::setValidUntil(const QDateTime &dt)
+{
+    d->validUntil = dt;
+}
+
 SimpleDomain Domain::parent() const
 {
     return d->parent;
@@ -261,6 +277,21 @@ QVector<SimpleDomain> Domain::children() const
 void Domain::setChildren(const QVector<SimpleDomain> &children)
 {
     d->children = children;
+}
+
+bool Domain::isIdn() const
+{
+    return (d->ace_id > 0);
+}
+
+dbid_t Domain::aceId() const
+{
+    return d->ace_id;
+}
+
+void Domain::setAceId(dbid_t aceId)
+{
+    d->ace_id = aceId;
 }
 
 float Domain::domainQuotaUsagePercent() const
@@ -307,13 +338,23 @@ bool Domain::hasAccess(Cutelyst::Context *c) const
     return ret;
 }
 
+SimpleDomain Domain::toSimple() const
+{
+    SimpleDomain sd;
+
+    sd.setData(d->id, d->name);
+
+    return sd;
+}
+
 Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, SkaffariError *errorData)
 {
     Domain dom;
 
     Q_ASSERT_X(errorData, "create new domain", "invalid errorData object");
 
-    const QString domainName = params.value(QStringLiteral("domainName")).toString().toLower();
+    const QString domainNameAce = params.value(QStringLiteral("domainName")).toString().toLower();
+    const QString domainName = QUrl::fromAce(domainNameAce.toLatin1());
     const QString prefix = !SkaffariConfig::imapDomainasprefix() ? params.value(QStringLiteral("prefix")).toString().toLower() : domainName;
     const quota_size_t quota = params.value(QStringLiteral("quota")).value<quota_size_t>() / Q_UINT64_C(1024);
     const quota_size_t domainQuota = params.value(QStringLiteral("domainQuota")).value<quota_size_t>() / Q_UINT64_C(1024);
@@ -323,12 +364,14 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     const QStringList folders = Domain::trimStringList(params.value(QStringLiteral("folders")).toString().split(QLatin1Char(','), QString::SkipEmptyParts));
     const QString transport = params.value(QStringLiteral("transport"), QStringLiteral("cyrus")).toString();
     const dbid_t parentId = params.value(QStringLiteral("parent")).value<dbid_t>();
+    const QDateTime defDateTime(QDate(2999, 12, 31), QTime(0, 0), QTimeZone::utc());
+    const QDateTime validUntil = params.value(QStringLiteral("validUntil"), defDateTime).toDateTime().toUTC();
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domain (parent_id, domain_name, prefix, maxaccounts, quota, domainquota, freenames, freeaddress, transport, created_at, updated_at) "
-                                                         "VALUES (:parent_id, :domain_name, :prefix, :maxaccounts, :quota, :domainquota, :freenames, :freeaddress, :transport, :created_at, :updated_at)"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domain (parent_id, domain_name, prefix, maxaccounts, quota, domainquota, freenames, freeaddress, transport, created_at, updated_at, valid_until, idn_id, ace_id) "
+                                                         "VALUES (:parent_id, :domain_name, :prefix, :maxaccounts, :quota, :domainquota, :freenames, :freeaddress, :transport, :created_at, :updated_at, :valid_until, 0, 0)"));
     q.bindValue(QStringLiteral(":parent_id"), parentId);
-    q.bindValue(QStringLiteral(":domain_name"), QUrl::toAce(domainName));
+    q.bindValue(QStringLiteral(":domain_name"), domainName);
     q.bindValue(QStringLiteral(":prefix"), prefix);
     q.bindValue(QStringLiteral(":maxaccounts"), maxAccounts);
     q.bindValue(QStringLiteral(":quota"), quota);
@@ -338,6 +381,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     q.bindValue(QStringLiteral(":transport"), transport);
     q.bindValue(QStringLiteral(":created_at"), currentTimeUtc);
     q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
+    q.bindValue(QStringLiteral(":valid_until"), validUntil);
 
     if (Q_LIKELY(q.exec())) {
         const dbid_t domainId = q.lastInsertId().value<dbid_t>();
@@ -362,6 +406,50 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
             }
         }
 
+        dbid_t domainAceId = 0;
+        if (domainName != domainNameAce) {
+            q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domain (idn_id, domain_name, prefix, maxaccounts, quota, created_at, updated_at, valid_until) "
+                                                       "VALUES (:idn_id, :domain_name, :prefix, 0, 0, :created_at, :updated_at, :valid_until)"));
+            q.bindValue(QStringLiteral(":idn_id"), domainId);
+            q.bindValue(QStringLiteral(":domain_name"), domainNameAce);
+            const QString acePrefix = QLatin1String("xn--") + prefix;
+            q.bindValue(QStringLiteral(":prefix"), acePrefix);
+            q.bindValue(QStringLiteral(":created_at"), currentTimeUtc);
+            q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
+            q.bindValue(QStringLiteral(":valid_until"), validUntil);
+
+            if (Q_LIKELY(q.exec())) {
+                domainAceId = q.lastInsertId().value<dbid_t>();
+                q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET ace_id = :ace_id WHERE id = :id"));
+                q.bindValue(QStringLiteral(":ace_id"), domainAceId);
+                q.bindValue(QStringLiteral(":id"), domainId);
+                if (Q_UNLIKELY(!q.exec())) {
+                    errorData->setSqlError(q.lastError().text());
+                    qCCritical(SK_DOMAIN, "Failed to set ID of ACE representation of new domain %s in database: %s", qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
+                    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
+                    q.bindValue(QStringLiteral(":domain_id"), domainId);
+                    q.exec();
+                    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :domain_id"));
+                    q.bindValue(QStringLiteral(":domain_id"), domainId);
+                    q.exec();
+                    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :domain_id"));
+                    q.bindValue(QStringLiteral(":domain_id"), domainAceId);
+                    q.exec();
+                    return dom;
+                }
+            } else {
+                errorData->setSqlError(q.lastError());
+                qCCritical(SK_DOMAIN, "Failed to create ACE domain %s for new domain %s in database: %s", qUtf8Printable(domainNameAce), qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
+                q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
+                q.bindValue(QStringLiteral(":domain_id"), domainId);
+                q.exec();
+                q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :domain_id"));
+                q.bindValue(QStringLiteral(":domain_id"), domainId);
+                q.exec();
+                return dom;
+            }
+        }
+
         dom.setId(domainId);
         dom.setName(domainName);
         dom.setPrefix(prefix);
@@ -374,6 +462,8 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
         dom.setTransport(transport);
         dom.setCreated(currentTimeUtc);
         dom.setUpdated(currentTimeUtc);
+        dom.setValidUntil(validUntil);
+        dom.setAceId(domainAceId);
 
         if (parentId > 0) {
             dom.setParent(SimpleDomain::get(c, errorData, parentId));
@@ -400,7 +490,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
                                                          });
         QHash<QString,QString>::const_iterator i = roleAccounts.constBegin();
         while (i != roleAccounts.constEnd()) {
-            dbid_t roleAccId = params.value(i.key(), QStringLiteral("0")).value<dbid_t>();
+            dbid_t roleAccId = params.value(i.key(), 0).value<dbid_t>();
             if (roleAccId > 0) {
                 auto roleAcc = Account::get(c, errorData, roleAccId);
                 if (Q_LIKELY(roleAcc.id() > 0)) {
@@ -432,7 +522,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
     Q_ASSERT_X(errorData, "get domain", "invalid errorData object");
     Q_ASSERT_X(c, "get domain", "invalid Cutelyst context");
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.prefix, dom.domain_name, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id FROM domain dom WHERE dom.id = :id"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.prefix, dom.domain_name, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id, dom.ace_id, dom.valid_until FROM domain dom WHERE dom.id = :id"));
     q.bindValue(QStringLiteral(":id"), domId);
 
     dbid_t parentId = 0;
@@ -441,7 +531,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
 
         dom.setId(domId);
         dom.setPrefix(q.value(0).toString());
-        dom.setName(QUrl::fromAce(q.value(1).toByteArray()));
+        dom.setName(q.value(1).toString());
         dom.setTransport(q.value(2).toString());
         dom.setQuota(q.value(3).value<quota_size_t>());
         dom.setMaxAccounts(q.value(4).value<quint32>());
@@ -459,6 +549,12 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
         QDateTime::fromTime_t(1);
 
         parentId = q.value(12).value<dbid_t>();
+
+        dom.setAceId(q.value(13).value<dbid_t>());
+
+        QDateTime validUntilTime = q.value(14).toDateTime();
+        validUntilTime.setTimeSpec(Qt::UTC);
+        dom.setValidUntil(validUntilTime);
 
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, name FROM folder WHERE domain_id = :domain_id"));
         q.bindValue(QStringLiteral(":domain_id"), domId);
@@ -497,7 +593,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
                 QVector<SimpleDomain> thekids;
                 thekids.reserve(q.size());
                 while(q.next()) {
-                    thekids.push_back(SimpleDomain(q.value(0).value<dbid_t>(), QUrl::fromAce(q.value(1).toByteArray())));
+                    thekids.push_back(SimpleDomain(q.value(0).value<dbid_t>(), q.value(1).toString()));
                 }
                 dom.setChildren(thekids);
             } else {
@@ -536,9 +632,9 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
     QString prepString;
     const bool isSuperUser = user.value(QStringLiteral("type")).value<qint16>() == 0;
     if (isSuperUser) {
-        prepString = QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id FROM domain dom ORDER BY dom.%1 %2").arg(orderBy, sort);
+        prepString = QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id, dom.ace_id FROM domain dom WHERE dom.idn_id = 0 ORDER BY dom.%1 %2").arg(orderBy, sort);
     } else {
-        prepString = QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY dom.%1 %2").arg(orderBy, sort);
+        prepString = QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id, dom.ace_id FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id ORDER BY dom.%1 %2").arg(orderBy, sort);
     }
 
     if (limit > 0) {
@@ -561,7 +657,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
             QDateTime updatedTime = q.value(12).toDateTime();
             updatedTime.setTimeSpec(Qt::UTC);
             Domain dom(q.value(0).value<dbid_t>(),
-                       QUrl::fromAce(q.value(1).toByteArray()),
+                       q.value(1).toString(),
                        q.value(2).toString(),
                        q.value(3).toString(),
                        q.value(4).value<quota_size_t>(),
@@ -596,6 +692,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                     qCCritical(SK_DOMAIN, "Failed to query child domains for domain %s (ID %u): %s", qUtf8Printable(dom.name()), dom.id(), qUtf8Printable(q2.lastError().text()));
                 }
             }
+            dom.setAceId(q.value(14).value<dbid_t>());
 
             lst.push_back(dom);
         }
@@ -671,7 +768,7 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
 
     if (Q_UNLIKELY(!q.exec())) {
         error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain default folders from database."));
-        qCCritical(SK_DOMAIN, "Failed to remove default folders for domain %s from database: %s. Abort removing domain.", qUtf8Printable(d->name), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_DOMAIN, "Failed to remove default folders for domain %s (ID: %u) from database: %s. Abort removing domain.", qUtf8Printable(d->name), d->id, qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -700,19 +797,42 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
         }
     }
 
-    if (Q_UNLIKELY(!q.exec(QStringLiteral("DELETE FROM virtual WHERE alias LIKE '%@%1'").arg(QString::fromLatin1(QUrl::toAce(d->name)))))) {
+    if (isIdn()) {
+        const QString aceEmailLike = QLatin1String("%@") + QString::fromLatin1(QUrl::toAce(d->name));
+        q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias LIKE :alias"));
+        q.bindValue(QStringLiteral(":alias"), aceEmailLike);
+
+        if (Q_UNLIKELY(!q.exec())) {
+            error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove ACE email addresses for domain %1 from database.").arg(d->name));
+            qCCritical(SK_DOMAIN, "Failed to remove ACE email addresses fro domain %s (ID: %u) from database: %s", qUtf8Printable(d->name), d->id, qUtf8Printable(q.lastError().text()));
+            return ret;
+        }
+
+        q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE idn_id = :id"));
+        q.bindValue(QStringLiteral(":id"), d->id);
+        if (Q_UNLIKELY(!q.exec())) {
+            error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove ACE domain name for domain %1 from database.").arg(d->name));
+            qCCritical(SK_DOMAIN, "Failed to remove ACE domain name for domain %s (ID: %u) from database: %s", qUtf8Printable(d->name), d->id, qUtf8Printable(q.lastError().text()));
+            return ret;
+        }
+    }
+
+    const QString emailLike = QLatin1String("%@") + d->name;
+    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias LIKE :alias"));
+    q.bindValue(QStringLiteral(":alias"), emailLike);
+
+    if (Q_UNLIKELY(!q.exec())) {
         error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove email addresses from database."));
         qCCritical(SK_DOMAIN, "Failed to remove email addresses for domain %s (ID: %u) from database: %s", qUtf8Printable(d->name), d->id, qUtf8Printable(q.lastError().text()));
         return ret;
     }
-
 
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
         error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain %1 from database.").arg(d->name));
-        qCCritical(SK_DOMAIN, "Failed to remove domain %s from database: %s", qUtf8Printable(d->name), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_DOMAIN, "Failed to remove domain %s (ID: %u) from database: %s", qUtf8Printable(d->name), d->id, qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
@@ -755,8 +875,9 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
         const bool freeNames = p.value(QStringLiteral("freeNames"), false).toBool();
         const bool freeAddress = p.value(QStringLiteral("freeAddress"), false).toBool();
         const QString transport = p.value(QStringLiteral("transport"), d->transport).toString();
+        const QDateTime validUntil = p.value(QStringLiteral("validUntil"), d->validUntil).toDateTime().toUTC();
 
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET maxaccounts = :maxaccounts, quota = :quota, domainquota = :domainquota, freenames = :freenames, freeaddress = :freeaddress, transport = :transport, updated_at = :updated_at, parent_id = :parent_id WHERE id = :id"));
+        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET maxaccounts = :maxaccounts, quota = :quota, domainquota = :domainquota, freenames = :freenames, freeaddress = :freeaddress, transport = :transport, updated_at = :updated_at, parent_id = :parent_id, valid_until = :valid_until WHERE id = :id"));
         q.bindValue(QStringLiteral(":maxaccounts"), maxAccounts);
         q.bindValue(QStringLiteral(":quota"), quota);
         q.bindValue(QStringLiteral(":domainquota"), domainQuota);
@@ -765,6 +886,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
         q.bindValue(QStringLiteral(":transport"), transport);
         q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
         q.bindValue(QStringLiteral(":parent_id"), parentId);
+        q.bindValue(QStringLiteral(":valid_until"), validUntil);
         q.bindValue(QStringLiteral(":id"), d->id);
 
         if (!q.exec()) {
@@ -812,7 +934,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
 
         ret = true;
     } else {
-        e->setErrorType(SkaffariError::AutorizationError);
+        e->setErrorType(SkaffariError::AuthorizationError);
         e->setErrorText(c->translate("Domain", "You are not authorized to update this domain."));
         qCWarning(SK_DOMAIN, "Access denied: %s tried to update domain %s (ID: %lu)", qUtf8Printable(Utils::getUserName(c)),qUtf8Printable(d->name), d->id);
         return ret;

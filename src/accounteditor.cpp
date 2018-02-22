@@ -266,6 +266,10 @@ void AccountEditor::addresses(Context *c)
             const qint16 userType = user.value(QStringLiteral("type")).value<qint16>();
             const std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, userType, user.id().value<dbid_t>());
             c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
+        } else if (!d.children().empty()) {
+            QVector<SimpleDomain> maildomains = d.children();
+            maildomains.prepend(d.toSimple());
+            c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<QVector<SimpleDomain>>(maildomains));
         }
 
         c->setStash(QStringLiteral("template"), QStringLiteral("account/addresses.html"));
@@ -280,12 +284,13 @@ void AccountEditor::edit_address(Context *c, const QString &address)
 
         auto a = Account::fromStash(c);
 
+        const QString oldAddress = QUrl::fromPercentEncoding(address.toLatin1());
         const bool isAjax = Utils::isAjax(c);
         QJsonObject json;
 
-        if (!a.addresses().contains(address)) {
+        if (!a.addresses().contains(oldAddress)) {
 
-            const QString errorMsg = c->translate("AccountEditor", "The email address %1 is not part of the user account %2.").arg(address, a.username());
+            const QString errorMsg = c->translate("AccountEditor", "The email address %1 is not part of the user account %2.").arg(oldAddress, a.username());
 
             if (isAjax) {
                 json.insert(QStringLiteral("error_msg"), QJsonValue(errorMsg));
@@ -305,7 +310,7 @@ void AccountEditor::edit_address(Context *c, const QString &address)
 
         if (!isAjax) {
 
-            std::pair<QString,QString> parts = Account::addressParts(address);
+            std::pair<QString,QString> parts = Account::addressParts(oldAddress);
 
             if (parts.first.isEmpty() || parts.second.isEmpty()) {
                 c->setStash(QStringLiteral("error_msg"), c->translate("AccountEditor", "Invalid email address."));
@@ -319,8 +324,12 @@ void AccountEditor::edit_address(Context *c, const QString &address)
             if (d.isFreeAddressEnabled()) {
                 AuthenticationUser user = Authentication::user(c);
                 SkaffariError sde(c);
-                std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().value<dbid_t>());
+                const std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().value<dbid_t>());
                 c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
+            } else if (!d.children().empty()) {
+                QVector<SimpleDomain> maildomains = d.children();
+                maildomains.prepend(d.toSimple());
+                c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<QVector<SimpleDomain>>(maildomains));
             }
         }
 
@@ -338,17 +347,17 @@ void AccountEditor::edit_address(Context *c, const QString &address)
             if (vr) {
 
                 SkaffariError e(c);
-                const QString newAddress = a.updateEmail(c, &e, vr.values(), address);
+                const QString newAddress = a.updateEmail(c, &e, vr.values(), oldAddress);
                 if (e.type() == SkaffariError::NoError) {
 
-                    const QString statusMsg = c->translate("AccountEditor", "Successfully changed email address from %1 to %2.").arg(address, newAddress);
+                    const QString statusMsg = c->translate("AccountEditor", "Successfully changed email address from %1 to %2.").arg(oldAddress, newAddress);
 
                     if (isAjax) {
 
                         json.insert(QStringLiteral("domain_id"), static_cast<qint64>(d.id()));
                         json.insert(QStringLiteral("account_id"), static_cast<qint64>(a.id()));
                         json.insert(QStringLiteral("status_msg"), statusMsg);
-                        json.insert(QStringLiteral("old_address"), address);
+                        json.insert(QStringLiteral("old_address"), oldAddress);
                         json.insert(QStringLiteral("new_address"), newAddress);
 
                     } else {
@@ -390,7 +399,7 @@ void AccountEditor::edit_address(Context *c, const QString &address)
         } else {
             c->stash({
                          {QStringLiteral("template"), QStringLiteral("account/edit_address.html")},
-                         {QStringLiteral("site_subtitle"), address}
+                         {QStringLiteral("site_subtitle"), oldAddress}
                      });
         }
     }
@@ -404,6 +413,7 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 
         const bool isAjax = Utils::isAjax(c);
 
+        const QString _address = QUrl::fromPercentEncoding(address.toLatin1());
         auto a = Account::fromStash(c);
         QJsonObject json;
 
@@ -429,7 +439,7 @@ void AccountEditor::remove_address(Context *c, const QString &address)
             return;
         }
 
-        if (!a.addresses().contains(address)) {
+        if (!a.addresses().contains(_address)) {
 
             const QString notFoundText = c->translate("AccountEditor", "The email address to remove does not belong to the account %1.").arg(a.username());
 
@@ -451,7 +461,7 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 
         const Domain dom = Domain::fromStash(c);
 
-        if (Account::addressParts(address).second == dom.name()) {
+        if (Account::addressParts(_address).second == dom.name()) {
             int domainAddressCount = 0;
             for (const QString &addr : a.addresses()) {
                 if (Account::addressParts(addr).second == dom.name()) {
@@ -484,7 +494,7 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 
         if (c->req()->isPost()) {
 
-            if (c->req()->bodyParam(QStringLiteral("email")) != address) {
+            if (c->req()->bodyParam(QStringLiteral("email")) != _address) {
 
                 const QString errorMsg = c->translate("AccountEditor", "The entered email address does not match the address you want to remove.");
 
@@ -498,15 +508,15 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 
             } else {
                 SkaffariError e(c);
-                if (a.removeEmail(c, &e, address)) {
+                if (a.removeEmail(c, &e, _address)) {
 
-                    const QString statusMsg = c->translate("AccountEditor", "Successfully removed email address %1 from account %2.").arg(address, a.username());
+                    const QString statusMsg = c->translate("AccountEditor", "Successfully removed email address %1 from account %2.").arg(_address, a.username());
 
                     if (isAjax) {
 
                         json.insert(QStringLiteral("status_msg"), QJsonValue(statusMsg));
                         json.insert(QStringLiteral("address_count"), a.addresses().size());
-                        json.insert(QStringLiteral("address"), address);
+                        json.insert(QStringLiteral("address"), _address);
 
                     } else {
                         c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"),
@@ -628,10 +638,14 @@ void AccountEditor::add_address(Context *c)
         }
 
         if (d.isFreeAddressEnabled()) {
-            AuthenticationUser user = Authentication::user(c);
+            const AuthenticationUser user = Authentication::user(c);
             SkaffariError sde(c);
-            std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().value<dbid_t>());
+            std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user);
             c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
+        } else if (!d.children().empty()) {
+            QVector<SimpleDomain> maildomains = d.children();
+            maildomains.prepend(d.toSimple());
+            c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<QVector<SimpleDomain>>(maildomains));
         }
 
         c->setStash(QStringLiteral("template"), QStringLiteral("account/add_address.html"));
@@ -1059,8 +1073,8 @@ void AccountEditor::list(Context *c)
 {
     AuthenticationUser user = Authentication::user(c);
 
-    const dbid_t domainId = SKAFFARI_STRING_TO_DBID(c->req()->param(QStringLiteral("domainId"), QStringLiteral("0")));
-    const QString searchString = c->req()->param(QStringLiteral("searchString"));
+    const dbid_t domainId = SKAFFARI_STRING_TO_DBID(c->req()->queryParam(QStringLiteral("domainId"), QStringLiteral("0")));
+    const QString searchString = c->req()->queryParam(QStringLiteral("searchString"));
     const dbid_t adminId = user.id().value<dbid_t>();
     const qint16 userType = user.value(QStringLiteral("type")).value<qint16>();
 

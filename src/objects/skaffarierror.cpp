@@ -79,68 +79,71 @@ SkaffariError::~SkaffariError()
 
 SkaffariError::ErrorType SkaffariError::type() const
 {
-	return d->errorType;
+    return d->errorType;
 }
 
 
 
 QSqlError SkaffariError::qSqlError() const
 {
-	return d->qSqlError;
+    return d->qSqlError;
 }
 
 
 
 QString SkaffariError::errorText() const
 {
-	QString text;
+    QString text;
 
-	switch(type()) {
+    switch(type()) {
     case NoError:
         text = d->c->translate("SkaffariError", "No error occurred, everything is fine.");
-		break;
+        break;
     case ImapError:
         text = d->c->translate("SkaffariError", "IMAP error:");
-		break;
+        break;
     case SqlError:
         text = d->databaseErrorText();
-		break;
+        break;
     case ConfigError:
         text = d->c->translate("SkaffariError", "Configuration error:");
-		break;
+        break;
     case AuthenticationError:
         text = d->c->translate("SkaffariError", "Authentication error:");
-		break;
+        break;
+    case AuthorizationError:
+        text = d->c->translate("SkaffariError", "Authorization error:");
+        break;
     case InputError:
         text = d->c->translate("SkaffariError", "Invalid input:");
-		break;
+        break;
     case NotFound:
         text = d->c->translate("SkaffariError", "Not found:");
         break;
     default:
         text = d->c->translate("SkaffariError", "Unknown error:");
         break;
-	}
+    }
 
     text.append(QChar(QChar::Space));
 
-	text.append(d->errorText);
+    text.append(d->errorText);
 
-	return text;
+    return text;
 }
 
 
 
 QVariant SkaffariError::errorData() const
 {
-	return d->errorData;
+    return d->errorData;
 }
 
 
 
 SkaffariIMAPError SkaffariError::imapError() const
 {
-	return d->imapError;
+    return d->imapError;
 }
 
 
@@ -148,7 +151,7 @@ SkaffariIMAPError SkaffariError::imapError() const
 SkaffariError& SkaffariError::operator=(const SkaffariError& other)
 {
     d = other.d;
-	return *this;
+    return *this;
 }
 
 
@@ -168,14 +171,14 @@ SkaffariError& SkaffariError::operator=(const QSqlError& sqlError)
 
 bool SkaffariError::operator==(const SkaffariError& other) const
 {
-	return ((d->errorType == other.d->errorType) && (d->qSqlError == other.d->qSqlError));
+    return ((d->errorType == other.d->errorType) && (d->qSqlError == other.d->qSqlError));
 }
 
 
 
 bool SkaffariError::operator!=(const SkaffariError& other) const
 {
-	return ((d->errorType != other.d->errorType) || (d->qSqlError != other.d->qSqlError));
+    return ((d->errorType != other.d->errorType) || (d->qSqlError != other.d->qSqlError));
 }
 
 

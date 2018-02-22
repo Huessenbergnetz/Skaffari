@@ -17,6 +17,7 @@
  */
 
 #include "account_p.h"
+#include "emailaddress.h"
 #include "../utils/utils.h"
 #include "../imap/skaffariimap.h"
 #include "../../common/password.h"
@@ -311,6 +312,165 @@ QJsonObject Account::toJson() const
     return ao;
 }
 
+/*!
+ * \internal
+ * \brief Returns \c true if the \a alias already exists in the database, otherwise \c false.
+ *
+ * \q sqlError will contain information about occured errors whil performing the query.
+ */
+bool aliasExists(const QString &alias, QSqlError &sqlError)
+{
+    bool ret = false;
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :alias"));
+    q.bindValue(QStringLiteral(":alias"), alias);
+
+    if (Q_LIKELY(q.exec())) {
+        ret = q.next();
+    } else {
+        sqlError = q.lastError();
+        qCCritical(SK_ACCOUNT, "The database query to check if the email address %s already exists failed: %s", qUtf8Printable(alias), qUtf8Printable(sqlError.text()));
+    }
+
+    return ret;
+}
+
+/*!
+ * \internal
+ * \brief Inserts a new column into the virtual table and returns the the new ID.
+ *
+ * If insertion fails, the returned ID will be \c 0.
+ */
+dbid_t insertVirtual(dbid_t idn_id, dbid_t ace_id, const QString &alias, const QString &dest, const QString &username, int status, QSqlError &error)
+{
+    dbid_t ret = 0;
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (idn_id, ace_id, alias, dest, username, status) "
+                                                         "VALUES (:idn_id, :ace_id, :alias, :dest, :username, :status)"));
+    q.bindValue(QStringLiteral(":idn_id"), idn_id);
+    q.bindValue(QStringLiteral(":ace_id"), ace_id);
+    q.bindValue(QStringLiteral(":alias"), alias);
+    q.bindValue(QStringLiteral(":dest"), dest);
+    q.bindValue(QStringLiteral(":username"), username);
+    q.bindValue(QStringLiteral(":status"), status);
+
+    if (Q_LIKELY(q.exec())) {
+        ret = q.lastInsertId().value<dbid_t>();
+    } else {
+        error = q.lastError();
+    }
+
+    return ret;
+}
+
+/*!
+ * \internal
+ * \brief Removes all columns from the virtual table that are asscociated to \a username.
+ */
+QSqlError removeVirtual(const QString &username)
+{
+    QSqlError ret;
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE username = :username"));
+    q.bindValue(QStringLiteral(":username"), username);
+    if (Q_UNLIKELY(!q.exec())) {
+        ret = q.lastError();
+        qCCritical(SK_ACCOUNT, "Failed to remove all entries for username \"%s\" from the virtual table: %s", qUtf8Printable(username), qUtf8Printable(ret.text()));
+    }
+
+    return ret;
+}
+
+/*!
+ * \internal
+ * \brief Removes the column identified by \a id from the virtual table.
+ */
+QSqlError removeVirtualByID(dbid_t id)
+{
+    QSqlError ret;
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE id = :id"));
+    q.bindValue(QStringLiteral(":id"), id);
+    if (Q_UNLIKELY(!q.exec())) {
+        ret = q.lastError();
+        qCCritical(SK_ACCOUNT, "Failed to remove column identified by ID %u from virtual table: %s", id, qUtf8Printable(ret.text()));
+    }
+
+    return ret;
+}
+
+/*!
+ * \internal
+ * \brief Remove all columns from the alias table that are associated to \a username.
+ */
+QSqlError removeAlias(const QString &username)
+{
+    QSqlError ret;
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM alias WHERE username = :username"));
+    q.bindValue(QStringLiteral(":username"), username);
+    if (Q_UNLIKELY(!q.exec())) {
+        ret = q.lastError();
+        qCCritical(SK_ACCOUNT, "Failed to remove all entries for username \"%s\" from the alias table: %s", qUtf8Printable(username), qUtf8Printable(ret.text()));
+    }
+
+    return ret;
+}
+
+/*!
+ * \internal
+ * \brief Remove the column identified by \a id from the alias table.
+ */
+QSqlError removeAliasByID(dbid_t id)
+{
+    QSqlError ret;
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM alias WHERE id = :id"));
+    q.bindValue(QStringLiteral(":id"), id);
+    if (Q_UNLIKELY(!q.exec())) {
+        ret = q.lastError();
+        qCCritical(SK_ACCOUNT, "Failed to remove column identified by ID %u from the alias table: %s", id, qUtf8Printable(ret.text()));
+    }
+
+    return ret;
+}
+
+/*!
+ * \internal
+ * \brief Removes the account identified by \a id from the accountuser table.
+ */
+QSqlError removeAccountByID(dbid_t id)
+{
+    QSqlError ret;
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
+    q.bindValue(QStringLiteral(":id"), id);
+    if (Q_UNLIKELY(!q.exec())) {
+        ret = q.lastError();
+        qCCritical(SK_ACCOUNT, "Failed to remove the user account with ID %u from the database: %s", id, qUtf8Printable(ret.text()));
+    }
+
+    return ret;
+}
+
+/*!
+ * \internal
+ * \brief Updates the \a ace_id column in the virtual table for the given \a id.
+ */
+QSqlError updateAceID(dbid_t id, dbid_t ace_id)
+{
+    QSqlError ret;
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET ace_id = :ace_id WHERE id = :id"));
+    q.bindValue(QStringLiteral(":ace_id"), ace_id);
+    q.bindValue(QStringLiteral(":id"), id);
+    if (Q_UNLIKELY(!q.exec())) {
+        ret = q.lastError();
+        qCCritical(SK_ACCOUNT, "Failed to update relationship between IDN (ID: %u) and ACE (ID: %u) address in the virtual table: %s", id, ace_id, qUtf8Printable(ret.text()));
+    }
+
+    return ret;
+}
+
 Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p, const Domain &d, const QStringList &selectedKids)
 {
     Account a;
@@ -327,31 +487,27 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
 
     // construct the email address from local part and domain name
     const QString localPart = p.value(QStringLiteral("localpart")).toString().trimmed();
-    const QString email = localPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.name()));
+    const QString email = localPart + QLatin1Char('@') + d.name();
+    const QString emailAce = localPart + QLatin1Char('@') + d.aceName();
 
     QList<Cutelyst::ValidatorEmail::Diagnose> diags;
-    if (!Cutelyst::ValidatorEmail::validate(email, Cutelyst::ValidatorEmail::Valid, false, &diags)) {
+    if (!Cutelyst::ValidatorEmail::validate(emailAce, Cutelyst::ValidatorEmail::Valid, false, &diags)) {
         e->setErrorType(SkaffariError::InputError);
         e->setErrorText(Cutelyst::ValidatorEmail::diagnoseString(c, diags.at(0)));
         return a;
     }
 
-    // start checking if the email address is already in use
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :email"));
-    q.bindValue(QStringLiteral(":email"), email);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "The database query to check if the email address %1 already exists failed.").arg(Account::addressFromACE(email)));
-        qCCritical(SK_ACCOUNT, "The database query to check if the email address %s already exists failed: %s", qUtf8Printable(Account::addressFromACE(email)), qUtf8Printable(q.lastError().text()));
+    QSqlError sqlError;
+    const bool emailExists = aliasExists(email, sqlError);
+    if (Q_UNLIKELY(sqlError.type() != QSqlError::NoError)) {
+        e->setSqlError(sqlError, c->translate("Account", "The database query to check if the email address %1 already exists failed.").arg(email));
         return a;
     }
-
-    if (Q_UNLIKELY(q.next())) {
-        e->setErrorText(c->translate("Account", "The email address %1 is already in use by another user.").arg(Account::addressFromACE(email)));
+    if (Q_UNLIKELY(emailExists)) {
+        e->setErrorText(c->translate("Account", "The email address %1 is already in use by another user.").arg(email));
         e->setErrorType(SkaffariError::InputError);
         return a;
     }
-    // end checking if the email address is already in use
 
     // start encrypting the password
     const QString password = p.value(QStringLiteral("password")).toString();
@@ -366,22 +522,22 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
     }
     // end encrypting the password
 
-    const bool imap = p.value(QStringLiteral("imap")).toBool();
-    const bool pop = p.value(QStringLiteral("pop")).toBool();
-    const bool sieve = p.value(QStringLiteral("sieve")).toBool();
-    const bool smtpauth = p.value(QStringLiteral("smtpauth")).toBool();
-    const bool _catchAll = p.value(QStringLiteral("catchall")).toBool();
+    const bool imap         = p.value(QStringLiteral("imap")).toBool();
+    const bool pop          = p.value(QStringLiteral("pop")).toBool();
+    const bool sieve        = p.value(QStringLiteral("sieve")).toBool();
+    const bool smtpauth     = p.value(QStringLiteral("smtpauth")).toBool();
+    const bool _catchAll    = p.value(QStringLiteral("catchall")).toBool();
 
     const quota_size_t quota = (p.value(QStringLiteral("quota")).value<quota_size_t>() / Q_UINT64_C(1024));
 
-    const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
     const QDateTime defDateTime(QDate(2999, 12, 31), QTime(0, 0), QTimeZone::utc());
-    const QDateTime validUntil = p.value(QStringLiteral("validUntil"), defDateTime).toDateTime().toUTC();
-    const QDateTime pwExpires = p.value(QStringLiteral("passwordExpires"), defDateTime).toDateTime().toUTC();
+    const QDateTime currentUtc  = QDateTime::currentDateTimeUtc();
+    const QDateTime validUntil  = p.value(QStringLiteral("validUntil"), defDateTime).toDateTime().toUTC();
+    const QDateTime pwExpires   = p.value(QStringLiteral("passwordExpires"), defDateTime).toDateTime().toUTC();
 
     const quint8 accountStatus = Account::calcStatus(validUntil, pwExpires);
 
-    q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, imap, pop, sieve, smtpauth, quota, created_at, updated_at, valid_until, pwd_expire, status) "
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, imap, pop, sieve, smtpauth, quota, created_at, updated_at, valid_until, pwd_expire, status) "
                                          "VALUES (:domain_id, :username, :password, :imap, :pop, :sieve, :smtpauth, :quota, :created_at, :updated_at, :valid_until, :pwd_expire, :status)"));
 
     q.bindValue(QStringLiteral(":domain_id"), d.id());
@@ -405,48 +561,68 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
     }
 
     const dbid_t id = q.lastInsertId().value<dbid_t>();
+    const dbid_t idnEmailId = insertVirtual(0, 0, email, username, username, 1, sqlError);
 
-    q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
-    q.bindValue(QStringLiteral(":alias"), email);
-    q.bindValue(QStringLiteral(":dest"), username);
-    q.bindValue(QStringLiteral(":username"), username);
-    q.bindValue(QStringLiteral(":status"), 1);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Email address for new user account could not be created in the database."));
-        qCCritical(SK_ACCOUNT, "Email address for new user account could not be created in the database.: %s", qUtf8Printable(q.lastError().text()));
-        q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
-        q.bindValue(QStringLiteral(":id"), id);
-        q.exec();
+    if (idnEmailId == 0) {
+        e->setSqlError(sqlError, c->translate("Account", "Email address for new user account could not be created in the database."));
+        qCCritical(SK_ACCOUNT, "Email address for new user account could not be created in the database.: %s", qUtf8Printable(sqlError.text()));
+        removeAccountByID(id);
         return a;
     }
 
-    if (!d.children().empty()) {
-        if (!selectedKids.empty()) {
-            const QVector<SimpleDomain> thekids = d.children();
-            for (const SimpleDomain &kid : thekids) {
-                if (selectedKids.contains(QString::number(kid.id()))) {
-                    const QString kidEmail = localPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(kid.name()));
-                    q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :email"));
-                    q.bindValue(QStringLiteral(":email"), kidEmail);
+    if (d.isIdn()) {
+        const dbid_t aceEmailId = insertVirtual(idnEmailId, 0, emailAce, username, username, 1, sqlError);
+        if (aceEmailId == 0) {
+            e->setSqlError(sqlError, c->translate("Account", "ACE email address for new user account could not be created in the database."));
+            qCCritical(SK_ACCOUNT, "ACE email address for new user account could not be created in the database.: %s", qUtf8Printable(sqlError.text()));
+            removeVirtual(username);
+            removeAccountByID(id);
+            return a;
+        } else {
+            sqlError = updateAceID(idnEmailId, aceEmailId);
+            if (Q_UNLIKELY(sqlError.type() != QSqlError::NoError)) {
+                e->setSqlError(sqlError, c->translate("Account", "Can not set relationship between ACE and IDN representation of email address of new user account in database."));
+                return a;
+            }
+        }
+    }
 
-                    if (Q_UNLIKELY(!q.exec())) {
-                        qCCritical(SK_ACCOUNT, "The database query to check if the email address %s already exists failed: %s", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(q.lastError().text()));
-                    } else {
-                        if (Q_LIKELY(!q.next())) {
-                            QSqlQuery qq = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
-                            qq.bindValue(QStringLiteral(":alias"), kidEmail);
-                            qq.bindValue(QStringLiteral(":dest"), username);
-                            qq.bindValue(QStringLiteral(":username"), username);
-                            qq.bindValue(QStringLiteral(":status"), 1);
-
-                            if (Q_UNLIKELY(!qq.exec())) {
-                                qCCritical(SK_ACCOUNT, "Failed to insert email address %s for new user account into database: %s", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(qq.lastError().text()));
+    if (!d.children().empty() && !selectedKids.empty()) {
+        const QVector<SimpleDomain> thekids = d.children();
+        for (const SimpleDomain &kid : thekids) {
+            if (selectedKids.contains(QString::number(kid.id()))) {
+                SkaffariError cDomError(c);
+                const Domain cDom = Domain::get(c, kid.id(), &cDomError);
+                if (cDom.isValid()) {
+                    const QString kidEmail = localPart + QLatin1Char('@') + kid.name();
+                    bool exists = aliasExists(kidEmail, sqlError);
+                    if (!exists && (sqlError.type() == QSqlError::NoError)) {
+                        const dbid_t kidEmailIdnId = insertVirtual(0, 0, kidEmail, username, username, 1, sqlError);
+                        if (kidEmailIdnId > 0) {
+                            if (cDom.isIdn()) {
+                                const QString kidEmailAce = localPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(kid.name()));
+                                const dbid_t kidEmailAceId = insertVirtual(kidEmailIdnId, 0, kidEmailAce, username, username, 1, sqlError);
+                                if (kidEmailAceId > 0) {
+                                    sqlError = updateAceID(kidEmailIdnId, kidEmailAceId);
+                                    if (sqlError.type() != QSqlError::NoError) {
+                                        removeVirtualByID(kidEmailIdnId);
+                                        removeVirtualByID(kidEmailAceId);
+                                    }
+                                } else {
+                                    qCCritical(SK_ACCOUNT, "Failed to insert ACE email address %s for new user account into database: %s", qUtf8Printable(kidEmailAce), qUtf8Printable(sqlError.text()));
+                                    removeVirtualByID(kidEmailIdnId);
+                                }
                             }
                         } else {
-                            qCWarning(SK_ACCOUNT, "Email address %s for child domain %s already exists when creating new account %s.", qUtf8Printable(addressFromACE(kidEmail)), qUtf8Printable(kid.name()), qUtf8Printable(username));
+                            qCCritical(SK_ACCOUNT, "Failed to insert email address %s for new user account into database: %s", qUtf8Printable(kidEmail), qUtf8Printable(sqlError.text()));
+                        }
+                    } else {
+                        if (exists) {
+                            qCWarning(SK_ACCOUNT, "Can not insert already existing email address %s into database.", qUtf8Printable(kidEmail));
                         }
                     }
+                } else {
+                    qCCritical(SK_ACCOUNT, "Failed to query complete domain data for domain %s (ID: %u) from the database when creating email addresses for child domains: %s", qUtf8Printable(kid.name()), kid.id(), qUtf8Printable(cDomError.qSqlError().text()));
                 }
             }
         }
@@ -454,45 +630,52 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
 
     // removing old catch-all alias and setting a new one
     if (_catchAll) {
-        const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.name()));
+        const QString catchAllAlias = QLatin1Char('@') + d.name();
+        const QString catchAllAliasAce = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(d.name()));
 
-        q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :alias"));
+        if (d.isIdn()) {
+            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :alias OR alias = :aceAlias"));
+            q.bindValue(QStringLiteral(":aceAlias"), catchAllAliasAce);
+        } else {
+            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :alias"));
+        }
         q.bindValue(QStringLiteral(":alias"), catchAllAlias);
 
         if (Q_UNLIKELY(!q.exec())) {
             e->setSqlError(q.lastError(), c->translate("Account", "Existing catch-all address could not be deleted from the database."));
             qCCritical(SK_ACCOUNT, "Existing catch-all address for domain %s could not be deleted from the database: %s", qUtf8Printable(d.name()), qUtf8Printable(q.lastError().text()));
-
-            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE username = :username"));
-            q.bindValue(QStringLiteral(":username"), username);
-            q.exec();
-
-            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
-            q.bindValue(QStringLiteral(":id"), id);
-            q.exec();
-
+            removeVirtual(username);
+            removeAccountByID(id);
             return a;
         }
 
-        q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
-        q.bindValue(QStringLiteral(":alias"), catchAllAlias);
-        q.bindValue(QStringLiteral(":dest"), username);
-        q.bindValue(QStringLiteral(":username"), username);
-        q.bindValue(QStringLiteral(":status"), 1);
+        const dbid_t catchAllIdnId = insertVirtual(0, 0, catchAllAlias, username, username, 1, sqlError);
 
-        if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("Account", "Account could not be set up as catch-all account."));
-            qCCritical(SK_ACCOUNT, "Account %s could not be set up as catch-all account for domain %s: %s", qUtf8Printable(username), qUtf8Printable(d.name()), qUtf8Printable(q.lastError().text()));
-
-            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE username = :username"));
-            q.bindValue(QStringLiteral(":username"), username);
-            q.exec();
-
-            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
-            q.bindValue(QStringLiteral(":id"), id);
-            q.exec();
-
+        if (catchAllIdnId == 0) {
+            e->setSqlError(sqlError, c->translate("Account", "Account could not be set up as catch-all account."));
+            qCCritical(SK_ACCOUNT, "Account %s could not be set up as catch-all account for domain %s: %s", qUtf8Printable(username), qUtf8Printable(d.name()), qUtf8Printable(sqlError.text()));
+            removeVirtual(username);
+            removeAccountByID(id);
             return a;
+        }
+
+        if (d.isIdn()) {
+            const dbid_t catchAllAceId = insertVirtual(catchAllIdnId, 0, catchAllAliasAce, username, username, 1, sqlError);
+            if (catchAllAceId > 0) {
+                sqlError = updateAceID(catchAllIdnId, catchAllAceId);
+                if (sqlError.type() != QSqlError::NoError) {
+                    e->setSqlError(sqlError, c->translate("Account", "Account could not be set up as catch-all account."));
+                    removeVirtual(username);
+                    removeAccountByID(id);
+                    return a;
+                }
+            } else {
+                e->setSqlError(sqlError, c->translate("Account", "Account could not be set up as catch-all account."));
+                qCCritical(SK_ACCOUNT, "Account %s could not be set up as catch-all account for IDN domain %s: %s", qUtf8Printable(username), qUtf8Printable(d.name()), qUtf8Printable(sqlError.text()));
+                removeVirtual(username);
+                removeAccountByID(id);
+                return a;
+            }
         }
     }
 
@@ -611,14 +794,8 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
 
     // revert our changes to the database if mailbox creation failed
     if (!mailboxCreated) {
-        q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE id = :id"));
-        q.bindValue(QStringLiteral(":id"), id);
-        q.exec();
-
-        q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE username = :username"));
-        q.bindValue(QStringLiteral(":username"), username);
-        q.exec();
-
+        removeVirtual(username);
+        removeAccountByID(id);
         return a;
     }
 
@@ -626,7 +803,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
     q.bindValue(QStringLiteral(":quota"), quota);
     q.bindValue(QStringLiteral(":id"), d.id());
     if (Q_UNLIKELY(!q.exec())) {
-        qCWarning(SK_ACCOUNT, "Failed to update count of accounts and domain quota usage after adding new account to domain ID %u (%s): %s", d.id(), qUtf8Printable(d.name()), qUtf8Printable(q.lastError().text()));
+        qCWarning(SK_ACCOUNT, "Failed to update count of accounts and domain quota usage after adding new account to domain %s (ID: %u): %s", qUtf8Printable(d.name()), d.id(), qUtf8Printable(q.lastError().text()));
     }
 
     a.setId(id);
@@ -696,21 +873,17 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e) const
 
     const quota_size_t quota = (q.exec() && q.next()) ? q.value(0).value<quota_size_t>() : 0;
 
-    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM alias WHERE username = :username"));
-    q.bindValue(QStringLiteral(":username"), d->username);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Alias addresses for user account %1 could not be deleted from the database.").arg(d->username));
-        qCCritical(SK_ACCOUNT, "Alias addresses for user account %s could not be deleted from the database: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
+    QSqlError sqlError = removeAlias(d->username);
+    if (sqlError.type() != QSqlError::NoError) {
+        e->setSqlError(sqlError, c->translate("Account", "Alias addresses for user account %1 could not be deleted from the database.").arg(d->username));
+        qCCritical(SK_ACCOUNT, "Alias addresses for user account %s could not be deleted from the database: %s", qUtf8Printable(d->username), qUtf8Printable(sqlError.text()));
         return ret;
     }
 
-    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE username = :username"));
-    q.bindValue(QStringLiteral(":username"), d->username);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Email addresses for user account %1 could not be deleted from the database.").arg(d->username));
-        qCCritical(SK_ACCOUNT, "Email addresses for user account %s could not be deleted from the database: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
+    sqlError = removeVirtual(d->username);
+    if (sqlError.type() != QSqlError::NoError) {
+        e->setSqlError(sqlError, c->translate("Account", "Email addresses for user account %1 could not be deleted from the database.").arg(d->username));
+        qCCritical(SK_ACCOUNT, "Email addresses for user account %s could not be deleted from the database: %s", qUtf8Printable(d->username), qUtf8Printable(sqlError.text()));
         return ret;
     }
 
@@ -723,12 +896,10 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError *e) const
         return ret;
     }
 
-    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM accountuser WHERE username = :username"));
-    q.bindValue(QStringLiteral(":username"), d->username);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "User account %1 could not be deleted from the database.").arg(d->username));
-        qCCritical(SK_ACCOUNT, "User account %s could not be deleted from the database.: %s", qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
+    sqlError = removeAccountByID(d->id);
+    if (sqlError.type() != QSqlError::NoError) {
+        e->setSqlError(sqlError, c->translate("Account", "User account %1 could not be deleted from the database.").arg(d->username));
+        qCCritical(SK_ACCOUNT, "User account %s could not be deleted from the database.: %s", qUtf8Printable(d->username), qUtf8Printable(sqlError.text()));
         return ret;
     }
 
@@ -1061,15 +1232,15 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Domain *dom, const 
         }
     }
 
-    const QDateTime validUntil = p.value(QStringLiteral("validUntil")).toDateTime().toUTC();
-    const QDateTime pwExpires = p.value(QStringLiteral("passwordExpires")).toDateTime().toUTC();
-    const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
+    const QDateTime validUntil      = p.value(QStringLiteral("validUntil"), d->validUntil).toDateTime().toUTC();
+    const QDateTime pwExpires       = p.value(QStringLiteral("passwordExpires"), d->passwordExpires).toDateTime().toUTC();
+    const QDateTime currentTimeUtc  = QDateTime::currentDateTimeUtc();
 
-    const bool imap = p.value(QStringLiteral("imap")).toBool();
-    const bool pop = p.value(QStringLiteral("pop")).toBool();
-    const bool sieve = p.value(QStringLiteral("sieve")).toBool();
-    const bool smtpauth = p.value(QStringLiteral("smtpauth")).toBool();
-    const bool _catchAll = p.value(QStringLiteral("catchall")).toBool();
+    const bool imap         = p.value(QStringLiteral("imap")).toBool();
+    const bool pop          = p.value(QStringLiteral("pop")).toBool();
+    const bool sieve        = p.value(QStringLiteral("sieve")).toBool();
+    const bool smtpauth     = p.value(QStringLiteral("smtpauth")).toBool();
+    const bool _catchAll    = p.value(QStringLiteral("catchall")).toBool();
 
     QSqlQuery q;
     if (!password.isEmpty()) {
@@ -1096,27 +1267,51 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Domain *dom, const 
     }
 
     if (_catchAll != d->catchAll) {
-        const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(dom->name()));
+        const QString catchAllAlias = QLatin1Char('@') + dom->name();
+        const QString catchAllAliasAce = QLatin1Char('@') + dom->aceName();
         if (_catchAll && !d->catchAll) {
-            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :alias"));
+            if (dom->isIdn()) {
+                q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :alias OR alias = :aliasAce"));
+                q.bindValue(QStringLiteral(":aliasAce"), catchAllAliasAce);
+            } else {
+                q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :alias"));
+            }
             q.bindValue(QStringLiteral(":alias"), catchAllAlias);
 
             if (Q_UNLIKELY(!q.exec())) {
                 e->setSqlError(q.lastError(), c->translate("Account", "Existing catch-all address could not be deleted from the database."));
-                qCWarning(SK_ACCOUNT, "Existing catch-all address of domain %s (ID: %lu) could not be deleted from the database: %s", qUtf8Printable(dom->name()), dom->id(), qUtf8Printable(q.lastError().text()));
+                qCWarning(SK_ACCOUNT, "Existing catch-all address of domain %s (ID: %u) could not be deleted from the database: %s", qUtf8Printable(dom->name()), dom->id(), qUtf8Printable(q.lastError().text()));
             }
 
-            q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
-            q.bindValue(QStringLiteral(":alias"), catchAllAlias);
-            q.bindValue(QStringLiteral(":dest"), d->username);
-            q.bindValue(QStringLiteral(":username"), d->username);
-            q.bindValue(QStringLiteral(":status"), 1);
-
-            if (Q_UNLIKELY(!q.exec())) {
-                e->setSqlError(q.lastError(), c->translate("Account", "Account could not be set up as catch-all account."));
-                qCWarning(SK_ACCOUNT, "Account %s could not be set up as catch-all account for domain %s: %s", qUtf8Printable(d->username), qUtf8Printable(dom->name()), qUtf8Printable(q.lastError().text()));
+            QSqlError sqlError;
+            const dbid_t catchAllIdnId = insertVirtual(0, 0, catchAllAlias, d->username, d->username, 1, sqlError);
+            if (catchAllIdnId == 0) {
+                e->setSqlError(sqlError, c->translate("Account", "Account could not be set up as catch-all account."));
+                qCWarning(SK_ACCOUNT, "Account %s could not be set up as catch-all account for domain %s: %s", qUtf8Printable(d->username), qUtf8Printable(dom->name()), qUtf8Printable(sqlError.text()));
             } else {
-                setCatchAll(true);
+                if (dom->isIdn()) {
+                    const dbid_t catchAllAceId = insertVirtual(catchAllIdnId, 0, catchAllAliasAce, d->username, d->username, 1, sqlError);
+                    if (catchAllAceId > 0) {
+                        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET ace_id = :ace_id WHERE id = :id"));
+                        q.bindValue(QStringLiteral(":ace_id"), catchAllAceId);
+                        q.bindValue(QStringLiteral(":id"), catchAllIdnId);
+                        if (Q_LIKELY(q.exec())) {
+                            setCatchAll(true);
+                        } else {
+                            setCatchAll(false);
+                            q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :alias"));
+                            q.bindValue(QStringLiteral(":alias"), catchAllAlias);
+                            if (Q_UNLIKELY(!q.exec())) {
+                                qCCritical(SK_ACCOUNT, "Failed to remove previously added IDN catch all address (%s) from database: %s", qUtf8Printable(catchAllAlias), qUtf8Printable(q.lastError().text()));
+                            }
+                        }
+                    } else {
+                        e->setSqlError(sqlError, c->translate("Account", "Account could not be set up as catch-all account."));
+                        qCWarning(SK_ACCOUNT, "Account %s could not be set up as catch-all account for domain %s: %s", qUtf8Printable(d->username), qUtf8Printable(dom->name()), qUtf8Printable(sqlError.text()));
+                    }
+                } else {
+                    setCatchAll(true);
+                }
             }
 
         } else if (!_catchAll && d->catchAll) {
@@ -1125,9 +1320,21 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Domain *dom, const 
             q.bindValue(QStringLiteral(":username"), d->username);
 
             if (Q_UNLIKELY(!q.exec())) {
-                e->setSqlError(q.lastError(), c->translate("Account", "User account could not be removed as a catch-all account for this domain."));
+                e->setSqlError(q.lastError(), c->translate("Account", "User account could not be removed as catch-all account for this domain."));
                 qCWarning(SK_ACCOUNT, "User account %s could not be removed as a catch-all account for domain %s: %s", qUtf8Printable(d->username), qUtf8Printable(dom->name()), qUtf8Printable(q.lastError().text()));
             } else {
+
+                if (dom->isIdn()) {
+                    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :alias AND username = :username"));
+                    q.bindValue(QStringLiteral(":alias"), catchAllAliasAce);
+                    q.bindValue(QStringLiteral(":username"), d->username);
+
+                    if (Q_UNLIKELY(!q.exec())) {
+                        e->setSqlError(q.lastError(), c->translate("Account", "User account could not be completeley removed as catch-all account for this domain."));
+                        qCWarning(SK_ACCOUNT, "User account %s could not be removed as a catch-all account for domain %s: %s", qUtf8Printable(d->username), qUtf8Printable(QString::fromLatin1(QUrl::toAce(dom->name()))), qUtf8Printable(q.lastError().text()));
+                    }
+                }
+
                 setCatchAll(false);
             }
         }
@@ -1392,14 +1599,8 @@ QString Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, const QVari
         return ret;
     }
 
-    const QString address = p.value(QStringLiteral("newlocalpart")).toString() + QLatin1Char('@') + dom.name();
-
-    if (!dom.isFreeAddressEnabled() && (dom.id() != d->domainId)) {
-        e->setErrorText(c->translate("Account", "You can not create email addresses for other domains as long as free addresses are not allowed for this domain."));
-        e->setErrorType(SkaffariError::AutorizationError);
-        qCWarning(SK_ACCOUNT, "Updating email address failed: can not create email address %s because domain %s (ID: %lu) is not allowed to have free addresses.", qUtf8Printable(address), qUtf8Printable(dom.name()), dom.id());
-        return ret;
-    }
+    const QString localPart = p.value(QStringLiteral("newlocalpart")).toString();
+    const QString address = localPart + QLatin1Char('@') + dom.name();
 
     if (address == oldAddress) {
         e->setErrorType(SkaffariError::InputError);
@@ -1422,12 +1623,11 @@ QString Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, const QVari
         return ret;
     }
 
-    const QString aceAddress = Account::addressToACE(address);
-    if (aceAddress.isEmpty()) {
-        e->setErrorText(c->translate("Account", "Can not convert email address %1 into a ACE string.").arg(address));
-        e->setErrorType(SkaffariError::InputError);
+    if (!d->canAddAddress(c, e, dom, address)) {
         return ret;
     }
+
+    const QString aceAddress = localPart + QLatin1Char('@') + dom.aceName();
 
     QList<Cutelyst::ValidatorEmail::Diagnose> diags;
     if (!Cutelyst::ValidatorEmail::validate(aceAddress, Cutelyst::ValidatorEmail::Valid, false, &diags)) {
@@ -1437,34 +1637,57 @@ QString Account::updateEmail(Cutelyst::Context *c, SkaffariError *e, const QVari
         return ret;
     }
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias, dest, username FROM virtual WHERE alias = :address"));
-    q.bindValue(QStringLiteral(":address"), aceAddress);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Unable to check if the new email address %1 is already assigned to another user account.").arg(address));
-        qCCritical(SK_ACCOUNT, "Unable to check if the new email address %s is already assigned to another user account: %s", qUtf8Printable(address), qUtf8Printable(q.lastError().text()));
+    const EmailAddress a = EmailAddress::get(c, e, oldAddress);
+    if (!a) {
         return ret;
     }
 
-    if (Q_UNLIKELY(q.next())) {
-        QString otherUser = q.value(2).toString();
-        if (otherUser.isEmpty()) {
-            otherUser = q.value(1).toString();
+    QSqlDatabase db = QSqlDatabase::database(Cutelyst::Sql::databaseNameThread());
+    if (Q_UNLIKELY(!db.transaction())) {
+        e->setSqlError(db.lastError(), c->translate("Account", "Failed to update email address %1.").arg(oldAddress));
+        qCCritical(SK_ACCOUNT, "Failed to change email address %s of account ID %u (%s) to %s: %s", qUtf8Printable(oldAddress), d->id, qUtf8Printable(d->username), qUtf8Printable(address), qUtf8Printable(db.lastError().text()));
+        return ret;
+    }
+
+    QSqlQuery q = QSqlQuery(db);
+    q.prepare(QStringLiteral("UPDATE virtual SET alias = :alias WHERE id = :id"));
+    q.bindValue(QStringLiteral(":alias"), address);
+    q.bindValue(QStringLiteral(":id"), a.id());
+
+    if (Q_LIKELY(q.exec())) {
+        if (a.isIdn() && dom.isIdn()) {
+            q.prepare(QStringLiteral("UPDATE virtual SET alias = :alias WHERE id = :id"));
+            q.bindValue(QStringLiteral(":alias"), aceAddress);
+            q.bindValue(QStringLiteral(":id"), a.aceId());
+            q.exec();
+        } else if (a.isIdn() && !dom.isIdn()) {
+            q.prepare(QStringLiteral("DELETE FROM virtual WHERE id = :id"));
+            q.bindValue(QStringLiteral(":id"), a.aceId());
+            q.exec();
+
+            q.prepare(QStringLiteral("UPDATE virtual SET ace_id = 0 WHERE id = :id"));
+            q.bindValue(QStringLiteral(":id"), a.id());
+            q.exec();
+        } else if (!a.isIdn() && dom.isIdn()) {
+            q.prepare(QStringLiteral("INSERT INTO virtual (idn_id, ace_id, alias, dest, username, status) VALUES (:idn_id, 0, :alias, :dest, :username, 1)"));
+            q.bindValue(QStringLiteral(":idn_id"), a.id());
+            q.bindValue(QStringLiteral(":alias"), aceAddress);
+            q.bindValue(QStringLiteral(":dest"), d->username);
+            q.bindValue(QStringLiteral(":username"), d->username);
+            q.exec();
+
+            const dbid_t aceId = q.lastInsertId().value<dbid_t>();
+            q.prepare(QStringLiteral("UPDATE virtual SET ace_id = :ace_id WHERE id = :id"));
+            q.bindValue(QStringLiteral(":ace_id"), aceId);
+            q.bindValue(QStringLiteral(":id"), a.id());
+            q.exec();
         }
-        e->setErrorType(SkaffariError::InputError);
-        e->setErrorText(c->translate("Account", "Email address %1 is already assigned to another user account.").arg(address));
-        qCWarning(SK_ACCOUNT, "%s tried to change email address %s to %s that is already assigned to %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(oldAddress), qUtf8Printable(address), qUtf8Printable(otherUser));
-        return ret;
     }
 
-    q = CPreparedSqlQueryThread(QStringLiteral("UPDATE virtual SET alias = :aliasnew WHERE alias = :aliasold AND username = :username"));
-    q.bindValue(QStringLiteral(":aliasnew"), aceAddress);
-    q.bindValue(QStringLiteral(":aliasold"), addressToACE(oldAddress));
-    q.bindValue(QStringLiteral(":username"), d->username);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Failed to update email address %1.").arg(oldAddress));
-        qCCritical(SK_ACCOUNT, "Failed to change email address %s of account ID %u (%s) to %s: %s", qUtf8Printable(oldAddress), d->id, qUtf8Printable(d->username), qUtf8Printable(address), qUtf8Printable(q.lastError().text()));
+    if (Q_UNLIKELY(!db.commit())) {
+        e->setSqlError(db.lastError(), c->translate("Account", "Failed to update email address %1.").arg(oldAddress));
+        qCCritical(SK_ACCOUNT, "Failed to change email address %s of account ID %u (%s) to %s: %s", qUtf8Printable(oldAddress), d->id, qUtf8Printable(d->username), qUtf8Printable(address), qUtf8Printable(db.lastError().text()));
+        db.rollback();
         return ret;
     }
 
@@ -1488,8 +1711,8 @@ QString Account::addEmail(Cutelyst::Context *c, SkaffariError *e, const QVariant
 {
     QString ret;
 
-    Q_ASSERT_X(c, "update email", "invalid context object");
-    Q_ASSERT_X(e, "update email", "invalid error object");
+    Q_ASSERT_X(c, "add email", "invalid context object");
+    Q_ASSERT_X(e, "add email", "invalid error object");
 
     const dbid_t domId = p.value(QStringLiteral("newmaildomain")).value<dbid_t>();
     const Domain dom = Domain::get(c, domId, e);
@@ -1498,22 +1721,8 @@ QString Account::addEmail(Cutelyst::Context *c, SkaffariError *e, const QVariant
         return ret;
     }
 
-    const QString address = p.value(QStringLiteral("newlocalpart")).toString() + QLatin1Char('@') + dom.name();
-
-    if (!dom.isFreeAddressEnabled() && (dom.id() != d->domainId)) {
-        e->setErrorText(c->translate("Account", "You can not create email addresses for other domains as long as free addresses are not allowed for this domain."));
-        e->setErrorType(SkaffariError::AutorizationError);
-        qCWarning(SK_ACCOUNT, "Adding email address failed: can not create email address %s because domain %s (ID: %lu) is not allowed to have free addresses.", qUtf8Printable(address), qUtf8Printable(dom.name()), dom.id());
-        return ret;
-    }
-
-    const QString aceAddress = Account::addressToACE(address);
-
-    if (aceAddress.isEmpty()) {
-        e->setErrorText(c->translate("Account", "Can not convert email address %1 into a ACE string.").arg(address));
-        e->setErrorType(SkaffariError::InputError);
-        return ret;
-    }
+    const QString localPart = p.value(QStringLiteral("newlocalpart")).toString();
+    const QString address = localPart + QLatin1Char('@') + dom.name();
 
     if (d->addresses.contains(address)) {
         e->setErrorType(SkaffariError::InputError);
@@ -1521,6 +1730,12 @@ QString Account::addEmail(Cutelyst::Context *c, SkaffariError *e, const QVariant
         qCWarning(SK_ACCOUNT, "Updating email address failed: address %s is already part of account %s.", qUtf8Printable(address), qUtf8Printable(d->username));
         return ret;
     }
+
+    if (!d->canAddAddress(c, e, dom, address)) {
+        return ret;
+    }
+
+    const QString aceAddress = localPart + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(dom.name()));
 
     QList<Cutelyst::ValidatorEmail::Diagnose> diags;
     if (!Cutelyst::ValidatorEmail::validate(aceAddress, Cutelyst::ValidatorEmail::Valid, false, &diags)) {
@@ -1530,36 +1745,32 @@ QString Account::addEmail(Cutelyst::Context *c, SkaffariError *e, const QVariant
         return ret;
     }
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias, dest, username FROM virtual WHERE alias = :address"));
-    q.bindValue(QStringLiteral(":address"), aceAddress);
+    QSqlError sqlError;
+    const dbid_t emailIdnId = insertVirtual(0, 0, address, d->username, d->username, 1, sqlError);
 
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Unable to check if the new email address %1 is already assigned to another user account.").arg(address));
-        qCCritical(SK_ACCOUNT, "Unable to check if the new email address %s for account %s (ID: %lu) is already assigned to another user account: %s", qUtf8Printable(address), qUtf8Printable(d->username), d->id, qUtf8Printable(q.lastError().text()));
+    if (emailIdnId == 0) {
+        e->setSqlError(sqlError, c->translate("Account", "New email address could not be added to database."));
+        qCCritical(SK_ACCOUNT, "Failed to insert new email address %s for account ID %u (%s) into database: %s", qUtf8Printable(address), d->id, qUtf8Printable(d->username), qUtf8Printable(sqlError.text()));
         return ret;
-    }
-
-    if (Q_UNLIKELY(q.next())) {
-        QString otherUser = q.value(2).toString();
-        if (otherUser.isEmpty()) {
-            otherUser = q.value(1).toString();
+    } else {
+        if (dom.isIdn()) {
+            const dbid_t emailAceId = insertVirtual(emailIdnId, 0, aceAddress, d->username, d->username, 1, sqlError);
+            if (emailAceId == 0) {
+                e->setSqlError(sqlError, c->translate("Account", "New email address could not be added to database."));
+                qCCritical(SK_ACCOUNT, "Failed to insert new email address %s for account ID %u (%s) into database: %s", qUtf8Printable(address), d->id, qUtf8Printable(d->username), qUtf8Printable(sqlError.text()));
+                removeVirtualByID(emailIdnId);
+                return ret;
+            } else {
+                sqlError = updateAceID(emailIdnId, emailAceId);
+                if (Q_UNLIKELY(sqlError.type() != QSqlError::NoError)) {
+                    e->setSqlError(sqlError, c->translate("Account", "New email address could not be added to database."));
+                    qCCritical(SK_ACCOUNT, "Failed to insert new email address %s for account ID %u (%s) into database: %s", qUtf8Printable(address), d->id, qUtf8Printable(d->username), qUtf8Printable(sqlError.text()));
+                    removeVirtualByID(emailIdnId);
+                    removeVirtualByID(emailAceId);
+                    return ret;
+                }
+            }
         }
-        e->setErrorType(SkaffariError::InputError);
-        e->setErrorText(c->translate("Account", "Email address %1 is already assigned to another user account.").arg(address));
-        qCWarning(SK_ACCOUNT, "%s tried to add email address %s to account %s (ID: %lu) that is already assigned to %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(address), qUtf8Printable(d->username), d->id, qUtf8Printable(otherUser));
-        return ret;
-    }
-
-    q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO virtual (alias, dest, username, status) VALUES (:alias, :dest, :username, :status)"));
-    q.bindValue(QStringLiteral(":alias"), aceAddress);
-    q.bindValue(QStringLiteral(":dest"), d->username);
-    q.bindValue(QStringLiteral(":username"), d->username);
-    q.bindValue(QStringLiteral(":status"), 1);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "New email address could not be added to database."));
-        qCCritical(SK_ACCOUNT, "Failed to insert new email address %s for account ID %u (%s) into database: %s", qUtf8Printable(address), d->id, qUtf8Printable(d->username), qUtf8Printable(q.lastError().text()));
-        return ret;
     }
 
     d->addresses.push_back(address);
@@ -1591,12 +1802,23 @@ bool Account::removeEmail(Cutelyst::Context *c, SkaffariError *e, const QString 
         return ret;
     }
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :address"));
-    q.bindValue(QStringLiteral(":address"), addressToACE(address));
+    const EmailAddress a = EmailAddress::get(c, e, address);
+    if (!a) {
+        return ret;
+    }
 
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Account", "Email address %1 could not be removed from user account %2.").arg(address, d->username));
-        qCCritical(SK_ACCOUNT, "Email address %s could not be removed from user account %s (ID: %lu): %s", qUtf8Printable(address), qUtf8Printable(d->username), d->id, qUtf8Printable(q.lastError().text()));
+    QSqlError sqlError;
+    if (a.isIdn()) {
+        sqlError = removeVirtualByID(a.aceId());
+        if (sqlError.type() != QSqlError::NoError) {
+            e->setSqlError(sqlError, c->translate("Account", "Email address %1 could not be removed from user account %2.").arg(address, d->username));
+            return ret;
+        }
+    }
+
+    sqlError = removeVirtualByID(a.id());
+    if (sqlError.type() != QSqlError::NoError) {
+        e->setSqlError(sqlError, c->translate("Account", "Email address %1 could not be removed from user account %2.").arg(address, d->username));
         return ret;
     }
 
@@ -1943,7 +2165,7 @@ std::pair<QStringList, bool> Account::queryAddresses(Cutelyst::Context *c, Skaff
 {
     std::pair<QStringList,bool> ret = std::make_pair(QStringList(), false);
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias FROM virtual WHERE dest = :username AND username = :username ORDER BY alias ASC"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias FROM virtual WHERE dest = :username AND username = :username AND idn_id = 0 ORDER BY alias ASC"));
     q.bindValue(QStringLiteral(":username"), d->username);
 
     if (Q_UNLIKELY(!q.exec())) {
@@ -1955,12 +2177,68 @@ std::pair<QStringList, bool> Account::queryAddresses(Cutelyst::Context *c, Skaff
         while (q.next()) {
             const QString address = q.value(0).toString();
             if (!address.startsWith(QLatin1Char('@'))) {
-                ret.first << addressFromACE(address);
+                ret.first << address;
             } else {
                 ret.second = true;
             }
         }
     }
+
+    return ret;
+}
+
+bool AccountData::canAddAddress(Cutelyst::Context *c, SkaffariError *e, const Domain &targetDomain, const QString &address) const
+{
+    bool ret = false;
+
+    Q_ASSERT(c);
+    Q_ASSERT(e);
+
+    const Domain myDomain = (targetDomain.id() == domainId) ? targetDomain : Domain::get(c, domainId, e);
+    if ((e->type() != SkaffariError::NoError) || !myDomain.isValid()) {
+        return ret;
+    }
+
+    if (!myDomain.isFreeAddressEnabled()) {
+        bool addressAllowed = (targetDomain.id() == domainId);
+        if (!addressAllowed && !myDomain.children().isEmpty()) {
+            for (const SimpleDomain &child : myDomain.children()) {
+                if (child.id() == targetDomain.id()) {
+                    addressAllowed = true;
+                    break;
+                }
+            }
+        }
+
+        if (!addressAllowed) {
+            e->setErrorText(c->translate("Account", "You can not create email addresses for other domains as long as free addresses are not allowed for this domain."));
+            e->setErrorType(SkaffariError::AuthorizationError);
+            qCWarning(SK_ACCOUNT, "%s tried to add email address %s to accounts %s (ID: %lu) while free addresses are not allowed for domain %s (ID: %lu).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(address), qUtf8Printable(username), id, qUtf8Printable(myDomain.name()), myDomain.id());
+            return ret;
+        }
+    }
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias, dest, username FROM virtual WHERE alias = :address"));
+    q.bindValue(QStringLiteral(":address"), address);
+
+    if (Q_UNLIKELY(!q.exec())) {
+        e->setSqlError(q.lastError(), c->translate("Account", "Unable to check if the new email address %1 is already assigned to another user account.").arg(address));
+        qCCritical(SK_ACCOUNT, "Unable to check if the new email address %s for account %s (ID: %lu) is already assigned to another user account: %s", qUtf8Printable(address), qUtf8Printable(username), id, qUtf8Printable(q.lastError().text()));
+        return ret;
+    }
+
+    if (Q_UNLIKELY(q.next())) {
+        QString otherUser = q.value(2).toString();
+        if (otherUser.isEmpty()) {
+            otherUser = q.value(1).toString();
+        }
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(c->translate("Account", "Email address %1 is already assigned to another user account.").arg(address));
+        qCWarning(SK_ACCOUNT, "%s tried to add email address %s to account %s (ID: %lu) that is already assigned to %s.", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(address), qUtf8Printable(username), id, qUtf8Printable(otherUser));
+        return ret;
+    }
+
+    ret = true;
 
     return ret;
 }

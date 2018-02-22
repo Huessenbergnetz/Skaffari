@@ -130,7 +130,7 @@ public:
 
     /*!
      * \brief Returns the domain name.
-     * \sa setName()
+     * \sa setName(), aceName()
      */
     QString name() const;
     /*!
@@ -138,6 +138,12 @@ public:
      * \sa name()
      */
     void setName(const QString &nName);
+    /*!
+     * \brief Returns the ACE version of the domain name.
+     * If this is not an IDN it will return the same as name().
+     * \sa name()
+     */
+    QString aceName() const;
 
     /*!
      * \brief Returns the prefix used for the domain.
@@ -300,6 +306,9 @@ public:
      */
     void setUpdated(const QDateTime &dt);
 
+    QDateTime validUntil() const;
+    void setValidUntil(const QDateTime &dt);
+
     /*!
      * \brief Returns information about the parent domain, if any has been set.
      * \sa setParent()
@@ -321,6 +330,24 @@ public:
      * \sa children()
      */
     void setChildren(const QVector<SimpleDomain> &children);
+
+    /*!
+     * \brief Returns \c true if this domain has an internationalized domain name (IDN).
+     * \sa aceId()
+     */
+    bool isIdn() const;
+
+    /*!
+     * \brief Returns the dabase ID of the corresponding ACE version of the domain name.
+     * \sa setAceId()
+     */
+    dbid_t aceId() const;
+
+    /*!
+     * \brief Sets the database ID of the corresponding ACE version of the domain name.
+     * \sa aceId()
+     */
+    void setAceId(dbid_t aceId);
 
     /*!
      * \brief Returns the percental value of used domain quota if any quota is set.
@@ -360,6 +387,11 @@ public:
     explicit operator bool() const {
         return isValid();
     }
+
+    /*!
+     * \brief Returns a SimpleDomain object containing information about this domain.
+     */
+    SimpleDomain toSimple() const;
 
     /*!
      * \brief Creates a new domain and returns it.
@@ -534,6 +566,8 @@ if (property == QLatin1String("id")) {
     var.setValue(object.children());
 } else if (property == QLatin1String("accountUsagePercent")) {
     var.setValue(object.accountUsagePercent());
+} else if (property == QLatin1String("isIdn")) {
+    var.setValue(object.isIdn());
 }
 return var;
 GRANTLEE_END_LOOKUP

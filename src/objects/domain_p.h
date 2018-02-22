@@ -69,7 +69,9 @@ public:
         transport(other.transport),
         created(other.created),
         updated(other.updated),
+        validUntil(other.validUntil),
         id(other.id),
+        ace_id(other.ace_id),
         maxAccounts(other.maxAccounts),
         accounts(other.accounts),
         freeNames(other.freeNames),
@@ -90,7 +92,9 @@ public:
     QString transport;
     QDateTime created;
     QDateTime updated;
+    QDateTime validUntil;
     dbid_t id = 0;
+    dbid_t ace_id = 0;
     quint32 maxAccounts = 0;
     quint32 accounts = 0;
     bool freeNames = false;

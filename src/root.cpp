@@ -59,9 +59,9 @@ void Root::index(Context *c)
     QSqlQuery q;
 
     if (isSuperUser) {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT (SELECT COUNT(*) FROM accountuser) - 1 AS accounts, (SELECT COUNT(*) FROM adminuser) AS admins, (SELECT COUNT(*) FROM domain) AS domains, (SELECT SUM(quota) FROM accountuser) AS accountquota, (SELECT SUM(domainquota) FROM domain) AS domainquota, (SELECT COUNT(*) FROM virtual WHERE alias LIKE '%@%') AS addresses"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT (SELECT COUNT(*) FROM accountuser) - 1 AS accounts, (SELECT COUNT(*) FROM adminuser) AS admins, (SELECT COUNT(*) FROM domain WHERE idn_id = 0) AS domains, (SELECT SUM(quota) FROM accountuser) AS accountquota, (SELECT SUM(domainquota) FROM domain) AS domainquota, (SELECT COUNT(*) FROM virtual WHERE alias LIKE '%@%' AND idn_id = 0) AS addresses"));
     } else {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT (SELECT COUNT(*) FROM accountuser au JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id) AS accounts, (SELECT COUNT(*) FROM adminuser) AS admins, (SELECT COUNT(*) FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id) AS domains, (SELECT SUM(au.quota) FROM accountuser au JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id) AS accountquota, (SELECT SUM(dom.domainquota) FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id) AS domainquota, (SELECT COUNT(*) FROM virtual vi JOIN accountuser au ON vi.username = au.username JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id AND vi.alias LIKE '%@%') AS addresses"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT (SELECT COUNT(*) FROM accountuser au JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id) AS accounts, (SELECT COUNT(*) FROM adminuser) AS admins, (SELECT COUNT(*) FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id) AS domains, (SELECT SUM(au.quota) FROM accountuser au JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id) AS accountquota, (SELECT SUM(dom.domainquota) FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id) AS domainquota, (SELECT COUNT(*) FROM virtual vi JOIN accountuser au ON vi.username = au.username JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id AND vi.alias LIKE '%@%' AND vi.idn_id = 0) AS addresses"));
         q.bindValue(QStringLiteral(":admin_id"), adminId);
     }
 
@@ -84,9 +84,9 @@ void Root::index(Context *c)
     }
 
     if (isSuperUser) {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id AS id, dom.domain_name AS name, dom.created_at AS created FROM domain dom ORDER BY dom.created_at DESC LIMIT 5"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id AS id, dom.domain_name AS name, dom.created_at AS created FROM domain dom WHERE dom.idn_id = 0 ORDER BY dom.created_at DESC LIMIT 5"));
     } else {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id AS id, dom.domain_name AS name, dom.created_at AS created FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY dom.created_at DESC LIMIT 5"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id AS id, dom.domain_name AS name, dom.created_at AS created FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id ORDER BY dom.created_at DESC LIMIT 5"));
         q.bindValue(QStringLiteral(":admin_id"), adminId);
     }
 

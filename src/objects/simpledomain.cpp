@@ -20,6 +20,7 @@
 #include "skaffarierror.h"
 #include <Cutelyst/Context>
 #include <Cutelyst/Plugins/Utils/Sql>
+#include <Cutelyst/Plugins/Authentication/authenticationuser.h>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QUrl>
@@ -94,15 +95,15 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
 
     if (userType == 0) {
         if (orphansOnly) {
-            q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, domain_name FROM domain WHERE parent_id = 0 ORDER BY domain_name ASC"));
+            q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, domain_name FROM domain WHERE idn_id = 0 AND parent_id = 0 ORDER BY domain_name ASC"));
         } else {
-            q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, domain_name FROM domain ORDER BY domain_name ASC"));
+            q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, domain_name FROM domain WHERE idn_id = 0 ORDER BY domain_name ASC"));
         }
     } else {
         if (orphansOnly) {
-            q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id AND dom.parent_id = 0 ORDER BY dom.domain_name ASC"));
+            q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id AND dom.parent_id = 0 ORDER BY dom.domain_name ASC"));
         } else {
-            q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY dom.domain_name ASC"));
+            q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id, dom.domain_name FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id ORDER BY dom.domain_name ASC"));
         }
         q.bindValue(QStringLiteral(":admin_id"), adminId);
     }
@@ -113,7 +114,7 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
     }
 
     while (q.next()) {
-        lst.push_back(SimpleDomain(q.value(0).value<dbid_t>(), QUrl::fromAce(q.value(1).toByteArray())));
+        lst.push_back(SimpleDomain(q.value(0).value<dbid_t>(), q.value(1).toString()));
     }
 
     if (lst.size() > 1) {
@@ -122,6 +123,11 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
     }
 
     return lst;
+}
+
+std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::AuthenticationUser &admin)
+{
+    return list(c, e, admin.value(QStringLiteral("type")).value<quint8>(), admin.id().value<dbid_t>());
 }
 
 
@@ -154,7 +160,7 @@ SimpleDomain SimpleDomain::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
     Q_ASSERT_X(c, "get simple domain data", "invalid context object");
     Q_ASSERT_X(e, "get simple domain data", "invalid error object");
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_name FROM domain WHERE id = :id"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_name FROM domain WHERE id = :id AND idn_id = 0"));
     q.bindValue(QStringLiteral(":id"), id);
 
     if (Q_UNLIKELY(!q.exec())) {
@@ -168,7 +174,7 @@ SimpleDomain SimpleDomain::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
         return dom;
     }
 
-    dom.setData(id, QUrl::fromAce(q.value(0).toByteArray()));
+    dom.setData(id, q.value(0).toString());
 
     return dom;
 }

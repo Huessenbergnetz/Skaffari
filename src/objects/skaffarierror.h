@@ -42,121 +42,121 @@ class SkaffariErrorData;
 class SkaffariError
 {
 public:
-	/*!
-	 * \brief Different types of errors that can happen in Skaffari.
-	 */
-	enum ErrorType {
+    /*!
+     * \brief Different types of errors that can happen in Skaffari.
+     */
+    enum ErrorType {
         NoError,				/**< No Error occurred */
         ImapError,				/**< An IMAP error occurred */
         SqlError,				/**< An SQL error occurred */
         ConfigError,			/**< An configuration error occurred, or configuration could not be written */
-		EmptyDatabase,			/**< The database is completely empty */
-		DbLayoutError,			/**< The database layout is not complete */
-		AuthenticationError,	/**< Authentication failed */
-		InputError,				/**< Input data is corrupted */
+        EmptyDatabase,			/**< The database is completely empty */
+        DbLayoutError,			/**< The database layout is not complete */
+        AuthenticationError,	/**< Authentication failed */
+        InputError,				/**< Input data is corrupted */
         ApplicationError,       /**< An internal error occurred */
-        AutorizationError,      /**< Authorization for an operation failed */
+        AuthorizationError,      /**< Authorization for an operation failed */
         NotFound,               /**< The requested resource could not be found */
-		UnknownError			/**< Unknown error */
-	};
+        UnknownError			/**< Unknown error */
+    };
 
-	/*!
-	 * \brief Constructs a SkaffariError of type \link SkaffariError::NoError NoError \endlink.
-	 */
+    /*!
+     * \brief Constructs a SkaffariError of type \link SkaffariError::NoError NoError \endlink.
+     */
     explicit SkaffariError(Cutelyst::Context *c);
 
-	/*!
-	 * \brief Constructs a SkaffariError with the given parameters.
-	 *
-	 * \param type \link SkaffariError::ErrorType ErrorType \endlink describing this type of error.
-	 * \param errorText Optional QString human readable error description.
-	 * \param errorData Optional container for additional error data for further processing.
-	 */
+    /*!
+     * \brief Constructs a SkaffariError with the given parameters.
+     *
+     * \param type \link SkaffariError::ErrorType ErrorType \endlink describing this type of error.
+     * \param errorText Optional QString human readable error description.
+     * \param errorData Optional container for additional error data for further processing.
+     */
     SkaffariError(Cutelyst::Context *c, ErrorType type , const QString errorText = QString(), const QVariant errorData = QVariant());
 
-	/*!
-	 * \brief Constructs a SkaffariError object using the sqlError.
-	 *
-	 * This constructor takes a QSqlError to construct a SkaffariError of type \link SkaffariError::SqlError SqlError \endlink.
-	 * The used QSqlError can be returned by qSqlError(). errorText() takes also the text strings of the QSqlError into account.
-	 *
-	 * You can optionally specify a custom error text that is prepended to the output of errorText().
-	 *
-	 * \param sqlError A QSqlError
-	 * \param errorText Optional custom error text for better explanation.
-	 */
+    /*!
+     * \brief Constructs a SkaffariError object using the sqlError.
+     *
+     * This constructor takes a QSqlError to construct a SkaffariError of type \link SkaffariError::SqlError SqlError \endlink.
+     * The used QSqlError can be returned by qSqlError(). errorText() takes also the text strings of the QSqlError into account.
+     *
+     * You can optionally specify a custom error text that is prepended to the output of errorText().
+     *
+     * \param sqlError A QSqlError
+     * \param errorText Optional custom error text for better explanation.
+     */
     SkaffariError(Cutelyst::Context *c, const QSqlError &sqlError, const QString errorText = QString());
 
-	/*!
+    /*!
      * \brief Constructs a SkaffariError object using the \a imapError.
-	 *
-	 * This constructor takes a SkaffariImapError to construct a SkaffariError of type \link SkaffariError::ImapError ImapError \endlink.
-	 * The used SkaffariIMAPError can be returned by imapError(). errorText() takes also the text strings of the SkaffariIMAPError into account.
-	 *
-	 * You can optionally specify a custom error text that is prepended to the output of errorText().
-	 *
-	 * \param imapError A SkaffariIMAPError
-	 * \param errorText Optional custom error text for better explanation.
-	 */
+     *
+     * This constructor takes a SkaffariImapError to construct a SkaffariError of type \link SkaffariError::ImapError ImapError \endlink.
+     * The used SkaffariIMAPError can be returned by imapError(). errorText() takes also the text strings of the SkaffariIMAPError into account.
+     *
+     * You can optionally specify a custom error text that is prepended to the output of errorText().
+     *
+     * \param imapError A SkaffariIMAPError
+     * \param errorText Optional custom error text for better explanation.
+     */
     SkaffariError(Cutelyst::Context *c, const SkaffariIMAPError &imapError, const QString errorText = QString());
 
-	/*!
-	 * \brief Constructs a copy of the error \e other, passed as the argument to this constructor.
-	 */
-	SkaffariError(const SkaffariError &other);
+    /*!
+     * \brief Constructs a copy of the error \e other, passed as the argument to this constructor.
+     */
+    SkaffariError(const SkaffariError &other);
 
-	/*!
-	 * \brief Destroys the SkaffariError.
-	 */
+    /*!
+     * \brief Destroys the SkaffariError.
+     */
     ~SkaffariError();
 
 
 
-	/*!
-	 * \brief Returns the type of this error.
-	 */
-	ErrorType type() const;
+    /*!
+     * \brief Returns the type of this error.
+     */
+    ErrorType type() const;
 
 
-	/*!
-	 * \brief Returns a human readable error text.
-	 *
-	 * If SkaffariError was constructed using a QSqlError or a SkaffariIMAPError,
-	 * this also returns the error texts of them.
-	 *
-	 * \return QString of human readable error text.
-	 */
-	QString errorText() const;
+    /*!
+     * \brief Returns a human readable error text.
+     *
+     * If SkaffariError was constructed using a QSqlError or a SkaffariIMAPError,
+     * this also returns the error texts of them.
+     *
+     * \return QString of human readable error text.
+     */
+    QString errorText() const;
 
-	/*!
-	 * \brief Returns error data.
-	 *
-	 * Functions creating SkaffariError have the possibility to add a QVariant that contains
-	 * additional data about this error.
-	 *
-	 * \return QVariant containing additional error data
-	 */
-	QVariant errorData() const;
+    /*!
+     * \brief Returns error data.
+     *
+     * Functions creating SkaffariError have the possibility to add a QVariant that contains
+     * additional data about this error.
+     *
+     * \return QVariant containing additional error data
+     */
+    QVariant errorData() const;
 
-	/*!
-	 * \brief Returns the QSqlError.
-	 *
-	 * If a QSqlError was used to construct this SkaffariError, this returns
-	 * the used QSqlError.
-	 *
-	 * \return The QSqlError used for constructing this SkaffariError.
-	 */
-	QSqlError qSqlError() const;
+    /*!
+     * \brief Returns the QSqlError.
+     *
+     * If a QSqlError was used to construct this SkaffariError, this returns
+     * the used QSqlError.
+     *
+     * \return The QSqlError used for constructing this SkaffariError.
+     */
+    QSqlError qSqlError() const;
 
-	/*!
-	 * \brief Returns the SkaffariIMAPError.
-	 *
-	 * If a SkaffariIMAPError was used to construct this SkaffariError, this returns
-	 * the used SkaffariIMAPError.
-	 *
-	 * \return The SkaffariIMAPError used for constructing this SkaffariError.
-	 */
-	SkaffariIMAPError imapError() const;
+    /*!
+     * \brief Returns the SkaffariIMAPError.
+     *
+     * If a SkaffariIMAPError was used to construct this SkaffariError, this returns
+     * the used SkaffariIMAPError.
+     *
+     * \return The SkaffariIMAPError used for constructing this SkaffariError.
+     */
+    SkaffariIMAPError imapError() const;
 
 
     void setErrorType(ErrorType nType);
@@ -166,24 +166,24 @@ public:
 
 
 
-	/*!
-	 * \brief Assigns the value of the error \e other to this error.
-	 */
+    /*!
+     * \brief Assigns the value of the error \e other to this error.
+     */
     SkaffariError& operator=(const SkaffariError &other);
 
     /*!
-	 * \brief Constructs a SkaffariError object using the sqlError.
-	 */
-	SkaffariError& operator=(const QSqlError &sqlError);
+     * \brief Constructs a SkaffariError object using the sqlError.
+     */
+    SkaffariError& operator=(const QSqlError &sqlError);
 
-	/*!
-	 * \brief Compares this SkaffariError with \e other and returns \c true if they are equal; otherwise returns \c false.
-	 */
+    /*!
+     * \brief Compares this SkaffariError with \e other and returns \c true if they are equal; otherwise returns \c false.
+     */
     bool operator==(const SkaffariError &other) const;
 
-	/*!
-	 * \brief Compares this SkaffariError with \e other and returns \c true if they are not equal; otherwise returns \c false.
-	 */
+    /*!
+     * \brief Compares this SkaffariError with \e other and returns \c true if they are not equal; otherwise returns \c false.
+     */
     bool operator!=(const SkaffariError &other) const;
 
 private:
