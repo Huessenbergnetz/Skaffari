@@ -53,9 +53,8 @@ public:
     void create(Context *c);
 
 private:
-    static bool checkAccess(Context *c, AdminAccount::AdminAccountType minType);
-
-    static bool accessGranted(Context *c);
+    C_ATTR(Auto, :Private)
+    bool Auto(Context *c);
 };
 
 #endif // ADMINEDITOR_H
