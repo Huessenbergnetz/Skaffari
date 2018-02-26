@@ -20,6 +20,7 @@
 
 #include "filesizeformattag.h"
 #include "timezoneconverttag.h"
+#include "admintypetag.h"
 #include "urlencodefilter.h"
 #include "acedecodefilter.h"
 #include "stringlistsortfilter.h"
@@ -38,6 +39,7 @@ QHash<QString, Grantlee::AbstractNodeFactory *> SkaffariGrantlee::nodeFactories(
 
     ret.insert(QStringLiteral("sk_fsf"), new FileSizeFormatTag());
     ret.insert(QStringLiteral("sk_tzc"), new TimeZoneConvertTag());
+    ret.insert(QStringLiteral("sk_admintypename"), new AdminTypeTag());
 
     return ret;
 }

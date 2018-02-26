@@ -3,6 +3,8 @@ add_library(grantlee_skaffari MODULE
     filesizeformattag.h
     timezoneconverttag.cpp
     timezoneconverttag.h
+    admintypetag.cpp
+    admintypetag.h
     urlencodefilter.cpp
     urlencodefilter.h
     acedecodefilter.cpp
@@ -42,6 +44,7 @@ target_link_libraries(grantlee_skaffari
         Grantlee5::Templates
         Cutelyst::Core
         Cutelyst::Session
+        skaffari
 )
 
 set_property(TARGET grantlee_skaffari PROPERTY EXPORT_NAME skaffari)
