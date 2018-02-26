@@ -47,7 +47,7 @@ public:
         username(user.value(QStringLiteral("username")).toString()),
         lang(user.value(QStringLiteral("lang")).toString()),
         tmpl(user.value(QStringLiteral("style")).toString()),
-        tz(user.value(QStringLiteral("tz")).toByteArray()),
+        tz(user.value(QStringLiteral("tz")).toString()),
         id(user.id().value<dbid_t>()),
         maxDisplay(user.value(QStringLiteral("maxdisplay")).value<quint8>()),
         warnLevel(user.value(QStringLiteral("warnLevel")).value<quint8>())
@@ -94,7 +94,7 @@ public:
     QString username;
     QString lang;
     QString tmpl;
-    QByteArray tz;
+    QString tz;
     QDateTime created;
     QDateTime updated;
     dbid_t id;

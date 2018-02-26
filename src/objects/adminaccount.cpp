@@ -168,14 +168,19 @@ void AdminAccount::setLang(const QString &lang)
     d->lang = lang;
 }
 
-QByteArray AdminAccount::tz() const
+QString AdminAccount::tz() const
 {
     return d->tz;
 }
 
-void AdminAccount::setTz(const QByteArray &tz)
+void AdminAccount::setTz(const QString &tz)
 {
     d->tz = tz;
+}
+
+void AdminAccount::setTz(const QByteArray &tz)
+{
+    d->tz = QString::fromLatin1(tz);
 }
 
 QDateTime AdminAccount::created() const
@@ -241,7 +246,7 @@ QJsonObject AdminAccount::toJson() const
         o.insert(QStringLiteral("username"), d->username);
         o.insert(QStringLiteral("type"), static_cast<int>(d->type));
         o.insert(QStringLiteral("lang"), d->lang);
-        o.insert(QStringLiteral("tz"), QString::fromLatin1(d->tz));
+        o.insert(QStringLiteral("tz"), d->tz);
         o.insert(QStringLiteral("maxDisplay"), static_cast<int>(d->maxDisplay));
         o.insert(QStringLiteral("warnLevel"), static_cast<int>(d->warnLevel));
         o.insert(QStringLiteral("created"), d->created.toString(Qt::ISODate));
@@ -419,7 +424,7 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
     acc.setUsername(q.value(0).toString());
     acc.setType(q.value(1).value<quint8>());
     acc.setLang(q.value(2).toString());
-    acc.setTz(q.value(3).toByteArray());
+    acc.setTz(q.value(3).toString());
     acc.setTemplate(q.value(4).toString());
     acc.setMaxDisplay(q.value(5).value<quint8>());
     acc.setWarnLevel(q.value(6).value<quint8>());
@@ -585,7 +590,7 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVari
 
     const QString password = p.value(QStringLiteral("password")).toString();
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
-    const QByteArray tz = p.value(QStringLiteral("tz"), QString::fromLatin1(d->tz)).toString().toLatin1();
+    const QString tz = p.value(QStringLiteral("tz"), d->tz).toString();
 
     // for logging
     const QString errStr = AdminAccount::getUserNameIdString(c) + QLatin1String(" failed to update own account");
@@ -599,10 +604,10 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVari
         return ret;
     }
 
-    QTimeZone timeZone(tz);
+    QTimeZone timeZone(tz.toLatin1());
     if (!timeZone.isValid()) {
         e->setErrorType(SkaffariError::InputError);
-        e->setErrorText(c->translate("AdminAccount", "%1 is not a valid IANA time zone ID.").arg(QString::fromLatin1(tz)));
+        e->setErrorText(c->translate("AdminAccount", "%1 is not a valid IANA time zone ID.").arg(tz));
         qCWarning(SK_ADMIN, "%s: invalid IANA time zone ID %s.", err, tz.constData());
         return ret;
     }
@@ -1031,13 +1036,13 @@ QDebug operator<<(QDebug dbg, const AdminAccount &account)
     dbg.nospace() << "AdminAccount(";
     dbg << "ID: " << account.id() << ", ";
     dbg << "Username: " << account.username() << ", ";
-    dbg << "Type: " << account.type() << ", ";
+    dbg << "Type: " << QMetaEnum::fromType<AdminAccount::AdminAccountType>().valueToKey(account.type()) << ", ";
     dbg << "Language: " << account.lang() << ", ";
     dbg << "Timezone: " << account.tz() << ", ";
     dbg << "Warnlevel: " << account.warnLevel() << ", ";
     dbg << "Maxdisplay: " << account.maxDisplay() << ", ";
-    dbg << "Created: " << account.created() << ", ";
-    dbg << "Updated " << account.updated() << ", ";
+    dbg << "Created: " << account.created().toString(Qt::ISODate) << ", ";
+    dbg << "Updated " << account.updated().toString(Qt::ISODate) << ", ";
     if (!account.domains().empty()) {
         dbg << "Domains: [";
         const QList<dbid_t> doms = account.domains();

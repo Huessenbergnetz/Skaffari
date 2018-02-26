@@ -60,7 +60,7 @@ class SkaffariError;
  * maxDisplay  | quint8           | maxDisplay()
  * type        | quint8           | typeInt()
  * typeStr     | QString          | typeStr()
- * tz          | QByteArray       | tz()
+ * tz          | QString          | tz()
  * updated     | QDateTime        | updated()
  * username    | QString          | username()
  * warnLevel   | quint8           | warnLevel()
@@ -219,7 +219,12 @@ public:
      * \brief Returns the time zone ID for this admin.
      * \sa setTz()
      */
-    QByteArray tz() const;
+    QString tz() const;
+    /*!
+     * \brief Sets the time zone ID for this admin.
+     * \sa tz()
+     */
+    void setTz(const QString &tz);
     /*!
      * \brief Sets the time zone ID for this admin.
      * \sa tz()
