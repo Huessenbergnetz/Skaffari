@@ -20,7 +20,7 @@
 
             <div class="collapse navbar-collapse" id="mainNav">
                 <div class="navbar-nav mr-auto">
-                    {% if user.type >= user.Administrator %}
+                    {% if user.type >= 254 %}
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="mainNavDomainMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-cubes fa-fw"></i> {{ _("Domains") }}
@@ -70,7 +70,7 @@
                 </div>
 
                 <div class="navbar-nav">
-                    {% if user.type >= user.Administrator %}
+                    {% if user.type >= 254 %}
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="mainNavSettingsMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-sliders-h fa-fw"></i><span class="d-md-none"> {{ _("Settings") }}</span>

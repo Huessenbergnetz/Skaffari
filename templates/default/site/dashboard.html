@@ -11,7 +11,7 @@
         <div class="card border-light text-center">
             <div class="card-header">{{ _("Administrators") }}</div>
             <div class="card-body">
-                <p class="card-text dasboard-number">{% if user.type >= user.Administrator %}<a href="/admin">{{ admin_count }}</a>{% else %}{{ admin_count }}{% endif %}</p>
+                <p class="card-text dasboard-number">{% if user.type >= 254 %}<a href="/admin">{{ admin_count }}</a>{% else %}{{ admin_count }}{% endif %}</p>
             </div>
         </div>
     </div>
