@@ -29,6 +29,8 @@
 #include <Cutelyst/Plugins/Utils/validatorrequired.h>
 #include <Cutelyst/Plugins/Utils/validatoralphadash.h>
 #include <Cutelyst/Plugins/Utils/validatorconfirmed.h>
+#include <Cutelyst/Plugins/Utils/validatormax.h>
+#include <Cutelyst/Plugins/Utils/validatorin.h>
 #ifdef PWQUALITY_ENABLED
 #include <Cutelyst/Plugins/Utils/validatorpwquality.h>
 #else
@@ -46,17 +48,14 @@ AdminEditor::AdminEditor(QObject *parent) : Controller(parent)
 
 }
 
-
 AdminEditor::~AdminEditor()
 {
 
 }
 
-
-
 void AdminEditor::index(Context *c)
 {
-    if (checkAccess(c)) {
+    if (checkAccess(c, AdminAccount::Administrator)) {
         SkaffariError e(c);
         QVector<AdminAccount> accounts = AdminAccount::list(c, &e);
 
@@ -72,24 +71,39 @@ void AdminEditor::index(Context *c)
     }
 }
 
-
-
-
 void AdminEditor::base(Context *c, const QString &id)
 {
-    if (checkAccess(c)) {
-        AdminAccount::toStash(c, id.toULong());
+    if (checkAccess(c, AdminAccount::Administrator)) {
+        SkaffariError e(c);
+        const AdminAccount a = AdminAccount::get(c, &e, id.toULong());
+        if (!a.isValid()) {
+            if (e.type() != SkaffariError::NoError) {
+                e.toStash(c);
+            } else {
+                c->res()->setStatus(404);
+            }
+            c->detach(c->getAction(QStringLiteral("error")));
+        } else {
+            if (a.type() >= AdminAccount::getUserType(c)) {
+                c->res()->setStatus(403);
+                c->detach(c->getAction(QStringLiteral("error")));
+            } else {
+                AdminAccount::toStash(c, a);
+            }
+        }
     }
 }
 
-
-
 void AdminEditor::create(Context *c)
 {
-    if (checkAccess(c)) {
+    if (checkAccess(c, AdminAccount::Administrator)) {
+
+        c->setStash(QStringLiteral("allowedAdminTypes"), AdminAccount::allowedTypes(c));
 
         auto req = c->req();
         if (req->isPost()) {
+
+            c->setStash(QStringLiteral("_maxAllowedAdminType"), static_cast<quint8>(AdminAccount::maxAllowedType(c)));
 
             static Validator v({
                                    new ValidatorRequired(QStringLiteral("username")),
@@ -97,16 +111,20 @@ void AdminEditor::create(Context *c)
                                    new ValidatorRequired(QStringLiteral("password")),
                                    new ValidatorConfirmed(QStringLiteral("password")),
                        #ifdef PWQUALITY_ENABLED
-                                   new ValidatorPwQuality(QStringLiteral("password"), SkaffariConfig::admPwThreshold(), SkaffariConfig::admPwSettingsFile(), QStringLiteral("username"))
+                                   new ValidatorPwQuality(QStringLiteral("password"), SkaffariConfig::admPwThreshold(), SkaffariConfig::admPwSettingsFile(), QStringLiteral("username")),
                        #else
-                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength())
+                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),
                        #endif
+                                   new ValidatorIn(QStringLiteral("type"), QStringLiteral("allowedAdminTypes")),
+                                   new ValidatorMax(QStringLiteral("type"), QMetaType::UChar, QStringLiteral("_maxAllowedAdminType"))
                                });
 
-            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
+            ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
+            const QStringList assocDomains = req->bodyParameters(QStringLiteral("assocdomains"));
             if (vr) {
+                vr.addValue(QStringLiteral("assocdomains"), assocDomains);
                 SkaffariError e(c);
-                AdminAccount::create(c, req->bodyParameters(), &e);
+                AdminAccount::create(c, vr.values(), &e);
 
                 if (e.type() == SkaffariError::NoError) {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/admin/index"),
@@ -118,7 +136,7 @@ void AdminEditor::create(Context *c)
                 }
             }
 
-            c->setStash(QStringLiteral("assocdomains"), QVariant::fromValue<QStringList>(req->bodyParameters().values(QStringLiteral("assocdomains"))));
+            c->setStash(QStringLiteral("assocdomains"), QVariant::fromValue<QStringList>(assocDomains));
         }
 
         SkaffariError e(c);
@@ -148,17 +166,18 @@ void AdminEditor::create(Context *c)
     }
 }
 
-
-
 void AdminEditor::edit(Context *c)
 {
     if (accessGranted(c)) {
+
+        c->setStash(QStringLiteral("allowedAdminTypes"), AdminAccount::allowedTypes(c));
 
         auto req = c->req();
         if (req->isPost()) {
 
             auto aac = AdminAccount::fromStash(c);
             c->setStash(QStringLiteral("_pwq_username"), aac.username());
+            c->setStash(QStringLiteral("_maxAllowedAdminType"), static_cast<quint8>(AdminAccount::maxAllowedType(c)));
 
             static Validator v({
                                    new ValidatorConfirmed(QStringLiteral("password")),
@@ -166,18 +185,20 @@ void AdminEditor::edit(Context *c)
                                    new ValidatorPwQuality(QStringLiteral("password"),
                                    SkaffariConfig::admPwThreshold(),
                                    SkaffariConfig::admPwSettingsFile(),
-                                   QStringLiteral("_pwq_username"))
+                                   QStringLiteral("_pwq_username")),
                        #else
-                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength())
+                                   new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),
                        #endif
+                                   new ValidatorIn(QStringLiteral("type"), QStringLiteral("allowedAdminTypes")),
+                                   new ValidatorMax(QStringLiteral("type"), QMetaType::UChar, QStringLiteral("_maxAllowedAdminType"))
                                });
 
             ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
 
             if (vr) {
-
+                vr.addValue(QStringLiteral("assocdomains"), QVariant::fromValue<QStringList>(req->bodyParameters(QStringLiteral("assocdomains"))));
                 SkaffariError e(c);
-                if (aac.update(c, &e, req->bodyParameters())) {
+                if (aac.update(c, &e, vr.values())) {
                     c->stash({
                                  {QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac)},
                                  {QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated administrator %1.").arg(aac.username())}
@@ -217,7 +238,6 @@ void AdminEditor::edit(Context *c)
                  });
     }
 }
-
 
 void AdminEditor::remove(Context *c)
 {
@@ -291,29 +311,17 @@ void AdminEditor::remove(Context *c)
     }
 }
 
-
-bool AdminEditor::checkAccess(Context *c)
+bool AdminEditor::checkAccess(Context *c, AdminAccount::AdminAccountType minType)
 {
-    if (Q_LIKELY(c->stash(QStringLiteral("userType")).value<quint16>() == 0)) {
+    if (Q_LIKELY(AdminAccount::getUserType(c) >= minType)) {
         return true;
     }
 
-    if (Utils::isAjax(c)) {
-        QJsonObject json({
-                             {QStringLiteral("error_msg"), c->translate("AdminEditor", "You are not authorized to access this resource or to perform this action.")}
-                         });
-        c->res()->setJsonBody(QJsonDocument(json));
-    } else {
-        c->stash({
-                     {QStringLiteral("site_title"), c->translate("AdminEditor", "Access denied")},
-                     {QStringLiteral("template"), QStringLiteral("403.html")}
-                 });
-    }
     c->res()->setStatus(403);
+    c->detach(c->getAction(QStringLiteral("error")));
 
     return false;
 }
-
 
 bool AdminEditor::accessGranted(Context *c)
 {

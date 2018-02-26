@@ -19,25 +19,26 @@
 #include "domain_p.h"
 #include "skaffarierror.h"
 #include "account.h"
+#include "adminaccount.h"
 #include "../utils/utils.h"
 #include "../utils/skaffariconfig.h"
 #include <Cutelyst/ParamsMultiMap>
 #include <Cutelyst/Response>
-#include <Cutelyst/Plugins/Utils/validatoremail.h>
-#include <QSqlQuery>
-#include <QSqlError>
-#include <Cutelyst/Plugins/Utils/Sql>
 #include <Cutelyst/Context>
+#include <Cutelyst/Plugins/Utils/validatoremail.h>
+#include <Cutelyst/Plugins/Utils/Sql>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/Authentication/authenticationuser.h>
 #include <Cutelyst/Plugins/Session/Session>
 #include <QUrl>
-#include <algorithm>
-#include <vector>
+#include <QSqlQuery>
+#include <QSqlError>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QTimeZone>
+#include <algorithm>
+#include <vector>
 
 Q_LOGGING_CATEGORY(SK_DOMAIN, "skaffari.domain")
 
@@ -81,8 +82,8 @@ Domain& Domain::operator=(const Domain& other)
 
 Domain::~Domain()
 {
-}
 
+}
 
 dbid_t Domain::id() const
 {
@@ -107,6 +108,13 @@ void Domain::setName(const QString &nName)
 QString Domain::aceName() const
 {
     return QString::fromLatin1(QUrl::toAce(d->name));
+}
+
+QString Domain::nameIdString() const
+{
+    QString ret;
+    ret = d->name + QLatin1String(" (ID: ") + QString::number(d->id) + QLatin1Char(')');
+    return ret;
 }
 
 QString Domain::prefix() const
@@ -149,7 +157,6 @@ void Domain::setMaxAccounts(quint32 nMaxAccounts)
     d->maxAccounts = nMaxAccounts;
 }
 
-
 quota_size_t Domain::domainQuota() const
 {
     return d->domainQuota;
@@ -159,7 +166,6 @@ void Domain::setDomainQuota(quota_size_t nDomainQuota)
 {
     d->domainQuota = nDomainQuota;
 }
-
 
 quota_size_t Domain::domainQuotaUsed() const
 {
@@ -197,7 +203,6 @@ QVector<Folder> Domain::folders() const
 {
     return d->folders;
 }
-
 
 void Domain::setFolders(const QVector<Folder> &nFolders)
 {
@@ -317,19 +322,20 @@ bool Domain::hasAccess(Cutelyst::Context *c) const
     bool ret = false;
     Q_ASSERT_X(c, "cheking domain access", "invalid context object");
 
-    const int type = c->stash(QStringLiteral("userType")).toInt();
+    const AdminAccount aa = c->stash(QStringLiteral("user")).value<AdminAccount>();
+    if (aa.isValid()) {
+        if (aa.type() >= AdminAccount::Administrator) {
+            ret = true;
+        } else {
 
-    if (type == 0) {
-        ret = true;
-    } else {
+            const dbid_t uid = aa.id();
 
-        const dbid_t uid = c->stash(QStringLiteral("userId")).value<dbid_t>();
-
-        if (!d->admins.empty()) {
-            for (int i = 0; i < d->admins.size(); ++i) {
-                if (d->admins.at(i).id() == uid) {
-                    ret = true;
-                    break;
+            if (!d->admins.empty()) {
+                for (int i = 0; i < d->admins.size(); ++i) {
+                    if (d->admins.at(i).id() == uid) {
+                        ret = true;
+                        break;
+                    }
                 }
             }
         }
@@ -478,7 +484,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     }
 
     if (dom.isValid()) {
-        qCInfo(SK_DOMAIN, "%s created domain %s (ID: %u)", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(domainName), dom.id());
+        qCInfo(SK_DOMAIN, "%s created domain %s (ID: %u)", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(domainName), dom.id());
 
         static const QHash<QString,QString> roleAccounts({
                                                              {QStringLiteral("abuseAccount"), QStringLiteral("abuse")},
@@ -500,7 +506,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
                                                      });
                     const QString roleAddress = roleAcc.addEmail(c, errorData, roleAccParams);
                     if (!roleAddress.isEmpty()) {
-                        qCInfo(SK_DOMAIN, "%s created a new email address for the %s role of new domain %s in account %s (ID: %u).", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(roleAcc.username()), roleAcc.id());
+                        qCInfo(SK_DOMAIN, "%s created a new email address for the %s role of new domain %s in account %s (ID: %u).", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(roleAcc.username()), roleAcc.id());
                     } else {
                         qCWarning(SK_DOMAIN, "Failed to add role account email address %s for new domain %s (ID: %lu) to account %s (ID: %lu): %s", qUtf8Printable(roleAddress), qUtf8Printable(dom.name()), dom.id(), qUtf8Printable(roleAcc.username()), roleAcc.id(), qUtf8Printable(errorData->errorText()));
                     }
@@ -630,8 +636,8 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
     QSqlQuery q(QSqlDatabase::database(Cutelyst::Sql::databaseNameThread()));
 
     QString prepString;
-    const bool isSuperUser = user.value(QStringLiteral("type")).value<qint16>() == 0;
-    if (isSuperUser) {
+    const bool isAdmin = AdminAccount::getUserType(user) >= AdminAccount::Administrator;
+    if (isAdmin) {
         prepString = QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id, dom.ace_id FROM domain dom WHERE dom.idn_id = 0 ORDER BY dom.%1 %2").arg(orderBy, sort);
     } else {
         prepString = QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id, dom.ace_id FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id ORDER BY dom.%1 %2").arg(orderBy, sort);
@@ -645,7 +651,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
         qCCritical(SK_DOMAIN, "Failed to prepare database query to list domains: %s", qUtf8Printable(q.lastError().text()));
         return lst;
     }
-    if (!isSuperUser) {
+    if (!isAdmin) {
         q.bindValue(QStringLiteral(":admin_id"), user.id());
     }
 
@@ -838,7 +844,7 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
 
     ret = true;
 
-    qCInfo(SK_DOMAIN, "%s removed domain %s (ID: %u)", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->name), d->id);
+    qCInfo(SK_DOMAIN, "%s removed domain %s (ID: %u)", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(d->name), d->id);
 
     return ret;
 }
@@ -936,7 +942,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
     } else {
         e->setErrorType(SkaffariError::AuthorizationError);
         e->setErrorText(c->translate("Domain", "You are not authorized to update this domain."));
-        qCWarning(SK_DOMAIN, "Access denied: %s tried to update domain %s (ID: %lu)", qUtf8Printable(Utils::getUserName(c)),qUtf8Printable(d->name), d->id);
+        qCWarning(SK_DOMAIN, "Access denied: %s tried to update domain %s (ID: %lu)", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(d->name), d->id);
         return ret;
     }
 
@@ -1002,7 +1008,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
     }
 
     if (ret) {
-        qCInfo(SK_DOMAIN, "%s updated domain %s (ID: %lu)", qUtf8Printable(Utils::getUserName(c)), qUtf8Printable(d->name), d->id);
+        qCInfo(SK_DOMAIN, "%s updated domain %s (ID: %lu)", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(d->name), d->id);
     }
 
     return ret;

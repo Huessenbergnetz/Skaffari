@@ -94,7 +94,7 @@ QJsonObject SimpleAccount::toJson() const
     return o;
 }
 
-std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, dbid_t domainId, const QString searchString)
+std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariError *e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId, const QString searchString)
 {
     std::vector<SimpleAccount> lst;
 
@@ -108,7 +108,7 @@ std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariErr
         _search = QLatin1Char('%') + searchString + QLatin1Char('%');
     }
 
-    if (userType == 0) {
+    if (adminType >= AdminAccount::Administrator) {
         if (domainId == 0) {
             if (searchString.isEmpty()) {
                 q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username, d.domain_name FROM accountuser a LEFT JOIN domain d ON a.domain_id = d.id ORDER BY username ASC"));
@@ -165,14 +165,14 @@ std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariErr
     return lst;
 }
 
-QJsonArray SimpleAccount::listJson(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, dbid_t domainId, const QString searchString)
+QJsonArray SimpleAccount::listJson(Cutelyst::Context *c, SkaffariError *e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId, const QString searchString)
 {
     QJsonArray lst;
 
     Q_ASSERT_X(c, "list simple accounts json", "invalid context object");
     Q_ASSERT_X(e, "list simple accounts json", "invalid error object");
 
-    const std::vector<SimpleAccount> _lst = SimpleAccount::list(c, e, userType, adminId, domainId, searchString);
+    const std::vector<SimpleAccount> _lst = SimpleAccount::list(c, e, adminType, adminId, domainId, searchString);
 
     if (!_lst.empty()) {
         for (const SimpleAccount &ac : _lst) {

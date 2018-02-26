@@ -63,7 +63,7 @@ public:
     /*!
      * \brief Constructs a SkaffariError of type \link SkaffariError::NoError NoError \endlink.
      */
-    explicit SkaffariError(Cutelyst::Context *c);
+    explicit SkaffariError(Cutelyst::Context *c = nullptr);
 
     /*!
      * \brief Constructs a SkaffariError with the given parameters.
@@ -202,8 +202,17 @@ public:
      */
     bool operator!=(const SkaffariError &other) const;
 
+    void toStash(Cutelyst::Context *c) const;
+
+    QString typeTitle(Cutelyst::Context *c = nullptr) const;
+
+    static SkaffariError fromStash(Cutelyst::Context *c);
+
 private:
     QSharedDataPointer<SkaffariErrorData> d;
 };
+
+Q_DECLARE_METATYPE(SkaffariError)
+Q_DECLARE_TYPEINFO(SkaffariError, Q_MOVABLE_TYPE);
 
 #endif // SKAFFARIERROR_H

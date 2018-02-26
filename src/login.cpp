@@ -55,11 +55,11 @@ void Login::index(Context *c)
                 Session::setValue(c, QStringLiteral("maxdisplay"), user.value(QStringLiteral("maxdisplay"), SkaffariConfig::defMaxdisplay()));
                 Session::setValue(c, QStringLiteral("warnlevel"), user.value(QStringLiteral("warnlevel"), SkaffariConfig::defWarnlevel()));
                 Session::setValue(c, QStringLiteral("lang"), user.value(QStringLiteral("lang"), SkaffariConfig::defLanguage()));
-                Session::setValue(c, QStringLiteral("tz"), user.value(QStringLiteral("tz"), SkaffariConfig::defTimezone()).toByteArray());
+                Session::setValue(c, QStringLiteral("tz"), user.value(QStringLiteral("tz"), SkaffariConfig::defTimezone()));
 
-
-                if (user.value(QStringLiteral("domains")).value<QVariantList>().size() == 1) {
-                    c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(user.value(QStringLiteral("domains")).value<QVariantList>().first().toString())));
+                const QVariantList domList = user.value(QStringLiteral("domains")).toList();
+                if (domList.size() == 1) {
+                    c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(domList.first().toString())));
                 } else {
                     c->res()->redirect(c->uriFor(QStringLiteral("/")));
                 }

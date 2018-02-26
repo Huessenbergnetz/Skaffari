@@ -42,6 +42,7 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLoggingCategory>
 
 extern "C"
 {
@@ -62,6 +63,7 @@ extern "C"
 #include "objects/folder.h"
 #include "objects/helpentry.h"
 #include "objects/emailaddress.h"
+#include "objects/skaffarierror.h"
 
 #include "utils/language.h"
 #include "utils/skaffariconfig.h"
@@ -197,6 +199,7 @@ bool Skaffari::init()
     qRegisterMetaType<HelpEntry>();
     qRegisterMetaType<HelpHash>("HelpHash");
     qRegisterMetaType<EmailAddress>();
+    qRegisterMetaType<SkaffariError>();
 
     Grantlee::registerMetaType<Folder>();
     Grantlee::registerMetaType<Domain>();

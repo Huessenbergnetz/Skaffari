@@ -32,20 +32,17 @@ SimpleDomain::SimpleDomain() : d(new SimpleDomainData)
 
 }
 
-
 SimpleDomain::SimpleDomain(dbid_t id, const QString &name) :
     d(new SimpleDomainData(id, name))
 {
 
 }
 
-
 SimpleDomain::SimpleDomain(const SimpleDomain &other) :
     d(other.d)
 {
 
 }
-
 
 SimpleDomain& SimpleDomain::operator=(const SimpleDomain &other)
 {
@@ -58,18 +55,22 @@ SimpleDomain::~SimpleDomain()
 
 }
 
-
 dbid_t SimpleDomain::id() const
 {
     return d->id;
 }
-
 
 QString SimpleDomain::name() const
 {
     return d->name;
 }
 
+QString SimpleDomain::nameIdString() const
+{
+    QString ret;
+    ret = d->name + QLatin1String(" (ID: ") + QString::number(d->id) + QLatin1Char(')');
+    return ret;
+}
 
 void SimpleDomain::setData(dbid_t id, const QString &name)
 {

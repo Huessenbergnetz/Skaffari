@@ -20,6 +20,7 @@
 #define SKAFFARI_ADMINACCOUNT_P_H
 
 #include "adminaccount.h"
+#include <Cutelyst/Plugins/Authentication/authenticationuser.h>
 #include <QSharedData>
 
 class AdminAccountData : public QSharedData
@@ -27,12 +28,36 @@ class AdminAccountData : public QSharedData
 public:
     AdminAccountData() {}
 
-    AdminAccountData(dbid_t _id, const QString &_username, qint16 _type, const QList<dbid_t> &_domains) :
+    AdminAccountData(dbid_t _id, const QString &_username, quint8 _type, const QList<dbid_t> &_domains) :
+        domains(_domains),
+        username(_username),
+        id(_id)
+    {
+        type = AdminAccountData::getUserType(_type);
+    }
+
+    AdminAccountData(dbid_t _id, const QString &_username, AdminAccount::AdminAccountType _type, const QList<dbid_t> &_domains) :
         domains(_domains),
         username(_username),
         id(_id),
         type(_type)
     {}
+
+    AdminAccountData(const Cutelyst::AuthenticationUser &user) :
+        username(user.value(QStringLiteral("username")).toString()),
+        lang(user.value(QStringLiteral("lang")).toString()),
+        tmpl(user.value(QStringLiteral("style")).toString()),
+        tz(user.value(QStringLiteral("tz")).toByteArray()),
+        id(user.id().value<dbid_t>()),
+        maxDisplay(user.value(QStringLiteral("maxdisplay")).value<quint8>()),
+        warnLevel(user.value(QStringLiteral("warnLevel")).value<quint8>())
+    {
+        created = user.value(QStringLiteral("created_at")).toDateTime();
+        created.setTimeSpec(Qt::UTC);
+        updated = user.value(QStringLiteral("updated_at")).toDateTime();
+        updated.setTimeSpec(Qt::UTC);
+        type = AdminAccountData::getUserType(user.value(QStringLiteral("type")).value<quint8>());
+    }
 
     AdminAccountData(const AdminAccountData &other) :
         QSharedData(other),
@@ -43,13 +68,27 @@ public:
         tz(other.tz),
         created(other.created),
         updated(other.updated),
-        id(other.id),        
+        id(other.id),
         type(other.type),
         maxDisplay(other.maxDisplay),
         warnLevel(other.warnLevel)
     {}
 
     ~AdminAccountData() {}
+
+    static AdminAccount::AdminAccountType getUserType(quint8 _type)
+    {
+        switch (_type) {
+        case 255:
+            return AdminAccount::SuperUser;
+        case 254:
+            return AdminAccount::Administrator;
+        case 127:
+            return AdminAccount::DomainMaster;
+        default:
+            return AdminAccount::Disabled;
+        }
+    }
 
     QList<dbid_t> domains;
     QString username;
@@ -59,7 +98,7 @@ public:
     QDateTime created;
     QDateTime updated;
     dbid_t id;
-    qint16 type;
+    AdminAccount::AdminAccountType type;
     quint8 maxDisplay;
     quint8 warnLevel;
 };

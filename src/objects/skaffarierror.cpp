@@ -18,15 +18,19 @@
 
 #include "skaffarierror_p.h"
 
+#define STASH_KEY "_sk_error"
+
 QString SkaffariErrorData::databaseErrorText() const
 {
     QString es;
-    switch(qSqlError.type()) {
-        case QSqlError::NoError: es = c->translate("SkaffariErrorData", "Database, no error occurred.");
-        case QSqlError::ConnectionError: es = c->translate("SkaffariErrorData", "Database connection error:");
-        case QSqlError::StatementError: es = c->translate("SkaffariErrorData", "SQL statement syntax error:");
-        case QSqlError::TransactionError: es = c->translate("SkaffariErrorData", "Database transaction failed error:");
-        default: es = c->translate("SkaffariErrorData", "Unknown database error:");
+    if (c) {
+        switch(qSqlError.type()) {
+            case QSqlError::NoError: es = c->translate("SkaffariErrorData", "Database, no error occurred.");
+            case QSqlError::ConnectionError: es = c->translate("SkaffariErrorData", "Database connection error:");
+            case QSqlError::StatementError: es = c->translate("SkaffariErrorData", "SQL statement syntax error:");
+            case QSqlError::TransactionError: es = c->translate("SkaffariErrorData", "Database transaction failed error:");
+            default: es = c->translate("SkaffariErrorData", "Unknown database error:");
+        }
     }
     return es;
 }
@@ -34,29 +38,25 @@ QString SkaffariErrorData::databaseErrorText() const
 SkaffariError::SkaffariError(Cutelyst::Context *c) :
     d(new SkaffariErrorData(c))
 {
-    Q_ASSERT_X(d->c, "creating new SkaffariError", "invalid context");
-}
 
+}
 
 SkaffariError::SkaffariError(Cutelyst::Context *c, SkaffariError::ErrorType type, const QString errorText, const QVariant errorData) :
     d(new SkaffariErrorData(c, type, errorText, errorData))
 {
-    Q_ASSERT_X(d->c, "creating new SkaffariError", "invalid context");
-}
 
+}
 
 SkaffariError::SkaffariError(Cutelyst::Context *c, const QSqlError& sqlError, const QString errorText) :
     d(new SkaffariErrorData(c, sqlError, errorText))
 {
-    Q_ASSERT_X(d->c, "creating new SkaffariError", "invalid context");
+
 }
-
-
 
 SkaffariError::SkaffariError(Cutelyst::Context *c, const SkaffariIMAPError& imapError, const QString errorText) :
     d(new SkaffariErrorData(c, imapError, errorText))
 {
-    Q_ASSERT_X(d->c, "creating new SkaffariError", "invalid context");
+
 }
 
 SkaffariError::SkaffariError(const SkaffariError& other) :
@@ -116,34 +116,36 @@ QString SkaffariError::errorText() const
 {
     QString text;
 
-    switch(type()) {
-    case NoError:
-        text = d->c->translate("SkaffariError", "No error occurred, everything is fine.");
-        break;
-    case ImapError:
-        text = d->c->translate("SkaffariError", "IMAP error:");
-        break;
-    case SqlError:
-        text = d->databaseErrorText();
-        break;
-    case ConfigError:
-        text = d->c->translate("SkaffariError", "Configuration error:");
-        break;
-    case AuthenticationError:
-        text = d->c->translate("SkaffariError", "Authentication error:");
-        break;
-    case AuthorizationError:
-        text = d->c->translate("SkaffariError", "Authorization error:");
-        break;
-    case InputError:
-        text = d->c->translate("SkaffariError", "Invalid input:");
-        break;
-    case NotFound:
-        text = d->c->translate("SkaffariError", "Not found:");
-        break;
-    default:
-        text = d->c->translate("SkaffariError", "Unknown error:");
-        break;
+    if (d->c) {
+        switch(type()) {
+        case NoError:
+            text = d->c->translate("SkaffariError", "No error occurred, everything is fine.");
+            break;
+        case ImapError:
+            text = d->c->translate("SkaffariError", "IMAP error:");
+            break;
+        case SqlError:
+            text = d->databaseErrorText();
+            break;
+        case ConfigError:
+            text = d->c->translate("SkaffariError", "Configuration error:");
+            break;
+        case AuthenticationError:
+            text = d->c->translate("SkaffariError", "Authentication error:");
+            break;
+        case AuthorizationError:
+            text = d->c->translate("SkaffariError", "Authorization error:");
+            break;
+        case InputError:
+            text = d->c->translate("SkaffariError", "Invalid input:");
+            break;
+        case NotFound:
+            text = d->c->translate("SkaffariError", "Not found:");
+            break;
+        default:
+            text = d->c->translate("SkaffariError", "Unknown error:");
+            break;
+        }
     }
 
     text.append(QChar(QChar::Space));
@@ -225,4 +227,61 @@ void SkaffariError::setImapError(const SkaffariIMAPError &error, const QString &
     }
     d->errorData.clear();
     d->status = Cutelyst::Response::InternalServerError;
+}
+
+QString SkaffariError::typeTitle(Cutelyst::Context *c) const
+{
+    QString ret;
+
+    Cutelyst::Context *ctx = c;
+    if (!ctx) {
+        ctx = d->c;
+    }
+
+    if (ctx) {
+        switch (d->errorType) {
+        case ImapError:
+            ret = ctx->translate("SkaffariError", "IMAP error");
+            break;
+        case DbLayoutError:
+        case SqlError:
+            ret = ctx->translate("SkaffariError", "Database error");
+            break;
+        case ConfigError:
+            ret = ctx->translate("SkaffariError", "Configuration error");
+            break;
+        case EmptyDatabase:
+            ret = ctx->translate("SkaffariError", "Empty database");
+            break;
+        case AuthorizationError:
+        case AuthenticationError:
+            ret = ctx->translate("SkaffariError", "Access denied");
+            break;
+        case InputError:
+            ret = ctx->translate("SkaffariError", "Invalid input data");
+            break;
+        case ApplicationError:
+            ret = ctx->translate("SkaffariError", "Internal server error");
+            break;
+        case NotFound:
+            ret = ctx->translate("SkaffariError", "Not found");
+            break;
+        default:
+            ret = ctx->translate("SkaffariError", "Unkown Error");
+            break;
+        }
+    }
+
+    return ret;
+}
+
+void SkaffariError::toStash(Cutelyst::Context *c) const
+{
+    Q_ASSERT(c);
+    c->setStash(QStringLiteral(STASH_KEY), QVariant::fromValue<SkaffariError>(*this));
+}
+
+SkaffariError SkaffariError::fromStash(Cutelyst::Context *c)
+{
+    return c->stash(QStringLiteral(STASH_KEY)).value<SkaffariError>();
 }

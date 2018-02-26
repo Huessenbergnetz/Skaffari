@@ -3,10 +3,10 @@
         <h2><i class="fas fa-users"></i> {{ _("Administrators") }}</h2>
     </div>
     <div class="col-12 col-sm-3">
-        {% ifequal userType 0 %}
+        {% if user.type >= 254 %}
         <a class="btn btn-outline-primary float-sm-right d-none d-sm-block" href="/admin/create" role="button"><i class="fas fa-user-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></a>
         <a class="btn btn-outline-primary btn-block d-block d-sm-none" href="/admin/create" role="button"><i class="fas fa-user-plus"></i> {{ _("Add") }}</a>
-        {% endifequal %}
+        {% endif %}
     </div>
 </div>
 
@@ -26,12 +26,16 @@
                     <tr id="admin-{{ admin.id }}">
                         <td>
                             <div class="btn-group btn-group-sm" role="group" aria-label="{{ _("Admin actions") }}">
-                                <a href="/admin/{{ admin.id }}/edit" class="btn btn-outline-primary" title='{{ _("Edit admin") }}' role="button"><i class="fas fa-edit fa-fw"></i></a>
-                                <button type="button" class="btn btn-outline-danger remove-admin-btn" title="{{ _("Delete admin") }}" data-toggle="modal" data-target="#removeAdminModal" data-adminid="{{ admin.id }}" data-username="{{ admin.username }}"><i class="fas fa-trash fa-fw"></i></button>
+                                {% if admin.id != user.id %}
+                                <a href="/admin/{{ admin.id }}/edit" class="btn btn-outline-primary{% if admin.type >= user.type %} disabled{% endif %}" title='{{ _("Edit admin") }}' role="button"{% if admin.type >= user.type %} aria-disabled="true"{% endif %}><i class="fas fa-edit fa-fw"></i></a>
+                                {% else %}
+                                <a href="/myaccount" class="btn btn-outline-primary" title="{{ _("My acount") }}" role="button"><i class="fas fa-edit fa-fw"></i></a>
+                                {% endif %}
+                                <button type="button" class="btn btn-outline-danger remove-admin-btn" title="{{ _("Delete administrator") }}" data-toggle="modal" data-target="#removeAdminModal" data-adminid="{{ admin.id }}" data-username="{{ admin.username }}"{% if admin.type >= user.type %} disabled{% endif %}><i class="fas fa-trash fa-fw"></i></button>
                             </div>
                         </td>
-                        <td><a href="/admin/{{ admin.id }}/edit">{{ admin.username }}</a></td>
-                        <td>{% if admin.isSuperUser %}{{ _("Administrator") }}{% else %}{{ _("Domain manager") }}{% endif %}</td>
+                        <td>{% if admin.id != user.id %}{% if admin.type < user.type %}<a href="/admin/{{ admin.id }}/edit" title="{{ _("Edit admin") }}">{{ admin.username }}</a>{% else %}{{ admin.username }}{% endif %}{% else %}<a href="/myaccount" title="{{ _("My account") }}">{{ admin.username }}</a>{% endif %}</td>
+                        <td>{% sk_admintypename admin %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

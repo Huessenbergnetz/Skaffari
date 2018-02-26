@@ -1071,15 +1071,11 @@ void AccountEditor::check(Context *c)
 
 void AccountEditor::list(Context *c)
 {
-    AuthenticationUser user = Authentication::user(c);
-
     const dbid_t domainId = SKAFFARI_STRING_TO_DBID(c->req()->queryParam(QStringLiteral("domainId"), QStringLiteral("0")));
     const QString searchString = c->req()->queryParam(QStringLiteral("searchString"));
-    const dbid_t adminId = user.id().value<dbid_t>();
-    const qint16 userType = user.value(QStringLiteral("type")).value<qint16>();
 
     SkaffariError e(c);
-    const QJsonArray accounts = SimpleAccount::listJson(c, &e, userType, adminId, domainId, searchString);
+    const QJsonArray accounts = SimpleAccount::listJson(c, &e, AdminAccount::getUserType(c), AdminAccount::getUserId(c), domainId, searchString);
     QJsonObject o;
     o.insert(QStringLiteral("accounts"), accounts);
     if (e.type() != SkaffariError::NoError) {

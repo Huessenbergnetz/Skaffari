@@ -61,13 +61,6 @@ public:
     static QString humanBinarySize(Cutelyst::Context *c, quota_size_t sizeInByte);
 
     /*!
-     * \brief Returns the name of the current user.
-     * \param c The current Context.
-     * \return name of the current user.
-     */
-    static QString getUserName(Cutelyst::Context *c);
-
-    /*!
      * \brief Converts a human readable quota size string into KiB.
      *
      * The string has to be in a format like \a 7,5 \a GiB.

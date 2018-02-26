@@ -79,6 +79,14 @@ public:
     QString name() const;
 
     /*!
+     * \brief Returns a string that contains the username and the database ID.
+     *
+     * This will mostly be used in log messages and returns a string like
+     * <code>"example.com (ID: 123)"</code>.
+     */
+    QString nameIdString() const;
+
+    /*!
      * \brief Sets database ID and domain name to a SimpleDomain object.
      */
     void setData(dbid_t id, const QString &name);

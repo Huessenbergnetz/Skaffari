@@ -39,9 +39,8 @@ public:
     void index(Context *c);
 
 private:
-    static bool checkAccess(Context *c);
-
-    static bool accessGranted(Context *c);
+    C_ATTR(Auto, :Private)
+    bool Auto(Context *c);
 };
 
 #endif // SETTINGSEDITOR_H

@@ -20,16 +20,18 @@
 #define SKAFFARI_ADMINACCOUNT_H
 
 #include "domain.h"
+#include "../../common/global.h"
+#include <Cutelyst/ParamsMultiMap>
+#include <grantlee5/grantlee/metatype.h>
 #include <QString>
 #include <QSharedDataPointer>
-#include <grantlee5/grantlee/metatype.h>
 #include <QVariant>
-#include <Cutelyst/ParamsMultiMap>
 #include <QCryptographicHash>
-#include "../../common/global.h"
+#include <QJsonObject>
 
 namespace Cutelyst {
 class Context;
+class AuthenticationUser;
 }
 
 class AdminAccountData;
@@ -47,20 +49,21 @@ class SkaffariError;
  * Domain admins can only modify accounts in domains they are responsible for.
  *
  * \par Grantlee accessors
- * Accessor    | Type          | Method
- * ------------|---------------|-----------------
- * created     | QDateTime     | created()
- * domains     | QList<dbid_t> | domains()
- * id          | dbid_t        | id()
- * isSuperUser | bool          | isSuperUser()
- * isValid     | bool          | isValid()
- * lang        | QString       | lang()
- * maxDisplay  | quint8        | maxDisplay()
- * type        | qint16        | type()
- * tz          | QByteArray    | tz()
- * updated     | QDateTime     | updated()
- * username    | QString       | username()
- * warnLevel   | quint8        | warnLevel()
+ * Accessor    | Type             | Method
+ * ------------|------------------|-----------------
+ * created     | QDateTime        | created()
+ * domains     | QList<dbid_t>    | domains()
+ * id          | dbid_t           | id()
+ * isSuperUser | bool             | isSuperUser()
+ * isValid     | bool             | isValid()
+ * lang        | QString          | lang()
+ * maxDisplay  | quint8           | maxDisplay()
+ * type        | quint8           | typeInt()
+ * typeStr     | QString          | typeStr()
+ * tz          | QByteArray       | tz()
+ * updated     | QDateTime        | updated()
+ * username    | QString          | username()
+ * warnLevel   | quint8           | warnLevel()
  */
 class AdminAccount
 {
@@ -72,9 +75,11 @@ public:
      * AllAdmins is a special value, it is not defined to describe an account,
      * but to filter all admin accounts in specific functions.
      */
-    enum AdminAccountType : qint16 {
-        SuperUser = 0,		/**< a super user account, that has all rights */
-        DomainMaster = 1    /**< a domain manager, that can only modify certain domains */
+    enum AdminAccountType : quint8 {
+        Disabled        = 0,
+        DomainMaster    = 127,    /**< a domain manager, that can only modify certain domains */
+        Administrator   = 254,  /**< an administartor account that can create new domain masters and domains, but not other administrators or super users */
+        SuperUser       = 255     /**< a super user account, that has all rights, especially that can create all other admin accounts */
     };
     Q_ENUM(AdminAccountType)
 
@@ -94,7 +99,17 @@ public:
      * \param domains list of domain IDs this admin is responsible for
      * \sa setUsername(), setType(), setDomains()
      */
-    AdminAccount(dbid_t id, const QString& username, qint16 type, const QList<dbid_t> &domains);
+    AdminAccount(dbid_t id, const QString &username, AdminAccountType type, const QList<dbid_t> &domains);
+
+    /*!
+     * \overload
+     */
+    AdminAccount(dbid_t id, const QString& username, quint8 type, const QList<dbid_t> &domains);
+
+    /*!
+     * \overload
+     */
+    AdminAccount(const Cutelyst::AuthenticationUser &user);
 
     /*!
      * \brief Constructs a copy of other.
@@ -132,6 +147,13 @@ public:
      * \sa username()
      */
     void setUsername(const QString &nUsername);
+    /*!
+     * \brief Returns a string that contains the username and the database ID.
+     *
+     * This will mostly be used in log messages and returns a string like
+     * <code>"bigadmin (ID: 123)"</code>.
+     */
+    QString nameIdString() const;
 
     /*!
      * \brief Returns the domain IDs this admin is responsible for.
@@ -148,14 +170,34 @@ public:
      * \brief Returns the type of this admin account.
      * \sa setType()
      */
-    qint16 type() const;
+    AdminAccountType type() const;
     /*!
-     * \brief Sets the type of this admin account.
-     *
-     * Values lower than 0 (SuperUser) will be converted into DomainAdmin.
+     * \brief Returns the humand readable name of the account type.
+     * The context is required for translations.
+     */
+    QString typeName(Cutelyst::Context *c) const;
+    /*!
+     * \brief Returns the integer representation of the currently set account type.
      * \sa type()
      */
-    void setType(qint16 nType);
+    quint8 typeInt() const;
+    /*!
+     * \brief Returns the type as string containing the number value.
+     * \sa type()
+     */
+    QString typeStr() const;
+    /*!
+     * \brief Sets the type of this admin account.
+     * \sa type()
+     */
+    void setType(AdminAccountType nType);
+    /*!
+     * \brief Sets the type of this admin account.
+     * Values that do not match an AdminAccountType value will
+     * be set as Disabled.
+     * \sa type()
+     */
+    void setType(quint8 nType);
 
     /*!
      * \brief Returns \c true if this admin is a super user (administrator, not domain manager).
@@ -251,6 +293,14 @@ public:
     bool isValid() const;
 
     /*!
+     * \brief Returns the data as JSON object.
+     *
+     * If the %AdminAccount is not valid (isValid() returns \c false), the returned
+     * JSON object will be empty.
+     */
+    QJsonObject toJson() const;
+
+    /*!
      * \brief Creates a new account with the given \a params and returns it.
      *
      * The returned account might be invalid if an error occurred.
@@ -260,14 +310,14 @@ public:
      * -------------|----------------|------------------------------
      * username     | QString        | the user name for the new administrator account, will be trimmed
      * password     | QString        | the password for the new administrator account, will be stored with PBKDF2
-     * type         | qint16         | the type of the new administrator account, see AdminAccount::AdminAccountType
+     * type         | quint8         | the type of the new administrator account, see AdminAccount::AdminAccountType
      * assocdomains | QStringList    | list of domains this account will be associated to if the type is AdminAccount::DomainMaster
      *
      * \param c         pointer to the current context, used for translating strings
      * \param params    parameters for the new accounts
      * \param error     pointer to an object taking error information
      */
-    static AdminAccount create(Cutelyst::Context *c, const Cutelyst::ParamsMultiMap &params, SkaffariError *error);
+    static AdminAccount create(Cutelyst::Context *c, const QVariantHash &params, SkaffariError *error);
 
     /*!
      * \brief Returns a list of all administrator accounts from the database.
@@ -291,7 +341,7 @@ public:
      * Key          | Converted Type | Description
      * -------------|----------------|---------------------------------------
      * password     | QString        | new password, will be stored with PBKDF2, if empty, password will not be changed
-     * type         | qint16         | new type, see AdminAccount::AdminAccountType
+     * type         | quint8         | new type, see AdminAccount::AdminAccountType
      * assocdomains | QStringList    | list of domains this account will be associated to if the type is AdminAccount::DomainMaster
      *
      * \param c         pointer to the current context, used for translating strings
@@ -299,7 +349,7 @@ public:
      * \param params    parameters used to update the account
      * \return \c true on success
      */
-    bool update(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::ParamsMultiMap &params);
+    bool update(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &params);
 
     /*!
      * \brief Updates the account of the currently authenticated administrator \a u with the new parameters \a p and returns \c true on success.
@@ -315,11 +365,10 @@ public:
      *
      * \param c pointer to the current context, used for translating strings
      * \param e pointer to an object taking error information
-     * \param u pointer to the currently authenticated user account
      * \param p parameters used to update the account
      * \return \c true on success
      */
-    bool update(Cutelyst::Context *c, SkaffariError *e, Cutelyst::AuthenticationUser *u, const Cutelyst::ParamsMultiMap &p);
+    bool updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p);
 
     /*!
      * \brief Removes the administrator account and returns \c true on success.
@@ -336,11 +385,33 @@ public:
      */
     static void toStash(Cutelyst::Context *c, dbid_t adminId);
 
+    static void toStash(Cutelyst::Context *c, const AdminAccount &adminAccount);
+
     /*!
      * \brief Returns the admin account from current context.
      * \param c pointer to the current context
      */
     static AdminAccount fromStash(Cutelyst::Context *c);
+
+    static AdminAccount::AdminAccountType getUserType(quint8 type);
+
+    static AdminAccount::AdminAccountType getUserType(const Cutelyst::AuthenticationUser &user);
+
+    static AdminAccount::AdminAccountType getUserType(Cutelyst::Context *c);
+
+    static AdminAccount::AdminAccountType getUserType(const QVariant &type);
+
+    static dbid_t getUserId(Cutelyst::Context *c);
+
+    static QString getUserName(Cutelyst::Context *c);
+
+    static QString getUserNameIdString(Cutelyst::Context *c);
+
+    static QString typeToName(AdminAccount::AdminAccountType type, Cutelyst::Context *c);
+
+    static QStringList allowedTypes(Cutelyst::Context *c);
+
+    static AdminAccount::AdminAccountType maxAllowedType(Cutelyst::Context *c);
 
 protected:
     QSharedDataPointer<AdminAccountData> d;
@@ -359,6 +430,8 @@ private:
 Q_DECLARE_METATYPE(AdminAccount)
 Q_DECLARE_TYPEINFO(AdminAccount, Q_MOVABLE_TYPE);
 
+QDebug operator<<(QDebug dbg, const AdminAccount &account);
+
 GRANTLEE_BEGIN_LOOKUP(AdminAccount)
 QVariant var;
 if (property == QLatin1String("id")) {
@@ -368,7 +441,9 @@ if (property == QLatin1String("id")) {
 } else if (property == QLatin1String("domains")) {
     var.setValue(object.domains());
 } else if (property == QLatin1String("type")) {
-    var.setValue(object.type());
+    var.setValue(object.typeInt());
+} else if (property == QLatin1String("typeStr")) {
+    var.setValue(object.typeStr());
 } else if (property == QLatin1String("isValid")) {
     var.setValue(object.isValid());
 } else if (property == QLatin1String("isSuperUser")) {

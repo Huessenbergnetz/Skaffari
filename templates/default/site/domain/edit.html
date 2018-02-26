@@ -29,7 +29,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="maxAccounts">{{ help.maxAccounts.title }}</label>
-                {% ifequal userType 0 %}
+                {% if user.type >= user.Administrator %}
                 <div class="input-group">
                     <div class="input-group-prepend"><span class="input-group-text">{{ domain.accounts }} /</span></div>
                     <input type="number" id="maxAccounts" name="maxAccounts" class="form-control{% if validationErrors.maxAccounts.count %} is-invalid{% endif %}" value="{{ maxAccounts|default_if_none:domain.maxAccounts }}" min="0" placeholder="{{ domain.maxAccounts }}" aria-describedby="maxAccountsDesc">
@@ -37,13 +37,13 @@
                 {% if validationErrors.maxAccounts.count %}<div class="invalid-feedback"><small>{{ validationErrors.maxAccounts.0 }}</small></div>{% endif %}
                 {% else %}
                 <input type="text" id="maxAccounts" class="form-control-plaintext" aria-describedby="maxAccountsDesc" value="{{ domain.accounts }} / {% if domain.maxAccounts > 0 %}{{ domain.maxAccounts }}{% else %}{{ _("unlimited") }}{% endif %}" readonly>
-                {% endifequal %}
+                {% endif %}
                 <small id="maxAccountsDesc" class="form-text text-muted">{{ help.maxAccounts.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="domainQuota" class="col-form-label">{{ help.domainQuota.title }}</label>
-                {% ifequal userType 0 %}
+                {% if user.type >= user.Administrator %}
                 <div class="input-group">
                     <div class="input-group-prepend"><span class="input-group-text">{% sk_fsf domain.domainQuotaUsed 2 2 1024 %} /</span></div>
                     <input type="text" id="domainQuota" name="domainQuota" class="form-control{% if validationErrors.domainQuota.count %} is-invalid{% endif %}" value="{% sk_fsf domainQuota|default_if_none:domain.domainQuota 2 2 1024 %}" placeholder="{% sk_fsf domain.domainQuota 2 2 1024 %}" aria-describedby="domainQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?">
@@ -51,7 +51,7 @@
                 {% if validationErrors.domainQuota.count %}<div class="invalid-feedback"><small>{{ validationErrors.domainQuota.0 }}</small></div>{% endif %}
                 {% else %}
                 <input type="text" id="domainQuota" class="form-control-plaintext" value="{% sk_fsf domain.domainQuotaUsed 2 2 1024 %} / {% if domain.domainQuota > 0 %}{% sk_fsf domain.domainQuota 2 2 1024 %}{% else %}{{ _("unlimited") }}{% endif %}" aria-describedby="domainQuotaDesc" readonly>
-                {% endifequal %}
+                {% endif %}
                 <small id="domainQuotaDesc" class="form-text text-muted">{{ help.domainQuota.text }}</small>
             </div>
 
@@ -72,7 +72,7 @@
             {% if domain.children.count == 0 %}
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="parent">{{ help.parent.title }}</label>
-                {% ifequal userType 0 %}
+                {% if user.type >= user.Administrator %}
                 <select id="parent" name="parent" class="form-control{% if validationErrors.parent.count %} is-invalid{% endif %} select2" aria-describedby="parentDesc">
                     <option value="0"{% if parent|default_if_none:domain.parent.id == 0 %} selected{% endif %}>{% i18nc "parent domain" "none" %}</option>
                     {% for dom in domains %}
@@ -84,7 +84,7 @@
                 {% if validationErrors.parent.count %}<div class="invalid-feedback"><small>{{ validationErrors.parent.0 }}</small></div>{% endif %}
                 {% else %}
                 <input type="text" readonly class="form-control-plaintext" id="parent" value="{% if domain.parent %}{{ domain.parent.name }}{% else %}{% i18nc "parent domain" "none" %}{% endif %}" aria-describedby="parentDesc">
-                {% endifequal %}
+                {% endif %}
                 <small id="parentDesc" class="form-text text-muted">{{ help.parent.text }}</small>
             </div>
             {% else %}
@@ -116,7 +116,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if freeNames|default_if_none:domain.freeNames %} checked{% endif %}{% if userType != 0 %} disabled{% endif %}>
+                    <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if freeNames|default_if_none:domain.freeNames %} checked{% endif %}{% if user.type < user.Administrator %} disabled{% endif %}>
                     <label class="form-check-label">{{ help.freeNames.title }}</label>
                     <small id="freeNamesDesc" class="form-text text-muted">{{ help.freeNames.text }}</small>
                 </div>
@@ -124,7 +124,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if freeAddress|default_if_none:domain.freeAddress %} checked{% endif %}{% if userType != 0 %} disabled{% endif %}>
+                    <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if freeAddress|default_if_none:domain.freeAddress %} checked{% endif %}{% if user.type < user.Administrator %} disabled{% endif %}>
                     <label class="form-check-label">{{ help.freeAddress.title }}</label>
                     <small id="freeAddressDesc" class="form-text text-muted">{{ help.freeAddress.text }}</small>
                 </div>

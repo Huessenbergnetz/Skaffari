@@ -17,6 +17,7 @@
  */
 
 #include "authstoresql.h"
+#include "objects/adminaccount.h"
 
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <QSqlQuery>
@@ -39,20 +40,24 @@ AuthenticationUser AuthStoreSql::findUser(Context *c, const ParamsMultiMap &user
 
     const QString username = userinfo.value(QStringLiteral("username"));
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id, au.username, au.password, au.type, se.template, se.maxdisplay, se.warnlevel, se.lang, se.tz FROM adminuser au JOIN settings se ON au.id = se.admin_id WHERE au.username = :username"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id, au.username, au.password, au.type, au.created_at, au.updated_at, au.valid_until, au.pwd_expire, se.template, se.maxdisplay, se.warnlevel, se.lang, se.tz FROM adminuser au JOIN settings se ON au.id = se.admin_id WHERE au.username = :username AND au.type > 0"));
     q.bindValue(QStringLiteral(":username"), username);
 
     if (Q_LIKELY(q.exec())) {
         if (Q_LIKELY(q.next())) {
             user.setId(q.value(0));
-            user.insert(QStringLiteral("username"), q.value(1).toString());
-            user.insert(QStringLiteral("password"), q.value(2).toString());
-            user.insert(QStringLiteral("type"), q.value(3).value<qint16>());
-            user.insert(QStringLiteral("style"), q.value(4).toString());
-            user.insert(QStringLiteral("maxdisplay"), q.value(5).value<quint8>());
-            user.insert(QStringLiteral("warnlevel"), q.value(6).value<quint8>());
-            user.insert(QStringLiteral("lang"), q.value(7).toString());
-            user.insert(QStringLiteral("tz"), q.value(8).toByteArray());
+            user.insert(QStringLiteral("username"), q.value(1));
+            user.insert(QStringLiteral("password"), q.value(2));
+            user.insert(QStringLiteral("type"), q.value(3));
+            user.insert(QStringLiteral("created_at"), q.value(4));
+            user.insert(QStringLiteral("updated_at"), q.value(5));
+            user.insert(QStringLiteral("valid_until"), q.value(6));
+            user.insert(QStringLiteral("pwd_expire"), q.value(7));
+            user.insert(QStringLiteral("style"), q.value(8));
+            user.insert(QStringLiteral("maxdisplay"), q.value(9));
+            user.insert(QStringLiteral("warnlevel"), q.value(10));
+            user.insert(QStringLiteral("lang"), q.value(11));
+            user.insert(QStringLiteral("tz"), q.value(12));
         } else {
             qCWarning(SK_AUTHSTORE, "Can not find user \"%s\" in the database.", qUtf8Printable(username));
         }
@@ -60,17 +65,19 @@ AuthenticationUser AuthStoreSql::findUser(Context *c, const ParamsMultiMap &user
         qCCritical(SK_AUTHSTORE, "Failed to execute database query to get user \"%s\" from the database: %s", qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
     }
 
-    q = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_id FROM domainadmin WHERE admin_id = :admin_id"));
-    q.bindValue(QStringLiteral(":admin_id"), user.id());
+    if (!user.isNull() && (user.value(QStringLiteral("type")).value<quint8>() < static_cast<quint8>(AdminAccount::Administrator))) {
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_id FROM domainadmin WHERE admin_id = :admin_id"));
+        q.bindValue(QStringLiteral(":admin_id"), user.id());
 
-    if (Q_LIKELY(q.exec())) {
-        QVariantList domIds;
-        while (q.next()) {
-            domIds << q.value(0);
+        if (Q_LIKELY(q.exec())) {
+            QVariantList domIds;
+            while (q.next()) {
+                domIds << q.value(0);
+            }
+            user.insert(QStringLiteral("domains"), domIds);
+        } else {
+            qCCritical(SK_AUTHSTORE, "Failed to execute database query to get associated domain IDs for user \"%s\" from the database: %s", qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
         }
-        user.insert(QStringLiteral("domains"), domIds);
-    } else {
-        qCCritical(SK_AUTHSTORE, "Failed to execute database query to get associated domain IDs for user \"%s\" from the database: %s", qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
     }
 
     return user;

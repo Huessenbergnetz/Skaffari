@@ -54,8 +54,20 @@ void MyAccount::index(Context *c)
     AdminAccount aac = AdminAccount::get(c, &e, user.id().value<dbid_t>());
     if (aac.isValid()) {
 
+        static const QStringList tzIds = ([]() -> QStringList {
+                                              QStringList lst;
+                                              const QList<QByteArray> availableTzIds = QTimeZone::availableTimeZoneIds();
+                                              lst.reserve(availableTzIds.size());
+                                              for (const QByteArray &tz : availableTzIds) {
+                                                  lst << QString::fromLatin1(tz);
+                                              }
+                                              return lst;
+                                          }());
+
         auto req = c->req();
         if (req->isPost()) {
+            c->setStash(QStringLiteral("userName"), aac.username());
+
             static Validator v({
                                    new ValidatorConfirmed(QStringLiteral("password")),
                        #ifdef PWQUALITY_ENABLED
@@ -63,15 +75,16 @@ void MyAccount::index(Context *c)
                        #else
                                    new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),
                        #endif
-                                   new ValidatorBetween(QStringLiteral("maxdisplay"), QMetaType::UShort, 0, 255),
-                                   new ValidatorBetween(QStringLiteral("warnlevel"), QMetaType::UShort, 0, 100),
-                                   new ValidatorIn(QStringLiteral("lang"), Language::supportedLangsList())
+                                   new ValidatorBetween(QStringLiteral("maxdisplay"), QMetaType::UChar, 15, 255),
+                                   new ValidatorBetween(QStringLiteral("warnlevel"), QMetaType::UChar, 0, 100),
+                                   new ValidatorIn(QStringLiteral("lang"), Language::supportedLangsList()),
+                                   new ValidatorIn(QStringLiteral("tz"), tzIds)
                                });
 
-            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError);
+            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
             if (vr) {
                 SkaffariError e(c);
-                if (aac.update(c, &e, &user, req->bodyParameters())) {
+                if (aac.updateOwn(c, &e, vr.values())) {
                     c->setStash(QStringLiteral("status_msg"), c->translate("MyAccount", "Your account has been updated."));
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -94,7 +107,7 @@ void MyAccount::index(Context *c)
                      {QStringLiteral("site_title"), c->translate("MyAccount", "My account")},
                      {QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac)},
                      {QStringLiteral("langs"), QVariant::fromValue<QVector<Language>>(Language::supportedLangs())},
-                     {QStringLiteral("timezones"), QVariant::fromValue<QList<QByteArray>>(QTimeZone::availableTimeZoneIds())},
+                     {QStringLiteral("timezones"), QVariant::fromValue<QStringList>(tzIds)},
                      {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)}
                  });
 

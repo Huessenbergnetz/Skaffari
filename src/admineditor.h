@@ -20,6 +20,7 @@
 #define ADMINEDITOR_H
 
 #include <Cutelyst/Controller>
+#include "objects/adminaccount.h"
 
 using namespace Cutelyst;
 class SkaffariEngine;
@@ -52,7 +53,7 @@ public:
     void create(Context *c);
 
 private:
-    static bool checkAccess(Context *c);
+    static bool checkAccess(Context *c, AdminAccount::AdminAccountType minType);
 
     static bool accessGranted(Context *c);
 };

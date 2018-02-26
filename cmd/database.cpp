@@ -346,7 +346,7 @@ uint Database::checkAdmin() const
 
     QSqlQuery q(m_db);
 
-    q.exec(QStringLiteral("SELECT COUNT(id) FROM adminuser WHERE type = 0"));
+    q.exec(QStringLiteral("SELECT COUNT(id) FROM adminuser WHERE type = 255"));
 
     if (Q_LIKELY(q.next())) {
         adminCount = q.value(0).toUInt();

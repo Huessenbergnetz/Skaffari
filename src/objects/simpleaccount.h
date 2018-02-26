@@ -19,6 +19,8 @@
 #ifndef SIMPLEACCOUNT_H
 #define SIMPLEACCOUNT_H
 
+#include "../../common/global.h"
+#include "adminaccount.h"
 #include <QString>
 #include <QSharedDataPointer>
 #include <grantlee5/grantlee/metatype.h>
@@ -26,7 +28,6 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QLoggingCategory>
-#include "../../common/global.h"
 
 Q_DECLARE_LOGGING_CATEGORY(SK_SIMPLEACCOUNT)
 
@@ -144,12 +145,12 @@ public:
      * \brief Returns a list of accounts.
      * \param c         Pointer to the current context, used for localization.
      * \param e         Pointer to an object taking occurring errors.
-     * \param userType  The type of the admin user to determine domain access.
+     * \param adminType The type of the admin user to determine domain access.
      * \param adminId   The database ID of the admin user to determine domain access.
      * \param domainId  The database ID of the domain to request accounts for. If 0 and permission is granted, all accounts will be returned.
      * \return          List of simple account objects.
      */
-    static std::vector<SimpleAccount> list(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
+    static std::vector<SimpleAccount> list(Cutelyst::Context *c, SkaffariError *e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
 
     /*!
      * \brief Returns a JSON array of accounts.
@@ -158,12 +159,12 @@ public:
      *
      * \param c         Pointer to the current context, used for localization.
      * \param e         Pointer to an object taking occurring errors.
-     * \param userType  The type of the admin user to determine domain access.
+     * \param adminType The type of the admin user to determine domain access.
      * \param adminId   The database ID of the admin user to determine domain access.
      * \param domainId  The database ID of the domain to request accounts for. If 0 and permission is granted, all accounts will be returned.
      * \return          JSON array containing objects with account ID, user name and domain name.
      */
-    static QJsonArray listJson(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
+    static QJsonArray listJson(Cutelyst::Context *c, SkaffariError *e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
 
     /*!
      * \brief Returns the account with the specified database \a id.

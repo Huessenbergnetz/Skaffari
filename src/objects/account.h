@@ -19,18 +19,17 @@
 #ifndef ACCOUNT_H
 #define ACCOUNT_H
 
+#include "../../common/global.h"
+#include "domain.h"
+#include <Cutelyst/ParamsMultiMap>
+#include <Cutelyst/Plugins/Utils/Pagination>
+#include <grantlee5/grantlee/metatype.h>
 #include <QSharedDataPointer>
 #include <QString>
 #include <QStringList>
-#include <grantlee5/grantlee/metatype.h>
-#include <Cutelyst/ParamsMultiMap>
-#include <Cutelyst/Plugins/Utils/Pagination>
 #include <QLoggingCategory>
 #include <QDateTime>
-#include <math.h>
 #include <QJsonObject>
-#include "../../common/global.h"
-#include "domain.h"
 #include <utility>
 
 Q_DECLARE_LOGGING_CATEGORY(SK_ACCOUNT)
@@ -145,6 +144,13 @@ public:
      * \sa username()
      */
     void setUsername(const QString &nUsername);
+    /*!
+     * \brief Returns a string that contains the username and the database ID.
+     *
+     * This will mostly be used in log messages and returns a string like
+     * <code>"biguser (ID: 123)"</code>.
+     */
+    QString nameIdString() const;
 
     /*!
      * \brief Returns \c true if IMAP access is enabled for this account.
@@ -615,7 +621,7 @@ private:
      * \internal
      * \brief Sets the date and time the account has been last updated.
      */
-    void markUpdated();
+    void markUpdated(Cutelyst::Context *c);
 
     /*!
      * \internal

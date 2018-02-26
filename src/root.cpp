@@ -22,6 +22,7 @@
 #include "utils/language.h"
 #include "utils/skaffariconfig.h"
 #include "objects/skaffarierror.h"
+#include "objects/adminaccount.h"
 #include "../common/config.h"
 
 #include <Cutelyst/Plugins/Authentication/authentication.h>
@@ -53,12 +54,12 @@ Root::~Root()
 
 void Root::index(Context *c)
 {
-    const bool isSuperUser = c->stash(QStringLiteral("userType")).value<qint16>() == 0;
-    const dbid_t adminId = c->stash(QStringLiteral("userId")).value<dbid_t>();
+    const bool isAdmin = AdminAccount::getUserType(c) >= AdminAccount::Administrator;
+    const dbid_t adminId = AdminAccount::getUserId(c);
 
     QSqlQuery q;
 
-    if (isSuperUser) {
+    if (isAdmin) {
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT (SELECT COUNT(*) FROM accountuser) - 1 AS accounts, (SELECT COUNT(*) FROM adminuser) AS admins, (SELECT COUNT(*) FROM domain WHERE idn_id = 0) AS domains, (SELECT SUM(quota) FROM accountuser) AS accountquota, (SELECT SUM(domainquota) FROM domain) AS domainquota, (SELECT COUNT(*) FROM virtual WHERE alias LIKE '%@%' AND idn_id = 0) AS addresses"));
     } else {
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT (SELECT COUNT(*) FROM accountuser au JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id) AS accounts, (SELECT COUNT(*) FROM adminuser) AS admins, (SELECT COUNT(*) FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id) AS domains, (SELECT SUM(au.quota) FROM accountuser au JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id) AS accountquota, (SELECT SUM(dom.domainquota) FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id) AS domainquota, (SELECT COUNT(*) FROM virtual vi JOIN accountuser au ON vi.username = au.username JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id AND vi.alias LIKE '%@%' AND vi.idn_id = 0) AS addresses"));
@@ -83,7 +84,7 @@ void Root::index(Context *c)
         }
     }
 
-    if (isSuperUser) {
+    if (isAdmin) {
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id AS id, dom.domain_name AS name, dom.created_at AS created FROM domain dom WHERE dom.idn_id = 0 ORDER BY dom.created_at DESC LIMIT 5"));
     } else {
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id AS id, dom.domain_name AS name, dom.created_at AS created FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id ORDER BY dom.created_at DESC LIMIT 5"));
@@ -99,7 +100,7 @@ void Root::index(Context *c)
         c->setStash(QStringLiteral("domains_last_added_error"), c->translate("Root", "Failed to query last added domains from database: %1").arg(q.lastError().text()));
     }
 
-    if (isSuperUser) {
+    if (isAdmin) {
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id AS id, au.domain_id AS domainId, au.created_at AS created, au.username AS username, dom.domain_name AS domainName FROM accountuser au JOIN domain dom ON dom.id = au.domain_id ORDER BY au.created_at DESC LIMIT 5"));
     } else {
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id AS id, au.domain_id AS domainId, au.created_at AS created, au.username AS username, dom.domain_name AS domainName FROM accountuser au JOIN domain dom ON dom.id = au.domain_id JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY au.created_at DESC LIMIT 5"));
@@ -236,9 +237,50 @@ void Root::csrfdenied(Context *c)
     }
 }
 
+void Root::error(Context *c)
+{
+    const SkaffariError e = SkaffariError::fromStash(c);
+    Language::setLang(c);
+    QString error_text;
+    QString error_title;
+    if (e.type() == SkaffariError::NoError) {
+        switch(c->res()->status()) {
+        case 400:
+            error_title = c->translate("Root", "Not found");
+            error_text = c->translate("Root", "The requested resource could not be found or the requested page is not available.");
+            break;
+        case 403:
+            error_title = c->translate("Root", "Access denied");
+            error_text = c->translate("Root", "You are not authorized to access this resource or to perform this action.");
+            break;
+        default:
+            c->res()->setStatus(500);
+            error_title = c->translate("Root", "Unknown error");
+            error_text = c->translate("Root", "Sorry but an unknown error occured while processing your request.");
+            break;
+        }
+    } else {
+        c->res()->setStatus(e.status());
+        error_title = e.typeTitle(c);
+        error_text = e.errorText();
+    }
+    if (Utils::isAjax(c)) {
+        c->res()->setJsonObjectBody(QJsonObject({
+                                                    {QStringLiteral("error_msg"), QJsonValue(error_text)}
+                                                }));
+    } else {
+        c->stash({
+                     {QStringLiteral("template"), QStringLiteral("error.html")},
+                     {QStringLiteral("error_title"), error_title},
+                     {QStringLiteral("error_text"), error_text},
+                     {QStringLiteral("error_code"), c->res()->status()}
+                 });
+    }
+}
+
 bool Root::Auto(Context* c)
 {
-    AuthenticationUser user = Authentication::user(c);
+    const AuthenticationUser user = Authentication::user(c);
 
     Language::setLang(c);
 
@@ -261,6 +303,7 @@ bool Root::Auto(Context* c)
     StatusMessage::load(c);
 
     c->stash({
+                 {QStringLiteral("user"), QVariant::fromValue<AdminAccount>(AdminAccount(user))},
                  {QStringLiteral("userId"), user.id()},
                  {QStringLiteral("userType"), user.value(QStringLiteral("type"))},
                  {QStringLiteral("userName"), user.value(QStringLiteral("username"))},

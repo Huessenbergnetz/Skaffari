@@ -32,8 +32,6 @@ Utils::Utils()
 
 }
 
-
-
 QDateTime Utils::toUserTZ(Cutelyst::Context *c, const QDateTime &dt)
 {
     QDateTime retVal;
@@ -50,8 +48,6 @@ QDateTime Utils::toUserTZ(Cutelyst::Context *c, const QDateTime &dt)
 
     return retVal;
 }
-
-
 
 QString Utils::humanBinarySize(Cutelyst::Context *c, quota_size_t sizeInByte)
 {
@@ -97,16 +93,6 @@ QString Utils::humanBinarySize(Cutelyst::Context *c, quota_size_t sizeInByte)
 
     return sizeStr;
 }
-
-
-QString Utils::getUserName(Cutelyst::Context *c)
-{
-    QString userName;
-    Q_ASSERT_X(c, "get user name", "invalid context object");
-    userName = c->stash(QStringLiteral("userName")).toString();
-    return userName;
-}
-
 
 quota_size_t Utils::humanToIntSize(Cutelyst::Context *c, const QString &size, bool *ok)
 {
@@ -159,7 +145,6 @@ quota_size_t Utils::humanToIntSize(Cutelyst::Context *c, const QString &size, bo
 
     return ret;
 }
-
 
 bool Utils::isAjax(Cutelyst::Context *c)
 {
