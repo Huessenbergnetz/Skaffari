@@ -24,64 +24,52 @@ SkaffariIMAPError::SkaffariIMAPError(SkaffariIMAPError::ErrorType type, const QS
 
 }
 
-
 SkaffariIMAPError::SkaffariIMAPError(const QSslError &sslError) :
     d(new SkaffariIMAPErrorData(sslError))
 {
 
 }
 
-
-
 SkaffariIMAPError::SkaffariIMAPError(const SkaffariIMAPError& other) : d(other.d)
 {
 
 }
 
-
-
 SkaffariIMAPError& SkaffariIMAPError::operator=(const SkaffariIMAPError& other)
 {
     d = other.d;
-	return *this;
+    return *this;
 }
-
-
 
 bool SkaffariIMAPError::operator==(const SkaffariIMAPError& other) const
 {
-	return d->errorType == other.d->errorType;
+    return d->errorType == other.d->errorType;
 }
-
-
 
 bool SkaffariIMAPError::operator!=(const SkaffariIMAPError& other) const
 {
-	return d->errorType != other.d->errorType;
+    return d->errorType != other.d->errorType;
 }
-
-
 
 SkaffariIMAPError::~SkaffariIMAPError()
 {
 
 }
 
-
-
 SkaffariIMAPError::ErrorType SkaffariIMAPError::type() const
 {
-	return d->errorType;
+    return d->errorType;
 }
-
-
 
 QString SkaffariIMAPError::errorText() const
 {
-	return d->errorText;
+    return d->errorText;
 }
 
-
+QString SkaffariIMAPError::text() const
+{
+    return d->errorText;
+}
 
 void SkaffariIMAPError::clear()
 {

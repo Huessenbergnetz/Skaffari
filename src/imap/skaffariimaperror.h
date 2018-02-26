@@ -32,19 +32,19 @@ class SkaffariIMAPErrorData;
 class SkaffariIMAPError
 {
 public:
-	enum ErrorType {
-		NoError,
-		NoResponse,
-		BadResponse,
-		UndefinedResponse,
-		EmptyResponse,
-		ConnectionTimeout,
+    enum ErrorType {
+        NoError,
+        NoResponse,
+        BadResponse,
+        UndefinedResponse,
+        EmptyResponse,
+        ConnectionTimeout,
         EncryptionError,
         SocketError,
         ResponseError,
         InternalError,
-		Unknown
-	};
+        Unknown
+    };
 
     explicit SkaffariIMAPError(ErrorType type = NoError, const QString errorText = QString());
     explicit SkaffariIMAPError(const QSslError &sslError);
@@ -54,8 +54,9 @@ public:
     bool operator!=(const SkaffariIMAPError &other) const;
     ~SkaffariIMAPError();
 
-	ErrorType type() const;
-	QString errorText() const;
+    ErrorType type() const;
+    QString errorText() const;
+    QString text() const;
 
     void clear();
 
