@@ -1201,23 +1201,24 @@ void Account::toStash(Cutelyst::Context *c, dbid_t accountId)
                      {QStringLiteral("site_subtitle"), a.username()}
                  });
     } else {
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("404.html")},
-                     {QStringLiteral("site_title"), c->translate("Account", "Not found")},
-                     {QStringLiteral("not_found_text"), c->translate("Account", "There is no account with database ID %1.").arg(accountId)}
-                 });
-        c->res()->setStatus(404);
+        e.toStash(c);
+        c->detach(c->getAction(QStringLiteral("error")));
     }
 }
 
 void Account::toStash(Cutelyst::Context *c, const Account &a)
 {
     Q_ASSERT_X(c, "account to stash", "invalid context object");
-    Q_ASSERT_X(a.isValid(), "account to stash", "invalid account object");
-    c->stash({
-                 {QStringLiteral(ACCOUNT_STASH_KEY), QVariant::fromValue<Account>(a)},
-                 {QStringLiteral("site_subtitle"), a.username()}
-             });
+
+    if (Q_LIKELY(a.isValid())) {
+        c->stash({
+                     {QStringLiteral(ACCOUNT_STASH_KEY), QVariant::fromValue<Account>(a)},
+                     {QStringLiteral("site_subtitle"), a.username()}
+                 });
+    } else {
+        c->res()->setStatus(404);
+        c->detach(c->getAction(QStringLiteral("error")));
+    }
 }
 
 Account Account::fromStash(Cutelyst::Context *c)

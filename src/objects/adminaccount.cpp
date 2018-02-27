@@ -895,12 +895,9 @@ void AdminAccount::toStash(Cutelyst::Context *c, dbid_t adminId)
                      {QStringLiteral("site_title"), a.username()}
                  });
     } else {
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("404.html")},
-                     {QStringLiteral("site_title"), c->translate("AdminAccount", "Not found")},
-                     {QStringLiteral("not_found_text"), c->translate("AdminAccount", "There is no administrator account with database ID %1.").arg(adminId)}
-                 });
+        e.toStash(c);
         c->res()->setStatus(404);
+        c->detach(c->getAction(QStringLiteral("error")));
     }
 }
 
@@ -923,6 +920,11 @@ AdminAccount AdminAccount::fromStash(Cutelyst::Context *c)
     a = c->stash(QStringLiteral(ADMIN_ACCOUNT_STASH_KEY)).value<AdminAccount>();
 
     return a;
+}
+
+AdminAccount AdminAccount::getUser(Cutelyst::Context *c)
+{
+    return c->stash(QStringLiteral("user")).value<AdminAccount>();
 }
 
 AdminAccount::AdminAccountType AdminAccount::getUserType(quint8 type)

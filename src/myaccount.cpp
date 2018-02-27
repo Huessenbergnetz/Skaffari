@@ -28,7 +28,7 @@
 #include <Cutelyst/Plugins/Utils/validatorconfirmed.h>
 #include <Cutelyst/Plugins/Utils/validatorbetween.h>
 #include <Cutelyst/Plugins/Utils/validatorin.h>
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
 #include <Cutelyst/Plugins/Utils/validatorpwquality.h>
 #else
 #include <Cutelyst/Plugins/Utils/validatormin.h>
@@ -70,7 +70,7 @@ void MyAccount::index(Context *c)
 
             static Validator v({
                                    new ValidatorConfirmed(QStringLiteral("password")),
-                       #ifdef PWQUALITY_ENABLED
+                       #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
                                    new ValidatorPwQuality(QStringLiteral("password"), SkaffariConfig::admPwThreshold(), SkaffariConfig::admPwSettingsFile(), QStringLiteral("userName")),
                        #else
                                    new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),

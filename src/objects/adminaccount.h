@@ -406,6 +406,8 @@ public:
 
     static AdminAccount::AdminAccountType getUserType(const QVariant &type);
 
+    static AdminAccount getUser(Cutelyst::Context *c);
+
     static dbid_t getUserId(Cutelyst::Context *c);
 
     static QString getUserName(Cutelyst::Context *c);

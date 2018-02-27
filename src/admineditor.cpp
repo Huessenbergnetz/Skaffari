@@ -31,7 +31,7 @@
 #include <Cutelyst/Plugins/Utils/validatorconfirmed.h>
 #include <Cutelyst/Plugins/Utils/validatormax.h>
 #include <Cutelyst/Plugins/Utils/validatorin.h>
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
 #include <Cutelyst/Plugins/Utils/validatorpwquality.h>
 #else
 #include <Cutelyst/Plugins/Utils/validatormin.h>
@@ -115,7 +115,7 @@ void AdminEditor::create(Context *c)
                                new ValidatorAlphaDash(QStringLiteral("username")),
                                new ValidatorRequired(QStringLiteral("password")),
                                new ValidatorConfirmed(QStringLiteral("password")),
-                   #ifdef PWQUALITY_ENABLED
+                   #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
                                new ValidatorPwQuality(QStringLiteral("password"), SkaffariConfig::admPwThreshold(), SkaffariConfig::admPwSettingsFile(), QStringLiteral("username")),
                    #else
                                new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),
@@ -182,7 +182,7 @@ void AdminEditor::edit(Context *c)
 
         static Validator v({
                                new ValidatorConfirmed(QStringLiteral("password")),
-                   #ifdef PWQUALITY_ENABLED
+                   #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
                                new ValidatorPwQuality(QStringLiteral("password"),
                                SkaffariConfig::admPwThreshold(),
                                SkaffariConfig::admPwSettingsFile(),

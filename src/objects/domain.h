@@ -503,13 +503,6 @@ public:
     static bool checkAccess(Cutelyst::Context *c, dbid_t domainId = 0);
 
     /*!
-     * \brief Returns \c true if access has been granted to the domain.
-     *
-     * Before you can use this, use Domain::checkAccess().
-     */
-    static bool accessGranted(Cutelyst::Context *c);
-
-    /*!
      * \brief Trims every string in the \a list.
      * \param list  The list to trim
      * \return A list of trimmed strings.

@@ -1026,12 +1026,8 @@ void Domain::toStash(Cutelyst::Context *c, dbid_t domainId)
                      {QStringLiteral("site_title"), d.name()}
                  });
     } else {
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("404.html")},
-                     {QStringLiteral("site_title"), c->translate("Domain", "Not found")},
-                     {QStringLiteral("not_found_text"), c->translate("Domain", "There is no domain with database ID %1.").arg(domainId)}
-                 });
-        c->res()->setStatus(404);
+        e.toStash(c);
+        c->detach(c->getAction(QStringLiteral("error")));
     }
 }
 
@@ -1048,38 +1044,23 @@ bool Domain::checkAccess(Cutelyst::Context *c, dbid_t domainId)
 {
     bool allowed = false;
 
-    const Cutelyst::AuthenticationUser user = Cutelyst::Authentication::user(c);
-
-    if (user.value(QStringLiteral("type")).value<qint16>() == 0) {
-        // this is an administrator, access granted for all domains
-        allowed = true;
-    } else if (domainId > 0) {
-        // this is a domain manager, access granted only for connected domains
-        allowed = (user.value(QStringLiteral("domains")).value<QVariantList>().contains(domainId));
+    const AdminAccount user = AdminAccount::getUser(c);
+    if (user.isValid()) {
+        if (user.type() >= AdminAccount::Administrator) {
+            allowed = true;
+        } else {
+            allowed = user.domains().contains(domainId);
+        }
+    } else {
+        qCWarning(SK_DOMAIN, "Access denied to domain ID %u, invalid AdminAccount object in stash.", domainId);
     }
 
     if (!allowed) {
-        if (Utils::isAjax(c)) {
-            QJsonObject json({
-                                 {QStringLiteral("error_msg"), c->translate("Domain", "You are not authorized to access this resource or to perform this action.")}
-                             });
-            c->res()->setJsonBody(QJsonDocument(json));
-        } else {
-            c->stash({
-                         {QStringLiteral("template"), QStringLiteral("403.html")},
-                         {QStringLiteral("site_title"), c->translate("Domain", "Access denied")}
-                     });
-        }
         c->res()->setStatus(403);
-        qCWarning(SK_DOMAIN, "Access denied: %s tried to access domain with ID: %u)", c->stash(QStringLiteral("userName")).toString().toUtf8().constData(), domainId);
+        qCWarning(SK_DOMAIN, "Access denied: %s tried to access domain with ID %u", qUtf8Printable(user.nameIdString()), domainId);
     }
 
     return allowed;
-}
-
-bool Domain::accessGranted(Cutelyst::Context *c)
-{
-    return ((c->res()->status() != 404) && (c->res()->status() != 403));
 }
 
 QStringList Domain::trimStringList(const QStringList &list)

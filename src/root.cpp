@@ -245,7 +245,7 @@ void Root::error(Context *c)
     QString error_title;
     if (e.type() == SkaffariError::NoError) {
         switch(c->res()->status()) {
-        case 400:
+        case 404:
             error_title = c->translate("Root", "Not found");
             error_text = c->translate("Root", "The requested resource could not be found or the requested page is not available.");
             break;
@@ -269,8 +269,10 @@ void Root::error(Context *c)
                                                     {QStringLiteral("error_msg"), QJsonValue(error_text)}
                                                 }));
     } else {
+        const QString siteTitle = QString::number(c->res()->status()) + QLatin1String(" - ") + error_title;
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("error.html")},
+                     {QStringLiteral("site_title"), siteTitle},
                      {QStringLiteral("error_title"), error_title},
                      {QStringLiteral("error_text"), error_text},
                      {QStringLiteral("error_code"), c->res()->status()}
