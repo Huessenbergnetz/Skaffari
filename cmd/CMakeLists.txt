@@ -59,10 +59,6 @@ target_compile_definitions(skaffaricmd
         QT_USE_QSTRINGBUILDER
 )
 
-if (ENABLE_PWQUALITY)
-    target_compile_definitions(skaffaricmd PRIVATE PWQUALITY_ENABLED)
-endif (ENABLE_PWQUALITY)
-
 target_link_libraries(skaffaricmd
     PRIVATE
         Qt5::Core

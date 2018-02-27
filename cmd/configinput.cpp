@@ -151,7 +151,7 @@ QVariantHash ConfigInput::askPbkdf2Config(const QVariantHash &defaults) const
 
     quint8 method = readChar(tr("PBKDF2 algorithm"), defaults.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM).value<quint8>(), pbkdf2AlgoDesc, QList<quint8>({3,4,5,6,7,8,9,10}));
     quint32 rounds = readInt(tr("PBKDF2 rounds"), defaults.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>(), QStringList(tr("The iteration count is used to increase the cost for deriving the key from the password.")));
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     quint8 threshold = readChar(tr("Password quality threshold"), defaults.value(QStringLiteral("pwthreshold"), SK_DEF_ADM_PWTHRESHOLD).value<quint8>(), QStringList(tr("Threshold for the password quality. Skaffari uses libpwquality to calculate a quality score for passwords. Passwords with scores below this threshold will not be accepted.")));
     QString settingsFile = readFilePath(tr("Password quality settings file"), defaults.value(QStringLiteral("pwsettingsfile")).toString(), QStringList(tr("Absolute path to the configuration file that contains the settings for libpwquality. If the path is empty, the default configuration file will be used. Use man 5 pwquality.conf to learn more about the configuration options.")), true);
 #else
@@ -160,7 +160,7 @@ QVariantHash ConfigInput::askPbkdf2Config(const QVariantHash &defaults) const
 
     conf.insert(QStringLiteral("pwalgorithm"), method);
     conf.insert(QStringLiteral("pwrounds"), rounds);
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     conf.insert(QStringLiteral("pwthreshold"), threshold);
     conf.insert(QStringLiteral("pwsettingsfile"), settingsFile);
 #else
@@ -245,7 +245,7 @@ QVariantHash ConfigInput::askPamPwConfig(const QVariantHash &defaults) const
         }
     }
 
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     quint8 threshold = readChar(tr("Password quality threshold"), defaults.value(QStringLiteral("pwthreshold"), SK_DEF_ADM_PWTHRESHOLD).value<quint8>(), QStringList(tr("Threshold for the password quality. Skaffari uses libpwquality to calculate a quality score for passwords. Passwords with scores below this threshold will not be accepted.")));
     QString settingsFile = readFilePath(tr("Password quality settings file"), defaults.value(QStringLiteral("pwsettingsfile")).toString(), QStringList(tr("Absolute path to the configuration file that contains the settings for libpwquality. If the path is empty, the default configuration file will be used. Use man 5 pwquality.conf to learn more about the configuration options.")), true);
 #else
@@ -255,7 +255,7 @@ QVariantHash ConfigInput::askPamPwConfig(const QVariantHash &defaults) const
     conf.insert(QStringLiteral("pwmethod"), method);
     conf.insert(QStringLiteral("pwalgorithm"), algo);
     conf.insert(QStringLiteral("pwrounds"), rounds);
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     conf.insert(QStringLiteral("pwthreshold"), threshold);
     conf.insert(QStringLiteral("pwsettingsfile"), settingsFile);
 #else

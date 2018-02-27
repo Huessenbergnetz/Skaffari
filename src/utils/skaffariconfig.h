@@ -156,7 +156,7 @@ public:
      * Accounts/pwminlength
      */
     static quint8 accPwMinlength();
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     static QString accPwSettingsFile();
     static int accPwThreshold();
 #endif
@@ -192,7 +192,7 @@ public:
      * Admins/pwminlength
      */
     static quint8 admPwMinlength();
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     static QString admPwSettingsFile();
     static int admPwThreshold();
 #endif
@@ -427,7 +427,7 @@ public:
      */
     static bool useMemcachedSession();
 
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     static int pwqDifok();
 #endif
 
@@ -435,7 +435,7 @@ private:
     static Password::Method m_accPwMethod;
     static Password::Algorithm m_accPwAlgorithm;
     static quint32 m_accPwRounds;
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     static QString m_accPwSettingsFile;
     static int m_accPwThreshold;
 #else
@@ -444,7 +444,7 @@ private:
 
     static QCryptographicHash::Algorithm m_admPwAlgorithm;
     static quint32 m_admPwRounds;
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     static QString m_admPwSettingsFile;
     static int m_admPwThreshold;
 #else
@@ -484,7 +484,7 @@ private:
     static bool m_useMemcached;
     static bool m_useMemcachedSession;
 
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
 
 
 #endif

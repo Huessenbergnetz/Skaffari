@@ -138,7 +138,7 @@ int Setup::exec() const
     os.beginGroup(QStringLiteral("Admins"));
     adminsParams.insert(QStringLiteral("pwalgorithm"), os.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM));
     adminsParams.insert(QStringLiteral("pwrounds"), os.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS));
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     adminsParams.insert(QStringLiteral("pwthreshold"), os.value(QStringLiteral("pwthreshold"), SK_DEF_ADM_PWTHRESHOLD));
     adminsParams.insert(QStringLiteral("pwsettingsfile"), os.value(QStringLiteral("pwsettingsfile")));
 #else
@@ -202,7 +202,7 @@ int Setup::exec() const
     accPwParams.insert(QStringLiteral("pwmethod"), os.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD));
     accPwParams.insert(QStringLiteral("pwalgorithm"), os.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM));
     accPwParams.insert(QStringLiteral("pwrounds"), os.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS));
-#ifdef PWQUALITY_ENABLED
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     accPwParams.insert(QStringLiteral("pwthreshold"), os.value(QStringLiteral("pwthreshold"), SK_DEF_ACC_PWTHRESHOLD));
     accPwParams.insert(QStringLiteral("pwsettingsfile"), os.value(QStringLiteral("pwsettingsfile")));
 #else

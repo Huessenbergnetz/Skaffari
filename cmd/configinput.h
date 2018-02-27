@@ -83,9 +83,9 @@ public:
      * ---------------|---------|-------------
      * pwalgorithm    | quint8  | QCryptographicHash::Algorithm
      * pwrounds       | quint32 | number of rounds used for the hashing
-     * pwminlength    | quint8  | minimum password length (if compiled with <code>PWQUALITY_ENABLED=OFF</code>)
-     * pwthreshold    | quint8  | password quality threshold (if compiled with <code>PWQUALITY_ENABLED=ON</code>)
-     * pwsettingsfile | QString | absolute path to the libpwquality configuration file (if compiled with <code>PWQUALITY_ENABLED=ON</code>)
+     * pwminlength    | quint8  | minimum password length (if compiled with <code>CUTELYST_VALIDATOR_WITH_PWQUALITY=OFF</code>)
+     * pwthreshold    | quint8  | password quality threshold (if compiled with <code>CUTELYST_VALIDATOR_WITH_PWQUALITY=ON</code>)
+     * pwsettingsfile | QString | absolute path to the libpwquality configuration file (if compiled with <code>CUTELYST_VALIDATOR_WITH_PWQUALITY=ON</code>)
      */
     QVariantHash askPbkdf2Config(const QVariantHash &defaults = QVariantHash()) const;
 
