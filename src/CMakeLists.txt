@@ -72,7 +72,13 @@ add_library(skaffari SHARED
     validators/skvalidatordomainexists.h
 )
 
-target_include_directories(skaffari PRIVATE ${Cutelyst2Qt5_INCLUDE_DIR})
+pkg_check_modules(ICU REQUIRED icu-uc)
+
+target_include_directories(skaffari
+    PRIVATE
+        ${Cutelyst2Qt5_INCLUDE_DIR}
+        ${ICU_INCLUDE_DIRS}
+)
 
 target_compile_features(skaffari
     PRIVATE
@@ -108,8 +114,6 @@ target_compile_options(skaffari
         -Winit-self
 )
 
-pkg_search_module(ICU REQUIRED icu-io)
-
 # Link to Cutelyst
 target_link_libraries(skaffari
     PRIVATE
@@ -131,6 +135,7 @@ target_link_libraries(skaffari
         Grantlee5::Templates
         crypt
         ${ICU_LIBRARIES}
+        qca-qt5
 )
 
 get_target_property(CUTELYST_VALIDATOR_DEFINITIONS Cutelyst::Utils::Validator INTERFACE_COMPILE_DEFINITIONS)
@@ -139,13 +144,15 @@ if (CUTELYST_VALIDATOR_CUTELYST_VALIDATOR_WITH_PWQUALITY GREATER -1)
     message(STATUS "Cutelyst ValidatorPwQuality is available.")
     pkg_search_module(PWQUALITY REQUIRED pwquality>=1.2.2)
     target_link_libraries(skaffari PRIVATE ${PWQUALITY_LIBRARIES})
+    target_include_directories(skaffari PRIVATE ${PWQUALITY_INCLUDE_DIRS})
 endif (CUTELYST_VALIDATOR_CUTELYST_VALIDATOR_WITH_PWQUALITY GREATER -1)
 
-pkg_search_module(SYSTEMD QUIET systemd libsystemd)
+pkg_check_modules(SYSTEMD QUIET libsystemd)
 if (SYSTEMD_FOUND)
     message(STATUS "Found systemd version ${SYSTEMD_VERSION}. Enabling systemd journal support.")
     target_compile_definitions(skaffari PRIVATE WITH_SYSTEMD)
-    target_link_libraries(skaffari PRIVATE systemd)
+    target_link_libraries(skaffari PRIVATE ${SYSTEMD_LIBRARIES})
+    target_include_directories(skaffari PRIVATE ${SYSTEMD_INCLUDE_DIRS})
 else(SYSTEMD_FOUND)
     message(STATUS "Can not find systemd. Disabling systemd journal support.")
 endif(SYSTEMD_FOUND)

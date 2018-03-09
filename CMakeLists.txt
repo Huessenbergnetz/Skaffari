@@ -34,10 +34,10 @@ set(BUILD_TEMPLATES OFF CACHE BOOL "If enabled, template assests will be build")
 set(Grantlee5_MAJOR_MINOR_VERSION_STRING "${Grantlee5_VERSION_MAJOR}.${Grantlee5_VERSION_MINOR}" )
 set(GRANTLEE_PLUGIN_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/grantlee/${Grantlee5_MAJOR_MINOR_VERSION_STRING} )
 
-option(ENABLE_PWQUALITY "Enables the usage of ValidatorPwQuality" OFF)
-if (ENABLE_PWQUALITY)
-    pkg_search_module(PWQUALITY REQUIRED pwquality>=1.2.2)
-endif (ENABLE_PWQUALITY)
+option(ENABLE_WKD "Enable support for Web Key Directory" OFF)
+if (ENABLE_WKD)
+    find_package(Qca-qt5 CONFIG REQUIRED)
+endif (ENABLE_WKD)
 
 # set default configuration values
 set(DEFVAL_ACC_PWMETHOD 1 CACHE INTERNAL "Default accounts password method")
