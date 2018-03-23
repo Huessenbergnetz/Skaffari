@@ -134,6 +134,7 @@ target_link_libraries(skaffari
         Cutelyst::Utils::Validator
         Cutelyst::Utils::Sql
         Cutelyst::Utils::Pagination
+        Cutelyst::Utils::LangSelect
         Cutelyst::Memcached
         Cutelyst::MemcachedSessionStore
         Cutelyst::CSRFProtection

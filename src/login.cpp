@@ -54,7 +54,7 @@ void Login::index(Context *c)
 
                 Session::setValue(c, QStringLiteral("maxdisplay"), user.value(QStringLiteral("maxdisplay"), SkaffariConfig::defMaxdisplay()));
                 Session::setValue(c, QStringLiteral("warnlevel"), user.value(QStringLiteral("warnlevel"), SkaffariConfig::defWarnlevel()));
-                Session::setValue(c, QStringLiteral("lang"), user.value(QStringLiteral("lang"), SkaffariConfig::defLanguage()));
+                Session::setValue(c, QStringLiteral("lang"), QLocale(user.value(QStringLiteral("lang"), SkaffariConfig::defLanguage()).toString()));
                 Session::setValue(c, QStringLiteral("tz"), user.value(QStringLiteral("tz"), SkaffariConfig::defTimezone()));
 
                 const QVariantList domList = user.value(QStringLiteral("domains")).toList();

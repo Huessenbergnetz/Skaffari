@@ -284,7 +284,7 @@ bool Root::Auto(Context* c)
 {
     const AuthenticationUser user = Authentication::user(c);
 
-    Language::setLang(c);
+//    Language::setLang(c);
 
     if (c->controller() == c->controller(QStringLiteral("Login"))) {
         return true;

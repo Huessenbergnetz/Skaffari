@@ -31,8 +31,11 @@
 #include <Cutelyst/Plugins/MemcachedSessionStore/MemcachedSessionStore>
 #include <Cutelyst/Engine>
 #include <Cutelyst/Plugins/CSRFProtection/CSRFProtection>
+#include <Cutelyst/Plugins/Utils/LangSelect>
+
 #include <grantlee5/grantlee/metatype.h>
 #include <grantlee5/grantlee/engine.h>
+
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QDir>
@@ -186,6 +189,9 @@ bool Skaffari::init()
     QCoreApplication::setApplicationName(QStringLiteral("Skaffari"));
     QCoreApplication::setApplicationVersion(QStringLiteral(SKAFFARI_VERSION));
 
+    const auto supportedLocales = loadTranslationsFromDir(QStringLiteral("skaffari"), QStringLiteral(SKAFFARI_L10NDIR), QStringLiteral("_"));
+    qCInfo(SK_CORE) << "Loaded the following locales:" << supportedLocales;
+
     qRegisterMetaType<quota_size_t>("quota_size_t");
     qRegisterMetaType<dbid_t>("dbid_t");
     qRegisterMetaType<Folder>();
@@ -274,34 +280,26 @@ bool Skaffari::init()
     view->engine()->addDefaultLibrary(QStringLiteral("grantlee_skaffari"));
 
     /* Start loading translations */
-    const QString tmplTransFileName = QLatin1String("tmpl_") + tmplName;
     const QString tmplTransFilePath = tmplBasePath + QLatin1String("/l10n");
+    view->loadTranslationsFromDir(tmplName, tmplBasePath + QLatin1String("/l10n"), QStringLiteral("_"));
 
-    for (const QString &lang : SKAFFARI_SUPPORTED_LANGS) {
-        if (Q_LIKELY(lang != QLatin1String("en"))) {
-            qCDebug(SK_CORE, "Loading translations for language %s.", qUtf8Printable(lang));
-            const QLocale locale(lang);
-            if (Q_LIKELY(locale.language() != QLocale::C)) {
-                auto coreTrans = new QTranslator(this);
-                if (Q_LIKELY(coreTrans->load(locale, QStringLiteral("skaffari"), QStringLiteral("_"), QStringLiteral(SKAFFARI_L10NDIR)))) {
-                    addTranslator(locale, coreTrans);
-                } else {
-                    qCWarning(SK_CORE, "Failed to load core translation file for language %s from %s.", qUtf8Printable(locale.bcp47Name()), SKAFFARI_L10NDIR);
-                    delete coreTrans;
-                }
-
-                auto tmplTrans = new QTranslator(this);
-                if (Q_LIKELY(tmplTrans->load(locale, tmplTransFileName, QStringLiteral("_"), tmplTransFilePath))) {
-                    view->addTranslator(locale, tmplTrans);
-                } else {
-                    qCWarning(SK_CORE, "Failed to load template translation file for language %s from %s.", qUtf8Printable(locale.bcp47Name()), qUtf8Printable(tmplTransFilePath));
-                    delete tmplTrans;
-                }
-            } else {
-                qCWarning(SK_CORE, "Invalid language code: %s", qUtf8Printable(lang));
-            }
-        }
-    }
+//    for (const QString &lang : SKAFFARI_SUPPORTED_LANGS) {
+//        if (Q_LIKELY(lang != QLatin1String("en"))) {
+//            qCDebug(SK_CORE, "Loading translations for language %s.", qUtf8Printable(lang));
+//            const QLocale locale(lang);
+//            if (Q_LIKELY(locale.language() != QLocale::C)) {
+//                auto tmplTrans = new QTranslator(this);
+//                if (Q_LIKELY(tmplTrans->load(locale, tmplTransFileName, QStringLiteral("_"), tmplTransFilePath))) {
+//                    view->addTranslator(locale, tmplTrans);
+//                } else {
+//                    qCWarning(SK_CORE, "Failed to load template translation file for language %s from %s.", qUtf8Printable(locale.bcp47Name()), qUtf8Printable(tmplTransFilePath));
+//                    delete tmplTrans;
+//                }
+//            } else {
+//                qCWarning(SK_CORE, "Invalid language code: %s", qUtf8Printable(lang));
+//            }
+//        }
+//    }
     /* End loading translations */
 
     new Root(this);
@@ -340,6 +338,11 @@ bool Skaffari::init()
     cred->setPasswordType(CredentialPassword::Hashed);
     auto store = new AuthStoreSql;
     auth->addRealm(store, cred);
+
+    auto lsp = new LangSelect(this, LangSelect::Session);
+    lsp->setFallbackLocale(QLocale(QLocale::English));
+    lsp->setSupportedLocales(supportedLocales);
+    lsp->setSessionKey(QStringLiteral("lang"));
 
     defaultHeaders().setHeader(QStringLiteral("X-Frame-Options"), QStringLiteral("DENY"));
     defaultHeaders().setHeader(QStringLiteral("X-Content-Type-Options"), QStringLiteral("nosniff"));
