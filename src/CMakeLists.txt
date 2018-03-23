@@ -1,4 +1,4 @@
-add_library(skaffari SHARED
+set (skaffari_SRCS
     imap/skaffariimap.cpp
     imap/skaffariimap.h
     imap/skaffariimaperror.cpp
@@ -72,6 +72,11 @@ add_library(skaffari SHARED
     validators/skvalidatordomainexists.h
 )
 
+if (ENABLE_WKD)
+endif (ENABLE_WKD)
+
+add_library(skaffari SHARED ${skaffari_SRCS})
+
 pkg_check_modules(ICU REQUIRED icu-uc)
 
 target_include_directories(skaffari
@@ -135,8 +140,12 @@ target_link_libraries(skaffari
         Grantlee5::Templates
         crypt
         ${ICU_LIBRARIES}
-        qca-qt5
 )
+
+if (ENABLE_WKD)
+    target_link_libraries(skaffari PRIVATE qca-qt5)
+    target_compile_definitions(skaffari PRIVATE WITH_WKD)
+endif (ENABLE_WKD)
 
 get_target_property(CUTELYST_VALIDATOR_DEFINITIONS Cutelyst::Utils::Validator INTERFACE_COMPILE_DEFINITIONS)
 string(FIND ${CUTELYST_VALIDATOR_DEFINITIONS} "CUTELYST_VALIDATOR_WITH_PWQUALITY" CUTELYST_VALIDATOR_CUTELYST_VALIDATOR_WITH_PWQUALITY)
