@@ -50,7 +50,7 @@ set(DEFVAL_ADM_PWROUNDS 32000 CACHE INTERNAL "Default admin password iteration c
 set(DEFVAL_ADM_PWMINLENGTH 8 CACHE INTERNAL "Default admin password minimum length")
 set(DEFVAL_ADM_PWTHRESHOLD 50 CACHE INTERNAL "Default admin password quality threshold")
 set(DEFVAL_DEF_DOMAINQUOTA 0 CACHE INTERNAL "Default domain quota for new domains in KiB")
-set(DEFVAL_DEF_LANGUAGE "en" CACHE INTERNAL "Default language")
+set(DEFVAL_DEF_LANGUAGE "en_US" CACHE INTERNAL "Default language")
 set(DEFVAL_DEF_MAXACCOUNTS 1000 CACHE INTERNAL "Default maximum accounts for new domains")
 set(DEFVAL_DEF_QUOTA 102400 CACHE INTERNAL "Default quota for new accounts in KiB")
 set(DEFVAL_DEF_TIMEZONE "UTC" CACHE INTERNAL "Default timezone")
