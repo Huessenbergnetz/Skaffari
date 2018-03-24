@@ -19,12 +19,13 @@
 #include "login.h"
 
 #include "utils/skaffariconfig.h"
+#include "utils/qtimezonevariant_p.h"
 
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/Authentication/authenticationuser.h>
 #include <Cutelyst/Plugins/Session/Session>
+
 #include <QHostAddress>
-#include <QTimeZone>
 
 Q_LOGGING_CATEGORY(SK_LOGIN, "skaffari.login")
 
@@ -55,6 +56,8 @@ void Login::index(Context *c)
                 Session::setValue(c, QStringLiteral("maxdisplay"), user.value(QStringLiteral("maxdisplay"), SkaffariConfig::defMaxdisplay()));
                 Session::setValue(c, QStringLiteral("warnlevel"), user.value(QStringLiteral("warnlevel"), SkaffariConfig::defWarnlevel()));
                 Session::setValue(c, QStringLiteral("lang"), QLocale(user.value(QStringLiteral("lang"), SkaffariConfig::defLanguage()).toString()));
+                QTimeZone tz(user.value(QStringLiteral("tz"), SkaffariConfig::defTimezone()).toByteArray());
+                Session::setValue(c, QStringLiteral("timeZone"), QVariant::fromValue<QTimeZone>(tz));
                 Session::setValue(c, QStringLiteral("tz"), user.value(QStringLiteral("tz"), SkaffariConfig::defTimezone()));
 
                 const QVariantList domList = user.value(QStringLiteral("domains")).toList();

@@ -70,6 +70,7 @@ extern "C"
 
 #include "utils/language.h"
 #include "utils/skaffariconfig.h"
+#include "utils/qtimezonevariant_p.h"
 
 #include "../common/config.h"
 #include "../common/global.h"
@@ -206,6 +207,7 @@ bool Skaffari::init()
     qRegisterMetaType<HelpHash>("HelpHash");
     qRegisterMetaType<EmailAddress>();
     qRegisterMetaType<SkaffariError>();
+    qRegisterMetaTypeStreamOperators<QTimeZone>("QTimeZone");
 
     Grantlee::registerMetaType<Folder>();
     Grantlee::registerMetaType<Domain>();

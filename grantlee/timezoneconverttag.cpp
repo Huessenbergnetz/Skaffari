@@ -29,6 +29,8 @@
 #include <QDateTime>
 #include <QTimeZone>
 
+Q_DECLARE_METATYPE(QTimeZone)
+
 Grantlee::Node *TimeZoneConvertTag::getNode(const QString &tagContent, Grantlee::Parser *p) const
 {
     QStringList parts = smartSplit(tagContent);
@@ -58,7 +60,7 @@ TimeZoneConvert::TimeZoneConvert(const Grantlee::FilterExpression &dateTime, con
 void TimeZoneConvert::render(Grantlee::OutputStream *stream, Grantlee::Context *gc) const
 {
     const QVariant dtVar = m_dateTime.resolve(gc);
-    const int dtVarType = dtVar.userType();
+    const auto dtVarType = dtVar.userType();
     if (dtVarType == qMetaTypeId<Grantlee::SafeString>()) {
         *stream << dtVar.value<Grantlee::SafeString>().get();
         return;
@@ -94,18 +96,12 @@ void TimeZoneConvert::render(Grantlee::OutputStream *stream, Grantlee::Context *
     }
 
     QDateTime dtVal = dtVar.toDateTime();
-    QDateTime retVal;
 
-    QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), QStringLiteral("UTC")).toByteArray());
-    if (Q_UNLIKELY(!userTz.isValid())) {
-        userTz = QTimeZone::utc();
-    }
+    const QTimeZone userTz = Cutelyst::Session::value(c, QStringLiteral("timeZone"), QVariant::fromValue<QTimeZone>(QTimeZone::utc())).value<QTimeZone>();
 
     if (userTz != QTimeZone::utc()) {
         dtVal.setTimeSpec(Qt::UTC);
-        retVal = dtVal.toTimeZone(userTz);
-    } else {
-        retVal = dtVal;
+        dtVal = dtVal.toTimeZone(userTz);
     }
 
     QString formatString;
@@ -120,9 +116,9 @@ void TimeZoneConvert::render(Grantlee::OutputStream *stream, Grantlee::Context *
     }
 
     if (formatString.isEmpty()) {
-        *stream << c->locale().toString(retVal, QLocale::ShortFormat);
+        *stream << c->locale().toString(dtVal, QLocale::ShortFormat);
     } else {
-        *stream << c->locale().toString(retVal, formatString);
+        *stream << c->locale().toString(dtVal, formatString);
     }
 }
 

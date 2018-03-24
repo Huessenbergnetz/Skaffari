@@ -41,6 +41,7 @@ set (skaffari_SRCS
     utils/utils.h
     utils/skaffariconfig.cpp
     utils/skaffariconfig.h
+    utils/qtimezonevariant_p.h
     accounteditor.cpp
     accounteditor.h
     admineditor.cpp
