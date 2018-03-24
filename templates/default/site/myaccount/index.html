@@ -71,7 +71,7 @@
                 <label for="lang" class="col-form-label">{{ help.lang.title }}</label>
                 <select class="form-control select2" id="lang" name="lang" aria-describedby="langDesc">
                     {% for lng in langs %}
-                    <option value="{{ lng.code }}"{% if lang == lng.code %} selected{% endif %}>{{ lng.name }}</option>
+                    <option value="{{ lng.code }}"{% if adminaccount.lang == lng.code %} selected{% endif %}>{{ lng.name }}</option>
                     {% endfor %}
                 </select>
                 <small id="langDesc" class="form-text text-muted">{{ help.lang.text }}</small>

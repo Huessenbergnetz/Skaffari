@@ -22,35 +22,35 @@
 #include "language.h"
 #include <QSharedData>
 #include <QLocale>
-#include <QStringList>
+#include <QCollator>
+
+class LanguageNameCollator : public QCollator
+{
+public:
+    explicit LanguageNameCollator(const QLocale &locale) :
+        QCollator(locale)
+    {}
+
+    bool operator() (const Language &left, const Language &right) { return (compare(left.name(), right.name())); }
+};
 
 class LanguageData : public QSharedData
 {
 public:
     LanguageData() {}
 
-    explicit LanguageData(const QString &_code) :
-        code(_code)
-    {
-        QLocale l(code);
-        name = l.nativeLanguageName();
-        if (code.size() > 2) {
-            name.append(QLatin1String(" ("));
-            name.append(l.nativeCountryName());
-            name.append(QLatin1Char(')'));
-        }
-    }
+    explicit LanguageData(const QLocale &_locale) :
+        locale(_locale)
+    {}
 
     LanguageData(const LanguageData &other) :
         QSharedData(other),
-        code(other.code),
-        name(other.name)
+        locale(other.locale)
     {}
 
     ~LanguageData() {}
 
-    QString code;
-    QString name;
+    QLocale locale;
 };
 
 #endif // LANGUAGE_P_H

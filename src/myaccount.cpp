@@ -106,7 +106,7 @@ void MyAccount::index(Context *c)
                      {QStringLiteral("template"), QStringLiteral("myaccount/index.html")},
                      {QStringLiteral("site_title"), c->translate("MyAccount", "My account")},
                      {QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac)},
-                     {QStringLiteral("langs"), QVariant::fromValue<QVector<Language>>(Language::supportedLangs())},
+                     {QStringLiteral("langs"), QVariant::fromValue<QVector<Language>>(Language::supportedLangs(c))},
                      {QStringLiteral("timezones"), QVariant::fromValue<QStringList>(tzIds)},
                      {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)}
                  });

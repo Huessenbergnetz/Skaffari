@@ -175,13 +175,10 @@ int WebCyradmImporter::exec() const
     quint8 imapencryption = SK_DEF_IMAP_ENCRYPTION;
     QString imappeername;
 
-    QString defaultLang = vars.value(QStringLiteral("DEFAULTLANG"));
     quota_size_t defaultQuota = vars.value(QStringLiteral("DEFAULT_QUOTA")).toLongLong();
     quota_size_t defaultDomainQuota = vars.value(QStringLiteral("DEFAULT_DOMAIN_QUOTA")).toLongLong();
     QString defaultTimezone;
     quint32 defaultMaxAccounts = 1000;
-
-    QStringList supportedLangs(SKAFFARI_SUPPORTED_LANGS);
 
     const QString pwtype = vars.value(QStringLiteral("CRYPT"));
     Password::Method accountsPwMethod = static_cast<Password::Method>(SK_DEF_ACC_PWMETHOD);
@@ -228,7 +225,6 @@ int WebCyradmImporter::exec() const
                    {QStringLiteral("UNIX hierarchy separator"), unixHierarchySep ? tr("yes") : tr("no")},
                    {QStringLiteral("Domain as prefix"), domainAsPrefix ? tr("yes") : tr("no")},
                    {QStringLiteral("FQUN"), fqun ? tr("yes") : tr("no")},
-                   {tr("Default language"), defaultLang},
                    {tr("Default domain quota"), QString::number(defaultDomainQuota) + QLatin1String("KiB")},
                    {tr("Default account quota"), QString::number(defaultQuota) + QLatin1String("KiB")},
                    {tr("Accounts password encryption"), accountsPwMethodString}
@@ -425,14 +421,7 @@ int WebCyradmImporter::exec() const
                                          }));
 
     defaultMaxAccounts = readInt(tr("Default maximum accounts"), defaultMaxAccounts, QStringList(tr("Default maximum account number for new domains.")));
-
-    if (!supportedLangs.contains(defaultLang)) {
-        if (!supportedLangs.contains(defaultLang.left(2))) {
-            defaultLang = readString(tr("Default language"), QStringLiteral(SK_DEF_DEF_LANGUAGE), QStringList(tr("The default language used for newly created administrators and as fallback option.")), supportedLangs);
-        } else {
-            defaultLang = defaultLang.left(2);
-        }
-    }
+    const auto defaultLang = readString(tr("Default language"), QStringLiteral(SK_DEF_DEF_LANGUAGE), QStringList(tr("The default language used for newly created administrators and as fallback option.")));
 
     while (!QTimeZone::isTimeZoneIdAvailable(defaultTimezone.toUtf8())) {
         defaultTimezone = readString(tr("Default timezone"), QStringLiteral(SK_DEF_DEF_TIMEZONE), QStringList(tr("Default timezone for newly created administrators and as fallback option. The timezone will be used to show localized date and time values. Please enter a valid IANA timezone ID.")));

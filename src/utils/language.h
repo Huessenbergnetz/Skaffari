@@ -25,6 +25,8 @@
 #include <QVariant>
 #include <QVector>
 
+class QLocale;
+
 namespace Cutelyst {
 class Context;
 }
@@ -39,7 +41,7 @@ class Language
 {
 public:
     Language();
-    explicit Language(const QString &langCode);
+    explicit Language(const QLocale &locale);
     Language(const Language &other);
     Language& operator=(const Language &other);
     ~Language();
@@ -48,8 +50,7 @@ public:
     QString name() const;
 
     static QStringList supportedLangsList();
-    static QVector<Language> supportedLangs();
-    static void setLang(Cutelyst::Context *c);
+    static QVector<Language> supportedLangs(Cutelyst::Context *c);
 
 private:
     QSharedDataPointer<LanguageData> d;

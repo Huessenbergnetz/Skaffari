@@ -279,28 +279,8 @@ bool Skaffari::init()
     view->engine()->addDefaultLibrary(QStringLiteral("grantlee_i18ntags"));
     view->engine()->addDefaultLibrary(QStringLiteral("grantlee_skaffari"));
 
-    /* Start loading translations */
     const QString tmplTransFilePath = tmplBasePath + QLatin1String("/l10n");
     view->loadTranslationsFromDir(tmplName, tmplBasePath + QLatin1String("/l10n"), QStringLiteral("_"));
-
-//    for (const QString &lang : SKAFFARI_SUPPORTED_LANGS) {
-//        if (Q_LIKELY(lang != QLatin1String("en"))) {
-//            qCDebug(SK_CORE, "Loading translations for language %s.", qUtf8Printable(lang));
-//            const QLocale locale(lang);
-//            if (Q_LIKELY(locale.language() != QLocale::C)) {
-//                auto tmplTrans = new QTranslator(this);
-//                if (Q_LIKELY(tmplTrans->load(locale, tmplTransFileName, QStringLiteral("_"), tmplTransFilePath))) {
-//                    view->addTranslator(locale, tmplTrans);
-//                } else {
-//                    qCWarning(SK_CORE, "Failed to load template translation file for language %s from %s.", qUtf8Printable(locale.bcp47Name()), qUtf8Printable(tmplTransFilePath));
-//                    delete tmplTrans;
-//                }
-//            } else {
-//                qCWarning(SK_CORE, "Invalid language code: %s", qUtf8Printable(lang));
-//            }
-//        }
-//    }
-    /* End loading translations */
 
     new Root(this);
     new Login(this);

@@ -224,7 +224,6 @@ void Root::defaultPage(Context *c)
 void Root::csrfdenied(Context *c)
 {
     c->res()->setStatus(403);
-    Language::setLang(c);
     if (Utils::isAjax(c)) {
         c->res()->setJsonObjectBody(QJsonObject({
                                               {QStringLiteral("error_msg"), QJsonValue(c->stash(QStringLiteral("error_msg")).toString())}
@@ -240,7 +239,6 @@ void Root::csrfdenied(Context *c)
 void Root::error(Context *c)
 {
     const SkaffariError e = SkaffariError::fromStash(c);
-    Language::setLang(c);
     QString error_text;
     QString error_title;
     if (e.type() == SkaffariError::NoError) {
@@ -283,8 +281,6 @@ void Root::error(Context *c)
 bool Root::Auto(Context* c)
 {
     const AuthenticationUser user = Authentication::user(c);
-
-//    Language::setLang(c);
 
     if (c->controller() == c->controller(QStringLiteral("Login"))) {
         return true;

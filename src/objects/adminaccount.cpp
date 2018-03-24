@@ -34,6 +34,7 @@
 #include <QJsonValue>
 #include <QDebug>
 #include <QMetaEnum>
+#include <QLocale>
 
 Q_LOGGING_CATEGORY(SK_ADMIN, "skaffari.admin")
 
@@ -588,10 +589,6 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVari
     Q_ASSERT_X(e, "update own account", "invalid error object");
     Q_ASSERT_X(!p.empty(), "update own account", "empty parameters");
 
-    const QString password = p.value(QStringLiteral("password")).toString();
-    const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
-    const QString tz = p.value(QStringLiteral("tz"), d->tz).toString();
-
     // for logging
     const QString errStr = AdminAccount::getUserNameIdString(c) + QLatin1String(" failed to update own account");
     const QByteArray errBa = errStr.toUtf8();
@@ -601,6 +598,19 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVari
         e->setErrorType(SkaffariError::AuthorizationError);
         e->setErrorText(c->translate("AdminAccount", "You are not allowed to change this administrator account."));
         qCWarning(SK_ADMIN, "%s: access denied.", err);
+        return ret;
+    }
+
+    const QString password = p.value(QStringLiteral("password")).toString();
+    const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
+    const QString tz = p.value(QStringLiteral("tz"), d->tz).toString();
+    const QString langCode = p.value(QStringLiteral("lang"), d->lang).toString();
+    const QLocale lang(langCode);
+
+    if (lang.language() == QLocale::C) {
+        e->setErrorType(SkaffariError::InputError);
+        e->setErrorText(c->translate("AdminAccount", "%1 is not a valid locale code.").arg(langCode));
+        qCWarning(SK_ADMIN, "%s: invalid locale code %s.", err, qUtf8Printable(langCode));
         return ret;
     }
 
@@ -645,12 +655,11 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVari
 
     const quint8 maxdisplay = p.value(QStringLiteral("maxdisplay"), d->maxDisplay).value<quint8>();
     const quint8 warnlevel = p.value(QStringLiteral("warnlevel"), d->warnLevel).value<quint8>();
-    const QString lang = p.value(QStringLiteral("lang"), d->lang).toString();
 
     q = CPreparedSqlQueryThread(QStringLiteral("UPDATE settings SET maxdisplay = :maxdisplay, warnlevel = :warnlevel, lang = :lang, tz = :tz WHERE admin_id = :admin_id"));
     q.bindValue(QStringLiteral(":maxdisplay"), maxdisplay);
     q.bindValue(QStringLiteral(":warnlevel"), warnlevel);
-    q.bindValue(QStringLiteral(":lang"), lang);
+    q.bindValue(QStringLiteral(":lang"), lang.name());
     q.bindValue(QStringLiteral(":admin_id"), d->id);
     q.bindValue(QStringLiteral(":tz"), tz);
 
@@ -667,15 +676,16 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVari
 
     d->maxDisplay = maxdisplay;
     d->warnLevel = warnlevel;
-    d->lang = lang;
+    d->lang = lang.name();
     d->tz = tz;
     d->updated = currentUtc;
 
+    c->setLocale(lang);
     c->stash({
                  {QStringLiteral("userMaxDisplay"), maxdisplay},
                  {QStringLiteral("userWarnLevel"), warnlevel},
                  {QStringLiteral("userTz"), tz},
-                 {QStringLiteral("lang"), lang}
+                 {QStringLiteral("lang"), lang.name()}
              });
 
     ret = true;
