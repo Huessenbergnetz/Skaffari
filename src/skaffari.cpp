@@ -46,6 +46,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLoggingCategory>
+#include <QMutexLocker>
 
 extern "C"
 {
@@ -87,6 +88,8 @@ extern "C"
 Q_LOGGING_CATEGORY(SK_CORE, "skaffari.core")
 
 using namespace Cutelyst;
+
+static QMutex mutex;
 
 bool Skaffari::isInitialized = false;
 bool Skaffari::messageHandlerInstalled = false;
@@ -339,10 +342,9 @@ bool Skaffari::init()
 
 bool Skaffari::postFork()
 {
+    QMutexLocker locker(&mutex);
 
-    initDb();
-
-    return true;
+    return initDb();
 }
 
 bool Skaffari::initDb() const
