@@ -151,16 +151,12 @@ void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
                                                          "ON DUPLICATE KEY UPDATE "
                                                          "option_value = :option_value"));
     if (!options.empty()) {
-        QVariantHash::const_iterator i = options.constBegin();
+        auto i = options.constBegin();
         while (i != options.constEnd()) {
-            if (!i.value().isNull() && i.value().isValid()) {
-                q.bindValue(QStringLiteral(":option_name"), i.key());
-                q.bindValue(QStringLiteral(":option_value"), i.value());
-                if (Q_UNLIKELY(!q.exec())) {
-                    qCWarning(SK_CONFIG, "Failed to save value %s for option %s in database: %s", qUtf8Printable(i.value().toString()), qUtf8Printable(i.key()), qUtf8Printable(q.lastError().text()));
-                }
-            } else {
-                qCWarning(SK_CONFIG, "Can not save invalid value for option %s.", qUtf8Printable(i.key()));
+            q.bindValue(QStringLiteral(":option_name"), i.key());
+            q.bindValue(QStringLiteral(":option_value"), i.value());
+            if (Q_UNLIKELY(!q.exec())) {
+                qCWarning(SK_CONFIG, "Failed to save value %s for option %s in database: %s", qUtf8Printable(i.value().toString()), qUtf8Printable(i.key()), qUtf8Printable(q.lastError().text()));
             }
             ++i;
         }
@@ -185,6 +181,7 @@ void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
 QVariantHash SkaffariConfig::getSettingsFromDB()
 {
     QVariantHash s;
+    s.reserve(13);
 
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), SkaffariConfig::m_defDomainquota);
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), SkaffariConfig::m_defQuota);
