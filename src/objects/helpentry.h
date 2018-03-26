@@ -31,13 +31,56 @@ class HelpEntryData;
 class HelpEntry
 {
 public:
+    /*!
+     * \brief Constructs an invalid, empty %HelpEntry object.
+     */
     HelpEntry();
+
+    /*!
+     * \brief Constructs a new %HelpEntry with the given parameters.
+     * \param title Title of the help entry.
+     * \param text  Text of the help entry.
+     */
     HelpEntry(const QString &title, const QString &text);
+
+    /*!
+     * \brief Contstructs a copy of \a other.
+     */
     HelpEntry(const HelpEntry &other);
+
+    /*!
+     * \brief Move-constructs a %HelpEntry instance, making it point to the same object that \a other was pointing to.
+     */
+    HelpEntry(HelpEntry &&other) noexcept;
+
+    /*!
+     * \brief Assings \a other to this %HelpEntry instance and returns a reference to this %HelpEntry.
+     */
     HelpEntry& operator=(const HelpEntry &other);
+
+    /*!
+     * \brief Move-assigns \a other to this %HelpEntry instance.
+     */
+    HelpEntry& operator=(HelpEntry &&other) noexcept;
+
+    /*!
+     * \brief Destroys this %HelpEntry instance.
+     */
     ~HelpEntry();
 
+    /*!
+     * \brief Swapts this %HelpEntry instance with \a other.
+     */
+    void swap(HelpEntry &other) noexcept;
+
+    /*!
+     * \brief Returns the title of the help entry.
+     */
     QString getTitle() const;
+
+    /*!
+     * \brief Returns the help text.
+     */
     QString getText() const;
 
 protected:

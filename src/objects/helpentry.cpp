@@ -17,6 +17,7 @@
  */
 
 #include "helpentry_p.h"
+#include <algorithm>
 
 HelpEntry::HelpEntry() :
     d(new HelpEntryData)
@@ -36,15 +37,32 @@ HelpEntry::HelpEntry(const HelpEntry &other) :
 
 }
 
+HelpEntry::HelpEntry(HelpEntry &&other) noexcept :
+    d(std::move(other.d))
+{
+
+}
+
 HelpEntry& HelpEntry::operator =(const HelpEntry &other)
 {
     d = other.d;
     return *this;
 }
 
+HelpEntry& HelpEntry::operator=(HelpEntry &&other) noexcept
+{
+    swap(other);
+    return *this;
+}
+
 HelpEntry::~HelpEntry()
 {
 
+}
+
+void HelpEntry::swap(HelpEntry &other) noexcept
+{
+    std::swap(d, other.d);
 }
 
 QString HelpEntry::getTitle() const
