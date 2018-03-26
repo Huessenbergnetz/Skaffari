@@ -23,11 +23,11 @@
 #include "adminaccount.h"
 #include <QString>
 #include <QSharedDataPointer>
-#include <grantlee5/grantlee/metatype.h>
 #include <QVariant>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QLoggingCategory>
+#include <grantlee5/grantlee/metatype.h>
 
 Q_DECLARE_LOGGING_CATEGORY(SK_SIMPLEACCOUNT)
 
@@ -64,14 +64,29 @@ public:
     SimpleAccount(const SimpleAccount &other);
 
     /*!
+     * \brief Move constructs a %SimpleAccount instance, making it point at the same object that \a ohter was pointing to.
+     */
+    SimpleAccount(SimpleAccount &&other) noexcept;
+
+    /*!
      * \brief Assigns \a other to this simple account and returns a reference to this simple account.
      */
     SimpleAccount& operator=(const SimpleAccount &other);
 
     /*!
+     * \brief Move-assigns \a other to this %SimpleAccount instance.
+     */
+    SimpleAccount& operator=(SimpleAccount &&other) noexcept;
+
+    /*!
      * \brief Destroys the simple account.
      */
     ~SimpleAccount();
+
+    /*!
+     * \brief Swaps this %SimpleAccount instance with \a other.
+     */
+    void swap(SimpleAccount &other) noexcept;
 
     /*!
      * \brief Returns the database ID.

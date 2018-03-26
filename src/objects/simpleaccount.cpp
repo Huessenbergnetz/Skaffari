@@ -25,6 +25,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QJsonValue>
+#include <algorithm>
 
 Q_LOGGING_CATEGORY(SK_SIMPLEACCOUNT, "skaffari.simpleaccount")
 
@@ -45,15 +46,32 @@ SimpleAccount::SimpleAccount(const SimpleAccount &other) :
 
 }
 
+SimpleAccount::SimpleAccount(SimpleAccount &&other) noexcept :
+    d(other.d)
+{
+    other.d = nullptr;
+}
+
 SimpleAccount& SimpleAccount::operator=(const SimpleAccount &other)
 {
     d = other.d;
     return *this;
 }
 
+SimpleAccount& SimpleAccount::operator=(SimpleAccount &&other) noexcept
+{
+    swap(other);
+    return *this;
+}
+
 SimpleAccount::~SimpleAccount()
 {
 
+}
+
+void SimpleAccount::swap(SimpleAccount &other) noexcept
+{
+    std::swap(d, other.d);
 }
 
 dbid_t SimpleAccount::id() const
@@ -156,9 +174,7 @@ std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariErr
     }
 
     while (q.next()) {
-        lst.push_back(SimpleAccount(q.value(0).value<dbid_t>(),
-                                    q.value(1).toString(),
-                                    QUrl::fromAce(q.value(2).toByteArray())));
+        lst.emplace_back(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
     }
 
     if (lst.size() > 1) {
