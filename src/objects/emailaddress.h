@@ -59,14 +59,29 @@ public:
     EmailAddress(const EmailAddress &other);
 
     /*!
+     * \brief Move-constructs an %EmailAddress instance, making it point at the same object that \a other was pointing to.
+     */
+    EmailAddress(EmailAddress &&other) noexcept;
+
+    /*!
      * \brief Assigns \a other to this email address and returns a reference to this address.
      */
     EmailAddress& operator=(const EmailAddress &other);
 
     /*!
+     * \brief Move-assigns \a other to this %EmailAddress instance.
+     */
+    EmailAddress& operator=(EmailAddress &&other) noexcept;
+
+    /*!
      * \brief Destroys the %EmailAddress object.
      */
     ~EmailAddress();
+
+    /*!
+     * \brief Swaps this %EmailAddress instance with \a other.
+     */
+    void swap(EmailAddress &other) noexcept;
 
     /*!
      * \brief The database ID.

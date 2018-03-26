@@ -36,19 +36,12 @@ public:
 class EmailAddressData : public QSharedData
 {
 public:
-    EmailAddressData() {}
+    EmailAddressData() = default;
 
     EmailAddressData(dbid_t _id, dbid_t _aceId, const QString &_name) :
         name(_name),
         id(_id),
         aceId(_aceId)
-    {}
-
-    EmailAddressData(const EmailAddressData &other) :
-        QSharedData(other),
-        name(other.name),
-        id(other.id),
-        aceId(other.aceId)
     {}
 
     ~EmailAddressData() {}

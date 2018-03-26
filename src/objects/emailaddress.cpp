@@ -41,15 +41,32 @@ EmailAddress::EmailAddress(const EmailAddress &other) :
 
 }
 
+EmailAddress::EmailAddress(EmailAddress &&other) noexcept :
+    d(other.d)
+{
+
+}
+
 EmailAddress& EmailAddress::operator=(const EmailAddress &other)
 {
     d = other.d;
     return *this;
 }
 
+EmailAddress& EmailAddress::operator=(EmailAddress &&other) noexcept
+{
+    swap(other);
+    return *this;
+}
+
 EmailAddress::~EmailAddress()
 {
 
+}
+
+void EmailAddress::swap(EmailAddress &other) noexcept
+{
+    std::swap(d, other.d);
 }
 
 dbid_t EmailAddress::id() const
@@ -123,9 +140,7 @@ std::vector<EmailAddress> EmailAddress::list(Cutelyst::Context *c, SkaffariError
         while (q.next()) {
             const QString address = q.value(2).toString();
             if (Q_LIKELY(!address.startsWith(QLatin1Char('@')))) {
-                lst.push_back(EmailAddress(q.value(0).value<dbid_t>(),
-                                           q.value(1).value<dbid_t>(),
-                                           address));
+                lst.emplace_back(q.value(0).value<dbid_t>(), q.value(1).value<dbid_t>(), address);
             }
         }
 
