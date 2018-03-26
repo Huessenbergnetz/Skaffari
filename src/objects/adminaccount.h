@@ -78,9 +78,9 @@ public:
      */
     enum AdminAccountType : quint8 {
         Disabled        = 0,
-        DomainMaster    = 127,    /**< a domain manager, that can only modify certain domains */
+        DomainMaster    = 127,  /**< a domain manager, that can only modify certain domains */
         Administrator   = 254,  /**< an administartor account that can create new domain masters and domains, but not other administrators or super users */
-        SuperUser       = 255     /**< a super user account, that has all rights, especially that can create all other admin accounts */
+        SuperUser       = 255   /**< a super user account, that has all rights, especially that can create all other admin accounts */
     };
     Q_ENUM(AdminAccountType)
 

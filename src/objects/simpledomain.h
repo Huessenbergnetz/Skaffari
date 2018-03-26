@@ -19,16 +19,15 @@
 #ifndef SIMPLEDOMAIN_H
 #define SIMPLEDOMAIN_H
 
+#include "../../common/global.h"
+#include <grantlee5/grantlee/metatype.h>
 #include <QString>
 #include <QSharedDataPointer>
-#include <grantlee5/grantlee/metatype.h>
 #include <QVariant>
 #include <QJsonArray>
-#include "../../common/global.h"
 
 namespace Cutelyst {
 class Context;
-class AuthenticationUser;
 }
 
 class SkaffariError;
@@ -57,14 +56,29 @@ public:
     SimpleDomain(const SimpleDomain &other);
 
     /*!
+     * \brief Move-constructs a %SimpleDomain instance, making it point at the same object that \a other was pointing to.
+     */
+    SimpleDomain(SimpleDomain &&other) noexcept;
+
+    /*!
      * \brief Assigns \a other to this simple domain and returns a reference to this simple domain.
      */
     SimpleDomain& operator=(const SimpleDomain &other);
 
     /*!
+     * \brief Move-assigns \a other to this %SimpleDomain instance.
+     */
+    SimpleDomain& operator=(SimpleDomain &&other) noexcept;
+
+    /*!
      * \brief Destroys the simple domain.
      */
     ~SimpleDomain();
+
+    /*!
+     * \brief Swaps this %SimpleDomain instance with \a other.
+     */
+    void swap(SimpleDomain &other) noexcept;
 
     /*!
      * \brief Returns the databas ID.
@@ -114,18 +128,21 @@ public:
 
     /*!
      * \brief Returns a list of domains for the admin defined by \a adminId.
-     * \param c         Pointer to the current context, used for localization.
-     * \param e         Pointer to an object taking occurring errors.
-     * \param userType  The type of the admin user to determine domain access.
-     * \param adminId   The database ID of the admin user to determine domain access.
-     * \return          List of simple domain objects.
+     * \param c             Pointer to the current context, used for localization.
+     * \param e             Pointer to an object taking occurring errors.
+     * \param userType      The type of the admin user to determine domain access.
+     * \param adminId       The database ID of the admin user to determine domain access.
+     * \param orphansOnly   Only return domains that do not have a parent domain.
      */
-    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, bool orphansOnly = false);
+    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, quint8 userType, dbid_t adminId, bool orphansOnly = false);
 
     /*!
-     * \overload
+     * \brief Returns a list of domains for the currently logged in administrator.
+     * \param c             Pointer to the current context, used for localization and getting the current admin.
+     * \param e             Pointer to an object taking occuring errors.
+     * \param orphansOnly   Only return domains that do not have a parent domain.
      */
-    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::AuthenticationUser &admin);
+    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, bool orphansOnly = false);
 
     /*!
      * \brief Returns a JSON array of domains for the admin defined by \a adminId.
@@ -133,16 +150,14 @@ public:
      * \param e         Pointer to an object taking occurring errors.
      * \param userType  The type of the admin user to determine domain access.
      * \param adminId   The database ID of the admin user to determine domain access.
-     * \return          JSON array containing objects with domain ID and domain name.
      */
-    static QJsonArray listJson(Cutelyst::Context *c , SkaffariError *e, qint16 userType, dbid_t adminId);
+    static QJsonArray listJson(Cutelyst::Context *c , SkaffariError *e, quint8 userType, dbid_t adminId, bool orphansOnly = false);
 
     /*!
-     * \brief Returns a single simpled domain object identified by its database \a id.
+     * \brief Returns a single simple domain object identified by its database \a id.
      * \param c     Pointer to the current context, used for localization.
      * \param e     Pointer to an object taking occurring errors.
      * \param id    The database ID of the domain to retrieve.
-     * \return      Simple domain object.
      */
     static SimpleDomain get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
 
@@ -152,6 +167,12 @@ private:
 
 Q_DECLARE_METATYPE(SimpleDomain)
 Q_DECLARE_TYPEINFO(SimpleDomain, Q_MOVABLE_TYPE);
+
+/*!
+ * \relates SimpleDomain
+ * \brief Writes the \a domain to the \a debug stream and returns the stream.
+ */
+QDebug operator<<(QDebug debug, const SimpleDomain &domain);
 
 GRANTLEE_BEGIN_LOOKUP(SimpleDomain)
 QVariant var;

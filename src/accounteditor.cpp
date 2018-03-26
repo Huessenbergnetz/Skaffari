@@ -619,10 +619,8 @@ void AccountEditor::add_address(Context *c)
     }
 
     if (d.isFreeAddressEnabled()) {
-        const AuthenticationUser user = Authentication::user(c);
         SkaffariError sde(c);
-        std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user);
-        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
+        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(SimpleDomain::list(c, &sde)));
     } else if (!d.children().empty()) {
         QVector<SimpleDomain> maildomains = d.children();
         maildomains.prepend(d.toSimple());

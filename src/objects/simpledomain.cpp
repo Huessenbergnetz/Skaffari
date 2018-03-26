@@ -18,14 +18,17 @@
 
 #include "simpledomain_p.h"
 #include "skaffarierror.h"
+#include "adminaccount.h"
 #include <Cutelyst/Context>
 #include <Cutelyst/Plugins/Utils/Sql>
+#include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/Authentication/authenticationuser.h>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QUrl>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QDebug>
 
 SimpleDomain::SimpleDomain() : d(new SimpleDomainData)
 {
@@ -44,15 +47,32 @@ SimpleDomain::SimpleDomain(const SimpleDomain &other) :
 
 }
 
+SimpleDomain::SimpleDomain(SimpleDomain &&other) noexcept :
+    d(std::move(other.d))
+{
+    other.d = nullptr;
+}
+
 SimpleDomain& SimpleDomain::operator=(const SimpleDomain &other)
 {
     d = other.d;
     return *this;
 }
 
+SimpleDomain& SimpleDomain::operator=(SimpleDomain &&other) noexcept
+{
+    swap(other);
+    return *this;
+}
+
 SimpleDomain::~SimpleDomain()
 {
 
+}
+
+void SimpleDomain::swap(SimpleDomain &other) noexcept
+{
+    std::swap(d, other.d);
 }
 
 dbid_t SimpleDomain::id() const
@@ -85,7 +105,7 @@ bool SimpleDomain::isValid() const
 }
 
 
-std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId, bool orphansOnly)
+std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, quint8 userType, dbid_t adminId, bool orphansOnly)
 {
     std::vector<SimpleDomain> lst;
 
@@ -94,7 +114,7 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
 
     QSqlQuery q;
 
-    if (userType == 0) {
+    if (userType >= AdminAccount::Administrator) {
         if (orphansOnly) {
             q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, domain_name FROM domain WHERE idn_id = 0 AND parent_id = 0 ORDER BY domain_name ASC"));
         } else {
@@ -130,20 +150,23 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
     return lst;
 }
 
-std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, const Cutelyst::AuthenticationUser &admin)
+std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, bool orphansOnly)
 {
-    return list(c, e, admin.value(QStringLiteral("type")).value<quint8>(), admin.id().value<dbid_t>());
+    std::vector<SimpleDomain> lst;
+    const auto user = Cutelyst::Authentication::user(c);
+    lst = list(c, e, user.value(QStringLiteral("type")).value<quint8>(), user.id().value<dbid_t>(), orphansOnly);
+    return lst;
 }
 
 
-QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError *e, qint16 userType, dbid_t adminId)
+QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError *e, quint8 userType, dbid_t adminId, bool orphansOnly)
 {
     QJsonArray lst;
 
     Q_ASSERT_X(c, "list simple domains as JSON", "invalid context object");
     Q_ASSERT_X(e, "list simple domains as JSON", "invalid error object");
 
-    const std::vector<SimpleDomain> _lst = SimpleDomain::list(c, e, userType, adminId);
+    const std::vector<SimpleDomain> _lst = SimpleDomain::list(c, e, userType, adminId, orphansOnly);
 
     if (!_lst.empty()) {
         for (const SimpleDomain &sd : _lst) {
@@ -182,4 +205,15 @@ SimpleDomain SimpleDomain::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
     dom.setData(id, q.value(0).toString());
 
     return dom;
+}
+
+QDebug operator<<(QDebug debug, const SimpleDomain &domain)
+{
+    QDebugStateSaver saver(debug);
+    Q_UNUSED(saver);
+    debug.nospace() << "Domain(";
+    debug << "ID: " << domain.id();
+    debug << ", Name: " << domain.name();
+    debug << ')';
+    return debug.maybeSpace();
 }

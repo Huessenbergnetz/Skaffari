@@ -43,11 +43,11 @@ public:
         id(_id)
     {}
 
-    SimpleDomainData(const SimpleDomainData &other) :
-        QSharedData(other),
-        name(other.name),
-        id(other.id)
-    {}
+//    SimpleDomainData(const SimpleDomainData &other) :
+//        QSharedData(other),
+//        name(other.name),
+//        id(other.id)
+//    {}
 
     ~SimpleDomainData() {}
 
