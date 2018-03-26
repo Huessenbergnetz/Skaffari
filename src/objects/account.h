@@ -84,14 +84,29 @@ public:
     Account(const Account &other);
 
     /*!
+     * \brief Move-constructs an %Account instance, making it point to the same object that \a other was pointing to.
+     */
+    Account(Account &&other) noexcept;
+
+    /*!
      * \brief Assigns \a other to this %Account.
      */
     Account& operator=(const Account &other);
 
     /*!
+     * \brief Move-assigns \a other to this %Account instance.
+     */
+    Account& operator=(Account &&other) noexcept;
+
+    /*!
      * \brief Destroys the %Account object and frees any allocated resources.
      */
     ~Account();
+
+    /*!
+     * \brief Swaps this %Account instance with \a other.
+     */
+    void swap(Account &other) noexcept;
 
     /*!
      * \brief Strategy for mailbox creation on IMAP server.

@@ -69,15 +69,32 @@ Account::Account(const Account &other) :
 
 }
 
+Account::Account(Account &&other) noexcept :
+    d(std::move(other.d))
+{
+    other.d = nullptr;
+}
+
 Account& Account::operator=(const Account &other)
 {
     d = other.d;
     return *this;
 }
 
+Account& Account::operator=(Account &&other) noexcept
+{
+    swap(other);
+    return *this;
+}
+
 Account::~Account()
 {
 
+}
+
+void Account::swap(Account &other) noexcept
+{
+    std::swap(d, other.d);
 }
 
 dbid_t Account::id() const

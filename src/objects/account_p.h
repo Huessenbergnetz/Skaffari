@@ -48,27 +48,27 @@ public:
         catchAll(_catchAll)
     {}
 
-    AccountData(const AccountData &other) :
-        QSharedData(other),
-        quota(other.quota),
-        usage(other.usage),
-        addresses(other.addresses),
-        forwards(other.forwards),
-        username(other.username),
-        created(other.created),
-        updated(other.updated),
-        validUntil(other.validUntil),
-        passwordExpires(other.passwordExpires),
-        id(other.id),
-        domainId(other.domainId),
-        status(other.status),
-        imap(other.imap),
-        pop(other.pop),
-        sieve(other.sieve),
-        smtpauth(other.smtpauth),
-        keepLocal(other.keepLocal),
-        catchAll(other.catchAll)
-    {}
+//    AccountData(const AccountData &other) :
+//        QSharedData(other),
+//        quota(other.quota),
+//        usage(other.usage),
+//        addresses(other.addresses),
+//        forwards(other.forwards),
+//        username(other.username),
+//        created(other.created),
+//        updated(other.updated),
+//        validUntil(other.validUntil),
+//        passwordExpires(other.passwordExpires),
+//        id(other.id),
+//        domainId(other.domainId),
+//        status(other.status),
+//        imap(other.imap),
+//        pop(other.pop),
+//        sieve(other.sieve),
+//        smtpauth(other.smtpauth),
+//        keepLocal(other.keepLocal),
+//        catchAll(other.catchAll)
+//    {}
 
     ~AccountData() {}
 
