@@ -55,28 +55,28 @@ public:
         freeAddress(_freeAddress)
     {}
 
-    DomainData(const DomainData &other) :
-        QSharedData(other),
-        quota(other.quota),
-        domainQuota(other.domainQuota),
-        domainQuotaUsed(other.domainQuotaUsed),
-        children(other.children),
-        admins(other.admins),
-        folders(other.folders),
-        parent(other.parent),
-        name(other.name),
-        prefix(other.prefix),
-        transport(other.transport),
-        created(other.created),
-        updated(other.updated),
-        validUntil(other.validUntil),
-        id(other.id),
-        ace_id(other.ace_id),
-        maxAccounts(other.maxAccounts),
-        accounts(other.accounts),
-        freeNames(other.freeNames),
-        freeAddress(other.freeAddress)
-    {}
+//    DomainData(const DomainData &other) :
+//        QSharedData(other),
+//        quota(other.quota),
+//        domainQuota(other.domainQuota),
+//        domainQuotaUsed(other.domainQuotaUsed),
+//        children(other.children),
+//        admins(other.admins),
+//        folders(other.folders),
+//        parent(other.parent),
+//        name(other.name),
+//        prefix(other.prefix),
+//        transport(other.transport),
+//        created(other.created),
+//        updated(other.updated),
+//        validUntil(other.validUntil),
+//        id(other.id),
+//        ace_id(other.ace_id),
+//        maxAccounts(other.maxAccounts),
+//        accounts(other.accounts),
+//        freeNames(other.freeNames),
+//        freeAddress(other.freeAddress)
+//    {}
 
     ~DomainData() {}
 

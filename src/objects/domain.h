@@ -108,14 +108,29 @@ public:
     Domain(const Domain &other);
 
     /*!
+     * \brief Move-constructs a %Domain instance, making it point at the same object that \a other was pointing to.
+     */
+    Domain(Domain &&other) noexcept;
+
+    /*!
      * \brief Assigns \a other to this domain and returns a reference to this domain.
      */
     Domain& operator=(const Domain &other);
 
     /*!
+     * \brief Move-assigns \a other to this %Domain instance.
+     */
+    Domain& operator=(Domain &&other) noexcept;
+
+    /*!
      * Destroys the domain.
      */
     ~Domain();
+
+    /*!
+     * \brief Swaps this %Domain instance with \a other.
+     */
+    void swap(Domain &other) noexcept;
 
     /*!
      * \brief Returns the database ID of the domain.

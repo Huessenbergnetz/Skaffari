@@ -74,15 +74,32 @@ Domain::Domain(const Domain& other) :
 
 }
 
+Domain::Domain(Domain &&other) noexcept :
+    d(std::move(other.d))
+{
+    other.d = nullptr;
+}
+
 Domain& Domain::operator=(const Domain& other)
 {
     d = other.d;
     return *this;
 }
 
+Domain& Domain::operator=(Domain &&other) noexcept
+{
+    swap(other);
+    return *this;
+}
+
 Domain::~Domain()
 {
 
+}
+
+void Domain::swap(Domain &other) noexcept
+{
+    std::swap(d, other.d);
 }
 
 dbid_t Domain::id() const
