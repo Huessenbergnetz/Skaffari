@@ -32,19 +32,63 @@ class FolderData;
 class Folder
 {
 public:
+    /*!
+     * \brief Constructs an invalid, empty %Folder object.
+     */
     Folder();
+
+    /*!
+     * \brief Constructs a new %Folder with the given parameters.
+     * \param id        Database ID.
+     * \param domainId  Database ID of the domain the folder belongs to.
+     * \param name      Name of the folder.
+     */
     Folder(dbid_t id, dbid_t domainId, const QString &name);
+
+    /*!
+     * \brief Constructs a copy of \a other.
+     */
     Folder(const Folder &other);
+
+    /*!
+     * \brief Move-constructs a %Folder instance, making it point at the same object that \a other was pointing to.
+     */
+    Folder(Folder &&other) noexcept;
+
+    /*!
+     * \brief Assigns \a other to ths %Folder and returns a reference to this %Folder.
+     */
     Folder& operator=(const Folder &other);
+
+    /*!
+     * \brief Move-assigns \a other to this %Folder.
+     */
+    Folder& operator=(Folder &&other) noexcept;
+
+    /*!
+     * \brief Destroys the %Folder object.
+     */
     ~Folder();
 
-    dbid_t getId() const;
-    dbid_t getDomainId() const;
-    QString getName() const;
+    /*!
+     * \brief Swaps this %Folder instance with \a other.
+     */
+    void swap(Folder &other) noexcept;
 
-    void setId(dbid_t id);
-    void setDomainId(dbid_t domainId);
-    void setName(const QString &name);
+    /*!
+     * \brief Returns the database ID of the folder.
+     */
+    dbid_t getId() const;
+
+    /*!
+     * \brief Returns the database ID of the domain the folder belongs to.
+     */
+    dbid_t getDomainId() const;
+
+    /*!
+     * \brief Returns the name of the folder.
+     */
+    QString getName() const;
 
 protected:
     QSharedDataPointer<FolderData> d;

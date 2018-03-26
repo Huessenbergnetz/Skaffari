@@ -25,19 +25,12 @@
 class FolderData : public QSharedData
 {
 public:
-    FolderData() {}
+    FolderData() = default;
 
     FolderData(dbid_t _id, dbid_t _domainId, const QString &_name) :
         name(_name),
         id(_id),
         domainId(_domainId)
-    {}
-
-    FolderData(const FolderData &other) :
-        QSharedData(other),
-        name(other.name),
-        id(other.id),
-        domainId(other.domainId)
     {}
 
     ~FolderData() {}

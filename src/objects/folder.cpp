@@ -17,6 +17,7 @@
  */
 
 #include "folder_p.h"
+#include <algorithm>
 
 Folder::Folder() :
     d(new FolderData)
@@ -24,13 +25,11 @@ Folder::Folder() :
 
 }
 
-
 Folder::Folder(dbid_t id, dbid_t domainId, const QString &name) :
     d(new FolderData(id, domainId, name))
 {
 
 }
-
 
 Folder::Folder(const Folder &other) :
     d(other.d)
@@ -38,6 +37,11 @@ Folder::Folder(const Folder &other) :
 
 }
 
+Folder::Folder(Folder &&other) noexcept :
+    d(other.d)
+{
+
+}
 
 Folder& Folder::operator=(const Folder &other)
 {
@@ -45,45 +49,33 @@ Folder& Folder::operator=(const Folder &other)
     return *this;
 }
 
+Folder& Folder::operator=(Folder &&other) noexcept
+{
+    swap(other);
+    return *this;
+}
 
 Folder::~Folder()
 {
 
 }
 
+void Folder::swap(Folder &other) noexcept
+{
+    std::swap(d, other.d);
+}
 
 dbid_t Folder::getId() const
 {
     return d->id;
 }
 
-
-void Folder::setId(dbid_t id)
-{
-    d->id = id;
-}
-
-
 dbid_t Folder::getDomainId() const
 {
     return d->domainId;
 }
 
-
-void Folder::setDomainId(dbid_t domainId)
-{
-    d->domainId = domainId;
-}
-
-
 QString Folder::getName() const
 {
     return d->name;
 }
-
-
-void Folder::setName(const QString &name)
-{
-    d->name = name;
-}
-
