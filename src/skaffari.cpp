@@ -198,18 +198,18 @@ bool Skaffari::init()
 
     qRegisterMetaType<quota_size_t>("quota_size_t");
     qRegisterMetaType<dbid_t>("dbid_t");
-    qRegisterMetaType<Folder>();
-    qRegisterMetaType<Domain>();
-    qRegisterMetaType<SimpleAdmin>();
-    qRegisterMetaType<SimpleDomain>();
-    qRegisterMetaType<SimpleAccount>();
-    qRegisterMetaType<AdminAccount>();
-    qRegisterMetaType<Language>();
-    qRegisterMetaType<Account>();
-    qRegisterMetaType<HelpEntry>();
+//    qRegisterMetaType<Folder>();
+//    qRegisterMetaType<Domain>();
+//    qRegisterMetaType<SimpleAdmin>();
+//    qRegisterMetaType<SimpleDomain>();
+//    qRegisterMetaType<SimpleAccount>();
+//    qRegisterMetaType<AdminAccount>();
+//    qRegisterMetaType<Language>();
+//    qRegisterMetaType<Account>();
+//    qRegisterMetaType<HelpEntry>();
     qRegisterMetaType<HelpHash>("HelpHash");
-    qRegisterMetaType<EmailAddress>();
-    qRegisterMetaType<SkaffariError>();
+//    qRegisterMetaType<EmailAddress>();
+//    qRegisterMetaType<SkaffariError>();
     qRegisterMetaTypeStreamOperators<QTimeZone>("QTimeZone");
 
     Grantlee::registerMetaType<Folder>();
