@@ -353,8 +353,8 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
     aa.setUsername(username);
     aa.setType(type);
     aa.setDomains(domIds);
-    aa.setLang(QStringLiteral("en"));
-    aa.setTz(QByteArrayLiteral("UTC"));
+    aa.setLang(SkaffariConfig::defLanguage());
+    aa.setTz(SkaffariConfig::defTimezone());
     aa.setTemplate(QStringLiteral("default"));
     aa.setMaxDisplay(25);
     aa.setWarnLevel(90);
@@ -367,15 +367,14 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
     return aa;
 }
 
-QVector<AdminAccount> AdminAccount::list(Cutelyst::Context *c, SkaffariError *error)
+std::vector<AdminAccount> AdminAccount::list(Cutelyst::Context *c, SkaffariError *error)
 {
-    QVector<AdminAccount> list;
+    std::vector<AdminAccount> list;
 
     Q_ASSERT_X(c, "list admins", "invalid context object");
     Q_ASSERT_X(error, "list admins", "invalid error object");
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, username, type FROM adminuser ORDER BY username ASC"));
-    q.bindValue(QStringLiteral(":type"), static_cast<quint8>(AdminAccount::getUserType(c)));
 
     if (Q_UNLIKELY(!q.exec())) {
         error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query list of admins from database."));
@@ -386,10 +385,10 @@ QVector<AdminAccount> AdminAccount::list(Cutelyst::Context *c, SkaffariError *er
     list.reserve(q.size());
 
     while (q.next()) {
-        list.push_back(AdminAccount(q.value(0).value<dbid_t>(),
-                                    q.value(1).toString(),
-                                    q.value(2).value<quint8>(),
-                                    QList<dbid_t>()));
+        list.emplace_back(q.value(0).value<dbid_t>(),
+                          q.value(1).toString(),
+                          q.value(2).value<quint8>(),
+                          QList<dbid_t>());
     }
 
     return list;

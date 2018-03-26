@@ -28,6 +28,7 @@
 #include <QVariant>
 #include <QCryptographicHash>
 #include <QJsonObject>
+#include <vector>
 
 namespace Cutelyst {
 class Context;
@@ -329,7 +330,7 @@ public:
      * \param c     pointer to the current context, used for translating strings
      * \param error pointer to an object taking error information
      */
-    static QVector<AdminAccount> list(Cutelyst::Context *c, SkaffariError *error);
+    static std::vector<AdminAccount> list(Cutelyst::Context *c, SkaffariError *error);
 
     /*!
      * \brief Returns a single administrator account from the database identified by the database \a id.

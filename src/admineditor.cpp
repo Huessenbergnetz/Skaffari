@@ -67,14 +67,14 @@ bool AdminEditor::Auto(Context *c)
 void AdminEditor::index(Context *c)
 {
     SkaffariError e(c);
-    QVector<AdminAccount> accounts = AdminAccount::list(c, &e);
+   const auto accounts = AdminAccount::list(c, &e);
 
     if (Q_UNLIKELY(e.type() != SkaffariError::NoError)) {
         c->setStash(QStringLiteral("error_msg"), e.errorText());
     }
 
     c->stash({
-                 {QStringLiteral("adminaccounts"), QVariant::fromValue<QVector<AdminAccount>>(accounts)},
+                 {QStringLiteral("adminaccounts"), QVariant::fromValue<std::vector<AdminAccount>>(accounts)},
                  {QStringLiteral("template"), QStringLiteral("admin/index.html")},
                  {QStringLiteral("site_title"), c->translate("AdminEditor", "Administrators")}
              });
