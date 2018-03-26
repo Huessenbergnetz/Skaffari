@@ -1011,6 +1011,7 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
     }
 
     QCollator col(c->locale());
+    lst.reserve(foundRows);
 
     while (q.next()) {
         QDateTime accountCreated = q.value(7).toDateTime();
@@ -2282,7 +2283,9 @@ std::pair<QStringList, bool> Account::queryFowards(Cutelyst::Context *c, Skaffar
         qCCritical(SK_ACCOUNT, "%s failed to query list of forwarding addresses for user account %s from the database: %s", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(nameIdString()), qUtf8Printable(q.lastError().text()));
     } else {
         if (q.next()) {
-            for (const QString &fw : q.value(0).toString().split(QLatin1Char(','), QString::SkipEmptyParts)) {
+            const auto fws = q.value(0).toString().split(QLatin1Char(','), QString::SkipEmptyParts);
+            ret.first.reserve(fws.size());
+            for (const QString &fw : fws) {
                 if (fw != d->username) {
                     ret.first << fw;
                 } else {

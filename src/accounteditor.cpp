@@ -133,6 +133,7 @@ void AccountEditor::edit(Context* c)
     }
 
     QHash<QString,HelpEntry> help;
+    help.reserve(12);
     help.insert(QStringLiteral("created"), HelpEntry(c->translate("AccountEditor", "Created"), c->translate("AccountEditor", "Date and time this user account was created.")));
     help.insert(QStringLiteral("updated"), HelpEntry(c->translate("AccountEditor", "Updated"), c->translate("AccountEditor", "Date and time this user account was last updated.")));
 
@@ -802,6 +803,7 @@ void AccountEditor::add_forward(Context *c)
     }
 
     QHash<QString,HelpEntry> help;
+    help.reserve(1);
     help.insert(QStringLiteral("newforward"), HelpEntry(c->translate("AccountEditor", "New forward"), c->translate("AcountEditor", "Enter a valid email address to which you want to forward emails received for account %1.").arg(a.username())));
 
     c->stash({
@@ -893,6 +895,7 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
     }
 
     QHash<QString,HelpEntry> help;
+    help.reserve(1);
     help.insert(QStringLiteral("newforward"), HelpEntry(c->translate("AccountEditor", "Edit forward"), c->translate("AccountEditor", "Change the forward email address to a different valid email address to which you want to forward emails received for account %1.").arg(a.username())));
 
     c->stash({

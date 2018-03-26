@@ -151,6 +151,10 @@ std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariErr
         return lst;
     }
 
+    if (q.size() > -1) {
+        lst.reserve(static_cast<std::vector<SimpleAccount>::size_type>(q.size()));
+    }
+
     while (q.next()) {
         lst.push_back(SimpleAccount(q.value(0).value<dbid_t>(),
                                     q.value(1).toString(),

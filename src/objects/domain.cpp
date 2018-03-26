@@ -656,7 +656,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
     }
 
     if (Q_LIKELY(q.exec())) {
-        lst.reserve(q.size());
+        lst.reserve(static_cast<std::vector<Domain>::size_type>(q.size()));
         while (q.next()) {
             QDateTime createdTime = q.value(11).toDateTime();
             createdTime.setTimeSpec(Qt::UTC);

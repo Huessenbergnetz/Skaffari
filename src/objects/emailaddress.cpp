@@ -117,7 +117,7 @@ std::vector<EmailAddress> EmailAddress::list(Cutelyst::Context *c, SkaffariError
 
     if (Q_LIKELY(q.exec())) {
         if (q.size() > -1) {
-            lst.reserve(q.size());
+            lst.reserve(static_cast<std::vector<EmailAddress>::size_type>(q.size()));
         }
 
         while (q.next()) {

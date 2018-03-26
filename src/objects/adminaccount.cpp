@@ -383,6 +383,8 @@ QVector<AdminAccount> AdminAccount::list(Cutelyst::Context *c, SkaffariError *er
         return list;
     }
 
+    list.reserve(q.size());
+
     while (q.next()) {
         list.push_back(AdminAccount(q.value(0).value<dbid_t>(),
                                     q.value(1).toString(),

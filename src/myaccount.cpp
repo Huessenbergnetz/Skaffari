@@ -93,6 +93,7 @@ void MyAccount::index(Context *c)
         }
 
         QHash<QString,HelpEntry> help;
+        help.reserve(8);
         help.insert(QStringLiteral("created"), HelpEntry(c->translate("MyAccount", "Created"), c->translate("MyAccount", "Date and time your account was created.")));
         help.insert(QStringLiteral("updated"), HelpEntry(c->translate("MyAccount", "Updated"), c->translate("MyAccount", "Date and time your account was last updated.")));
         help.insert(QStringLiteral("password"), HelpEntry(c->translate("MyAccount", "New password"), c->translate("MyAccount", "Enter a new password with a minimum length of %n character(s) or leave the field blank to avoid changing the password.", "", SkaffariConfig::accPwMinlength())));

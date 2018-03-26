@@ -114,6 +114,10 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
         return lst;
     }
 
+    if (q.size() > -1) {
+        lst.reserve(static_cast<std::vector<SimpleDomain>::size_type>(q.size()));
+    }
+
     while (q.next()) {
         lst.push_back(SimpleDomain(q.value(0).value<dbid_t>(), q.value(1).toString()));
     }

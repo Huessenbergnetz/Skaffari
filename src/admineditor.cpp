@@ -155,6 +155,7 @@ void AdminEditor::create(Context *c)
     }
 
     QHash<QString,HelpEntry> help;
+    help.reserve(5);
     help.insert(QStringLiteral("username"), HelpEntry(c->translate("AdminEditor", "User name"), c->translate("AdminEditor", "The user name for the new administrator. Can only contain alpha-numeric characters as well as dashes and underscores.")));
     const int pwMinLength = static_cast<int>(SkaffariConfig::admPwMinlength());
     help.insert(QStringLiteral("password"), HelpEntry(c->translate("AdminEditor", "Password"), c->translate("AdminEditor", "Specify a password with a minimum length of %n character(s).", nullptr, pwMinLength)));
@@ -223,6 +224,7 @@ void AdminEditor::edit(Context *c)
     }
 
     QHash<QString,HelpEntry> help;
+    help.reserve(7);
     help.insert(QStringLiteral("created"), HelpEntry(c->translate("AdminEditor", "Created"), c->translate("AdminEditor", "Date and time this account was created.")));
     help.insert(QStringLiteral("updated"), HelpEntry(c->translate("AdminEditor", "Updated"), c->translate("AdminEditor", "Date and time this account was last updated.")));
     help.insert(QStringLiteral("username"), HelpEntry(c->translate("AdminEditor", "User name"), c->translate("AdminEditor", "The user name of the administrator.")));
