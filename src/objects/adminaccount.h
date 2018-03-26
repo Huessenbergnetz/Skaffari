@@ -118,14 +118,26 @@ public:
     AdminAccount(const AdminAccount &other);
 
     /*!
+     * \brief Move-constructs an %AdminAccount instance, making it point at the same object that \a other pointing to.
+     */
+    AdminAccount(AdminAccount &&other) noexcept;
+
+    /*!
      * \brief Assigns other to this %AdminAccount and returns a reference to this account.
      */
     AdminAccount &operator=(const AdminAccount &other);
 
     /*!
+     * \brief Move-assigns \a other to this %AdminAccount instance.
+     */
+    AdminAccount &operator=(AdminAccount &&other) noexcept;
+
+    /*!
      * \brief Destroys the object
      */
     ~AdminAccount();
+
+    void swap(AdminAccount &other) noexcept;
 
     /*!
      * \brief Returns the database ID.

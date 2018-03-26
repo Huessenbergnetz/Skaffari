@@ -70,15 +70,32 @@ AdminAccount::AdminAccount(const AdminAccount& other) :
 
 }
 
+AdminAccount::AdminAccount(AdminAccount &&other) noexcept :
+    d(std::move(other.d))
+{
+    other.d = nullptr;
+}
+
 AdminAccount& AdminAccount::operator=(const AdminAccount& other)
 {
     d = other.d;
     return *this;
 }
 
+AdminAccount& AdminAccount::operator=(AdminAccount &&other) noexcept
+{
+    swap(other);
+    return *this;
+}
+
 AdminAccount::~AdminAccount()
 {
 
+}
+
+void AdminAccount::swap(AdminAccount &other) noexcept
+{
+    std::swap(d, other.d);
 }
 
 dbid_t AdminAccount::id() const
