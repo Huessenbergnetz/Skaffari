@@ -38,9 +38,9 @@ Folder::Folder(const Folder &other) :
 }
 
 Folder::Folder(Folder &&other) noexcept :
-    d(other.d)
+    d(std::move(other.d))
 {
-
+    other.d = nullptr;
 }
 
 Folder& Folder::operator=(const Folder &other)

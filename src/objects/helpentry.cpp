@@ -40,7 +40,7 @@ HelpEntry::HelpEntry(const HelpEntry &other) :
 HelpEntry::HelpEntry(HelpEntry &&other) noexcept :
     d(std::move(other.d))
 {
-
+    other.d = nullptr;
 }
 
 HelpEntry& HelpEntry::operator =(const HelpEntry &other)

@@ -42,9 +42,9 @@ EmailAddress::EmailAddress(const EmailAddress &other) :
 }
 
 EmailAddress::EmailAddress(EmailAddress &&other) noexcept :
-    d(other.d)
+    d(std::move(other.d))
 {
-
+    other.d = nullptr;
 }
 
 EmailAddress& EmailAddress::operator=(const EmailAddress &other)

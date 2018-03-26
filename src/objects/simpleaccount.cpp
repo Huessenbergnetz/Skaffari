@@ -47,7 +47,7 @@ SimpleAccount::SimpleAccount(const SimpleAccount &other) :
 }
 
 SimpleAccount::SimpleAccount(SimpleAccount &&other) noexcept :
-    d(other.d)
+    d(std::move(other.d))
 {
     other.d = nullptr;
 }
