@@ -96,6 +96,7 @@ target_compile_features(skaffari
         cxx_override
         cxx_range_for
         cxx_right_angle_brackets
+        cxx_rvalue_references
 )
 
 target_compile_definitions(skaffari
