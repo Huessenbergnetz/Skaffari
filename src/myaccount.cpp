@@ -92,7 +92,7 @@ void MyAccount::index(Context *c)
             }
         }
 
-        QHash<QString,HelpEntry> help;
+        HelpHash help;
         help.reserve(8);
         help.insert(QStringLiteral("created"), HelpEntry(c->translate("MyAccount", "Created"), c->translate("MyAccount", "Date and time your account was created.")));
         help.insert(QStringLiteral("updated"), HelpEntry(c->translate("MyAccount", "Updated"), c->translate("MyAccount", "Date and time your account was last updated.")));
@@ -109,7 +109,7 @@ void MyAccount::index(Context *c)
                      {QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac)},
                      {QStringLiteral("langs"), QVariant::fromValue<QVector<Language>>(Language::supportedLangs(c))},
                      {QStringLiteral("timezones"), QVariant::fromValue<QStringList>(tzIds)},
-                     {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)}
+                     {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)}
                  });
 
     } else {

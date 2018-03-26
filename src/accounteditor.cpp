@@ -132,7 +132,7 @@ void AccountEditor::edit(Context* c)
         }
     }
 
-    QHash<QString,HelpEntry> help;
+    HelpHash help;
     help.reserve(12);
     help.insert(QStringLiteral("created"), HelpEntry(c->translate("AccountEditor", "Created"), c->translate("AccountEditor", "Date and time this user account was created.")));
     help.insert(QStringLiteral("updated"), HelpEntry(c->translate("AccountEditor", "Updated"), c->translate("AccountEditor", "Date and time this user account was last updated.")));
@@ -174,7 +174,7 @@ void AccountEditor::edit(Context* c)
 
     c->stash({
                  {QStringLiteral("template"), QStringLiteral("account/edit.html")},
-                 {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)}
+                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)}
              });
 }
 
@@ -802,13 +802,13 @@ void AccountEditor::add_forward(Context *c)
         return;
     }
 
-    QHash<QString,HelpEntry> help;
+    HelpHash help;
     help.reserve(1);
     help.insert(QStringLiteral("newforward"), HelpEntry(c->translate("AccountEditor", "New forward"), c->translate("AcountEditor", "Enter a valid email address to which you want to forward emails received for account %1.").arg(a.username())));
 
     c->stash({
                  {QStringLiteral("template"), QStringLiteral("account/add_forward.html")},
-                 {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)}
+                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)}
              });
 }
 
@@ -894,13 +894,13 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
         return;
     }
 
-    QHash<QString,HelpEntry> help;
+    HelpHash help;
     help.reserve(1);
     help.insert(QStringLiteral("newforward"), HelpEntry(c->translate("AccountEditor", "Edit forward"), c->translate("AccountEditor", "Change the forward email address to a different valid email address to which you want to forward emails received for account %1.").arg(a.username())));
 
     c->stash({
                  {QStringLiteral("template"), QStringLiteral("account/edit_forward.html")},
-                 {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)},
+                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)},
                  {QStringLiteral("oldforward"), oldForward}
              });
 }

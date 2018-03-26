@@ -139,7 +139,7 @@ void DomainEditor::edit(Context *c)
         }
     }
 
-    QHash<QString,HelpEntry> help;
+    HelpHash help;
     help.reserve(12);
     help.insert(QStringLiteral("prefix"), HelpEntry(c->translate("DomainEditor", "Prefix"), c->translate("DomainEditor", "The prefix might be used for automatically generated user names, especially if free names are not allowed for this domain.")));
     help.insert(QStringLiteral("created"), HelpEntry(c->translate("DomainEditor", "Created"), c->translate("DomainEditor", "Date and time this domain was created.")));
@@ -177,7 +177,7 @@ void DomainEditor::edit(Context *c)
     c->stash({
                  {QStringLiteral("template"), QStringLiteral("domain/edit.html")},
                  {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Edit")},
-                 {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)},
+                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)},
                  {QStringLiteral("domains"), QVariant::fromValue<std::vector<SimpleDomain>>(doms)}
              });
 }
@@ -389,7 +389,7 @@ void DomainEditor::create(Context* c)
             }
         }
 
-        QHash<QString,HelpEntry> help;
+        HelpHash help;
         help.reserve(16);
         help.insert(QStringLiteral("domainName"), HelpEntry(c->translate("DomainEditor", "Domain name"), c->translate("DomainEditor", "The name of the domain you want to manage emails for, like example.com. You can safely insert international domain names in UTF-8 encoding, it will be converted internally into ASCII compatible encoding.")));
         help.insert(QStringLiteral("prefix"), HelpEntry(c->translate("DomainEditor", "Prefix"), c->translate("DomainEditor", "The prefix might be used for automatically generated user names, especially if free names are not allowed for this domain.")));
@@ -422,7 +422,7 @@ void DomainEditor::create(Context* c)
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("domain/create.html")},
                      {QStringLiteral("site_title"), c->translate("DomainEditor", "Create domain")},
-                     {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)},
+                     {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)},
                      {QStringLiteral("domains"), QVariant::fromValue<std::vector<SimpleDomain>>(doms)}
                 });
     } else {
@@ -696,7 +696,7 @@ void DomainEditor::add_account(Context* c)
         c->setStash(QStringLiteral("username"), username);
     }
 
-    QHash<QString,HelpEntry> help;
+    HelpHash help;
     help.reserve(15);
     help.insert(QStringLiteral("accounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "Number of user accounts currently associated with this domain. If there is a limit on the maximum number, it is also displayed.")));
 
@@ -757,7 +757,7 @@ void DomainEditor::add_account(Context* c)
                  {QStringLiteral("fqun"), SkaffariConfig::imapFqun()},
                  {QStringLiteral("minpasswordlength"), SkaffariConfig::accPwMinlength()},
                  {QStringLiteral("freequota"), freeQuota},
-                 {QStringLiteral("help"), QVariant::fromValue<QHash<QString,HelpEntry>>(help)}
+                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)}
              });
 }
 
