@@ -24,27 +24,38 @@
 #include <QLocale>
 #include <algorithm>
 
-Language::Language() :
-    d(new LanguageData)
+Language::Language()
 {
 
 }
 
 Language::Language(const QLocale &locale) :
-    d(new LanguageData(locale))
+    m_locale(locale)
 {
 
 }
 
 Language::Language(const Language &other) :
-    d(other.d)
+    m_locale(other.m_locale)
+{
+
+}
+
+Language::Language(Language &&other) noexcept :
+    m_locale(std::move(other.m_locale))
 {
 
 }
 
 Language& Language::operator=(const Language &other)
 {
-    d = other.d;
+    m_locale = other.m_locale;
+    return *this;
+}
+
+Language& Language::operator=(Language &&other) noexcept
+{
+    swap(other);
     return *this;
 }
 
@@ -53,14 +64,19 @@ Language::~Language()
 
 }
 
+void Language::swap(Language &other) noexcept
+{
+    std::swap(m_locale, other.m_locale);
+}
+
 QString Language::code() const
 {
-    return d->locale.name();
+    return m_locale.name();
 }
 
 QString Language::name() const
 {
-    return d->locale.nativeLanguageName() + QLatin1String(" (") + d->locale.nativeCountryName() + QLatin1Char(')');
+    return m_locale.nativeLanguageName() + QLatin1String(" (") + m_locale.nativeCountryName() + QLatin1Char(')');
 }
 
 QStringList Language::supportedLangsList()

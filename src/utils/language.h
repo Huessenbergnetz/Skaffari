@@ -19,19 +19,17 @@
 #ifndef LANGUAGE_H
 #define LANGUAGE_H
 
-#include <QString>
-#include <QSharedDataPointer>
 #include <grantlee5/grantlee/metatype.h>
+#include <QString>
 #include <QVariant>
-#include <QVector>
+#include <QLocale>
+#include <vector>
 
 class QLocale;
 
 namespace Cutelyst {
 class Context;
 }
-
-class LanguageData;
 
 /*!
  * \ingroup skaffaricore
@@ -40,20 +38,62 @@ class LanguageData;
 class Language
 {
 public:
+    /*!
+     * \brief Constructs an empty %Language object with C locale.
+     */
     Language();
+    /*!
+     * \brief Constructs a %Language object for the given \a locale.
+     */
     explicit Language(const QLocale &locale);
+    /*!
+     * \brief Constructs a copy of \a other.
+     */
     Language(const Language &other);
+    /*!
+     * \brief Move-constructs a %Language instance, making it point at the same object that \a other was pointing to.
+     */
+    Language(Language &&other) noexcept;
+    /*!
+     * \brief Assigns \a other to this %Language instance and returns a reference to this %Language.
+     */
     Language& operator=(const Language &other);
+    /*!
+     * \brief Move-assigns \a other to this %Language instance.
+     */
+    Language& operator=(Language &&other) noexcept;
+    /*!
+     * Destroys the %Language instance.
+     */
     ~Language();
 
+    /*!
+     * \brief Swaps this %Language instance with \a other.
+     */
+    void swap(Language &other) noexcept;
+
+    /*!
+     * \brief Returns QLocale::name() from the internal QLocale object.
+     */
     QString code() const;
+
+    /*!
+     * \brief Returns QLocale::nativeLanguageName() and QLocale::nativeCountryName().
+     */
     QString name() const;
 
+    /*!
+     * \brief Returns a list of of supported language codes from QLocale::name().
+     */
     static QStringList supportedLangsList();
+
+    /*!
+     * \brief Returns a vector of supported %Language objects.
+     */
     static QVector<Language> supportedLangs(Cutelyst::Context *c);
 
 private:
-    QSharedDataPointer<LanguageData> d;
+    QLocale m_locale;
 };
 
 Q_DECLARE_METATYPE(Language)
