@@ -16,13 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "language_p.h"
+#include "language.h"
 #include "../common/config.h"
 #include "skaffariconfig.h"
 #include <Cutelyst/Context>
 #include <Cutelyst/Plugins/Utils/LangSelect>
-#include <QLocale>
+#include <QCollator>
 #include <algorithm>
+
+
+class LanguageNameCollator : public QCollator
+{
+public:
+    explicit LanguageNameCollator(const QLocale &locale) :
+        QCollator(locale)
+    {}
+
+    bool operator() (const Language &left, const Language &right) { return (compare(left.name(), right.name())); }
+};
 
 Language::Language()
 {

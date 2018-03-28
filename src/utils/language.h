@@ -25,8 +25,6 @@
 #include <QLocale>
 #include <vector>
 
-class QLocale;
-
 namespace Cutelyst {
 class Context;
 }
