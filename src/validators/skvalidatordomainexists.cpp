@@ -18,6 +18,7 @@
 
 #include "skvalidatordomainexists.h"
 #include "../common/global.h"
+#include "../src/objects/adminaccount.h"
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <Cutelyst/Context>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
@@ -46,12 +47,12 @@ Cutelyst::ValidatorReturnType SkValidatorDomainExists::validate(Cutelyst::Contex
         if (ok) {
             if (id > 0) {
                 QSqlQuery q;
-                if (c->stash(QStringLiteral("userType")).value<qint16>() == 0) {
+                const AdminAccount user = AdminAccount::getUser(c);
+                if (user.type() >= AdminAccount::Administrator) {
                     q = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_name FROM domain WHERE id = :id"));
                 } else {
-                    const dbid_t userId = c->stash(QStringLiteral("userId")).value<dbid_t>();
                     q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.domain_name FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id AND dom.id = :id"));
-                    q.bindValue(QStringLiteral(":admin_id"), userId);
+                    q.bindValue(QStringLiteral(":admin_id"), user.id());
                 }
                 q.bindValue(QStringLiteral(":id"), id);
 
@@ -78,17 +79,17 @@ Cutelyst::ValidatorReturnType SkValidatorDomainExists::validate(Cutelyst::Contex
 QString SkValidatorDomainExists::genericValidationError(Cutelyst::Context *c, const QVariant &errorData) const
 {
     QString error;
-    dbid_t id = errorData.value<dbid_t>();
+    const dbid_t id = errorData.value<dbid_t>();
     const QString _label = label(c);
-    const qint16 userType = c->stash(QStringLiteral("userType")).value<qint16>();
+    const auto userType = AdminAccount::getUserType(c);
     if (_label.isEmpty()) {
-        if (userType == 0) {
+        if (userType >= AdminAccount::Administrator) {
             error = c->translate("SkValidatorDomainExists", "The domain with ID %1 does not exist.").arg(id);
         } else {
             error = c->translate("SkValidatorDomainExists", "The domain with ID %1 either does not exist or you do not have access rights for it.").arg(id);
         }
     } else {
-        if (userType == 0) {
+        if (userType >= AdminAccount::Administrator) {
             error = c->translate("SkValidatorDomainExists", "The domain with ID %1 selected for the “%2” field does not exist.").arg(QString::number(id), _label);
         } else {
             error = c->translate("SkValidatorDomainExists", "The domain with ID %1 selected for the “%2“ field either does not exist or you do not have access rights for it.").arg(QString::number(id), _label);
