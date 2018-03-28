@@ -19,11 +19,10 @@
 #ifndef SIMPLEADMIN_H
 #define SIMPLEADMIN_H
 
-#include <QString>
-#include <QSharedDataPointer>
-#include <grantlee5/grantlee/metatype.h>
-#include <QVariant>
 #include "../../common/global.h"
+#include <grantlee5/grantlee/metatype.h>
+#include <QString>
+#include <QVariant>
 
 class SimpleAdminData;
 
@@ -34,30 +33,67 @@ class SimpleAdminData;
 class SimpleAdmin
 {
 public:
+    /*!
+     * \brief Constructs an invalid, empty %SimpleAdmin.
+     */
     SimpleAdmin();
+    /*!
+     * \brief Constructs a new %SimpleAdmin with the given parameters.
+     * \param id    database ID of the account
+     * \param name  user name of the account
+     */
     SimpleAdmin(dbid_t id, const QString &name);
+    /*!
+     * \brief Constructs a copy of \a other.
+     */
     SimpleAdmin(const SimpleAdmin &other);
+    /*!
+     * \brief Move-constructs a %SimpleAdmin instance, making it point at the same object that \a other was pointing to.
+     */
+    SimpleAdmin(SimpleAdmin &&other) noexcept;
+    /*!
+     * \brief Assigns \a other to this simple account and returns a reference to this instance.
+     */
     SimpleAdmin& operator=(const SimpleAdmin &other);
+    /*!
+     * \brief Move-assigns \a other to this %SimpleAdmin instance.
+     */
+    SimpleAdmin& operator=(SimpleAdmin &&other) noexcept;
+    /*!
+     * \brief Destroys this %SimpleAdmin instance.
+     */
     ~SimpleAdmin();
 
+    /*!
+     * \brief Swapts this %SimpleAdmin instance with \a other.
+     */
+    void swap(SimpleAdmin &other) noexcept;
+
+    /*!
+     * \brief Returns the database ID.
+     */
     dbid_t id() const;
+
+    /*!
+     * \brief Returns the user name.
+     */
     QString name() const;
 
 private:
-    QSharedDataPointer<SimpleAdminData> d;
+    dbid_t m_id = 0;
+    QString m_name;
 };
 
 Q_DECLARE_METATYPE(SimpleAdmin)
 Q_DECLARE_TYPEINFO(SimpleAdmin, Q_MOVABLE_TYPE);
 
 GRANTLEE_BEGIN_LOOKUP(SimpleAdmin)
-QVariant var;
 if (property == QLatin1String("id")) {
-    var.setValue(object.id());
+    return QVariant(object.id());
 } else if (property == QLatin1String("name")) {
-    var.setValue(object.name());
+    return QVariant(object.name());
 }
-return var;
+return QVariant();
 GRANTLEE_END_LOOKUP
 
 #endif // SIMPLEADMIN_H

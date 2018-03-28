@@ -16,48 +16,61 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "simpleadmin_p.h"
+#include "simpleadmin.h"
 
-SimpleAdmin::SimpleAdmin() : d(new SimpleAdminData)
+SimpleAdmin::SimpleAdmin()
 {
 
 }
-
 
 SimpleAdmin::SimpleAdmin(dbid_t id, const QString &name) :
-    d(new SimpleAdminData(id, name))
+    m_id(id), m_name(name)
 {
 
 }
-
 
 SimpleAdmin::SimpleAdmin(const SimpleAdmin &other) :
-    d(other.d)
+    m_id(other.m_id), m_name(other.m_name)
 {
 
 }
 
+SimpleAdmin::SimpleAdmin(SimpleAdmin &&other) noexcept :
+    m_id(std::move(other.m_id)), m_name(std::move(other.m_name))
+{
+
+}
 
 SimpleAdmin& SimpleAdmin::operator=(const SimpleAdmin &other)
 {
-    d = other.d;
+    m_id = other.m_id;
+    m_name = other.m_name;
     return *this;
 }
 
+SimpleAdmin& SimpleAdmin::operator=(SimpleAdmin &&other) noexcept
+{
+    swap(other);
+    return *this;
+}
 
 SimpleAdmin::~SimpleAdmin()
 {
 
 }
 
+void SimpleAdmin::swap(SimpleAdmin &other) noexcept
+{
+    std::swap(m_id, other.m_id);
+    std::swap(m_name, other.m_name);
+}
 
 dbid_t SimpleAdmin::id() const
 {
-    return d->id;
+    return m_id;
 }
-
 
 QString SimpleAdmin::name() const
 {
-    return d->name;
+    return m_name;
 }
