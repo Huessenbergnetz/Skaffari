@@ -970,9 +970,9 @@ AdminAccount::AdminAccountType AdminAccount::getUserType(Cutelyst::Context *c)
     return c->stash(QStringLiteral("user")).value<AdminAccount>().type();
 }
 
-AdminAccount::AdminAccountType AdminAccount::getUserType(const QVariant &type)
+AdminAccount::AdminAccountType AdminAccount::getUserType(const QVariant &user)
 {
-    return AdminAccountData::getUserType(type.value<quint8>());
+    return AdminAccountData::getUserType(user.value<quint8>());
 }
 
 dbid_t AdminAccount::getUserId(Cutelyst::Context *c)

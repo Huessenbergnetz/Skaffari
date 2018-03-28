@@ -137,6 +137,9 @@ public:
      */
     ~AdminAccount();
 
+    /*!
+     * \brief Swaps this %AdminAccount instance with \a other.
+     */
     void swap(AdminAccount &other) noexcept;
 
     /*!
@@ -411,26 +414,68 @@ public:
      */
     static AdminAccount fromStash(Cutelyst::Context *c);
 
+    /*!
+     * \brief Returns the admin user type associated with the integer \a type.
+     */
     static AdminAccount::AdminAccountType getUserType(quint8 type);
 
+    /*!
+     * \brief Returns the type of the \a user.
+     */
     static AdminAccount::AdminAccountType getUserType(const Cutelyst::AuthenticationUser &user);
 
+    /*!
+     * \brief Returns the type of the currently logged in user.
+     * \param c pointer to the current context
+     */
     static AdminAccount::AdminAccountType getUserType(Cutelyst::Context *c);
 
-    static AdminAccount::AdminAccountType getUserType(const QVariant &type);
+    /*!
+     * \brief Returns the type of the %AdminAccount stored in the \a user variant.
+     */
+    static AdminAccount::AdminAccountType getUserType(const QVariant &user);
 
+    /*!
+     * \brief Returns the currenlty logged in user.
+     * \param c pointer to the current context
+     */
     static AdminAccount getUser(Cutelyst::Context *c);
 
+    /*!
+     * \brief Returns the database ID of the currently logged in admin user.
+     * \param c pointer to the current context
+     */
     static dbid_t getUserId(Cutelyst::Context *c);
 
+    /*!
+     * \brief Returns the user name of the currently logged in database user.
+     * \param c pointer to the current context
+     */
     static QString getUserName(Cutelyst::Context *c);
 
+    /*!
+     * \brief Returns a string that contains database ID and user name of the currently logged in user.
+     * \param c pointer to the current context
+     */
     static QString getUserNameIdString(Cutelyst::Context *c);
 
+    /*!
+     * \brief Returns a translated name for the user \a type.
+     * \param type  the type to get the name for
+     * \param c     pointer to the current context, used for translation
+     */
     static QString typeToName(AdminAccount::AdminAccountType type, Cutelyst::Context *c);
 
+    /*!
+     * \brief Returns a list of integer strings that show the types the currently logged in user can create.
+     * \param c pointer to the current context
+     */
     static QStringList allowedTypes(Cutelyst::Context *c);
 
+    /*!
+     * \brief Returns the maximum allowed type the current logged in user can created.
+     * \param c pointer to the current context
+     */
     static AdminAccount::AdminAccountType maxAllowedType(Cutelyst::Context *c);
 
 protected:
