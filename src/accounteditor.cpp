@@ -254,11 +254,8 @@ void AccountEditor::addresses(Context *c)
     auto d = Domain::fromStash(c);
 
     if (d.isFreeAddressEnabled()) {
-        AuthenticationUser user = Authentication::user(c);
         SkaffariError sde(c);
-        const qint16 userType = user.value(QStringLiteral("type")).value<qint16>();
-        const std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, userType, user.id().value<dbid_t>());
-        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
+        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(SimpleDomain::list(c, &sde)));
     } else if (!d.children().empty()) {
         QVector<SimpleDomain> maildomains = d.children();
         maildomains.prepend(d.toSimple());
