@@ -406,6 +406,11 @@ public:
      */
     static void toStash(Cutelyst::Context *c, dbid_t adminId);
 
+    /*!
+     * \brief Puts \a adminAccount into the stash.
+     * \param c             pointer to the current context
+     * \param adminAccount  the admin account to put into the stash
+     */
     static void toStash(Cutelyst::Context *c, const AdminAccount &adminAccount);
 
     /*!
