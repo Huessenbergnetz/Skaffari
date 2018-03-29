@@ -106,9 +106,19 @@ public:
     SkaffariError(const SkaffariError &other);
 
     /*!
+     * \brief Move-constructs a %SkaffariError instance, making it point at the same object that \a other was pointing to.
+     */
+    SkaffariError(SkaffariError &&other) noexcept;
+
+    /*!
      * \brief Destroys the SkaffariError.
      */
     ~SkaffariError();
+
+    /*!
+     * \brief Swaps this %SkaffariError instance with \a other.
+     */
+    void swap(SkaffariError &other) noexcept;
 
     /*!
      * \brief Returns the type of this error.
@@ -188,6 +198,11 @@ public:
     SkaffariError& operator=(const SkaffariError &other);
 
     /*!
+     * \brief Move-assigns \a other to this %SkaffariError instance.
+     */
+    SkaffariError& operator=(SkaffariError &&other) noexcept;
+
+    /*!
      * \brief Constructs a SkaffariError object using the sqlError.
      */
     SkaffariError& operator=(const QSqlError &sqlError);
@@ -202,10 +217,22 @@ public:
      */
     bool operator!=(const SkaffariError &other) const;
 
+    /*!
+     * \brief Puts \a this %SkaffariError to the Cutelyst::stash().
+     * \sa fromStash()
+     */
     void toStash(Cutelyst::Context *c) const;
 
+    /*!
+     * \brief Translates the ErrorType of \a this %SkaffariError into a human readable string.
+     * If \a c is a \c nullptr, the internal Cutelyst::Context will be used.
+     */
     QString typeTitle(Cutelyst::Context *c = nullptr) const;
 
+    /*!
+     * \brief Returns the %SkaffariError that is currently in the Cutelyst::Context::stash().
+     * \sa toStash()
+     */
     static SkaffariError fromStash(Cutelyst::Context *c);
 
 private:

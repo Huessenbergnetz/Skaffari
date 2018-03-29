@@ -65,9 +65,20 @@ SkaffariError::SkaffariError(const SkaffariError& other) :
 
 }
 
+SkaffariError::SkaffariError(SkaffariError &&other) noexcept :
+    d(std::move(other.d))
+{
+    other.d = nullptr;
+}
+
 SkaffariError::~SkaffariError()
 {
 
+}
+
+void SkaffariError::swap(SkaffariError &other) noexcept
+{
+    std::swap(d, other.d);
 }
 
 SkaffariError::ErrorType SkaffariError::type() const
@@ -173,6 +184,12 @@ SkaffariIMAPError SkaffariError::imapError() const
 SkaffariError& SkaffariError::operator=(const SkaffariError& other)
 {
     d = other.d;
+    return *this;
+}
+
+SkaffariError& SkaffariError::operator=(SkaffariError &&other) noexcept
+{
+    swap(other);
     return *this;
 }
 
