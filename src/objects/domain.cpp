@@ -588,7 +588,10 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
                 while (q.next()) {
                     defFolders.emplace_back(q.value(0).value<dbid_t>(), domId, q.value(1).toString());
                 }
+                dom.setFolders(defFolders);
             }
+        } else {
+            qCCritical(SK_DOMAIN, "Failed to query default folders for domain %s from database: %s", qUtf8Printable(dom.nameIdString()), qUtf8Printable(q.lastError().text()));
         }
 
     } else {
@@ -894,8 +897,8 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
         }
 
         const quint32 maxAccounts = p.value(QStringLiteral("maxAccounts"), d->maxAccounts).value<quint32>();
-        const bool freeNames = p.value(QStringLiteral("freeNames"), false).toBool();
-        const bool freeAddress = p.value(QStringLiteral("freeAddress"), false).toBool();
+        const bool freeNames = p.value(QStringLiteral("freeNames"), d->freeNames).toBool();
+        const bool freeAddress = p.value(QStringLiteral("freeAddress"), d->freeAddress).toBool();
         const QString transport = p.value(QStringLiteral("transport"), d->transport).toString();
         const QDateTime validUntil = p.value(QStringLiteral("validUntil"), d->validUntil).toDateTime().toUTC();
 
@@ -1103,7 +1106,22 @@ QDebug operator<<(QDebug dbg, const Domain &domain)
         dbg << ", Admins: " << domain.admins();
     }
     if (!domain.folders().empty()) {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
         dbg << ", Default folders: " << domain.folders();
+#else
+        dbg << ", Default folders: std::vector(";
+        auto it = domain.folders().cbegin();
+        auto end = domain.folders().cend();
+        if (it != end) {
+            dbg << *it;
+            ++it;
+        }
+        while (it != end) {
+            dbg << ", " << *it;
+            ++it;
+        }
+        dbg << ')';
+#endif
     }
     dbg << ", Accounts: " << domain.accounts() << '/' << domain.maxAccounts();
     dbg << ", Domain quota: " << domain.domainQuotaUsed() << '/' << domain.domainQuota() << "KiB";

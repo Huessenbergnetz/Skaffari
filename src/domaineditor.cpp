@@ -99,7 +99,7 @@ void DomainEditor::edit(Context *c)
         c->setStash(QStringLiteral("_def_boolean"), false);
 
         ValidatorResult vr;
-        if (user.value(QStringLiteral("type")).value<qint16>() == 0) {
+        if (AdminAccount::getUserType(user) >= AdminAccount::Administrator) {
 
             static Validator v({
                             new ValidatorIn(QStringLiteral("transport"), QStringList({QStringLiteral("cyrus"), QStringLiteral("lmtp"), QStringLiteral("smtp"), QStringLiteral("uucp")})),
