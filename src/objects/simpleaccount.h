@@ -21,13 +21,13 @@
 
 #include "../../common/global.h"
 #include "adminaccount.h"
-#include <QString>
+#include <grantlee5/grantlee/metatype.h>
 #include <QSharedDataPointer>
+#include <QString>
 #include <QVariant>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QLoggingCategory>
-#include <grantlee5/grantlee/metatype.h>
 
 Q_DECLARE_LOGGING_CATEGORY(SK_SIMPLEACCOUNT)
 
@@ -64,7 +64,7 @@ public:
     SimpleAccount(const SimpleAccount &other);
 
     /*!
-     * \brief Move constructs a %SimpleAccount instance, making it point at the same object that \a ohter was pointing to.
+     * \brief Move-constructs a %SimpleAccount instance, making it point at the same object that \a other was pointing to.
      */
     SimpleAccount(SimpleAccount &&other) noexcept;
 
