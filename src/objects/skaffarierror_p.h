@@ -27,10 +27,12 @@ class SkaffariErrorData : public QSharedData
 {
 public:
     explicit SkaffariErrorData(Cutelyst::Context *_c) :
+        QSharedData(),
         c(_c)
     {}
 
     SkaffariErrorData(Cutelyst::Context *_c, SkaffariError::ErrorType _type , const QString _errorText, const QVariant _errorData) :
+        QSharedData(),
         c(_c),
         errorText(_errorText),
         errorData(_errorData),
@@ -56,6 +58,7 @@ public:
     }
 
     SkaffariErrorData(Cutelyst::Context *_c, const QSqlError &_sqlError, const QString &_errorText) :
+        QSharedData(),
         c(_c),
         qSqlError(_sqlError),
         errorType(SkaffariError::SqlError),
@@ -71,6 +74,7 @@ public:
     }
 
     SkaffariErrorData(Cutelyst::Context *_c, const SkaffariIMAPError& _imapError, const QString _errorText) :
+        QSharedData(),
         c(_c),
         imapError(_imapError),
         errorType(SkaffariError::ImapError),
@@ -84,17 +88,6 @@ public:
             errorText.append(imapError.errorText());
         }
     }
-
-    SkaffariErrorData(const SkaffariErrorData &other) :
-        QSharedData(other),
-        c(other.c),
-        qSqlError(other.qSqlError),
-        errorText(other.errorText),
-        errorData(other.errorData),
-        imapError(other.imapError),
-        errorType(other.errorType),
-        status(other.status)
-    {}
 
     ~SkaffariErrorData() {}
 

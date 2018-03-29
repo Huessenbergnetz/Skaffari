@@ -29,6 +29,7 @@ public:
     AdminAccountData() = default;
 
     AdminAccountData(dbid_t _id, const QString &_username, quint8 _type, const QList<dbid_t> &_domains) :
+        QSharedData(),
         domains(_domains),
         username(_username),
         id(_id)
@@ -37,6 +38,7 @@ public:
     }
 
     AdminAccountData(dbid_t _id, const QString &_username, AdminAccount::AdminAccountType _type, const QList<dbid_t> &_domains) :
+        QSharedData(),
         domains(_domains),
         username(_username),
         id(_id),
@@ -44,6 +46,7 @@ public:
     {}
 
     AdminAccountData(const Cutelyst::AuthenticationUser &user) :
+        QSharedData(),
         username(user.value(QStringLiteral("username")).toString()),
         lang(user.value(QStringLiteral("lang")).toString()),
         tmpl(user.value(QStringLiteral("style")).toString()),
@@ -62,21 +65,6 @@ public:
             domains << dom.value<dbid_t>();
         }
     }
-
-//    AdminAccountData(const AdminAccountData &other) :
-//        QSharedData(other),
-//        domains(other.domains),
-//        username(other.username),
-//        lang(other.lang),
-//        tmpl(other.tmpl),
-//        tz(other.tz),
-//        created(other.created),
-//        updated(other.updated),
-//        id(other.id),
-//        type(other.type),
-//        maxDisplay(other.maxDisplay),
-//        warnLevel(other.warnLevel)
-//    {}
 
     ~AdminAccountData() {}
 

@@ -36,9 +36,10 @@ public:
 class DomainData : public QSharedData
 {
 public:
-    DomainData() {}
+    DomainData() : QSharedData() {}
 
     DomainData(dbid_t _id, const QString &_name, const QString &_prefix, const QString &_transport, quota_size_t _quota, quint32 _maxAccounts, quota_size_t _domainQuota, quota_size_t _domainQuotaUsed, bool _freeNames, bool _freeAddress, const QVector<Folder> &_folders, quint32 _accounts, const QDateTime &_created, const QDateTime &_updated) :
+        QSharedData(),
         quota(_quota),
         domainQuota(_domainQuota),
         domainQuotaUsed(_domainQuotaUsed),
@@ -54,29 +55,6 @@ public:
         freeNames(_freeNames),
         freeAddress(_freeAddress)
     {}
-
-//    DomainData(const DomainData &other) :
-//        QSharedData(other),
-//        quota(other.quota),
-//        domainQuota(other.domainQuota),
-//        domainQuotaUsed(other.domainQuotaUsed),
-//        children(other.children),
-//        admins(other.admins),
-//        folders(other.folders),
-//        parent(other.parent),
-//        name(other.name),
-//        prefix(other.prefix),
-//        transport(other.transport),
-//        created(other.created),
-//        updated(other.updated),
-//        validUntil(other.validUntil),
-//        id(other.id),
-//        ace_id(other.ace_id),
-//        maxAccounts(other.maxAccounts),
-//        accounts(other.accounts),
-//        freeNames(other.freeNames),
-//        freeAddress(other.freeAddress)
-//    {}
 
     ~DomainData() {}
 

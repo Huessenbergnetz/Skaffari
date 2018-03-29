@@ -25,9 +25,10 @@
 class HelpEntryData : public QSharedData
 {
 public:
-    HelpEntryData() = default;
+    HelpEntryData() : QSharedData() {}
 
     HelpEntryData(const QString &_title, const QString &_text) :
+        QSharedData(),
         title(_title),
         text(_text)
     {}

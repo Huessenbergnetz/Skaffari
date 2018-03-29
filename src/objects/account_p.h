@@ -25,9 +25,10 @@
 class AccountData: public QSharedData
 {
 public:
-    AccountData() {}
+    AccountData() : QSharedData() {}
 
     AccountData(dbid_t _id, dbid_t _domainId, const QString &_username, bool _imap, bool _pop, bool _sieve, bool _smptauth, const QStringList &_addresses, const QStringList _forwards, quota_size_t _quota, quota_size_t _usage, const QDateTime &_created, const QDateTime &_updated, const QDateTime &_validUntil, const QDateTime &_pwExpires, bool _keepLocal, bool _catchAll, quint8 _status) :
+        QSharedData(),
         quota(_quota),
         usage(_usage),
         addresses(_addresses),
@@ -47,28 +48,6 @@ public:
         keepLocal(_keepLocal),
         catchAll(_catchAll)
     {}
-
-//    AccountData(const AccountData &other) :
-//        QSharedData(other),
-//        quota(other.quota),
-//        usage(other.usage),
-//        addresses(other.addresses),
-//        forwards(other.forwards),
-//        username(other.username),
-//        created(other.created),
-//        updated(other.updated),
-//        validUntil(other.validUntil),
-//        passwordExpires(other.passwordExpires),
-//        id(other.id),
-//        domainId(other.domainId),
-//        status(other.status),
-//        imap(other.imap),
-//        pop(other.pop),
-//        sieve(other.sieve),
-//        smtpauth(other.smtpauth),
-//        keepLocal(other.keepLocal),
-//        catchAll(other.catchAll)
-//    {}
 
     ~AccountData() {}
 

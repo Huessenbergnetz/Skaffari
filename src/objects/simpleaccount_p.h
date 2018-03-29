@@ -37,9 +37,10 @@ public:
 class SimpleAccountData : public  QSharedData
 {
 public:
-    SimpleAccountData() = default;
+    SimpleAccountData() : QSharedData() {}
 
     SimpleAccountData(dbid_t _id, const QString &_username, const QString &_domainname) :
+        QSharedData(),
         username(_username),
         domainname(_domainname),
         id(_id)
