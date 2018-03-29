@@ -59,11 +59,10 @@ Domain::Domain(dbid_t id,
                quota_size_t domainQuotaUsed,
                bool freeNames,
                bool freeAddress,
-               const QVector<Folder> &folders,
                quint32 accounts,
                const QDateTime &created,
                const QDateTime &updated) :
-    d(new DomainData(id, name, prefix, transport, quota, maxAccounts, domainQuota, domainQuotaUsed, freeNames, freeAddress, folders, accounts, created, updated))
+    d(new DomainData(id, name, prefix, transport, quota, maxAccounts, domainQuota, domainQuotaUsed, freeNames, freeAddress, accounts, created, updated))
 {
 
 }
@@ -216,12 +215,12 @@ void Domain::setFreeAddressEnabled(bool nFreeAddress)
     d->freeAddress = nFreeAddress;
 }
 
-QVector<Folder> Domain::folders() const
+std::vector<Folder> Domain::folders() const
 {
     return d->folders;
 }
 
-void Domain::setFolders(const QVector<Folder> &nFolders)
+void Domain::setFolders(const std::vector<Folder> &nFolders)
 {
     d->folders = nFolders;
 }
@@ -248,7 +247,7 @@ void Domain::setAdmins(const QVector<SimpleAdmin> &adminList)
 
 bool Domain::isValid() const
 {
-    return (!d->name.isEmpty() && !d->prefix.isEmpty() && (d->id > 0));
+    return ((d->id > 0) && !d->name.isEmpty() && !d->prefix.isEmpty());
 }
 
 QDateTime Domain::created() const
@@ -408,14 +407,14 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
 
     if (Q_LIKELY(q.exec())) {
         const dbid_t domainId = q.lastInsertId().value<dbid_t>();
-        QVector<Folder> foldersVect;
+        std::vector<Folder> foldersVect;
         for (const QString &folder : folders) {
             q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)"));
             q.bindValue(QStringLiteral(":domain_id"), domainId);
             q.bindValue(QStringLiteral(":name"), folder);
             if (Q_LIKELY(q.exec())) {
                 const dbid_t folderId = q.lastInsertId().value<dbid_t>();
-                foldersVect.push_back(Folder(folderId, domainId, folder));
+                foldersVect.emplace_back(folderId, domainId, folder);
             } else {
                 errorData->setSqlError(q.lastError());
                 qCCritical(SK_DOMAIN, "Failed to create folder %s for new domain %s in database: %s", qUtf8Printable(folder), qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
@@ -579,16 +578,17 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
         validUntilTime.setTimeSpec(Qt::UTC);
         dom.setValidUntil(validUntilTime);
 
+        std::vector<Folder> defFolders;
         q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, name FROM folder WHERE domain_id = :domain_id"));
         q.bindValue(QStringLiteral(":domain_id"), domId);
+
         if (Q_LIKELY(q.exec())) {
-            QVector<Folder> folders;
-            while (q.next()) {
-                folders.push_back(Folder(q.value(0).value<dbid_t>(), domId, q.value(1).toString()));
+            if (Q_LIKELY(q.size() > 0)) {
+                defFolders.reserve(q.size());
+                while (q.next()) {
+                    defFolders.emplace_back(q.value(0).value<dbid_t>(), domId, q.value(1).toString());
+                }
             }
-            dom.setFolders(folders);
-        } else {
-            qCCritical(SK_DOMAIN) << "Failed to query default folders for domain" << dom.name() << "fom database:" << q.lastError().text();
         }
 
     } else {
@@ -689,7 +689,6 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                        q.value(7).value<quota_size_t>(),
                        q.value(8).toBool(),
                        q.value(9).toBool(),
-                       QVector<Folder>(),
                        q.value(10).value<quint32>(),
                        createdTime,
                        updatedTime);
@@ -877,12 +876,12 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
 
     QSqlQuery q;
 
-    const QStringList folders = Domain::trimStringList(p.value(QStringLiteral("folders")).toString().split(QLatin1Char(','), QString::SkipEmptyParts));
+    const QStringList folders = p.value(QStringLiteral("folders")).toString().trimmed().split(QLatin1Char(','), QString::SkipEmptyParts);
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
     const quota_size_t quota = p.value(QStringLiteral("quota")).value<quota_size_t>() / Q_UINT64_C(1024);
 
 
-    if (u.value(QStringLiteral("type")).value<qint16>() == 0) {
+    if (AdminAccount::getUserType(u) >= AdminAccount::Administrator) {
 
         const quota_size_t domainQuota = p.value(QStringLiteral("domainQuota")).value<quota_size_t>() / Q_UINT64_C(1024);
 
@@ -963,65 +962,29 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
         return ret;
     }
 
-    if (folders.empty()) {
-        q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
-        q.bindValue(QStringLiteral(":domain_id"), d->id);
-        if (Q_UNLIKELY(!q.exec())) {
-            qCCritical(SK_DOMAIN) << "Failed to delete folder from domain" << d->name << "from database:" << q.lastError().text();
+    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
+    q.bindValue(QStringLiteral(":domain_id"), d->id);
+    if (Q_LIKELY(q.exec())) {
+        d->folders.clear();
+        if (!folders.empty()) {
+            d->folders.reserve(folders.size());
+            for (const QString &folder : folders) {
+                const QString _folder = folder.trimmed();
+                if (Q_LIKELY(!_folder.isEmpty())) {
+                    q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)"));
+                    q.bindValue(QStringLiteral(":domain_id"), d->id);
+                    q.bindValue(QStringLiteral(":name"), folder);
+                    if (Q_LIKELY(q.exec())) {
+                        d->folders.emplace_back(q.lastInsertId().value<dbid_t>(), d->id, folder);
+                    } else {
+                        qCCritical(SK_DOMAIN, "Failed to save default folder \"%s\" for domain %s (ID: %lu) to database: %s", qUtf8Printable(folder), qUtf8Printable(d->name), d->id, qUtf8Printable(q.lastError().text()));
+                    }
+                }
+            }
+            d->folders.shrink_to_fit();
         }
-        d->folders = QVector<Folder>();
     } else {
-        QStringList newFolders;
-        QStringList currentFolderNames;
-        QList<dbid_t> deletedFolders;
-        const QVector<Folder> currentFolders = d->folders;
-        for (const Folder &folder : currentFolders) {
-            currentFolderNames << folder.getName();
-            if (!folders.contains(folder.getName())) {
-                deletedFolders << folder.getId();
-            }
-        }
-
-        for (const QString &folder : folders) {
-            if (!currentFolderNames.contains(folder)) {
-                newFolders << folder;
-            }
-        }
-
-        if (!deletedFolders.empty()) {
-            const QList<dbid_t> deletedFoldersConst = deletedFolders;
-            for (dbid_t fid : deletedFoldersConst) {
-                q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE id = :id"));
-                q.bindValue(QStringLiteral(":id"), fid);
-                if (Q_UNLIKELY(!q.exec())) {
-                    qCCritical(SK_DOMAIN) << "Failed to delete default folders for domain" << d->name << "from database:" << q.lastError().text();
-                }
-            }
-        }
-
-        if (!newFolders.empty()) {
-            const QStringList newFoldersConst = newFolders;
-            for (const QString &folder : newFoldersConst) {
-                q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)"));
-                q.bindValue(QStringLiteral(":domain_id"), d->id);
-                q.bindValue(QStringLiteral(":name"), folder);
-                if (Q_UNLIKELY(!q.exec())) {
-                    qCCritical(SK_DOMAIN) << "Failed to add new default folder for domain" << d->name << "to database:" << q.lastError().text();
-                }
-            }
-        }
-
-        QVector<Folder> foldersVect;
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, name FROM folder WHERE domain_id = :domain_id"));
-        q.bindValue(QStringLiteral(":domain_id"), d->id);
-        if (Q_UNLIKELY(!q.exec())) {
-            qCCritical(SK_DOMAIN) << "Failed to query default folders for domain" << d->name << "from database:" << q.lastError().text();
-        } else {
-            while (q.next()) {
-                foldersVect.push_back(Folder(q.value(0).value<dbid_t>(), d->id, q.value(1).toString()));
-            }
-        }
-        d->folders = foldersVect;
+        qCCritical(SK_DOMAIN) << "Failed to delete default folders for domain" << d->name << "from database:" << q.lastError().text();
     }
 
     if (ret) {

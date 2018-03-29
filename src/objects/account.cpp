@@ -797,9 +797,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
 
                         if (Q_LIKELY(imap.login())) {
 
-                            const QVector<Folder> folders = d.folders();
-
-                            for (const Folder &folder : folders) {
+                            for (const Folder &folder : d.folders()) {
                                 if (Q_UNLIKELY(!imap.createFolder(folder.getName()))) {
                                     qCWarning(SK_ACCOUNT, "%s failed to create default IMAP folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(folder.getName()), aunStr, qUtf8Printable(imap.lastError().errorText()));
                                 }

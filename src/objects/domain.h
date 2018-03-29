@@ -19,21 +19,25 @@
 #ifndef DOMAIN_H
 #define DOMAIN_H
 
+#include "simpleadmin.h"
+#include "simpledomain.h"
+#include "folder.h"
+#include "../../common/global.h"
+
+#include <Cutelyst/ParamsMultiMap>
+
+#include <grantlee5/grantlee/metatype.h>
+
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QSharedDataPointer>
 #include <QDateTime>
 #include <QVector>
-#include <grantlee5/grantlee/metatype.h>
-#include <Cutelyst/ParamsMultiMap>
-#include <math.h>
 #include <QLoggingCategory>
 
-#include "simpleadmin.h"
-#include "simpledomain.h"
-#include "folder.h"
-#include "../../common/global.h"
+#include <math.h>
+#include <vector>
 
 Q_DECLARE_LOGGING_CATEGORY(SK_DOMAIN)
 
@@ -62,7 +66,7 @@ class SkaffariError;
  * domainQuotaUsagePercent | float                 | domainQuotaUsagePercent()
  * id                      | dbid_t                | id()
  * isValid                 | bool                  | isValid()
- * folders                 | QVector<Folder>       | folders()
+ * folders                 | std::vector<Folder>   | folders()
  * freeNames               | bool                  | isFreeNamesEnabled()
  * freeAddress             | bool                  | isFreeAddressEnabled()
  * maxAccounts             | quint32               | maxAccounts()
@@ -95,12 +99,11 @@ public:
      * \param domainQuotaUsed   the overall used quota for all accounts in this domain
      * \param freeNames         \c true if free user names are allowed for this domain
      * \param freeAddress       \c true if free email addresses are allowed for this domain
-     * \param folders           default folders for new accounts in this domain
      * \param accounts          current number of accounts in this domain
      * \param created           date and time this domain has been created in UTC time zone
      * \param updated           date and time this domain has been updated in UTC time zone
      */
-    Domain(dbid_t id, const QString &name, const QString &prefix, const QString &transport, quota_size_t quota, quint32 maxAccounts, quota_size_t domainQuota, quota_size_t domainQuotaUsed, bool freeNames, bool freeAddress, const QVector<Folder> &folders, quint32 accounts, const QDateTime &created, const QDateTime &updated);
+    Domain(dbid_t id, const QString &name, const QString &prefix, const QString &transport, quota_size_t quota, quint32 maxAccounts, quota_size_t domainQuota, quota_size_t domainQuotaUsed, bool freeNames, bool freeAddress, quint32 accounts, const QDateTime &created, const QDateTime &updated);
 
     /*!
      * \brief Constructs a copy of \a other.
@@ -269,12 +272,12 @@ public:
      * \brief Returns the list of default folders that will be created for new accounts in this domain.
      * \sa setFolders()
      */
-    QVector<Folder> folders() const;
+    std::vector<Folder> folders() const;
     /*!
      * \brief Sets the default folders that will be created for new accounts in this domain.
      * \sa folders()
      */
-    void setFolders(const QVector<Folder> &nFolders);
+    void setFolders(const std::vector<Folder> &nFolders);
 
     /*!
      * \brief Returns the number of accounts in this domain.
@@ -569,7 +572,7 @@ if (property == QLatin1String("id")) {
 } else if (property == QLatin1String("freeAddress")) {
     return QVariant(object.isFreeAddressEnabled());
 } else if (property == QLatin1String("folders")) {
-    return QVariant::fromValue<QVector<Folder>>(object.folders());
+    return QVariant::fromValue<std::vector<Folder>>(object.folders());
 } else if (property == QLatin1String("accounts")) {
     return QVariant(object.accounts());
 } else if (property == QLatin1String("admins")) {
