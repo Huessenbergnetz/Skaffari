@@ -22,7 +22,6 @@
 #include "../../common/global.h"
 #include <grantlee5/grantlee/metatype.h>
 #include <QString>
-#include <QSharedDataPointer>
 #include <QVariant>
 #include <QJsonArray>
 
@@ -31,7 +30,6 @@ class Context;
 }
 
 class SkaffariError;
-class SimpleDomainData;
 
 /*!
  * \ingroup skaffaricore
@@ -162,7 +160,8 @@ public:
     static SimpleDomain get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
 
 private:
-    QSharedDataPointer<SimpleDomainData> d;
+    QString m_name;
+    dbid_t m_id = 0;
 };
 
 Q_DECLARE_METATYPE(SimpleDomain)
@@ -175,13 +174,12 @@ Q_DECLARE_TYPEINFO(SimpleDomain, Q_MOVABLE_TYPE);
 QDebug operator<<(QDebug debug, const SimpleDomain &domain);
 
 GRANTLEE_BEGIN_LOOKUP(SimpleDomain)
-QVariant var;
 if (property == QLatin1String("id")) {
-    var.setValue(object.id());
+    return QVariant(object.id());
 } else if (property == QLatin1String("name")) {
-    var.setValue(object.name());
+    return QVariant(object.name());
 }
-return var;
+return QVariant();
 GRANTLEE_END_LOOKUP
 
 #endif // SIMPLEDOMAIN_H

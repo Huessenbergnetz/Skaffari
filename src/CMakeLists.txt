@@ -17,7 +17,6 @@ set (skaffari_SRCS
     objects/simpleadmin.h
     objects/simpledomain.cpp
     objects/simpledomain.h
-    objects/simpledomain_p.h
     objects/skaffarierror.cpp
     objects/skaffarierror.h
     objects/skaffarierror_p.h

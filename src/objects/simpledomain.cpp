@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "simpledomain_p.h"
+#include "simpledomain.h"
 #include "skaffarierror.h"
 #include "adminaccount.h"
 #include <Cutelyst/Context>
@@ -29,33 +29,47 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QDebug>
+#include <QCollator>
 
-SimpleDomain::SimpleDomain() : d(new SimpleDomainData)
+class SimpleDomainNameCollator : public QCollator
+{
+public:
+    explicit SimpleDomainNameCollator(const QLocale &locale) :
+        QCollator(locale)
+    {}
+
+    bool operator() (const SimpleDomain &left, const SimpleDomain &right) { return (compare(left.name(), right.name()) < 0); }
+};
+
+SimpleDomain::SimpleDomain()
 {
 
 }
 
 SimpleDomain::SimpleDomain(dbid_t id, const QString &name) :
-    d(new SimpleDomainData(id, name))
+    m_name(name), m_id(id)
 {
 
 }
 
 SimpleDomain::SimpleDomain(const SimpleDomain &other) :
-    d(other.d)
+    m_name(other.m_name), m_id(other.m_id)
 {
 
 }
 
 SimpleDomain::SimpleDomain(SimpleDomain &&other) noexcept :
-    d(std::move(other.d))
+    m_name(std::move(other.m_name)), m_id(std::move(other.m_id))
+
 {
-    other.d = nullptr;
+    other.m_name.clear();
+    other.m_id = 0;
 }
 
 SimpleDomain& SimpleDomain::operator=(const SimpleDomain &other)
 {
-    d = other.d;
+    m_name = other.m_name;
+    m_id = other.m_id;
     return *this;
 }
 
@@ -72,36 +86,37 @@ SimpleDomain::~SimpleDomain()
 
 void SimpleDomain::swap(SimpleDomain &other) noexcept
 {
-    std::swap(d, other.d);
+    std::swap(m_name, other.m_name);
+    std::swap(m_id, other.m_id);
 }
 
 dbid_t SimpleDomain::id() const
 {
-    return d->id;
+    return m_id;
 }
 
 QString SimpleDomain::name() const
 {
-    return d->name;
+    return m_name;
 }
 
 QString SimpleDomain::nameIdString() const
 {
     QString ret;
-    ret = d->name + QLatin1String(" (ID: ") + QString::number(d->id) + QLatin1Char(')');
+    ret = m_name + QLatin1String(" (ID: ") + QString::number(m_id) + QLatin1Char(')');
     return ret;
 }
 
 void SimpleDomain::setData(dbid_t id, const QString &name)
 {
-    d->id = id;
-    d->name = name;
+    m_id = id;
+    m_name = name;
 }
 
 
 bool SimpleDomain::isValid() const
 {
-    return ((d->id > 0) && !d->name.isEmpty());
+    return ((m_id > 0) && !m_name.isEmpty());
 }
 
 
@@ -139,7 +154,7 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
     }
 
     while (q.next()) {
-        lst.push_back(SimpleDomain(q.value(0).value<dbid_t>(), q.value(1).toString()));
+        lst.emplace_back(q.value(0).value<dbid_t>(), q.value(1).toString());
     }
 
     if (lst.size() > 1) {
