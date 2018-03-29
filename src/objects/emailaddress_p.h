@@ -36,17 +36,24 @@ public:
 class EmailAddressData : public QSharedData
 {
 public:
-    EmailAddressData() = default;
+    EmailAddressData() : QSharedData() {}
 
     EmailAddressData(dbid_t _id, dbid_t _aceId, const QString &_name) :
-        name(_name),
+        QSharedData(),
         id(_id),
         aceId(_aceId)
-    {}
+    {
+        const int atIdx = _name.lastIndexOf(QLatin1Char('@'));
+        if (atIdx > -1) {
+            local = _name.left(atIdx);
+            domain = _name.mid(atIdx + 1);
+        }
+    }
 
     ~EmailAddressData() {}
 
-    QString name;
+    QString local;
+    QString domain;
     dbid_t id = 0;
     dbid_t aceId = 0;
 };

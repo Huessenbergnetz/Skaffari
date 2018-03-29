@@ -86,40 +86,22 @@ bool EmailAddress::isIdn() const
 
 QString EmailAddress::name() const
 {
-    return d->name;
+    return d->local + QLatin1Char('@') + d->domain;
 }
 
 QString EmailAddress::localPart() const
 {
-    QString ret;
-
-    if (!d->name.isEmpty()) {
-        const int atIdx = d->name.lastIndexOf(QLatin1Char('@'));
-        if (atIdx > 1) {
-            ret = d->name.left(atIdx);
-        }
-    }
-
-    return ret;
+    return d->local;
 }
 
 QString EmailAddress::domainPart() const
 {
-    QString ret;
-
-    if (!d->name.isEmpty()) {
-        const int atIdx = d->name.lastIndexOf(QLatin1Char('@'));
-        if (atIdx < -1) {
-            ret = d->name.mid(atIdx + 1);
-        }
-    }
-
-    return ret;
+    return d->domain;
 }
 
 bool EmailAddress::isValid() const
 {
-    return ((d->id > 0) && !d->name.isEmpty());
+    return ((d->id > 0) && !d->local.isEmpty() && !d->domain.isEmpty());
 }
 
 std::vector<EmailAddress> EmailAddress::list(Cutelyst::Context *c, SkaffariError *e, const QString &username)
