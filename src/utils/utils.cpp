@@ -32,6 +32,11 @@ Utils::Utils()
 
 }
 
+Utils::~Utils()
+{
+
+}
+
 QDateTime Utils::toUserTZ(Cutelyst::Context *c, const QDateTime &dt)
 {
     QDateTime retVal;

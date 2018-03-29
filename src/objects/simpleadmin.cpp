@@ -38,7 +38,8 @@ SimpleAdmin::SimpleAdmin(const SimpleAdmin &other) :
 SimpleAdmin::SimpleAdmin(SimpleAdmin &&other) noexcept :
     m_id(std::move(other.m_id)), m_name(std::move(other.m_name))
 {
-
+    other.m_id = 0;
+    other.m_name.clear();
 }
 
 SimpleAdmin& SimpleAdmin::operator=(const SimpleAdmin &other)

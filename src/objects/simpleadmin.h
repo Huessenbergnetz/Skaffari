@@ -24,8 +24,6 @@
 #include <QString>
 #include <QVariant>
 
-class SimpleAdminData;
-
 /*!
  * \ingroup skaffaricore
  * \brief Provides basic information about an administrator.

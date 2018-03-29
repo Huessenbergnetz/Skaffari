@@ -59,11 +59,6 @@ class SkaffariConfig
 {
 public:
     /*!
-     * \brief Constructs a new SkaffariConfig object.
-     */
-    SkaffariConfig();
-
-    /*!
      * \brief Loads the different configuration areas.
      * \param general   Entries from the \a General section.
      * \param accounts  Entries from the \a Accounts section.
@@ -484,14 +479,13 @@ private:
     static bool m_useMemcached;
     static bool m_useMemcachedSession;
 
-#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
-
-
-#endif
-
     static QVariant loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal = QVariant());
     static SimpleAccount loadDefaultAccount(const QString &optionName);
     static SimpleAccount loadDefaultAccount(dbid_t accountId);
+
+    // prevent construction
+    SkaffariConfig();
+    ~SkaffariConfig();
 };
 
 #endif // SKAFFARICONFIG_H

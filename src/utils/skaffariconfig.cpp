@@ -84,6 +84,11 @@ SkaffariConfig::SkaffariConfig()
 
 }
 
+SkaffariConfig::~SkaffariConfig()
+{
+
+}
+
 void SkaffariConfig::load(const QVariantMap &general, const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &imap, const QVariantMap &tmpl)
 {
     SkaffariConfig::m_template = general.value(QStringLiteral("template"), QStringLiteral("default")).toString();

@@ -35,11 +35,6 @@ class Utils
 {
 public:
     /*!
-     * \brief Constructs a new %Utils object.
-     */
-    Utils();
-
-    /*!
      * \brief Converts the \a dt to the time zone of the current user in the context \a c.
      * \param c     The current Context to get the user from.
      * \param dt    The date and time to convert.
@@ -92,6 +87,11 @@ public:
      * \li true
      */
     static bool checkCheckbox(const Cutelyst::ParamsMultiMap &params, const QString &field);
+
+private:
+    // prevent construction
+    Utils();
+    ~Utils();
 };
 
 #endif // UTILS_H
