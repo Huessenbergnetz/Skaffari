@@ -235,12 +235,12 @@ void Domain::setAccounts(quint32 nAccounts)
     d->accounts = nAccounts;
 }
 
-QVector<SimpleAdmin> Domain::admins() const
+std::vector<SimpleAdmin> Domain::admins() const
 {
     return d->admins;
 }
 
-void Domain::setAdmins(const QVector<SimpleAdmin> &adminList)
+void Domain::setAdmins(const std::vector<SimpleAdmin> &adminList)
 {
     d->admins = adminList;
 }
@@ -290,12 +290,12 @@ void Domain::setParent(const SimpleDomain &parent)
     d->parent = parent;
 }
 
-QVector<SimpleDomain> Domain::children() const
+std::vector<SimpleDomain> Domain::children() const
 {
     return d->children;
 }
 
-void Domain::setChildren(const QVector<SimpleDomain> &children)
+void Domain::setChildren(const std::vector<SimpleDomain> &children)
 {
     d->children = children;
 }
@@ -338,7 +338,7 @@ bool Domain::hasAccess(Cutelyst::Context *c) const
     bool ret = false;
     Q_ASSERT_X(c, "cheking domain access", "invalid context object");
 
-    const AdminAccount aa = c->stash(QStringLiteral("user")).value<AdminAccount>();
+    const AdminAccount aa = AdminAccount::getUser(c);
     if (aa.isValid()) {
         if (aa.type() >= AdminAccount::Administrator) {
             ret = true;
@@ -347,7 +347,7 @@ bool Domain::hasAccess(Cutelyst::Context *c) const
             const dbid_t uid = aa.id();
 
             if (!d->admins.empty()) {
-                for (int i = 0; i < d->admins.size(); ++i) {
+                for (std::vector<SimpleAdmin>::size_type i = 0; i < d->admins.size(); ++i) {
                     if (d->admins.at(i).id() == uid) {
                         ret = true;
                         break;
@@ -383,7 +383,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     const quint32 maxAccounts = params.value(QStringLiteral("maxAccounts")).value<quint32>();
     const bool freeNames = params.value(QStringLiteral("freeNames")).toBool();
     const bool freeAddress = params.value(QStringLiteral("freeAddress")).toBool();
-    const QStringList folders = Domain::trimStringList(params.value(QStringLiteral("folders")).toString().split(QLatin1Char(','), QString::SkipEmptyParts));
+    const QStringList folders = params.value(QStringLiteral("folders")).toString().trimmed().split(QLatin1Char(','), QString::SkipEmptyParts);
     const QString transport = params.value(QStringLiteral("transport"), QStringLiteral("cyrus")).toString();
     const dbid_t parentId = params.value(QStringLiteral("parent")).value<dbid_t>();
     const QDateTime defDateTime(QDate(2999, 12, 31), QTime(0, 0), QTimeZone::utc());
@@ -409,22 +409,25 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
         const dbid_t domainId = q.lastInsertId().value<dbid_t>();
         std::vector<Folder> foldersVect;
         for (const QString &folder : folders) {
-            q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)"));
-            q.bindValue(QStringLiteral(":domain_id"), domainId);
-            q.bindValue(QStringLiteral(":name"), folder);
-            if (Q_LIKELY(q.exec())) {
-                const dbid_t folderId = q.lastInsertId().value<dbid_t>();
-                foldersVect.emplace_back(folderId, domainId, folder);
-            } else {
-                errorData->setSqlError(q.lastError());
-                qCCritical(SK_DOMAIN, "Failed to create folder %s for new domain %s in database: %s", qUtf8Printable(folder), qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
-                q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
+            const QString _folder = folder.trimmed();
+            if (!_folder.isEmpty()) {
+                q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)"));
                 q.bindValue(QStringLiteral(":domain_id"), domainId);
-                q.exec();
-                q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :domain_id"));
-                q.bindValue(QStringLiteral(":domain_id"), domainId);
-                q.exec();
-                return dom;
+                q.bindValue(QStringLiteral(":name"), folder);
+                if (Q_LIKELY(q.exec())) {
+                    const dbid_t folderId = q.lastInsertId().value<dbid_t>();
+                    foldersVect.emplace_back(folderId, domainId, folder);
+                } else {
+                    errorData->setSqlError(q.lastError());
+                    qCCritical(SK_DOMAIN, "Failed to create folder %s for new domain %s in database: %s", qUtf8Printable(folder), qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
+                    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
+                    q.bindValue(QStringLiteral(":domain_id"), domainId);
+                    q.exec();
+                    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :domain_id"));
+                    q.bindValue(QStringLiteral(":domain_id"), domainId);
+                    q.exec();
+                    return dom;
+                }
             }
         }
 
@@ -616,10 +619,10 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
             q.bindValue(QStringLiteral(":id"), domId);
 
             if (Q_LIKELY(q.exec())) {
-                QVector<SimpleDomain> thekids;
+                std::vector<SimpleDomain> thekids;
                 thekids.reserve(q.size());
                 while(q.next()) {
-                    thekids.push_back(SimpleDomain(q.value(0).value<dbid_t>(), q.value(1).toString()));
+                    thekids.emplace_back(q.value(0).value<dbid_t>(), q.value(1).toString());
                 }
                 dom.setChildren(thekids);
             } else {
@@ -631,10 +634,10 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
         q.bindValue(QStringLiteral(":domain_id"), dom.id());
 
         if (Q_LIKELY(q.exec())) {
-            QVector<SimpleAdmin> admins;
+            std::vector<SimpleAdmin> admins;
             admins.reserve(q.size());
             while (q.next()) {
-                admins.push_back(SimpleAdmin(q.value(0).value<dbid_t>(), q.value(1).toString()));
+                admins.emplace_back(q.value(0).value<dbid_t>(), q.value(1).toString());
             }
             dom.setAdmins(admins);
         } else {
@@ -707,10 +710,10 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                 q2.bindValue(QStringLiteral(":id"), dom.id());
 
                 if (Q_LIKELY(q2.exec())) {
-                    QVector<SimpleDomain> thekids;
+                    std::vector<SimpleDomain> thekids;
                     thekids.reserve(q2.size());
                     while(q2.next()) {
-                        thekids.push_back(SimpleDomain(q2.value(0).value<dbid_t>(), QUrl::fromAce(q2.value(1).toByteArray())));
+                        thekids.emplace_back(q2.value(0).value<dbid_t>(), QUrl::fromAce(q2.value(1).toByteArray()));
                     }
                     dom.setChildren(thekids);
                 } else {
@@ -799,8 +802,7 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
 
     if (deleteChildren) {
         if (!d->children.empty()) {
-            const QVector<SimpleDomain> thekids = d->children;
-            for (const SimpleDomain &kid : thekids) {
+            for (const SimpleDomain &kid : d->children) {
                 Domain child = Domain::get(c, kid.id(), error);
                 if (child) {
                     if (Q_UNLIKELY(!child.remove(c, error, 0, true))) {
@@ -1046,22 +1048,6 @@ bool Domain::checkAccess(Cutelyst::Context *c, dbid_t domainId)
     return allowed;
 }
 
-QStringList Domain::trimStringList(const QStringList &list)
-{
-    QStringList tlist;
-
-    if (!list.empty()) {
-
-        tlist.reserve(list.size());
-        for (const QString &str : list) {
-            tlist << str.trimmed();
-        }
-
-    }
-
-    return tlist;
-}
-
 QString Domain::getCatchAllAccount(Cutelyst::Context *c, SkaffariError *e) const
 {
     QString username;
@@ -1099,6 +1085,7 @@ QDebug operator<<(QDebug dbg, const Domain &domain)
     if (domain.parent()) {
         dbg << ", Parent: " << domain.parent();
     }
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
     if (!domain.children().empty()) {
         dbg << ", Children: " << domain.children();
     }
@@ -1106,9 +1093,38 @@ QDebug operator<<(QDebug dbg, const Domain &domain)
         dbg << ", Admins: " << domain.admins();
     }
     if (!domain.folders().empty()) {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
         dbg << ", Default folders: " << domain.folders();
+    }
 #else
+    if (!domain.children().empty()) {
+        dbg << ", Children: std::vector(";
+        auto it = domain.folders().cbegin();
+        auto end = domain.folders().cend();
+        if (it != end) {
+            dbg << *it;
+            ++it;
+        }
+        while (it != end) {
+            dbg << ", " << *it;
+            ++it;
+        }
+        dbg << ')';
+    }
+    if (!domain.admins().empty()) {
+        dbg << ", Admins: std::vector(";
+        auto it = domain.folders().cbegin();
+        auto end = domain.folders().cend();
+        if (it != end) {
+            dbg << *it;
+            ++it;
+        }
+        while (it != end) {
+            dbg << ", " << *it;
+            ++it;
+        }
+        dbg << ')';
+    }
+    if (!domain.folders().empty()) {
         dbg << ", Default folders: std::vector(";
         auto it = domain.folders().cbegin();
         auto end = domain.folders().cend();
@@ -1121,8 +1137,8 @@ QDebug operator<<(QDebug dbg, const Domain &domain)
             ++it;
         }
         dbg << ')';
-#endif
     }
+#endif
     dbg << ", Accounts: " << domain.accounts() << '/' << domain.maxAccounts();
     dbg << ", Domain quota: " << domain.domainQuotaUsed() << '/' << domain.domainQuota() << "KiB";
     dbg << ", Default account quota: " << domain.quota() << "KiB";

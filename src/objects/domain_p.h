@@ -60,8 +60,8 @@ public:
     quota_size_t quota = 0;
     quota_size_t domainQuota = 0;
     quota_size_t domainQuotaUsed = 0;
-    QVector<SimpleDomain> children;
-    QVector<SimpleAdmin> admins;
+    std::vector<SimpleDomain> children;
+    std::vector<SimpleAdmin> admins;
     std::vector<Folder> folders;
     SimpleDomain parent;
     QString name;

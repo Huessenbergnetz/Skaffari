@@ -19,10 +19,10 @@
 #ifndef DOMAIN_H
 #define DOMAIN_H
 
+#include "../../common/global.h"
 #include "simpleadmin.h"
 #include "simpledomain.h"
 #include "folder.h"
-#include "../../common/global.h"
 
 #include <Cutelyst/ParamsMultiMap>
 
@@ -33,7 +33,6 @@
 #include <QStringList>
 #include <QSharedDataPointer>
 #include <QDateTime>
-#include <QVector>
 #include <QLoggingCategory>
 
 #include <math.h>
@@ -54,28 +53,28 @@ class SkaffariError;
  * \brief Represents a single domain that is managed by %Skaffari.
  *
  * \par Grantlee accessors
- * Accessor                | Type                  | Method
- * ------------------------|-----------------------|-------
- * accounts                | quint32               | accounts()
- * accountUsagePercent     | float                 | accountUsagePercent()
- * admins                  | QVector<SimpleAdmin>  | admins()
- * children                | QVector<SimpleDomain> | children()
- * created                 | QDateTime             | created()
- * domainQuota             | quota_size_t          | domainQuota()
- * domainQuotaUsed         | quota_size_t          | domainQuotaUsed()
- * domainQuotaUsagePercent | float                 | domainQuotaUsagePercent()
- * id                      | dbid_t                | id()
- * isValid                 | bool                  | isValid()
- * folders                 | std::vector<Folder>   | folders()
- * freeNames               | bool                  | isFreeNamesEnabled()
- * freeAddress             | bool                  | isFreeAddressEnabled()
- * maxAccounts             | quint32               | maxAccounts()
- * name                    | QString               | name()
- * parent                  | SimpleDomain          | parent()
- * prefix                  | QString               | prefix()
- * quota                   | quota_size_t          | quota()
- * transport               | QString               | transport()
- * updated                 | QDateTime             | updated()
+ * Accessor                | Type                      | Method
+ * ------------------------|---------------------------|-------
+ * accounts                | quint32                   | accounts()
+ * accountUsagePercent     | float                     | accountUsagePercent()
+ * admins                  | std::vector<SimpleAdmin>  | admins()
+ * children                | std::vector<SimpleDomain> | children()
+ * created                 | QDateTime                 | created()
+ * domainQuota             | quota_size_t              | domainQuota()
+ * domainQuotaUsed         | quota_size_t              | domainQuotaUsed()
+ * domainQuotaUsagePercent | float                     | domainQuotaUsagePercent()
+ * id                      | dbid_t                    | id()
+ * isValid                 | bool                      | isValid()
+ * folders                 | std::vector<Folder>       | folders()
+ * freeNames               | bool                      | isFreeNamesEnabled()
+ * freeAddress             | bool                      | isFreeAddressEnabled()
+ * maxAccounts             | quint32                   | maxAccounts()
+ * name                    | QString                   | name()
+ * parent                  | SimpleDomain              | parent()
+ * prefix                  | QString                   | prefix()
+ * quota                   | quota_size_t              | quota()
+ * transport               | QString                   | transport()
+ * updated                 | QDateTime                 | updated()
  */
 class Domain
 {
@@ -298,7 +297,7 @@ public:
      *
      * \sa setAdmins()
      */
-    QVector<SimpleAdmin> admins() const;
+    std::vector<SimpleAdmin> admins() const;
     /*!
      * \brief Sets the list of admins that are responsible for this domain.
      *
@@ -307,7 +306,7 @@ public:
      *
      * \sa admins()
      */
-    void setAdmins(const QVector<SimpleAdmin> &adminList);
+    void setAdmins(const std::vector<SimpleAdmin> &adminList);
 
     /*!
      * \brief Returns the date and time this domain has been created.
@@ -331,7 +330,15 @@ public:
      */
     void setUpdated(const QDateTime &dt);
 
+    /*!
+     * \brief Returns the date and time until accounts in this domain can be valid.
+     * \sa setValidUntil()
+     */
     QDateTime validUntil() const;
+    /*!
+     * \brief Sets the date and time until accounts in this domain can be valid.
+     * \sa validUntil()
+     */
     void setValidUntil(const QDateTime &dt);
 
     /*!
@@ -349,12 +356,12 @@ public:
      * \brief Returns a list of child domains if any.
      * \sa setChildren()
      */
-    QVector<SimpleDomain> children() const;
+    std::vector<SimpleDomain> children() const;
     /*!
      * \brief Sets the list of child domains.
      * \sa children()
      */
-    void setChildren(const QVector<SimpleDomain> &children);
+    void setChildren(const std::vector<SimpleDomain> &children);
 
     /*!
      * \brief Returns \c true if this domain has an internationalized domain name (IDN).
@@ -521,13 +528,6 @@ public:
     static bool checkAccess(Cutelyst::Context *c, dbid_t domainId = 0);
 
     /*!
-     * \brief Trims every string in the \a list.
-     * \param list  The list to trim
-     * \return A list of trimmed strings.
-     */
-    static QStringList trimStringList(const QStringList &list);
-
-    /*!
      * \brief Returns the user name of the account used to catch-all emails without recipient.
      * \param c The current context, used for translations.
      * \param e Pointer to an object taking error information.
@@ -576,7 +576,7 @@ if (property == QLatin1String("id")) {
 } else if (property == QLatin1String("accounts")) {
     return QVariant(object.accounts());
 } else if (property == QLatin1String("admins")) {
-    return QVariant::fromValue<QVector<SimpleAdmin>>(object.admins());
+    return QVariant::fromValue<std::vector<SimpleAdmin>>(object.admins());
 } else if (property == QLatin1String("isValid")) {
     return QVariant(object.isValid());
 } else if (property == QLatin1String("created")) {
@@ -586,7 +586,7 @@ if (property == QLatin1String("id")) {
 } else if (property == QLatin1String("parent")) {
     return QVariant::fromValue<SimpleDomain>(object.parent());
 } else if (property == QLatin1String("children")) {
-    return QVariant::fromValue<QVector<SimpleDomain>>(object.children());
+    return QVariant::fromValue<std::vector<SimpleDomain>>(object.children());
 } else if (property == QLatin1String("accountUsagePercent")) {
     return QVariant(object.accountUsagePercent());
 } else if (property == QLatin1String("isIdn")) {

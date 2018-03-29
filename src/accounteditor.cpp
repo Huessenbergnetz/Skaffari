@@ -257,9 +257,9 @@ void AccountEditor::addresses(Context *c)
         SkaffariError sde(c);
         c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(SimpleDomain::list(c, &sde)));
     } else if (!d.children().empty()) {
-        QVector<SimpleDomain> maildomains = d.children();
-        maildomains.prepend(d.toSimple());
-        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<QVector<SimpleDomain>>(maildomains));
+        std::vector<SimpleDomain> maildomains = d.children();
+        maildomains.insert(maildomains.begin(), d.toSimple());
+        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
     }
 
     c->setStash(QStringLiteral("template"), QStringLiteral("account/addresses.html"));
@@ -312,9 +312,9 @@ void AccountEditor::edit_address(Context *c, const QString &address)
             const std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().value<dbid_t>());
             c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
         } else if (!d.children().empty()) {
-            QVector<SimpleDomain> maildomains = d.children();
-            maildomains.prepend(d.toSimple());
-            c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<QVector<SimpleDomain>>(maildomains));
+            std::vector<SimpleDomain> maildomains = d.children();
+            maildomains.insert(maildomains.begin(), d.toSimple());
+            c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
         }
     }
 
@@ -619,9 +619,9 @@ void AccountEditor::add_address(Context *c)
         SkaffariError sde(c);
         c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(SimpleDomain::list(c, &sde)));
     } else if (!d.children().empty()) {
-        QVector<SimpleDomain> maildomains = d.children();
-        maildomains.prepend(d.toSimple());
-        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<QVector<SimpleDomain>>(maildomains));
+        std::vector<SimpleDomain> maildomains = d.children();
+        maildomains.insert(maildomains.begin(), d.toSimple());
+        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
     }
 
     c->setStash(QStringLiteral("template"), QStringLiteral("account/add_address.html"));

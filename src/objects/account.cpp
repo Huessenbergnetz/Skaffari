@@ -622,8 +622,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
     }
 
     if (!d.children().empty() && !selectedKids.empty()) {
-        const QVector<SimpleDomain> thekids = d.children();
-        for (const SimpleDomain &kid : thekids) {
+        for (const SimpleDomain &kid : d.children()) {
             if (selectedKids.contains(QString::number(kid.id()))) {
                 SkaffariError cDomError(c);
                 const Domain cDom = Domain::get(c, kid.id(), &cDomError);
@@ -1600,8 +1599,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError *e, const Domain 
             for (const QString &address : addresses) {
                 std::pair<QString,QString> parts = addressParts(address);
                 if (parts.second == dom.name()) {
-                    const QVector<SimpleDomain> thekids = dom.children();
-                    for (const SimpleDomain &kid : thekids) {
+                    for (const SimpleDomain &kid : dom.children()) {
                         const QString childAddress = parts.first + QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(kid.name()));
                         q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :alias"));
                         q.bindValue(QStringLiteral(":alias"), childAddress);
@@ -2360,7 +2358,7 @@ bool AccountData::canAddAddress(Cutelyst::Context *c, SkaffariError *e, const Do
 
     if (!myDomain.isFreeAddressEnabled()) {
         bool addressAllowed = (targetDomain.id() == domainId);
-        if (!addressAllowed && !myDomain.children().isEmpty()) {
+        if (!addressAllowed) {
             for (const SimpleDomain &child : myDomain.children()) {
                 if (child.id() == targetDomain.id()) {
                     addressAllowed = true;
