@@ -91,13 +91,12 @@ Q_DECLARE_METATYPE(HelpEntry)
 Q_DECLARE_TYPEINFO(HelpEntry, Q_MOVABLE_TYPE);
 
 GRANTLEE_BEGIN_LOOKUP(HelpEntry)
-QVariant var;
 if (property == QLatin1String("title")) {
-    var.setValue(object.getTitle());
+    return QVariant(object.getTitle());
 } else if (property == QLatin1String("text")) {
-    var.setValue(object.getText());
+    return QVariant(object.getText());
 }
-return var;
+return QVariant();
 GRANTLEE_END_LOOKUP
 
 typedef QHash<QString, HelpEntry> HelpHash;

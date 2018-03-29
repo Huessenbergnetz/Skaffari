@@ -165,15 +165,14 @@ Q_DECLARE_METATYPE(EmailAddress)
 Q_DECLARE_TYPEINFO(EmailAddress, Q_MOVABLE_TYPE);
 
 GRANTLEE_BEGIN_LOOKUP(EmailAddress)
-QVariant var;
 if (property == QLatin1String("id")) {
-    var.setValue(object.id());
+   return QVariant(object.id());
 } else if (property == QLatin1String("name")) {
-    var.setValue(object.name());
+   return QVariant(object.name());
 } else if (property == QLatin1String("isIdn")) {
-    var.setValue(object.isIdn());
+   return QVariant(object.isIdn());
 }
-return var;
+return QVariant();
 GRANTLEE_END_LOOKUP
 
 #endif // SKAFFARIEMAILADDRESS_H

@@ -540,51 +540,50 @@ Q_DECLARE_METATYPE(Domain)
 Q_DECLARE_TYPEINFO(Domain, Q_MOVABLE_TYPE);
 
 GRANTLEE_BEGIN_LOOKUP(Domain)
-QVariant var;
 if (property == QLatin1String("id")) {
-    var.setValue(object.id());
+    return QVariant(object.id());
 } else if (property == QLatin1String("name")) {
-    var.setValue(object.name());
+    return QVariant(object.name());
 } else if (property == QLatin1String("prefix")) {
-    var.setValue(object.prefix());
+    return QVariant(object.prefix());
 } else if (property == QLatin1String("transport")) {
-    var.setValue(object.transport());
+    return QVariant(object.transport());
 } else if (property == QLatin1String("quota")) {
-    var.setValue(object.quota());
+    return QVariant(object.quota());
 } else if (property == QLatin1String("maxAccounts")) {
-    var.setValue(object.maxAccounts());
+    return QVariant(object.maxAccounts());
 } else if (property == QLatin1String("domainQuota")) {
-    var.setValue(object.domainQuota());
+    return QVariant(object.domainQuota());
 } else if (property == QLatin1String("domainQuotaUsed")) {
-    var.setValue(object.domainQuotaUsed());
+    return QVariant(object.domainQuotaUsed());
 } else if (property == QLatin1String("domainQuotaUsagePercent")) {
-    var.setValue(object.domainQuotaUsagePercent());
+    return QVariant(object.domainQuotaUsagePercent());
 }  else if (property == QLatin1String("freeNames")) {
-    var.setValue(object.isFreeNamesEnabled());
+    return QVariant(object.isFreeNamesEnabled());
 } else if (property == QLatin1String("freeAddress")) {
-    var.setValue(object.isFreeAddressEnabled());
+    return QVariant(object.isFreeAddressEnabled());
 } else if (property == QLatin1String("folders")) {
-    var.setValue(object.folders());
+    return QVariant(object.folders());
 } else if (property == QLatin1String("accounts")) {
-    var.setValue(object.accounts());
+    return QVariant(object.accounts());
 } else if (property == QLatin1String("admins")) {
-    var.setValue(object.admins());
+    return QVariant(object.admins());
 } else if (property == QLatin1String("isValid")) {
-    var.setValue(object.isValid());
+    return QVariant(object.isValid());
 } else if (property == QLatin1String("created")) {
-    var.setValue(object.created());
+    return QVariant(object.created());
 } else if (property == QLatin1String("updated")) {
-    var.setValue(object.updated());
+    return QVariant(object.updated());
 } else if (property == QLatin1String("parent")) {
-    var.setValue(object.parent());
+    return QVariant(object.parent());
 } else if (property == QLatin1String("children")) {
-    var.setValue(object.children());
+    return QVariant(object.children());
 } else if (property == QLatin1String("accountUsagePercent")) {
-    var.setValue(object.accountUsagePercent());
+    return QVariant(object.accountUsagePercent());
 } else if (property == QLatin1String("isIdn")) {
-    var.setValue(object.isIdn());
+    return QVariant(object.isIdn());
 }
-return var;
+return QVariant();
 GRANTLEE_END_LOOKUP
 
 #endif // DOMAIN_H

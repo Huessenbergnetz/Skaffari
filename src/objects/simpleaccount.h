@@ -198,15 +198,14 @@ Q_DECLARE_METATYPE(SimpleAccount)
 Q_DECLARE_TYPEINFO(SimpleAccount, Q_MOVABLE_TYPE);
 
 GRANTLEE_BEGIN_LOOKUP(SimpleAccount)
-QVariant var;
 if (property == QLatin1String("id")) {
-    var.setValue(object.id());
+    return QVariant(object.id());
 } else if (property == QLatin1String("username")) {
-    var.setValue(object.username());
+    return QVariant(object.username());
 } else if (property == QLatin1String("domainname")) {
-    var.setValue(object.domainname());
+    return QVariant(object.domainname());
 }
-return var;
+return QVariant();
 GRANTLEE_END_LOOKUP
 
 #endif // SIMPLEACCOUNT_H

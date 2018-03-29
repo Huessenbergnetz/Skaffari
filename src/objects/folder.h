@@ -98,15 +98,14 @@ Q_DECLARE_METATYPE(Folder)
 Q_DECLARE_TYPEINFO(Folder, Q_MOVABLE_TYPE);
 
 GRANTLEE_BEGIN_LOOKUP(Folder)
-QVariant var;
 if (property == QLatin1String("id")) {
-    var.setValue(object.getId());
+    return QVariant(object.getId());
 } else if (property == QLatin1String("domainId")) {
-    var.setValue(object.getDomainId());
+    return QVariant(object.getDomainId());
 } else if (property == QLatin1String("name")) {
-    var.setValue(object.getName());
+    return QVariant(object.getName());
 }
-return var;
+return QVariant();
 GRANTLEE_END_LOOKUP
 
 #endif // FOLDER_H

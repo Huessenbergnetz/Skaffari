@@ -503,35 +503,34 @@ Q_DECLARE_TYPEINFO(AdminAccount, Q_MOVABLE_TYPE);
 QDebug operator<<(QDebug dbg, const AdminAccount &account);
 
 GRANTLEE_BEGIN_LOOKUP(AdminAccount)
-QVariant var;
 if (property == QLatin1String("id")) {
-    var.setValue(object.id());
+    return QVariant(object.id());
 } else if (property == QLatin1String("username")) {
-    var.setValue(object.username());
+    return QVariant(object.username());
 } else if (property == QLatin1String("domains")) {
-    var.setValue(object.domains());
+    return QVariant(object.domains());
 } else if (property == QLatin1String("type")) {
-    var.setValue(object.typeInt());
+    return QVariant(object.typeInt());
 } else if (property == QLatin1String("typeStr")) {
-    var.setValue(object.typeStr());
+    return QVariant(object.typeStr());
 } else if (property == QLatin1String("isValid")) {
-    var.setValue(object.isValid());
+    return QVariant(object.isValid());
 } else if (property == QLatin1String("isSuperUser")) {
-    var.setValue(object.isSuperUser());
+    return QVariant(object.isSuperUser());
 } else if (property == QLatin1String("lang")) {
-    var.setValue(object.lang());
+    return QVariant(object.lang());
 } else if (property == QLatin1String("tz")) {
-    var.setValue(object.tz());
+    return QVariant(object.tz());
 } else if (property == QLatin1String("created")) {
-    var.setValue(object.created());
+    return QVariant(object.created());
 } else if (property == QLatin1String("updated")) {
-    var.setValue(object.updated());
+    return QVariant(object.updated());
 } else if (property == QLatin1String("warnLevel")) {
-    var.setValue(object.warnLevel());
+    return QVariant(object.warnLevel());
 } else if (property == QLatin1String("maxDisplay")) {
-    var.setValue(object.maxDisplay());
+    return QVariant(object.maxDisplay());
 }
-return var;
+return QVariant();
 GRANTLEE_END_LOOKUP
 
 #endif // SKAFFARI_ADMINACCOUNT_H

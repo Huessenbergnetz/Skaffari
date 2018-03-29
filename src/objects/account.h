@@ -668,51 +668,50 @@ Q_DECLARE_METATYPE(Account)
 Q_DECLARE_TYPEINFO(Account, Q_MOVABLE_TYPE);
 
 GRANTLEE_BEGIN_LOOKUP(Account)
-QVariant var;
 if (property == QLatin1String("id")) {
-    var.setValue(object.id());
+    return QVariant(object.id());
 } else if (property == QLatin1String("domainId")) {
-    var.setValue(object.domainId());
+    return QVariant(object.domainId());
 } else if (property == QLatin1String("username")) {
-    var.setValue(object.username());
+    return QVariant(object.username());
 } else if (property == QLatin1String("imap")) {
-    var.setValue(object.isImapEnabled());
+    return QVariant(object.isImapEnabled());
 } else if (property == QLatin1String("pop")) {
-    var.setValue(object.isPopEnabled());
+    return QVariant(object.isPopEnabled());
 } else if (property == QLatin1String("sieve")) {
-    var.setValue(object.isSieveEnabled());
+    return QVariant(object.isSieveEnabled());
 } else if (property == QLatin1String("smtpauth")) {
-    var.setValue(object.isSmtpauthEnabled());
+    return QVariant(object.isSmtpauthEnabled());
 } else if (property == QLatin1String("addresses")) {
-    var.setValue(object.addresses());
+    return QVariant(object.addresses());
 } else if (property == QLatin1String("forwards")) {
-    var.setValue(object.forwards());
+    return QVariant(object.forwards());
 } else if (property == QLatin1String("quota")) {
-    var.setValue(object.quota());
+    return QVariant(object.quota());
 } else if (property == QLatin1String("usage")) {
-    var.setValue(object.usage());
+    return QVariant(object.usage());
 } else if (property == QLatin1String("usagePercent")) {
-    var.setValue(object.usagePercent());
+    return QVariant(object.usagePercent());
 } else if (property == QLatin1String("isValid")) {
-    var.setValue(object.isValid());
+    return QVariant(object.isValid());
 } else if (property == QLatin1String("created")) {
-    var.setValue(object.created());
+    return QVariant(object.created());
 } else if (property == QLatin1String("updated")) {
-    var.setValue(object.updated());
+    return QVariant(object.updated());
 } else if (property == QLatin1String("validUntil")) {
-    var.setValue(object.validUntil());
+    return QVariant(object.validUntil());
 } else if (property == QLatin1String("keepLocal")) {
-    var.setValue(object.keepLocal());
+    return QVariant(object.keepLocal());
 } else if (property == QLatin1String("catchAll")) {
-    var.setValue(object.catchAll());
+    return QVariant(object.catchAll());
 } else if (property == QLatin1String("passwordExpires")) {
-    var.setValue(object.passwordExpires());
+    return QVariant(object.passwordExpires());
 } else if (property == QLatin1String("passwordExpired")) {
-    var.setValue(object.passwordExpired());
+    return QVariant(object.passwordExpired());
 } else if (property == QLatin1String("expired")) {
-    var.setValue(object.expired());
+    return QVariant(object.expired());
 }
-return var;
+return QVariant();
 GRANTLEE_END_LOOKUP
 
 #endif // ACCOUNT_H
