@@ -15,7 +15,6 @@ set (skaffari_SRCS
     objects/domain_p.h
     objects/simpleadmin.cpp
     objects/simpleadmin.h
-    objects/simpleadmin_p.h
     objects/simpledomain.cpp
     objects/simpledomain.h
     objects/simpledomain_p.h
@@ -36,7 +35,6 @@ set (skaffari_SRCS
     objects/emailaddress_p.h
     utils/language.cpp
     utils/language.h
-    utils/language_p.h
     utils/utils.cpp
     utils/utils.h
     utils/skaffariconfig.cpp
