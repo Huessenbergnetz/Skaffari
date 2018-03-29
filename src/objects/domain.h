@@ -563,11 +563,11 @@ if (property == QLatin1String("id")) {
 } else if (property == QLatin1String("freeAddress")) {
     return QVariant(object.isFreeAddressEnabled());
 } else if (property == QLatin1String("folders")) {
-    return QVariant(object.folders());
+    return QVariant::fromValue<QVector<Folder>>(object.folders());
 } else if (property == QLatin1String("accounts")) {
     return QVariant(object.accounts());
 } else if (property == QLatin1String("admins")) {
-    return QVariant(object.admins());
+    return QVariant::fromValue<QVector<SimpleAdmin>>(object.admins());
 } else if (property == QLatin1String("isValid")) {
     return QVariant(object.isValid());
 } else if (property == QLatin1String("created")) {
@@ -575,9 +575,9 @@ if (property == QLatin1String("id")) {
 } else if (property == QLatin1String("updated")) {
     return QVariant(object.updated());
 } else if (property == QLatin1String("parent")) {
-    return QVariant(object.parent());
+    return QVariant::fromValue<SimpleDomain>(object.parent());
 } else if (property == QLatin1String("children")) {
-    return QVariant(object.children());
+    return QVariant::fromValue<QVector<SimpleDomain>>(object.children());
 } else if (property == QLatin1String("accountUsagePercent")) {
     return QVariant(object.accountUsagePercent());
 } else if (property == QLatin1String("isIdn")) {

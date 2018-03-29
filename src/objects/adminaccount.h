@@ -508,7 +508,7 @@ if (property == QLatin1String("id")) {
 } else if (property == QLatin1String("username")) {
     return QVariant(object.username());
 } else if (property == QLatin1String("domains")) {
-    return QVariant(object.domains());
+    return QVariant::fromValue<QList<dbid_t>>(object.domains());
 } else if (property == QLatin1String("type")) {
     return QVariant(object.typeInt());
 } else if (property == QLatin1String("typeStr")) {
