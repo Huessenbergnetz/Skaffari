@@ -17,6 +17,7 @@
  */
 
 #include "skaffarierror_p.h"
+#include <QDebugStateSaver>
 
 #define STASH_KEY "_sk_error"
 
@@ -302,3 +303,16 @@ SkaffariError SkaffariError::fromStash(Cutelyst::Context *c)
 {
     return c->stash(QStringLiteral(STASH_KEY)).value<SkaffariError>();
 }
+
+QDebug operator<<(QDebug dbg, const SkaffariError &error)
+{
+    QDebugStateSaver saver(dbg);
+    Q_UNUSED(saver);
+    dbg.nospace() << "SkaffariError(";
+    dbg << "Type: " << error.type();
+    dbg << ", Text: " << error.errorText();
+    dbg << ')';
+    return dbg.maybeSpace();
+}
+
+#include "moc_skaffarierror.cpp"

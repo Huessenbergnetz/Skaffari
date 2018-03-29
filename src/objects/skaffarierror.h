@@ -41,6 +41,7 @@ class SkaffariErrorData;
  */
 class SkaffariError
 {
+    Q_GADGET
 public:
     /*!
      * \brief Different types of errors that can happen in Skaffari.
@@ -59,6 +60,7 @@ public:
         NotFound,               /**< The requested resource could not be found */
         UnknownError			/**< Unknown error */
     };
+    Q_ENUM(ErrorType)
 
     /*!
      * \brief Constructs a SkaffariError of type \link SkaffariError::NoError NoError \endlink.
@@ -238,6 +240,12 @@ public:
 private:
     QSharedDataPointer<SkaffariErrorData> d;
 };
+
+/*!
+ * \relates SkaffariError
+ * \brief Writes the \a error to the \a dbg stream and returns the stream.
+ */
+QDebug operator<<(QDebug dbg, const SkaffariError &error);
 
 Q_DECLARE_METATYPE(SkaffariError)
 Q_DECLARE_TYPEINFO(SkaffariError, Q_MOVABLE_TYPE);

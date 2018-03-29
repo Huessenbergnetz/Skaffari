@@ -164,6 +164,12 @@ private:
 Q_DECLARE_METATYPE(EmailAddress)
 Q_DECLARE_TYPEINFO(EmailAddress, Q_MOVABLE_TYPE);
 
+/*!
+ * \relates EmailAddress
+ * \brief Writes the \a address to the \a dbg stream and returns the stream.
+ */
+QDebug operator<<(QDebug dbg, const EmailAddress &address);
+
 GRANTLEE_BEGIN_LOOKUP(EmailAddress)
 if (property == QLatin1String("id")) {
    return QVariant(object.id());

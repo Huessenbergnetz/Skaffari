@@ -85,6 +85,12 @@ private:
 Q_DECLARE_METATYPE(SimpleAdmin)
 Q_DECLARE_TYPEINFO(SimpleAdmin, Q_MOVABLE_TYPE);
 
+/*!
+ * \relates SimpleAdmin
+ * \brief Writes the \a admin to the \a dbg stream and returns the stream.
+ */
+QDebug operator<<(QDebug dbg, const SimpleAdmin &admin);
+
 GRANTLEE_BEGIN_LOOKUP(SimpleAdmin)
 if (property == QLatin1String("id")) {
     return QVariant(object.id());

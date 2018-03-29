@@ -17,6 +17,7 @@
  */
 
 #include "simpleadmin.h"
+#include <QDebug>
 
 SimpleAdmin::SimpleAdmin()
 {
@@ -74,4 +75,15 @@ dbid_t SimpleAdmin::id() const
 QString SimpleAdmin::name() const
 {
     return m_name;
+}
+
+QDebug operator<<(QDebug dbg, const SimpleAdmin &admin)
+{
+    QDebugStateSaver saver(dbg);
+    Q_UNUSED(saver);
+    dbg.nospace() << "SimpleAdmin(";
+    dbg << "ID: " << admin.id();
+    dbg << "User name: " << admin.name();
+    dbg << ')';
+    return dbg.maybeSpace();
 }

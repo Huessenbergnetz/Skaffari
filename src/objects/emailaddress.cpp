@@ -22,6 +22,7 @@
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QDebug>
 #include <algorithm>
 
 EmailAddress::EmailAddress() : d(new EmailAddressData)
@@ -183,4 +184,16 @@ EmailAddress EmailAddress::get(Cutelyst::Context *c, SkaffariError *e, const QSt
     }
 
     return address;
+}
+
+QDebug operator<<(QDebug dbg, const EmailAddress &address)
+{
+    QDebugStateSaver saver(dbg);
+    Q_UNUSED(saver);
+    dbg.nospace() << "EmailAddress(";
+    dbg << "ID: " << address.id();
+    dbg << ", ACE ID: " << address.aceId();
+    dbg << ", Name: " << address.name();
+    dbg << ')';
+    return dbg.maybeSpace();
 }

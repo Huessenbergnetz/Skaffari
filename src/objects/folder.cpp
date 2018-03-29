@@ -17,6 +17,7 @@
  */
 
 #include "folder_p.h"
+#include <QDebug>
 #include <algorithm>
 
 Folder::Folder() :
@@ -78,4 +79,16 @@ dbid_t Folder::getDomainId() const
 QString Folder::getName() const
 {
     return d->name;
+}
+
+QDebug operator<<(QDebug dbg, const Folder &folder)
+{
+    QDebugStateSaver saver(dbg);
+    Q_UNUSED(saver);
+    dbg.nospace() << "Folder(";
+    dbg << "ID: " << folder.getId();
+    dbg << ", Domain ID: " << folder.getDomainId();
+    dbg << ", Name: " << folder.getName();
+    dbg << ')';
+    return dbg.maybeSpace();
 }

@@ -539,6 +539,12 @@ private:
 Q_DECLARE_METATYPE(Domain)
 Q_DECLARE_TYPEINFO(Domain, Q_MOVABLE_TYPE);
 
+/*!
+ * \relates Domain
+ * \brief Writes the \a domain to the \a dbg stream  and returns the stream.
+ */
+QDebug operator<<(QDebug dbg, const Domain &domain);
+
 GRANTLEE_BEGIN_LOOKUP(Domain)
 if (property == QLatin1String("id")) {
     return QVariant(object.id());

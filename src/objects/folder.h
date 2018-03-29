@@ -97,6 +97,12 @@ protected:
 Q_DECLARE_METATYPE(Folder)
 Q_DECLARE_TYPEINFO(Folder, Q_MOVABLE_TYPE);
 
+/*!
+ * \relates Folder
+ * \brief Writes the \a folder to the \a dbg stream and returns the stream.
+ */
+QDebug operator<<(QDebug dbg, const Folder &folder);
+
 GRANTLEE_BEGIN_LOOKUP(Folder)
 if (property == QLatin1String("id")) {
     return QVariant(object.getId());

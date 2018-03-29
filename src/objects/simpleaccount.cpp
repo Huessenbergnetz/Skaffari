@@ -25,6 +25,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QJsonValue>
+#include <QDebug>
 #include <algorithm>
 
 Q_LOGGING_CATEGORY(SK_SIMPLEACCOUNT, "skaffari.simpleaccount")
@@ -230,4 +231,16 @@ SimpleAccount SimpleAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t 
     }
 
     return a;
+}
+
+QDebug operator<<(QDebug dbg, const SimpleAccount &account)
+{
+    QDebugStateSaver saver(dbg);
+    Q_UNUSED(saver);
+    dbg.nospace() << "SimpleAccount(";
+    dbg << "ID: " << account.id();
+    dbg << ", User name: " << account.username();
+    dbg << ", Domain name: " << account.domainname();
+    dbg << ')';
+    return dbg.maybeSpace();
 }

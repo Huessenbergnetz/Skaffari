@@ -197,6 +197,12 @@ private:
 Q_DECLARE_METATYPE(SimpleAccount)
 Q_DECLARE_TYPEINFO(SimpleAccount, Q_MOVABLE_TYPE);
 
+/*!
+ * \relates SimpleAccount
+ * \brief Writes the \a account to the \a dbg stream and returns the stream.
+ */
+QDebug operator<<(QDebug dbg, const SimpleAccount &account);
+
 GRANTLEE_BEGIN_LOOKUP(SimpleAccount)
 if (property == QLatin1String("id")) {
     return QVariant(object.id());

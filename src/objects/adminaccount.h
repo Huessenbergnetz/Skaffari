@@ -500,6 +500,10 @@ private:
 Q_DECLARE_METATYPE(AdminAccount)
 Q_DECLARE_TYPEINFO(AdminAccount, Q_MOVABLE_TYPE);
 
+/*!
+ * \relates AdminAccount
+ * \brief Writes the admin \a account to the \a dbg stream and returns the stream.
+ */
 QDebug operator<<(QDebug dbg, const AdminAccount &account);
 
 GRANTLEE_BEGIN_LOOKUP(AdminAccount)

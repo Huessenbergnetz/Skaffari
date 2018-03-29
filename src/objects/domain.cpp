@@ -1120,3 +1120,37 @@ QString Domain::getCatchAllAccount(Cutelyst::Context *c, SkaffariError *e) const
 
     return username;
 }
+
+QDebug operator<<(QDebug dbg, const Domain &domain)
+{
+    QDebugStateSaver saver(dbg);
+    Q_UNUSED(saver);
+    dbg.nospace() << "Domain(";
+    dbg << "ID: " << domain.id();
+    dbg << ", Name: " << domain.name();
+    dbg << ", Prefix: " << domain.prefix();
+    dbg << ", ACE ID: " << domain.aceId();
+    if (domain.parent()) {
+        dbg << ", Parent: " << domain.parent();
+    }
+    if (!domain.children().empty()) {
+        dbg << ", Children: " << domain.children();
+    }
+    if (!domain.admins().empty()) {
+        dbg << ", Admins: " << domain.admins();
+    }
+    if (!domain.folders().empty()) {
+        dbg << ", Default folders: " << domain.folders();
+    }
+    dbg << ", Accounts: " << domain.accounts() << '/' << domain.maxAccounts();
+    dbg << ", Domain quota: " << domain.domainQuotaUsed() << '/' << domain.domainQuota() << "KiB";
+    dbg << ", Default account quota: " << domain.quota() << "KiB";
+    dbg << ", Transport: " << domain.transport();
+    dbg << ", Free names: " << domain.isFreeNamesEnabled();
+    dbg << ", Free addresses: " << domain.isFreeAddressEnabled();
+    dbg << ", Created: " << domain.created();
+    dbg << ", Updated: " << domain.updated();
+    dbg << ", Valid until: " << domain.validUntil();
+    dbg << ')';
+    return dbg.maybeSpace();
+}

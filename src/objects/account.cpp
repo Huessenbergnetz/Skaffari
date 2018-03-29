@@ -2403,3 +2403,31 @@ bool AccountData::canAddAddress(Cutelyst::Context *c, SkaffariError *e, const Do
 
     return ret;
 }
+
+QDebug operator<<(QDebug dbg, const Account &account)
+{
+    QDebugStateSaver saver(dbg);
+    Q_UNUSED(saver);
+    dbg.nospace() << "Account(";
+    dbg << "ID: " << account.id();
+    dbg << ", Username: " << account.username();
+    dbg << ", Domain ID: " << account.domainId();
+    dbg << ", Status: " << account.status();
+    dbg << ", Quota: " << account.usage() << '/' << account.quota() << "KiB";
+    dbg << ", IMAP: " << account.isImapEnabled();
+    dbg << ", POP: " << account.isPopEnabled();
+    dbg << ", SMTP: " << account.isSmtpauthEnabled();
+    dbg << ", SIEVE: " << account.isSieveEnabled();
+    dbg << ", Catch All: " << account.catchAll();
+    dbg << ", Addressed: " << account.addresses();
+    dbg << ", Forwards: " << account.forwards();
+    if (!account.forwards().empty()) {
+        dbg << ", Keep Local: " << account.keepLocal();
+    }
+    dbg << ", Created: " << account.created();
+    dbg << ", Updated: " << account.updated();
+    dbg << ", Valid Until: " << account.validUntil();
+    dbg << ", Password Expires: " << account.passwordExpires();
+    dbg << ')';
+    return dbg.maybeSpace();
+}

@@ -667,6 +667,12 @@ private:
 Q_DECLARE_METATYPE(Account)
 Q_DECLARE_TYPEINFO(Account, Q_MOVABLE_TYPE);
 
+/*!
+ * \relates Accounts
+ * \brief Writes the \a account to the \a dbg stream and returns the stream.
+ */
+QDebug operator<<(QDebug dbg, const Account &account);
+
 GRANTLEE_BEGIN_LOOKUP(Account)
 if (property == QLatin1String("id")) {
     return QVariant(object.id());
