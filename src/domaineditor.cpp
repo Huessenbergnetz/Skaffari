@@ -34,6 +34,7 @@
 #include <Cutelyst/Plugins/Utils/validatorrequiredifstash.h>
 #include <Cutelyst/Plugins/Utils/validatorpwquality.h>
 #include <Cutelyst/Plugins/Utils/validatordomain.h>
+#include <Cutelyst/Plugins/Utils/validatorbefore.h>
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/Utils/Sql>
@@ -153,7 +154,7 @@ void DomainEditor::edit(Context *c)
         domainQuotaText = c->translate("DomainEditor", "Total storage quota for all user accounts belonging to this domain. If the domain quota is set (not 0), each user account in the domain must have set its own quota. Set it to 0 to disable the domain quota. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.");
     } else {
         // current user is a domain administrator
-        help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "The current number of user accounts in this domain and the maximum allowed number of user accounts in this domain.")));
+        help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Accounts"), c->translate("DomainEditor", "The current number of user accounts in this domain and the maximum allowed number of user accounts in this domain. Settings this to 0 disabled the limit.")));
         domainQuotaText = c->translate("DomainEditor", "Total storage quota for all user accounts belonging to this domain. If the domain quota is set (not 0), each user account in the domain must have set its own quota.");
     }
     help.insert(QStringLiteral("domainQuota"), HelpEntry(domainQuotaTitle, domainQuotaText));
@@ -539,7 +540,8 @@ void DomainEditor::add_account(Context* c)
                      {QStringLiteral("catchall"), Utils::checkCheckbox(p, QStringLiteral("catchall"))},
                      {QStringLiteral("username"), p.value(QStringLiteral("username"))},
                      {QStringLiteral("localpart"), p.value(QStringLiteral("localpart"))},
-                     {QStringLiteral("quota"), p.value(QStringLiteral("quota"))}
+                     {QStringLiteral("quota"), p.value(QStringLiteral("quota"))},
+                     {QStringLiteral("_max_valid_until"), dom.validUntil()}
                  });
 
         static Validator v({
@@ -556,7 +558,7 @@ void DomainEditor::add_account(Context* c)
                    #endif
                                new ValidatorConfirmed(QStringLiteral("password")),
                                new ValidatorRequired(QStringLiteral("validUntil")),
-                               new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("userTz"), "yyyy-MM-ddTHH:mm"),
+                               new ValidatorBefore(QStringLiteral("validUntil"), QStringLiteral("_max_valid_until"), QStringLiteral("userTz"), "yyyy-MM-ddTHH:mm"),
                                new ValidatorRequired(QStringLiteral("passwordExpires")),
                                new ValidatorDateTime(QStringLiteral("passwordExpires"), QStringLiteral("userTz"), "yyyy-MM-ddTHH:mm"),
                                new ValidatorBoolean(QStringLiteral("imap")),
@@ -734,7 +736,10 @@ void DomainEditor::add_account(Context* c)
     const int pwMinLength = static_cast<int>(SkaffariConfig::accPwMinlength());
     help.insert(QStringLiteral("password"), HelpEntry(c->translate("DomainEditor", "Password"), c->translate("DomainEditor", "Specify a password with a minimum length of %n character(s).", nullptr, pwMinLength)));
     help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("DomainEditor", "Password confirmation"), c->translate("DomainEditor", "Confirm the password by entering it again.")));
-    help.insert(QStringLiteral("validUntil"), HelpEntry(c->translate("DomainEditor", "Valid until"), c->translate("DomainEditor", "You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future.")));
+    //: format for date and time as shown in the help text for the valid until input field, it is important that the year part has 4 digits
+    const auto validUntilDtString = Utils::toUserTZ(c, dom.validUntil()).toString(c->translate("DomainEditor", "M/d/yyyy h:mm ap"));
+    //: %1 will be the string of a date and time
+    help.insert(QStringLiteral("validUntil"), HelpEntry(c->translate("DomainEditor", "Valid until"), c->translate("DomainEditor", "You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future. The latest date and time until which this account can be valid is %1.").arg(validUntilDtString));
     help.insert(QStringLiteral("passwordExpires"), HelpEntry(c->translate("DomainEditor", "Password expires"), c->translate("DomainEditor", "You can set a date and time until the password for this account is valid. To let the password never expire, simply set a date far in the future.")));
     help.insert(QStringLiteral("imap"), HelpEntry(c->translate("DomainEditor", "IMAP Access"), c->translate("DomainEditor", "If enabled, the user of this account can access the mailbox through the IMAP protocol.")));
     help.insert(QStringLiteral("pop"), HelpEntry(c->translate("DomainEditor", "POP3 Access"), c->translate("DomainEditor", "If enabled, the user of this account can access the mailbox through the POP3 protocol.")));

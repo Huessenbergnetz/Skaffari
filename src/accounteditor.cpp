@@ -40,6 +40,7 @@
 #include <Cutelyst/Plugins/Utils/validatormin.h>
 #include <Cutelyst/Plugins/Utils/validatorpwquality.h>
 #include <Cutelyst/Plugins/Utils/validatoremail.h>
+#include <Cutelyst/Plugins/Utils/validatorbefore.h>
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 
@@ -93,6 +94,7 @@ void AccountEditor::edit(Context* c)
 
         c->setStash(QStringLiteral("_def_boolean"), false);
         c->setStash(QStringLiteral("_pwq_username"), a.username());
+        c->setStash(QStringLiteral("maxValidUntil"), dom.validUntil());
 
         static Validator v({
                                new ValidatorConfirmed(QStringLiteral("password")),
@@ -102,7 +104,7 @@ void AccountEditor::edit(Context* c)
                                new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::accPwMinlength()),
                    #endif
                                new ValidatorRequired(QStringLiteral("validUntil")),
-                               new ValidatorDateTime(QStringLiteral("validUntil"), QStringLiteral("userTz"), "yyyy-MM-ddTHH:mm"),
+                               new ValidatorBefore(QStringLiteral("validUntil"), QStringLiteral("maxValidUntil"), QStringLiteral("userTz"), "yyyy-MM-ddTHH:mm"),
                                new ValidatorRequired(QStringLiteral("passwordExpires")),
                                new ValidatorDateTime(QStringLiteral("passwordExpires"), QStringLiteral("userTz"), "yyyy-MM-ddTHH:mm"),
                                new ValidatorBoolean(QStringLiteral("imap"), ValidatorMessages(), QStringLiteral("_def_boolean")),
@@ -139,16 +141,19 @@ void AccountEditor::edit(Context* c)
 
     const QString quotaTitle = c->translate("DomainEditor", "Quota");
     if (dom.domainQuota() > 0) {
-        // %1 will be something like 1.5 GB
+        //: %1 will be something like 1.5 GB
         help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You must set a storage quota for this account that does not exceed %1. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.").arg(Utils::humanBinarySize(c, freeQuota * Q_UINT64_C(1024)))));
     } else {
-        // %1 will be something like 1.5 TiB
+        //: %1 will be something like 1.5 TiB
         help.insert(QStringLiteral("quota"), HelpEntry(quotaTitle, c->translate("AccountEditor", "You can optionally set a storage quota for this account that does not exceed %1. To disable the storage quota, set it to 0. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.").arg(Utils::humanBinarySize(c, std::numeric_limits<quota_size_t>::max()))));
     }
     const int pwMinLength = static_cast<int>(SkaffariConfig::accPwMinlength());
     help.insert(QStringLiteral("password"), HelpEntry(c->translate("AccountEditor", "New password"), c->translate("AccountEditor", "Enter a new password with a minimum length of %n character(s) or leave the field blank to avoid changing the password.", nullptr, pwMinLength)));
     help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AccountEditor", "New password confirmation"), c->translate("AccountEditor", "Confirm the new password by entering it again.")));
-    help.insert(QStringLiteral("validUntil"), HelpEntry(c->translate("AccountEditor", "Valid until"), c->translate("AccountEditor", "You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future.")));
+    //: format for date and time as shown in the help text for the valid until input field, it is important that the year part has 4 digits
+    const auto validUntilDtString = Utils::toUserTZ(c, dom.validUntil()).toString(c->translate("AccountEditor", "M/d/yyyy h:mm ap"));
+    //: %1 will be the string of a date and time
+    help.insert(QStringLiteral("validUntil"), HelpEntry(c->translate("AccountEditor", "Valid until"), c->translate("AccountEditor", "You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future. The latest date and time until which this account can be valid is %1.").arg(validUntilDtString));
     help.insert(QStringLiteral("passwordExpires"), HelpEntry(c->translate("AccountEditor", "Password expires"), c->translate("AccountEditor", "You can set a date and time until the password for this account is valid. To let the password never expire, simply set a date far in the future.")));
     help.insert(QStringLiteral("imap"), HelpEntry(c->translate("AccountEditor", "IMAP Access"), c->translate("AccountEditor", "If enabled, the user of this account can access the mailbox through the IMAP protocol.")));
     help.insert(QStringLiteral("pop"), HelpEntry(c->translate("AccountEditor", "POP3 Access"), c->translate("AccountEditor", "If enabled, the user of this account can access the mailbox through the POP3 protocol.")));
