@@ -2415,7 +2415,7 @@ QDebug operator<<(QDebug dbg, const Account &account)
     dbg << ", SMTP: " << account.isSmtpauthEnabled();
     dbg << ", SIEVE: " << account.isSieveEnabled();
     dbg << ", Catch All: " << account.catchAll();
-    dbg << ", Addressed: " << account.addresses();
+    dbg << ", Addresses: " << account.addresses();
     dbg << ", Forwards: " << account.forwards();
     if (!account.forwards().empty()) {
         dbg << ", Keep Local: " << account.keepLocal();
@@ -2426,4 +2426,47 @@ QDebug operator<<(QDebug dbg, const Account &account)
     dbg << ", Password Expires: " << account.passwordExpires();
     dbg << ')';
     return dbg.maybeSpace();
+}
+
+QDataStream &operator<<(QDataStream &stream, const Account &account)
+{
+    stream << account.quota() << account.usage() << account.addresses()
+           << account.forwards() << account.username() << account.created()
+           << account.updated() << account.validUntil() << account.passwordExpires()
+           << account.id() << account.domainId() << account.status() << account.isImapEnabled()
+           << account.isPopEnabled() << account.isSieveEnabled() << account.isSmtpauthEnabled()
+           << account.keepLocal() << account.catchAll();
+
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, Account &account)
+{
+    quota_size_t quota, usage;
+    QStringList addresses, forwards;
+    QString username;
+    QDateTime created, updated, validUntil, passwordExpires;
+    dbid_t id, domainId;
+    quint8 status;
+    bool imap, pop, sieve, smtpauth, keepLocal, catchAll;
+    stream >> quota;
+    stream >> usage;
+    stream >> addresses;
+    stream >> forwards;
+    stream >> username;
+    stream >> created;
+    stream >> updated;
+    stream >> validUntil;
+    stream >> passwordExpires;
+    stream >> id;
+    stream >> domainId;
+    stream >> status;
+    stream >> imap;
+    stream >> pop;
+    stream >> sieve;
+    stream >> smtpauth;
+    stream >> keepLocal;
+    stream >> catchAll;
+
+    return stream;
 }

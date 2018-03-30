@@ -668,10 +668,22 @@ Q_DECLARE_METATYPE(Account)
 Q_DECLARE_TYPEINFO(Account, Q_MOVABLE_TYPE);
 
 /*!
- * \relates Accounts
+ * \relates Account
  * \brief Writes the \a account to the \a dbg stream and returns the stream.
  */
 QDebug operator<<(QDebug dbg, const Account &account);
+
+/*!
+ * \relates Account
+ * \brief Writes the given \a account to the given \a stream.
+ */
+QDataStream &operator<<(QDataStream &stream, const Account &account);
+
+/*!
+ * \relates Account
+ * \brief Reads an %Account from the given \a stream and stores it in the given \a account.
+ */
+QDataStream &operator>>(QDataStream &stream, Account &account);
 
 GRANTLEE_BEGIN_LOOKUP(Account)
 if (property == QLatin1String("id")) {
