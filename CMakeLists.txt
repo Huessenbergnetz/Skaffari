@@ -39,6 +39,12 @@ if (ENABLE_WKD)
     find_package(Qca-qt5 CONFIG REQUIRED)
 endif (ENABLE_WKD)
 
+option(BUILD_TESTS "Build the Skaffari tests" OFF)
+
+if (BUILD_TESTS)
+    enable_testing()
+endif (BUILD_TESTS)
+
 # set default configuration values
 set(DEFVAL_ACC_PWMETHOD 1 CACHE INTERNAL "Default accounts password method")
 set(DEFVAL_ACC_PWALGORITHM 0 CACHE INTERNAL "Default accounts password algorithm")
@@ -88,3 +94,7 @@ add_subdirectory(templates)
 add_subdirectory(doc)
 add_subdirectory(l10n)
 add_subdirectory(grantlee)
+
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif (BUILD_TESTS)
