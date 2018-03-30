@@ -498,6 +498,62 @@ QSqlError updateAceID(dbid_t id, dbid_t ace_id)
     return ret;
 }
 
+std::pair<QStringList, bool> queryFowards(Cutelyst::Context *c, const QString &username, SkaffariError *e = nullptr)
+{
+    std::pair<QStringList,bool> ret = std::make_pair(QStringList(), false);
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
+    q.bindValue(QStringLiteral(":username"), username);
+
+    if (Q_UNLIKELY(!q.exec())) {
+        if (e) {
+            e->setSqlError(q.lastError(), c->translate("Account", "Cannot retrieve current list of forwarding addresses for user account %1 from the database.").arg(username));
+        }
+        qCCritical(SK_ACCOUNT, "%s failed to query list of forwarding addresses for user account %s from the database: %s", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
+    } else {
+        if (q.next()) {
+            const auto fws = q.value(0).toString().split(QLatin1Char(','), QString::SkipEmptyParts);
+            ret.first.reserve(fws.size());
+            for (const QString &fw : fws) {
+                if (fw != username) {
+                    ret.first << fw;
+                } else {
+                    ret.second = true;
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+std::pair<QStringList, bool> queryAddresses(Cutelyst::Context *c, const QString &username, SkaffariError *e = nullptr)
+{
+    std::pair<QStringList,bool> ret = std::make_pair(QStringList(), false);
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias FROM virtual WHERE dest = :username AND username = :username AND idn_id = 0 ORDER BY alias ASC"));
+    q.bindValue(QStringLiteral(":username"), username);
+
+    if (Q_UNLIKELY(!q.exec())) {
+        if (e) {
+            e->setSqlError(q.lastError(), c->translate("Account", "Cannot retrieve current list of email addresses for user account %1 from the database.").arg(username));
+        }
+        qCCritical(SK_ACCOUNT, "%s failed to query list of email addresses for user account %s from the database: %s", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(username), qUtf8Printable(q.lastError().text()));
+    } else {
+        ret.first.reserve(q.size());
+        while (q.next()) {
+            const QString address = q.value(0).toString();
+            if (!address.startsWith(QLatin1Char('@'))) {
+                ret.first << address;
+            } else {
+                ret.second = true;
+            }
+        }
+    }
+
+    return ret;
+}
+
 Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p, const Domain &d, const QStringList &selectedKids)
 {
     Account a;
@@ -1028,6 +1084,9 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
     lst.reserve(foundRows);
 
     while (q.next()) {
+        const dbid_t _id = q.value(0).value<dbid_t>();
+        const QString _username = q.value(1).toString();
+        quota_size_t quota = q.value(6).value<quota_size_t>();
         QDateTime accountCreated = q.value(7).toDateTime();
         accountCreated.setTimeSpec(Qt::UTC);
         QDateTime accountUpdated = q.value(8).toDateTime();
@@ -1036,28 +1095,10 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
         accountValidUntil.setTimeSpec(Qt::UTC);
         QDateTime accountPwExpires = q.value(10).toDateTime();
         accountPwExpires.setTimeSpec(Qt::UTC);
-        Account a(q.value(0).value<dbid_t>(),
-                  d.id(),
-                  q.value(1).toString(),
-                  q.value(2).toBool(),
-                  q.value(3).toBool(),
-                  q.value(4).toBool(),
-                  q.value(5).toBool(),
-                  QStringList(),
-                  QStringList(),
-                  q.value(6).value<quota_size_t>(),
-                  0,
-                  accountCreated,
-                  accountUpdated,
-                  accountValidUntil,
-                  accountPwExpires,
-                  false,
-                  false,
-                  q.value(11).value<quint8>());
 
-        std::pair<QStringList,bool> emailAddresses = a.queryAddresses(c);
+        std::pair<QStringList,bool> emailAddresses = queryAddresses(c, _username);
 
-        std::pair<QStringList,bool> forwards = a.queryFowards(c);
+        std::pair<QStringList,bool> forwards = queryFowards(c, _username);
 
         if ((emailAddresses.first.size() > 1) || (forwards.first.size() > 1)) {
 
@@ -1070,17 +1111,13 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
             }
         }
 
-        a.setAddresses(emailAddresses.first);
-        a.setCatchAll(emailAddresses.second);
-        a.setForwards(forwards.first);
-        a.setKeepLocal(forwards.second);
-
         bool gotQuota = false;
+        quota_size_t usage = 0;
         if (SkaffariConfig::useMemcached()) {
-            const QByteArray usage = Cutelyst::Memcached::get(MEMC_QUOTA_KEY + QString::number(a.id()));
-            if (!usage.isNull()) {
+            const QByteArray usageBa = Cutelyst::Memcached::get(MEMC_QUOTA_KEY + QString::number(_id));
+            if (!usageBa.isNull()) {
                 bool ok = false;
-                a.setUsage(usage.toULongLong(&ok));
+                usage = usageBa.toULongLong(&ok);
                 if (ok) {
                     gotQuota = true;
                 }
@@ -1089,16 +1126,33 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError *e, const
 
         if (!gotQuota) {
             if (Q_LIKELY(imap.isLoggedIn())) {
-                quota_pair quota = imap.getQuota(a.username());
-                a.setUsage(quota.first);
-                a.setQuota(quota.second);
+                quota_pair quotaVals = imap.getQuota(_username);
+                usage = quotaVals.first;
+                quota = quotaVals.second;
                 if (SkaffariConfig::useMemcached()) {
-                    Cutelyst::Memcached::set(MEMC_QUOTA_KEY + QString::number(a.id()), QByteArray::number(quota.first), MEMC_QUOTA_EXP);
+                    Cutelyst::Memcached::set(MEMC_QUOTA_KEY + QString::number(_id), QByteArray::number(quotaVals.first), MEMC_QUOTA_EXP);
                 }
             }
         }
 
-        lst.push_back(a);
+        lst.emplace_back(_id,
+                         d.id(),
+                         _username,
+                         q.value(2).toBool(),
+                         q.value(3).toBool(),
+                         q.value(4).toBool(),
+                         q.value(5).toBool(),
+                         emailAddresses.first,
+                         forwards.first,
+                         quota,
+                         usage,
+                         accountCreated,
+                         accountUpdated,
+                         accountValidUntil,
+                         accountPwExpires,
+                         forwards.second,
+                         emailAddresses.second,
+                         q.value(11).value<quint8>());
     }
 
     imap.logout();
@@ -1154,10 +1208,10 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
     a.setStatus(q.value(11).value<quint8>());
     a.setDomainId(q.value(12).value<dbid_t>());
 
-    std::pair<QStringList,bool> emailAddresses = a.queryAddresses(c);
+    std::pair<QStringList,bool> emailAddresses = queryAddresses(c, a.username());
     a.setCatchAll(emailAddresses.second);
 
-    std::pair<QStringList,bool> forwards = a.queryFowards(c);
+    std::pair<QStringList,bool> forwards = queryFowards(c, a.username());
     a.setKeepLocal(forwards.second);
 
     if ((emailAddresses.first.size() > 1) || (forwards.first.size() > 1)) {
@@ -1957,7 +2011,7 @@ bool Account::addForward(Cutelyst::Context *c, SkaffariError *e, const QString &
     Q_ASSERT_X(e, "add forward", "invalid error object");
     Q_ASSERT_X(!forward.isEmpty(), "add forward", "empty new forward");
 
-    std::pair<QStringList,bool> forwards = queryFowards(c, e);
+    std::pair<QStringList,bool> forwards = queryFowards(c, username(), e);
     if (e->type() != SkaffariError::NoError) {
         return ret;
     }
@@ -2021,7 +2075,7 @@ bool Account::removeForward(Cutelyst::Context *c, SkaffariError *e, const QStrin
     Q_ASSERT_X(e, "add forward", "invalid error object");
     Q_ASSERT_X(!forward.isEmpty(), "add forward", "empty input parameters");
 
-    std::pair<QStringList,bool> forwards = queryFowards(c, e);
+    std::pair<QStringList,bool> forwards = queryFowards(c, username(), e);
     if (e->type() != SkaffariError::NoError) {
         return ret;
     }
@@ -2097,7 +2151,7 @@ bool Account::editForward(Cutelyst::Context *c, SkaffariError *e, const QString 
     Q_ASSERT_X(!oldForward.isEmpty(), "edit forward", "old forward address can not be empty");
     Q_ASSERT_X(!newForward.isEmpty(), "edit forward", "new forward address can not be empty");
 
-    std::pair<QStringList,bool> forwards = queryFowards(c, e);
+    std::pair<QStringList,bool> forwards = queryFowards(c, username(), e);
     if (e->type() != SkaffariError::NoError) {
         return ret;
     }
@@ -2163,7 +2217,7 @@ bool Account::changeKeepLocal(Cutelyst::Context *c, SkaffariError *e, bool keepL
     Q_ASSERT_X(c, "edit forward", "invalid context object");
     Q_ASSERT_X(e, "edit forward", "invalid error object");
 
-    std::pair<QStringList,bool> forwards = queryFowards(c, e);
+    std::pair<QStringList,bool> forwards = queryFowards(c, username(), e);
     if (e->type() != SkaffariError::NoError) {
         return ret;
     }
@@ -2282,61 +2336,6 @@ void Account::markUpdated(Cutelyst::Context *c)
     d->updated = current;
 }
 
-std::pair<QStringList, bool> Account::queryFowards(Cutelyst::Context *c, SkaffariError *e) const
-{
-    std::pair<QStringList,bool> ret = std::make_pair(QStringList(), false);
-
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT dest FROM virtual WHERE alias = :username AND username = ''"));
-    q.bindValue(QStringLiteral(":username"), d->username);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        if (e) {
-            e->setSqlError(q.lastError(), c->translate("Account", "Cannot retrieve current list of forwarding addresses for user account %1 from the database.").arg(d->username));
-        }
-        qCCritical(SK_ACCOUNT, "%s failed to query list of forwarding addresses for user account %s from the database: %s", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(nameIdString()), qUtf8Printable(q.lastError().text()));
-    } else {
-        if (q.next()) {
-            const auto fws = q.value(0).toString().split(QLatin1Char(','), QString::SkipEmptyParts);
-            ret.first.reserve(fws.size());
-            for (const QString &fw : fws) {
-                if (fw != d->username) {
-                    ret.first << fw;
-                } else {
-                    ret.second = true;
-                }
-            }
-        }
-    }
-
-    return ret;
-}
-
-std::pair<QStringList, bool> Account::queryAddresses(Cutelyst::Context *c, SkaffariError *e) const
-{
-    std::pair<QStringList,bool> ret = std::make_pair(QStringList(), false);
-
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT alias FROM virtual WHERE dest = :username AND username = :username AND idn_id = 0 ORDER BY alias ASC"));
-    q.bindValue(QStringLiteral(":username"), d->username);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        if (e) {
-            e->setSqlError(q.lastError(), c->translate("Account", "Cannot retrieve current list of email addresses for user account %1 from the database.").arg(d->username));
-        }
-        qCCritical(SK_ACCOUNT, "%s failed to query list of email addresses for user account %s from the database: %s", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(nameIdString()), qUtf8Printable(q.lastError().text()));
-    } else {
-        while (q.next()) {
-            const QString address = q.value(0).toString();
-            if (!address.startsWith(QLatin1Char('@'))) {
-                ret.first << address;
-            } else {
-                ret.second = true;
-            }
-        }
-    }
-
-    return ret;
-}
-
 QString AccountData::nameIdString() const
 {
     QString ret;
@@ -2450,23 +2449,41 @@ QDataStream &operator>>(QDataStream &stream, Account &account)
     quint8 status;
     bool imap, pop, sieve, smtpauth, keepLocal, catchAll;
     stream >> quota;
+    account.setQuota(quota);
     stream >> usage;
+    account.setUsage(usage);
     stream >> addresses;
+    account.setAddresses(addresses);
     stream >> forwards;
+    account.setForwards(forwards);
     stream >> username;
+    account.setUsername(username);
     stream >> created;
+    account.setCreated(created);
     stream >> updated;
+    account.setUpdated(updated);
     stream >> validUntil;
+    account.setValidUntil(validUntil);
     stream >> passwordExpires;
+    account.setPasswordExpires(passwordExpires);
     stream >> id;
+    account.setId(id);
     stream >> domainId;
+    account.setDomainId(domainId);
     stream >> status;
+    account.setStatus(status);
     stream >> imap;
+    account.setImapEnabled(imap);
     stream >> pop;
+    account.setPopEnabled(pop);
     stream >> sieve;
+    account.setSieveEnabled(sieve);
     stream >> smtpauth;
+    account.setSmtpauthEnabled(smtp);
     stream >> keepLocal;
+    account.setKeepLocal(keepLocal);
     stream >> catchAll;
+    account.setCatchAll(catchAll);
 
     return stream;
 }
