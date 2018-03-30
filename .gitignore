@@ -12,3 +12,4 @@ templates/*/gulp
 CMakeLists.txt.user
 *.qm
 *.pyc
+upload.sh
