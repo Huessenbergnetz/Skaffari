@@ -67,28 +67,22 @@ QString Utils::humanBinarySize(Cutelyst::Context *c, quota_size_t sizeInByte)
 #endif
 
         if (sizeInByte < Q_UINT64_C(1048576)) {
-            const double kibFloat = static_cast<double>(sizeInByte)/1024.0;
-            sizeStr = c->locale().toString(kibFloat, 'f', 2);
+            sizeStr = c->locale().toString(static_cast<double>(sizeInByte)/1024.0, 'f', 2);
             sizeStr.append(QLatin1String(" KiB"));
         } else if (sizeInByte < Q_UINT64_C(1073741824)) {
-            const double mibFloat = static_cast<double>(sizeInByte)/1048576.0;
-            sizeStr = c->locale().toString(mibFloat, 'f', 2);
+            sizeStr = c->locale().toString(static_cast<double>(sizeInByte)/1048576.0, 'f', 2);
             sizeStr.append(QLatin1String(" MiB"));
         } else if (sizeInByte < Q_UINT64_C(1099511627776)) {
-            const double gibFloat = static_cast<double>(sizeInByte)/1073741824.0;
-            sizeStr = c->locale().toString(gibFloat, 'f', 2);
+            sizeStr = c->locale().toString(static_cast<double>(sizeInByte)/1073741824.0, 'f', 2);
             sizeStr.append(QLatin1String(" GiB"));
         } else if (sizeInByte < Q_UINT64_C(1125899906842624)) {
-            const double tibFloat = static_cast<double>(sizeInByte)/1099511627776.0;
-            sizeStr = c->locale().toString(tibFloat, 'f', 2);
+            sizeStr = c->locale().toString(static_cast<double>(sizeInByte)/1099511627776.0, 'f', 2);
             sizeStr.append(QLatin1String(" TiB"));
         } else if (sizeInByte < Q_UINT64_C(1152921504606846976)) {
-            const double pibFloat = static_cast<double>(sizeInByte)/1125899906842624.0;
-            sizeStr = c->locale().toString(pibFloat, 'f', 2);
+            sizeStr = c->locale().toString(static_cast<double>(sizeInByte)/1125899906842624.0, 'f', 2);
             sizeStr.append(QLatin1String(" PiB"));
         } else {
-            const double eibFloat = static_cast<double>(sizeInByte)/1152921504606846976.0;
-            sizeStr = c->locale().toString(eibFloat, 'f', 2);
+            sizeStr = c->locale().toString(static_cast<double>(sizeInByte)/1152921504606846976.0, 'f', 2);
             sizeStr.append(QLatin1String(" EiB"));
         }
 
@@ -97,58 +91,6 @@ QString Utils::humanBinarySize(Cutelyst::Context *c, quota_size_t sizeInByte)
 #endif
 
     return sizeStr;
-}
-
-quota_size_t Utils::humanToIntSize(Cutelyst::Context *c, const QString &size, bool *ok)
-{
-    quota_size_t ret = 0;
-
-    Q_ASSERT_X(ok, "convert human quota string to KiB", "invalid pointer to a boolean succeed value (ok)");
-
-    QRegularExpression regex(QStringLiteral("(\\d+[,.٫]?\\d*)\\s*([KMGT]?i?B?)"), QRegularExpression::CaseInsensitiveOption);
-    QRegularExpressionMatch match = regex.match(size);
-
-    if (!match.hasMatch()) {
-        *ok = false;
-        return ret;
-    }
-
-    bool _ok = true;
-
-    float _size = c->locale().toFloat(match.captured(1), &_ok);
-
-    if (!_ok) {
-        *ok = false;
-        return ret;
-    }
-
-    const QString mult = match.captured(2);
-
-    if (mult.startsWith(QLatin1Char('G'), Qt::CaseInsensitive)) {
-        _size = _size * 1073741824.0f;
-    } else if (mult.startsWith(QLatin1Char('M'), Qt::CaseInsensitive)) {
-        _size = _size * 1048576.0f;
-    } else if (mult.startsWith(QLatin1Char('T'), Qt::CaseInsensitive)) {
-        _size = _size * 1099511627776.0f;
-    } else {
-        _size = _size * 1024.0f;
-    }
-
-    _size = _size / 1024.0f;
-
-//    // we have to check if the size fits into the quint32 even after rounding
-//    // as rounding can also round up, we will give an extra margin of 1 to the
-//    // maximum value of unsigned 32bit integer
-//    if (_size > 4294967294.0f) {
-//        *ok = false;
-//        return ret;
-//    }
-
-    qlonglong _ret = std::llround(_size);
-
-    ret = static_cast<quota_size_t>(_ret);
-
-    return ret;
 }
 
 bool Utils::isAjax(Cutelyst::Context *c)

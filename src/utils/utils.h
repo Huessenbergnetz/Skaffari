@@ -56,18 +56,6 @@ public:
     static QString humanBinarySize(Cutelyst::Context *c, quota_size_t sizeInByte);
 
     /*!
-     * \brief Converts a human readable quota size string into KiB.
-     *
-     * The string has to be in a format like \a 7,5 \a GiB.
-     *
-     * \param c     Context object, used for localized number extraction.
-     * \param size  The size string to convert.
-     * \param ok    Pointer to a boolean value that will be \c true if conversion succeeded.
-     * \return      The quota size in KiB.
-     */
-    static quota_size_t humanToIntSize(Cutelyst::Context *c, const QString &size, bool *ok);
-
-    /*!
      * \brief Returns \c true if the current request is made via AJAX.
      *
      * The request will be considered as AJAX request if the \a Accept HTTP header
