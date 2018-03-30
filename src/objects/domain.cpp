@@ -61,8 +61,9 @@ Domain::Domain(dbid_t id,
                bool freeAddress,
                quint32 accounts,
                const QDateTime &created,
-               const QDateTime &updated) :
-    d(new DomainData(id, name, prefix, transport, quota, maxAccounts, domainQuota, domainQuotaUsed, freeNames, freeAddress, accounts, created, updated))
+               const QDateTime &updated,
+               const QDateTime &validUntil) :
+    d(new DomainData(id, name, prefix, transport, quota, maxAccounts, domainQuota, domainQuotaUsed, freeNames, freeAddress, accounts, created, updated, validUntil))
 {
 
 }
@@ -661,9 +662,9 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
     QString prepString;
     const bool isAdmin = AdminAccount::getUserType(user) >= AdminAccount::Administrator;
     if (isAdmin) {
-        prepString = QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id, dom.ace_id FROM domain dom WHERE dom.idn_id = 0 ORDER BY dom.%1 %2").arg(orderBy, sort);
+        prepString = QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.valid_until, dom.parent_id, dom.ace_id FROM domain dom WHERE dom.idn_id = 0 ORDER BY dom.%1 %2").arg(orderBy, sort);
     } else {
-        prepString = QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.parent_id, dom.ace_id FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id ORDER BY dom.%1 %2").arg(orderBy, sort);
+        prepString = QStringLiteral("SELECT dom.id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.valid_until, dom.parent_id, dom.ace_id FROM domain dom LEFT JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id ORDER BY dom.%1 %2").arg(orderBy, sort);
     }
 
     if (limit > 0) {
@@ -685,6 +686,8 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
             createdTime.setTimeSpec(Qt::UTC);
             QDateTime updatedTime = q.value(12).toDateTime();
             updatedTime.setTimeSpec(Qt::UTC);
+            QDateTime validUntilTime = q.value(13).toDateTime();
+            validUntilTime.setTimeSpec(Qt::UTC);
             Domain dom(q.value(0).value<dbid_t>(),
                        q.value(1).toString(),
                        q.value(2).toString(),
@@ -697,9 +700,10 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                        q.value(9).toBool(),
                        q.value(10).value<quint32>(),
                        createdTime,
-                       updatedTime);
+                       updatedTime,
+                       validUntilTime);
 
-            const dbid_t parentId = q.value(13).value<dbid_t>();
+            const dbid_t parentId = q.value(14).value<dbid_t>();
             if (parentId > 0) {
                 dom.setParent(SimpleDomain::get(c, errorData, parentId));
                 if (Q_UNLIKELY(!dom.parent())) {
@@ -720,7 +724,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                     qCCritical(SK_DOMAIN, "Failed to query child domains for domain %s (ID %u): %s", qUtf8Printable(dom.name()), dom.id(), qUtf8Printable(q2.lastError().text()));
                 }
             }
-            dom.setAceId(q.value(14).value<dbid_t>());
+            dom.setAceId(q.value(15).value<dbid_t>());
 
             lst.push_back(dom);
         }

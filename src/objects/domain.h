@@ -101,8 +101,9 @@ public:
      * \param accounts          current number of accounts in this domain
      * \param created           date and time this domain has been created in UTC time zone
      * \param updated           date and time this domain has been updated in UTC time zone
+     * \param validUntil        date and time until accounts in this domain can be valid
      */
-    Domain(dbid_t id, const QString &name, const QString &prefix, const QString &transport, quota_size_t quota, quint32 maxAccounts, quota_size_t domainQuota, quota_size_t domainQuotaUsed, bool freeNames, bool freeAddress, quint32 accounts, const QDateTime &created, const QDateTime &updated);
+    Domain(dbid_t id, const QString &name, const QString &prefix, const QString &transport, quota_size_t quota, quint32 maxAccounts, quota_size_t domainQuota, quota_size_t domainQuotaUsed, bool freeNames, bool freeAddress, quint32 accounts, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil);
 
     /*!
      * \brief Constructs a copy of \a other.
