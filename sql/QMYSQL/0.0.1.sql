@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS accountuser (
-  id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  domain_id int(10) unsigned NOT NULL,
+  id int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  domain_id int unsigned NOT NULL,
   username varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   password varchar(255) NOT NULL,
   imap tinyint(1) unsigned NOT NULL DEFAULT 1,
   pop tinyint(1) unsigned NOT NULL DEFAULT 1,
   sieve tinyint(1) unsigned NOT NULL DEFAULT 1,
   smtpauth tinyint(1) unsigned NOT NULL DEFAULT 1,
-  quota bigint(20) unsigned NOT NULL DEFAULT 0,
+  quota bigint unsigned NOT NULL DEFAULT 0,
   created_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   updated_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   valid_until datetime NOT NULL DEFAULT '2998-12-31 23:59:59',
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS accountuser (
 
 
 CREATE TABLE IF NOT EXISTS adminuser (
-  id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  id int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
   username varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   password varchar(255) NOT NULL,
   type tinyint unsigned NOT NULL DEFAULT 0,
@@ -32,43 +32,43 @@ CREATE TABLE IF NOT EXISTS adminuser (
 
 
 CREATE TABLE IF NOT EXISTS alias (
-  id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  idn_id int(10) unsigned NOT NULL DEFAULT 0,
-  ace_id int(10) unsigned NOT NULL DEFAULT 0,
+  id int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  idn_id int unsigned NOT NULL DEFAULT 0,
+  ace_id int unsigned NOT NULL DEFAULT 0,
   alias varchar(255) NOT NULL DEFAULT '',
   dest longtext,
   username varchar(50) NOT NULL DEFAULT '',
-  status int(11) NOT NULL DEFAULT '1',
+  status int NOT NULL DEFAULT '1',
   UNIQUE KEY (alias)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS domain (
-  id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  parent_id int(10) unsigned NOT NULL DEFAULT 0,
-  idn_id int(10) unsigned NOT NULL DEFAULT 0,
-  ace_id int(10) unsigned NOT NULL DEFAULT 0,
+  id int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  parent_id int unsigned NOT NULL DEFAULT 0,
+  idn_id int unsigned NOT NULL DEFAULT 0,
+  ace_id int unsigned NOT NULL DEFAULT 0,
   domain_name varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   prefix varchar(50) NOT NULL,
-  maxaccounts int(11) NOT NULL DEFAULT 20,
-  quota bigint(20) unsigned NOT NULL DEFAULT 100000,
-  domainquota bigint(20) unsigned NOT NULL DEFAULT 0,
-  domainquotaused bigint(20) unsigned NOT NULL DEFAULT 0,
+  maxaccounts int unsigned NOT NULL DEFAULT 20,
+  quota bigint unsigned NOT NULL DEFAULT 100000,
+  domainquota bigint unsigned NOT NULL DEFAULT 0,
+  domainquotaused bigint unsigned NOT NULL DEFAULT 0,
   transport varchar(255) NOT NULL DEFAULT 'cyrus',
   freenames tinyint(1) unsigned NOT NULL DEFAULT 0,
   freeaddress tinyint(1) unsigned NOT NULL DEFAULT 0,
-  accountcount int(10) unsigned NOT NULL DEFAULT 0,
+  accountcount int unsigned NOT NULL DEFAULT 0,
   created_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   updated_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
-  valid_until datetime NOT NULL DEFAULT '2998-12-31 23:59:59',
+  valid_until datetime NOT NULL DEFAULT '2998-12-31 00:00:00',
   UNIQUE KEY domain_name (domain_name),
   UNIQUE KEY prefix (prefix)
 ) ENGINE = InnoDB DEFAULT CHARSET=latin1;
 
 
 CREATE TABLE IF NOT EXISTS folder (
-  id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  domain_id int(10) unsigned NOT NULL,
+  id int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  domain_id int unsigned NOT NULL,
   name varchar(255) NOT NULL,
   special_use text CHARACTER SET latin1,
   KEY idx_folder_domain_id (domain_id)
@@ -76,15 +76,15 @@ CREATE TABLE IF NOT EXISTS folder (
 
 
 CREATE TABLE IF NOT EXISTS domainadmin (
-  domain_id int(10) unsigned NOT NULL,
-  admin_id int(10) unsigned NOT NULL,
+  domain_id int unsigned NOT NULL,
+  admin_id int unsigned NOT NULL,
   KEY domainadmin_domain_id_idx (domain_id),
   KEY domainadmin_admin_id_idx (admin_id)
 ) ENGINE = InnoDB DEFAULT CHARSET=latin1;
 
 
 CREATE TABLE IF NOT EXISTS log (
-  id int(11) NOT NULL AUTO_INCREMENT,
+  id int unsigned NOT NULL AUTO_INCREMENT,
   msg text NOT NULL,
   user varchar(255) NOT NULL DEFAULT '',
   host varchar(255) NOT NULL DEFAULT '',
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS log (
 
 
 CREATE TABLE IF NOT EXISTS settings (
-  admin_id int(10) unsigned NOT NULL PRIMARY KEY,
+  admin_id int unsigned NOT NULL PRIMARY KEY,
   template varchar(255) NOT NULL DEFAULT 'default',
   maxdisplay tinyint(3) unsigned NOT NULL DEFAULT 25,
   warnlevel tinyint(2) unsigned NOT NULL DEFAULT 90,
@@ -107,26 +107,26 @@ CREATE TABLE IF NOT EXISTS settings (
 
 
 CREATE TABLE IF NOT EXISTS virtual (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  idn_id int(10) unsigned NOT NULL DEFAULT 0,
-  ace_id int(10) unsigned NOT NULL DEFAULT 0,
+  id int unsigned NOT NULL AUTO_INCREMENT,
+  idn_id int unsigned NOT NULL DEFAULT 0,
+  ace_id int unsigned NOT NULL DEFAULT 0,
   alias varchar(255) NOT NULL,
   dest longtext,
   username varchar(255) NOT NULL DEFAULT '',
-  status int(11) NOT NULL DEFAULT 1,
+  status int NOT NULL DEFAULT 1,
   KEY alias (alias)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-
 CREATE TABLE IF NOT EXISTS systeminfo (
   name varchar(127) NOT NULL,
-  val longtext NOT NULL
+  val longtext NOT NULL,
+  UNIQUE KEY (name)
 ) ENGINE = InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE IF NOT EXISTS options (
-  option_id int(11) NOT NULL AUTO_INCREMENT,
+  option_id int unsigned NOT NULL AUTO_INCREMENT,
   option_name varchar(127) NOT NULL,
-  option_value longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  option_value longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci,
   PRIMARY KEY (option_id),
   UNIQUE KEY option_name (option_name)
 ) ENGINE = InnoDB DEFAULT CHARSET=latin1;
