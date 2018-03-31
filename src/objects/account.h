@@ -638,30 +638,8 @@ private:
      */
     void markUpdated(Cutelyst::Context *c);
 
-//    /*!
-//     * \internal
-//     * \brief Queries the current list of forwards for the account from the database.
-//     *
-//     * First member will contain the list of forward email addresses, second member will be true
-//     * if incoming emails should be keept in the local mailbox.
-//     *
-//     * \param c Current context, used for translations.
-//     * \param e Pointer to an object taking error information.
-//     * \return List of forward addresses and status of keep local.
-//     */
-//    std::pair<QStringList, bool> queryFowards(Cutelyst::Context *c, SkaffariError *e = nullptr) const;
-
-//    /*!
-//     * \brief Queries the current list of email addreses associted with the account from the database.
-//     *
-//     * First member will contain the list email addresses, second member will be true if this is
-//     * a catch-all account.
-//     *
-//     * \param c Current context, used for translations.
-//     * \param e Pointer to an object taking error information.
-//     * \return List of email addresses of the account and status of catch all.
-//     */
-//    std::pair<QStringList,bool> queryAddresses(Cutelyst::Context *c, SkaffariError *e = nullptr) const;
+    friend QDataStream &operator>>(QDataStream &stream, Account &account);
+    friend QDataStream &operator<<(QDataStream &stream, const Account &account);
 };
 
 Q_DECLARE_METATYPE(Account)

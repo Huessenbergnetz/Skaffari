@@ -498,6 +498,18 @@ QSqlError updateAceID(dbid_t id, dbid_t ace_id)
     return ret;
 }
 
+/*!
+ * \internal
+ * \brief Queries the current list of forwards for the account identified by \a username from the database.
+ *
+ * First member will contain the list of forward email addresses, second member will be true
+ * if incoming emails should be keept in the local mailbox.
+ *
+ * \param c Current context, used for translations.
+ * \param username  Name of the user to quey the forwards for
+ * \param e Pointer to an object taking error information.
+ * \return List of forward addresses and status of keep local.
+ */
 std::pair<QStringList, bool> queryFowards(Cutelyst::Context *c, const QString &username, SkaffariError *e = nullptr)
 {
     std::pair<QStringList,bool> ret = std::make_pair(QStringList(), false);
@@ -527,6 +539,17 @@ std::pair<QStringList, bool> queryFowards(Cutelyst::Context *c, const QString &u
     return ret;
 }
 
+/*!
+ * \brief Queries the current list of email addreses associted with the account identified by \a username from the database.
+ *
+ * First member will contain the list email addresses, second member will be true if this is
+ * a catch-all account.
+ *
+ * \param c Current context, used for translations.
+ * \param username  Name of the user to query the addresses for.
+ * \param e Pointer to an object taking error information.
+ * \return List of email addresses of the account and status of catch all.
+ */
 std::pair<QStringList, bool> queryAddresses(Cutelyst::Context *c, const QString &username, SkaffariError *e = nullptr)
 {
     std::pair<QStringList,bool> ret = std::make_pair(QStringList(), false);
@@ -2430,7 +2453,7 @@ QDebug operator<<(QDebug dbg, const Account &account)
 QDataStream &operator<<(QDataStream &stream, const Account &account)
 {
     stream << account.quota() << account.usage() << account.addresses()
-           << account.forwards() << account.username() << account.created()
+           << account.forwards() << account.username() << account.d->sortLocale << account.created()
            << account.updated() << account.validUntil() << account.passwordExpires()
            << account.id() << account.domainId() << account.status() << account.isImapEnabled()
            << account.isPopEnabled() << account.isSieveEnabled() << account.isSmtpauthEnabled()
@@ -2441,49 +2464,25 @@ QDataStream &operator<<(QDataStream &stream, const Account &account)
 
 QDataStream &operator>>(QDataStream &stream, Account &account)
 {
-    quota_size_t quota, usage;
-    QStringList addresses, forwards;
-    QString username;
-    QDateTime created, updated, validUntil, passwordExpires;
-    dbid_t id, domainId;
-    quint8 status;
-    bool imap, pop, sieve, smtpauth, keepLocal, catchAll;
-    stream >> quota;
-    account.setQuota(quota);
-    stream >> usage;
-    account.setUsage(usage);
-    stream >> addresses;
-    account.setAddresses(addresses);
-    stream >> forwards;
-    account.setForwards(forwards);
-    stream >> username;
-    account.setUsername(username);
-    stream >> created;
-    account.setCreated(created);
-    stream >> updated;
-    account.setUpdated(updated);
-    stream >> validUntil;
-    account.setValidUntil(validUntil);
-    stream >> passwordExpires;
-    account.setPasswordExpires(passwordExpires);
-    stream >> id;
-    account.setId(id);
-    stream >> domainId;
-    account.setDomainId(domainId);
-    stream >> status;
-    account.setStatus(status);
-    stream >> imap;
-    account.setImapEnabled(imap);
-    stream >> pop;
-    account.setPopEnabled(pop);
-    stream >> sieve;
-    account.setSieveEnabled(sieve);
-    stream >> smtpauth;
-    account.setSmtpauthEnabled(smtp);
-    stream >> keepLocal;
-    account.setKeepLocal(keepLocal);
-    stream >> catchAll;
-    account.setCatchAll(catchAll);
+    stream >> account.d->quota;
+    stream >> account.d->usage;
+    stream >> account.d->addresses;
+    stream >> account.d->forwards;
+    stream >> account.d->username;
+    stream >> account.d->sortLocale;
+    stream >> account.d->created;
+    stream >> account.d->updated;
+    stream >> account.d->validUntil;
+    stream >> account.d->passwordExpires;
+    stream >> account.d->id;
+    stream >> account.d->domainId;
+    stream >> account.d->status;
+    stream >> account.d->imap;
+    stream >> account.d->pop;
+    stream >> account.d->sieve;
+    stream >> account.d->smtpauth;
+    stream >> account.d->keepLocal;
+    stream >> account.d->catchAll;
 
     return stream;
 }
