@@ -102,29 +102,14 @@ dbid_t Account::id() const
     return d->id;
 }
 
-void Account::setId(dbid_t nId)
-{
-    d->id = nId;
-}
-
 dbid_t Account::domainId() const
 {
     return d->domainId;
 }
 
-void Account::setDomainId(dbid_t nDomainId)
-{
-    d->domainId = nDomainId;
-}
-
 QString Account::username() const
 {
     return d->username;
-}
-
-void Account::setUsername(const QString& nUsername)
-{
-    d->username = nUsername;
 }
 
 QString Account::nameIdString() const
@@ -141,20 +126,9 @@ bool Account::isImapEnabled() const
     return d->imap;
 }
 
-
-void Account::setImapEnabled(bool nImap)
-{
-    d->imap = nImap;
-}
-
 bool Account::isPopEnabled() const
 {
     return d->pop;
-}
-
-void Account::setPopEnabled(bool nPop)
-{
-    d->pop = nPop;
 }
 
 bool Account::isSieveEnabled() const
@@ -162,19 +136,9 @@ bool Account::isSieveEnabled() const
     return d->sieve;
 }
 
-void Account::setSieveEnabled(bool nSieve)
-{
-    d->sieve = nSieve;
-}
-
 bool Account::isSmtpauthEnabled() const
 {
     return d->smtpauth;
-}
-
-void Account::setSmtpauthEnabled(bool nSmtpauth)
-{
-    d->smtpauth = nSmtpauth;
 }
 
 QStringList Account::addresses() const
@@ -182,19 +146,9 @@ QStringList Account::addresses() const
     return d->addresses;
 }
 
-void Account::setAddresses(const QStringList &nAddresses)
-{
-    d->addresses = nAddresses;
-}
-
 QStringList Account::forwards() const
 {
     return d->forwards;
-}
-
-void Account::setForwards(const QStringList &nForwards)
-{
-    d->forwards = nForwards;
 }
 
 quota_size_t Account::quota() const
@@ -202,19 +156,9 @@ quota_size_t Account::quota() const
     return d->quota;
 }
 
-void Account::setQuota(quota_size_t nQuota)
-{
-    d->quota = nQuota;
-}
-
 quota_size_t Account::usage() const
 {
     return d->usage;
-}
-
-void Account::setUsage(quota_size_t nUsage)
-{
-    d->usage = nUsage;
 }
 
 float Account::usagePercent() const
@@ -235,19 +179,9 @@ QDateTime Account::created() const
     return d->created;
 }
 
-void Account::setCreated(const QDateTime &created)
-{
-    d->created = created;
-}
-
 QDateTime Account::updated() const
 {
     return d->updated;
-}
-
-void Account::setUpdated(const QDateTime &updated)
-{
-    d->updated = updated;
 }
 
 QDateTime Account::validUntil() const
@@ -255,20 +189,9 @@ QDateTime Account::validUntil() const
     return d->validUntil;
 }
 
-void Account::setValidUntil(const QDateTime &validUntil)
-{
-    d->validUntil = validUntil;
-}
-
-
 bool Account::keepLocal() const
 {
     return d->keepLocal;
-}
-
-void Account::setKeepLocal(bool nKeepLocal)
-{
-    d->keepLocal = nKeepLocal;
 }
 
 bool Account::catchAll() const
@@ -276,19 +199,9 @@ bool Account::catchAll() const
     return d->catchAll;
 }
 
-void Account::setCatchAll(bool nCatchAll)
-{
-    d->catchAll = nCatchAll;
-}
-
 QDateTime Account::passwordExpires() const
 {
     return d->passwordExpires;
-}
-
-void Account::setPasswordExpires(const QDateTime &expirationDate)
-{
-    d->passwordExpires = expirationDate;
 }
 
 bool Account::passwordExpired() const
@@ -304,11 +217,6 @@ bool Account::expired() const
 quint8 Account::status() const
 {
     return d->status;
-}
-
-void Account::setStatus(quint8 status)
-{
-    d->status = status;
 }
 
 QJsonObject Account::toJson() const
@@ -916,20 +824,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError *e, const QVariantHa
         qCWarning(SK_ACCOUNT, "%s failed to update count of accounts and domain quota usage for domain %s afert creating new account %s: %s", uniStr, qUtf8Printable(d.nameIdString()), aunStr, qUtf8Printable(q.lastError().text()));
     }
 
-    a.setId(id);
-    a.setDomainId(d.id());
-    a.setUsername(username);
-    a.setImapEnabled(imap);
-    a.setPopEnabled(pop);
-    a.setSieveEnabled(sieve);
-    a.setSmtpauthEnabled(smtpauth);
-    a.setQuota(quota);
-    a.setAddresses(QStringList(email));
-    a.setCreated(currentUtc);
-    a.setUpdated(currentUtc);
-    a.setValidUntil(validUntil);
-    a.setPasswordExpires(pwExpires);
-    a.setCatchAll(_catchAll);
+    a = Account(id, d.id(), username, imap, pop, sieve, smtpauth, QStringList(email), QStringList(), quota, 0, currentUtc, currentUtc, validUntil, pwExpires, false, _catchAll, Account::calcStatus(validUntil, pwExpires));
 
     if (SkaffariConfig::useMemcached()) {
         Cutelyst::Memcached::set(MEMC_QUOTA_KEY + QString::number(id), QByteArray::number(0), MEMC_QUOTA_EXP);
@@ -1192,7 +1087,7 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
     Q_ASSERT_X(c, "get account", "invalid context object");
     Q_ASSERT_X(e, "get account", "invalid error object");
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire, au.status, au.domain_id FROM accountuser au WHERE id = :id"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.domain_id, au.username, au.imap, au.pop, au.sieve, au.smtpauth, au.quota, au.created_at, au.updated_at, au.valid_until, au.pwd_expire, au.status FROM accountuser au WHERE au.id = :id"));
     q.bindValue(QStringLiteral(":id"), id);
 
     if (Q_UNLIKELY(!q.exec())) {
@@ -1208,34 +1103,20 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
         return a;
     }
 
-
-    a.setId(q.value(0).value<dbid_t>());
-    a.setUsername(q.value(1).toString());
-    a.setImapEnabled(q.value(2).toBool());
-    a.setPopEnabled(q.value(3).toBool());
-    a.setSieveEnabled(q.value(4).toBool());
-    a.setSmtpauthEnabled(q.value(5).toBool());
-    a.setQuota(q.value(6).value<quota_size_t>());
+    const QString userName = q.value(1).toString();
+    quota_size_t quota = q.value(6).value<quota_size_t>();
     QDateTime accCreated = q.value(7).toDateTime();
     accCreated.setTimeSpec(Qt::UTC);
-    a.setCreated(accCreated);
     QDateTime accUpdated = q.value(8).toDateTime();
     accUpdated.setTimeSpec(Qt::UTC);
-    a.setUpdated(accUpdated);
     QDateTime accValidUntil = q.value(9).toDateTime();
     accValidUntil.setTimeSpec(Qt::UTC);
-    a.setValidUntil(accValidUntil);
     QDateTime accPwdExpires = q.value(10).toDateTime();
     accPwdExpires.setTimeSpec(Qt::UTC);
-    a.setPasswordExpires(accPwdExpires);
-    a.setStatus(q.value(11).value<quint8>());
-    a.setDomainId(q.value(12).value<dbid_t>());
 
-    std::pair<QStringList,bool> emailAddresses = queryAddresses(c, a.username());
-    a.setCatchAll(emailAddresses.second);
+    std::pair<QStringList,bool> emailAddresses = queryAddresses(c, userName);
 
-    std::pair<QStringList,bool> forwards = queryFowards(c, a.username());
-    a.setKeepLocal(forwards.second);
+    std::pair<QStringList,bool> forwards = queryFowards(c, userName);
 
     if ((emailAddresses.first.size() > 1) || (forwards.first.size() > 1)) {
         QCollator col(c->locale());
@@ -1249,34 +1130,51 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
         }
     }
 
-    a.setAddresses(emailAddresses.first);
-    a.setForwards(forwards.first);
-
-    bool gotQuota = false;
+    bool gotUsage = false;
+    quota_size_t usage = 0;
     if (SkaffariConfig::useMemcached()) {
-        const QByteArray usage = Cutelyst::Memcached::get(MEMC_QUOTA_KEY + QString::number(id));
-        if (!usage.isNull()) {
+        const QByteArray usageBa = Cutelyst::Memcached::get(MEMC_QUOTA_KEY + QString::number(id));
+        if (!usageBa.isNull()) {
             bool ok = false;
-            a.setUsage(usage.toULongLong(&ok));
+            usage = usageBa.toULongLong(&ok);
             if (ok) {
-                gotQuota = true;
+                gotUsage = true;
             }
         }
     }
 
-    if (!gotQuota) {
+    if (!gotUsage) {
         SkaffariIMAP imap(c);
         if (imap.login()) {
-            quota_pair quota = imap.getQuota(a.username());
-            a.setUsage(quota.first);
-            a.setQuota(quota.second);
+            quota_pair quotaPair = imap.getQuota(a.username());
+            usage = quotaPair.first;
+            quota = quotaPair.second;
             imap.logout();
 
             if (SkaffariConfig::useMemcached()) {
-                Cutelyst::Memcached::set(MEMC_QUOTA_KEY + QString::number(id), QByteArray::number(quota.first), MEMC_QUOTA_EXP);
+                Cutelyst::Memcached::set(MEMC_QUOTA_KEY + QString::number(id), QByteArray::number(quota), MEMC_QUOTA_EXP);
             }
         }
     }
+
+    a = Account(id,
+                q.value(0).value<dbid_t>(),
+                q.value(1).toString(),
+                q.value(2).toBool(),
+                q.value(3).toBool(),
+                q.value(4).toBool(),
+                q.value(5).toBool(),
+                emailAddresses.first,
+                forwards.first,
+                quota,
+                usage,
+                accCreated,
+                accUpdated,
+                accValidUntil,
+                accPwdExpires,
+                forwards.second,
+                emailAddresses.second,
+                Account::calcStatus(accValidUntil, accPwdExpires));
 
     return a;
 }
@@ -1430,9 +1328,9 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Domain *dom, const 
                         q.bindValue(QStringLiteral(":ace_id"), catchAllAceId);
                         q.bindValue(QStringLiteral(":id"), catchAllIdnId);
                         if (Q_LIKELY(q.exec())) {
-                            setCatchAll(true);
+                            d->catchAll = true;
                         } else {
-                            setCatchAll(false);
+                            d->catchAll = false;
                             q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM virtual WHERE alias = :alias"));
                             q.bindValue(QStringLiteral(":alias"), catchAllAlias);
                             if (Q_UNLIKELY(!q.exec())) {
@@ -1444,7 +1342,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Domain *dom, const 
                         qCWarning(SK_ACCOUNT, "%s failed to setup account %s as catch-all account for domain %s: %s", uniStr, aniStr, dniStr, qUtf8Printable(sqlError.text()));
                     }
                 } else {
-                    setCatchAll(true);
+                    d->catchAll = true;
                 }
             }
 
@@ -1468,8 +1366,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError *e, Domain *dom, const 
                         qCWarning(SK_ACCOUNT, "%s failed to remove account %s as catch-all account for IDN domain %s: %s", uniStr, aniStr, dniStr, qUtf8Printable(q.lastError().text()));
                     }
                 }
-
-                setCatchAll(false);
+                d->catchAll = false;
             }
         }
     }
@@ -2453,7 +2350,7 @@ QDebug operator<<(QDebug dbg, const Account &account)
 QDataStream &operator<<(QDataStream &stream, const Account &account)
 {
     stream << account.quota() << account.usage() << account.addresses()
-           << account.forwards() << account.username() << account.d->sortLocale << account.created()
+           << account.forwards() << account.username() << account.created()
            << account.updated() << account.validUntil() << account.passwordExpires()
            << account.id() << account.domainId() << account.status() << account.isImapEnabled()
            << account.isPopEnabled() << account.isSieveEnabled() << account.isSmtpauthEnabled()
@@ -2469,7 +2366,6 @@ QDataStream &operator>>(QDataStream &stream, Account &account)
     stream >> account.d->addresses;
     stream >> account.d->forwards;
     stream >> account.d->username;
-    stream >> account.d->sortLocale;
     stream >> account.d->created;
     stream >> account.d->updated;
     stream >> account.d->validUntil;

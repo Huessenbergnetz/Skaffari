@@ -122,43 +122,23 @@ public:
      * \brief Returns the account database ID.
      *
      * Access from Grantlee: id
-     *
-     * \sa setId()
      */
     dbid_t id() const;
-    /*!
-     * \brief Sets the database ID of this account.
-     * \sa id()
-     */
-    void setId(dbid_t nId);
 
     /*!
      * \brief Returns the database ID of the domain the account belongs to.
      *
      * Access from Grantlee: domainId
-     *
-     * \sa setDomainId()
      */
     dbid_t domainId() const;
-    /*!
-     * \brief Sets the databsae ID of the domain this account belongs to.
-     * \sa domainId()
-     */
-    void setDomainId(dbid_t nDomainId);
 
     /*!
      * \brief Returns the username of the account.
      *
      * Access from Grantlee: username
-     *
-     * \sa setUsername()
      */
     QString username() const;
-    /*!
-     * \brief Sets the username of this account.
-     * \sa username()
-     */
-    void setUsername(const QString &nUsername);
+
     /*!
      * \brief Returns a string that contains the username and the database ID.
      *
@@ -171,120 +151,62 @@ public:
      * \brief Returns \c true if IMAP access is enabled for this account.
      *
      * Access from Grantlee: imap
-     *
-     * \sa setImapEnabled()
      */
     bool isImapEnabled() const;
-    /*!
-     * \brief Set this to \c true if IMAP access is enabled for this account.
-     * \sa isImapEnabled()
-     */
-    void setImapEnabled(bool nImap);
 
     /*!
      * \brief Returns \c true if POP3 access is enabled for this account.
      *
      * Access from Grantlee: pop
-     *
-     * \sa setPopEnabled()
      */
     bool isPopEnabled() const;
-    /*!
-     * \brief Set this to \c true if POP3 access is enabled for this account.
-     * \sa isPopEnabled()
-     */
-    void setPopEnabled(bool nPop);
 
     /*!
      * \brief Returns \c true if Sieve access is enabled for this account.
      *
      * Access from Grantlee: sieve
-     *
-     * \sa setSieveEnabled()
      */
     bool isSieveEnabled() const;
-    /*!
-     * \brief Set this to \c true if Sieve access is enabeld for this account.
-     * \sa isSieveEnabled()
-     */
-    void setSieveEnabled(bool nSieve);
 
     /*!
      * \brief Returns \c true if sending emails via SMTP is enabled for this account.
      *
      * Access from Grantlee: smtpauth
-     *
-     * \sa setSmtpauthEnabled()
      */
     bool isSmtpauthEnabled() const;
-    /*!
-     * \brief Set this to \c true if sending via SMTP is enabled for this account.
-     * \sa isSmtpauthEnabled()
-     */
-    void setSmtpauthEnabled(bool nSmtpauth);
 
     /*!
      * \brief Returns the email addresses that are connected to this account.
      *
      * Access from Grantlee: addresses
-     *
-     * \sa setAddresses()
      */
     QStringList addresses() const;
-    /*!
-     * \brief Sets the list of email addresses that are connected to this account.
-     * \sa addresses()
-     */
-    void setAddresses(const QStringList &nAddresses);
 
     /*!
      * \brief Returns the emal forwards that are defined for this account.
      *
      * Access from Grantlee: forwards
-     *
-     * \sa setForwards()
      */
     QStringList forwards() const;
-    /*!
-     * \brief Sets the list of email forwards that are defined for this account.
-     * \sa forwards()
-     */
-    void setForwards(const QStringList &nForwards);
 
     /*!
      * \brief Returns the quota defined for this account in KiB.
      *
      * Access from Grantlee: quota
-     *
-     * \sa setQuota()
      */
     quota_size_t quota() const;
-    /*!
-     * \brief Sets the quota in KiB that is defined for this account.
-     * \sa quota()
-     */
-    void setQuota(quota_size_t nQuota);
 
     /*!
      * \brief Returns the quota used by this account in KiB.
      *
      * Access from Grantlee: usage
-     *
-     * \sa setUsage()
      */
     quota_size_t usage() const;
-    /*!
-     * \brief Sets the amount of quota used by this account in KiB.
-     * \sa usage()
-     */
-    void setUsage(quota_size_t nUsage);
 
     /*!
      * \brief Returns a percentage value of the used quota.
      *
      * Access from Grantlee: usagePercent
-     *
-     * \sa quota(), usage()
      */
     float usagePercent() const;
 
@@ -302,85 +224,43 @@ public:
      * \brief Returns the date and time this account has been created.
      *
      * Access from Grantlee: created
-     *
-     * \sa setCreated()
      */
     QDateTime created() const;
-    /*!
-     * \brief Sets the date and time this account has been created.
-     * \sa created()
-     */
-    void setCreated(const QDateTime &created);
 
     /*!
      * \brief Returns the date and time this account has been updated the last time.
      *
      * Access from Grantlee: updated
-     *
-     * \sa setUpdated()
      */
     QDateTime updated() const;
-    /*!
-     * \brief Sets the date and time this account has been updated the last time.
-     * \sa updated()
-     */
-    void setUpdated(const QDateTime &updated);
 
     /*!
      * \brief Returns the date and time until this account is valid.
      *
      * Access from Grantlee: validUntil
-     *
-     * \sa setValidUntil()
      */
     QDateTime validUntil() const;
-    /*!
-     * \brief Sets the date and time until this account is valid.
-     * \sa getValidUntil()
-     */
-    void setValidUntil(const QDateTime &validUntil);
 
     /*!
      * \brief Returns \c true if forwarded emails should be kept local too.
      *
      * Access from Grantlee: keepLocal
-     *
-     * \sa setKeepLocal()
      */
     bool keepLocal() const;
-    /*!
-     * \brief Set this to \c true if forwarded emails should be kept local too.
-     * \sa keepLocal()
-     */
-    void setKeepLocal(bool nKeepLocal);
 
     /*!
      * \brief Returns \c true if this account is for catch-all.
      *
      * Access from Grantlee: catchAll
-     *
-     * \sa setCatchAll()
      */
     bool catchAll() const;
-    /*!
-     * \brief Set this to \c true if this is a catch-all account.
-     * \sa catchAll()
-     */
-    void setCatchAll(bool nCatchAll);
 
     /*!
      * \brief Returns the date and time when the current password of this user expires.
      *
      * Access from Grantlee: passwordExpires
-     *
-     * \sa setPasswordExpires()
      */
     QDateTime passwordExpires() const;
-    /*!
-     * \brief Sets the date and time when the password for this account expires.
-     * \sa passwordExpires()
-     */
-    void setPasswordExpires(const QDateTime &expirationDate);
 
     /*!
      * \brief Returns \c true if the password of this user has been expired.
@@ -402,14 +282,8 @@ public:
 
     /*!
      * \brief Returns the status as it is saved in the database.
-     * \sa setStatus()
      */
     quint8 status() const;
-    /*!
-     * \brief Sets the status as it is saved in the database.
-     * \sa status()
-     */
-    void setStatus(quint8 status);
 
     /*!
      * \brief Converts the account data into a JSON object.

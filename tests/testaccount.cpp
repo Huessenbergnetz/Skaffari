@@ -23,27 +23,27 @@ private Q_SLOTS:
     void isValid();
     void constructor();
     void nameIdString();
-    void getSetId();
-    void getSetDomainId();
-    void getSetUsername();
-    void getSetIsImapEnabled();
-    void getSetIsPopEnabled();
-    void getSetIsSieveEnabeld();
-    void getSetIsSmtpauthEnabled();
-    void getSetAddresses();
-    void getSetForwards();
-    void getSetQuota();
-    void getSetUsage();
+    void id();
+    void domainId();
+    void username();
+    void isImapEnabled();
+    void isPopEnabled();
+    void isSieveEnabled();
+    void isSmtpAuthEnabled();
+    void addresses();
+    void forwards();
+    void quota();
+    void usage();
     void usagePercent();
-    void getSetCreated();
-    void getSetUpdated();
-    void getSetValidUntil();
-    void getSetPasswordExpires();
-    void getSetKeepLocal();
-    void getSetCatchAll();
+    void created();
+    void updated();
+    void validUntil();
+    void passwordExpires();
+    void keepLocal();
+    void catchAll();
     void passwordExpired();
     void expired();
-    void getSetStatus();
+    void status();
     void calcStatus();
     void calcStatus_data();
     void datastream();
@@ -63,7 +63,7 @@ void AccountTest::isValid()
 
 void AccountTest::constructor()
 {
-    acc = Account(_INIT_ID, _INIT_DOMAINID, QStringLiteral(_INIT_USERNAME), true, true, true, true, QStringList(), QStringList(), _INIT_QUOTA, _INIT_USAGE, baseDate.addYears(-1), baseDate, baseDate.addYears(1), baseDate.addDays(182), _INIT_KEEPLOCAL, _INIT_CATCHALL, _INIT_STATUS);
+    acc = Account(_INIT_ID, _INIT_DOMAINID, QStringLiteral(_INIT_USERNAME), true, true, true, true, QStringList(QStringLiteral("test@example.com")),  QStringList(QStringLiteral("test@example2.com")), _INIT_QUOTA, _INIT_USAGE, baseDate.addYears(-1), baseDate, baseDate.addYears(1), baseDate.addDays(182), _INIT_KEEPLOCAL, _INIT_CATCHALL, _INIT_STATUS);
     QVERIFY(acc.isValid());
 }
 
@@ -72,86 +72,59 @@ void AccountTest::nameIdString()
     QCOMPARE(acc.nameIdString(), QStringLiteral("test (ID: 1)"));
 }
 
-void AccountTest::getSetId()
+void AccountTest::id()
 {
     QCOMPARE(acc.id(), _INIT_ID);
-    acc.setId(_INIT_ID  + 1);
-    QCOMPARE(acc.id(), _INIT_ID + 1);
 }
 
-void AccountTest::getSetDomainId()
+void AccountTest::domainId()
 {
     QCOMPARE(acc.domainId(), _INIT_DOMAINID);
-    acc.setDomainId(_INIT_DOMAINID + 1);
-    QCOMPARE(acc.domainId(), _INIT_DOMAINID + 1);
 }
 
-void AccountTest::getSetUsername()
+void AccountTest::username()
 {
     QCOMPARE(acc.username(), QStringLiteral(_INIT_USERNAME));
-    const auto newUsername = QStringLiteral("test2");
-    acc.setUsername(newUsername);
-    QCOMPARE(acc.username(), newUsername);
 }
 
-void AccountTest::getSetIsImapEnabled()
+void AccountTest::isImapEnabled()
 {
     QCOMPARE(acc.isImapEnabled(), true);
-    acc.setImapEnabled(false);
-    QCOMPARE(acc.isImapEnabled(), false);
 }
 
-void AccountTest::getSetIsPopEnabled()
+void AccountTest::isPopEnabled()
 {
     QCOMPARE(acc.isPopEnabled(), true);
-    acc.setPopEnabled(false);
-    QCOMPARE(acc.isPopEnabled(), false);
 }
 
-void AccountTest::getSetIsSieveEnabeld()
+void AccountTest::isSieveEnabled()
 {
     QCOMPARE(acc.isSieveEnabled(), true);
-    acc.setSieveEnabled(false);
-    QCOMPARE(acc.isSieveEnabled(), false);
 }
 
-void AccountTest::getSetIsSmtpauthEnabled()
+void AccountTest::isSmtpAuthEnabled()
 {
     QCOMPARE(acc.isSmtpauthEnabled(), true);
-    acc.setSmtpauthEnabled(false);
-    QCOMPARE(acc.isSmtpauthEnabled(), false);
 }
 
-void AccountTest::getSetAddresses()
+void AccountTest::addresses()
 {
-    QCOMPARE(acc.addresses(), QStringList());
-    const auto newAddresses = QStringList({QStringLiteral("test@example.com"), QStringLiteral("test2@example.com")});
-    acc.setAddresses(newAddresses);
-    QCOMPARE(acc.addresses(), newAddresses);
+    QCOMPARE(acc.addresses(), QStringList(QStringLiteral("test@example.com")));
 }
 
-void AccountTest::getSetForwards()
+void AccountTest::forwards()
 {
-    QCOMPARE(acc.forwards(), QStringList());
-    const auto newForwards = QStringList({QStringLiteral("test@example2.com"), QStringLiteral("test2@example2.com")});
-    acc.setForwards(newForwards);
-    QCOMPARE(acc.forwards(), newForwards);
+    QCOMPARE(acc.forwards(), QStringList(QStringLiteral("test@example2.com")));
 }
 
-void AccountTest::getSetQuota()
+void AccountTest::quota()
 {
     QCOMPARE(acc.quota(), _INIT_QUOTA);
-    const auto newQuota = _INIT_QUOTA * 2;
-    acc.setQuota(newQuota);
-    QCOMPARE(acc.quota(), newQuota);
 }
 
-void AccountTest::getSetUsage()
+void AccountTest::usage()
 {
     QCOMPARE(acc.usage(), _INIT_USAGE);
-    const auto newUsage = _INIT_USAGE * 2;
-    acc.setUsage(newUsage);
-    QCOMPARE(acc.usage(), newUsage);
 }
 
 void AccountTest::usagePercent()
@@ -159,71 +132,49 @@ void AccountTest::usagePercent()
     QCOMPARE(acc.usagePercent(), 10.0);
 }
 
-void AccountTest::getSetCreated()
+void AccountTest::created()
 {
     QCOMPARE(acc.created(), baseDate.addYears(-1));
-    const auto newCreated = acc.created().addYears(1);
-    acc.setCreated(newCreated);
-    QCOMPARE(acc.created(), newCreated);
 }
 
-void AccountTest::getSetUpdated()
+void AccountTest::updated()
 {
     QCOMPARE(acc.updated(), baseDate);
-    const auto newUpdated = acc.updated().addYears(1);
-    acc.setUpdated(newUpdated);
-    QCOMPARE(acc.updated(), newUpdated);
 }
 
-void AccountTest::getSetValidUntil()
+void AccountTest::validUntil()
 {
     QCOMPARE(acc.validUntil(), baseDate.addYears(1));
-    const auto newValidUntil = acc.validUntil().addYears(1);
-    acc.setValidUntil(newValidUntil);
-    QCOMPARE(acc.validUntil(), newValidUntil);
 }
 
-void AccountTest::getSetPasswordExpires()
+void AccountTest::passwordExpires()
 {
     QCOMPARE(acc.passwordExpires(), baseDate.addDays(182));
-    const auto newPasswordExpires = acc.passwordExpires().addYears(1);
-    acc.setPasswordExpires(newPasswordExpires);
-    QCOMPARE(acc.passwordExpires(), newPasswordExpires);
 }
 
-void AccountTest::getSetKeepLocal()
+void AccountTest::keepLocal()
 {
     QCOMPARE(acc.keepLocal(), _INIT_KEEPLOCAL);
-    acc.setKeepLocal(!_INIT_KEEPLOCAL);
-    QCOMPARE(acc.keepLocal(), !_INIT_KEEPLOCAL);
 }
 
-void AccountTest::getSetCatchAll()
+void AccountTest::catchAll()
 {
     QCOMPARE(acc.catchAll(), _INIT_CATCHALL);
-    acc.setCatchAll(!_INIT_CATCHALL);
-    QCOMPARE(acc.catchAll(), !_INIT_CATCHALL);
 }
 
 void AccountTest::passwordExpired()
 {
     QCOMPARE(acc.passwordExpired(), false);
-    acc.setPasswordExpires(baseDate.addDays(-1));
-    QCOMPARE(acc.passwordExpired(), true);
 }
 
 void AccountTest::expired()
 {
     QCOMPARE(acc.expired(), false);
-    acc.setValidUntil(baseDate.addDays(-1));
-    QCOMPARE(acc.expired(), true);
 }
 
-void AccountTest::getSetStatus()
+void AccountTest::status()
 {
     QCOMPARE(acc.status(), _INIT_STATUS);
-    acc.setStatus(Account::calcStatus(acc.validUntil(), acc.passwordExpires()));
-    QCOMPARE(acc.status(), 3);
 }
 
 void AccountTest::calcStatus()
@@ -282,61 +233,44 @@ void AccountTest::datastream()
 
 void AccountTest::toJson()
 {
-    Account a;
+    Account a(123,
+              456,
+              QStringLiteral("tester"),
+              true,
+              true,
+              false,
+              true,
+              QStringList({QStringLiteral("test@example.com"), QStringLiteral("test2@example.com")}),
+              QStringList({QStringLiteral("test@example2.com")}),
+              123456,
+              2345,
+              baseDate.addYears(-1),
+              baseDate,
+              baseDate.addYears(1),
+              baseDate.addDays(182),
+              true,
+              false,
+              0);
+
     QJsonObject o;
-
-    a.setId(123);
     o.insert(QStringLiteral("id"), 123);
-
-    a.setDomainId(456);
     o.insert(QStringLiteral("domainId"), 456);
-
-    a.setUsername(QStringLiteral("tester"));
     o.insert(QStringLiteral("username"), QStringLiteral("tester"));
-
-    a.setImapEnabled(true);
     o.insert(QStringLiteral("imap"), true);
-
-    a.setPopEnabled(true);
     o.insert(QStringLiteral("pop"), true);
-
-    a.setSmtpauthEnabled(true);
-    o.insert(QStringLiteral("smtpauth"), true);
-
-    a.setSieveEnabled(false);
     o.insert(QStringLiteral("sieve"), false);
-
-    a.setAddresses(QStringList({QStringLiteral("test@example.com"), QStringLiteral("test2@example.com")}));
+    o.insert(QStringLiteral("smtpauth"), true);
     o.insert(QStringLiteral("addresses"), QJsonArray::fromStringList(QStringList({QStringLiteral("test@example.com"), QStringLiteral("test2@example.com")})));
-
-    a.setForwards(QStringList({QStringLiteral("test@example2.com")}));
     o.insert(QStringLiteral("forwards"), QJsonArray::fromStringList(QStringList({QStringLiteral("test@example2.com")})));
-
-    a.setQuota(123456);
     o.insert(QStringLiteral("quota"), 123456);
-
-    a.setUsage(2345);
     o.insert(QStringLiteral("usage"), 2345);
-
-    a.setCreated(baseDate.addYears(-1));
     o.insert(QStringLiteral("created"), baseDate.addYears(-1).toString(Qt::ISODate));
-
-    a.setUpdated(baseDate);
     o.insert(QStringLiteral("updated"), baseDate.toString(Qt::ISODate));
-
-    a.setValidUntil(baseDate.addYears(1));
     o.insert(QStringLiteral("validUntil"), baseDate.addYears(1).toString(Qt::ISODate));
-
-    a.setPasswordExpires(baseDate.addDays(182));
     o.insert(QStringLiteral("passwordExpires"), baseDate.addDays(182).toString(Qt::ISODate));
     o.insert(QStringLiteral("passwordExpired"), false);
-
-    a.setKeepLocal(true);
     o.insert(QStringLiteral("keepLocal"), true);
-
-    a.setCatchAll(false);
     o.insert(QStringLiteral("catchAll"), false);
-
     o.insert(QStringLiteral("expired"), false);
     o.insert(QStringLiteral("status"), 0);
 
