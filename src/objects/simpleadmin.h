@@ -88,6 +88,9 @@ public:
 private:
     dbid_t m_id = 0;
     QString m_name;
+
+    friend QDataStream &operator>>(QDataStream &stream, SimpleAdmin &admin);
+    friend QDataStream &operator<<(QDataStream &stream, const SimpleAdmin &admin);
 };
 
 Q_DECLARE_METATYPE(SimpleAdmin)
@@ -98,6 +101,18 @@ Q_DECLARE_TYPEINFO(SimpleAdmin, Q_MOVABLE_TYPE);
  * \brief Writes the \a admin to the \a dbg stream and returns the stream.
  */
 QDebug operator<<(QDebug dbg, const SimpleAdmin &admin);
+
+/*!
+ * \relates SimpleAdmin
+ * \brief Writes the given \a admin to the given \a stream.
+ */
+QDataStream &operator<<(QDataStream &stream, const SimpleAdmin &admin);
+
+/*!
+ * \relates SimpleAdmin
+ * \brief Reads an %SimpleAdmin from the given \a stream and stores it in the given \a admin.
+ */
+QDataStream &operator>>(QDataStream &stream, SimpleAdmin &admin);
 
 GRANTLEE_BEGIN_LOOKUP(SimpleAdmin)
 if (property == QLatin1String("id")) {

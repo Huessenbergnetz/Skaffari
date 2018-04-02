@@ -18,6 +18,7 @@
 
 #include "simpleadmin.h"
 #include <QDebug>
+#include <QDataStream>
 
 SimpleAdmin::SimpleAdmin()
 {
@@ -91,4 +92,17 @@ QDebug operator<<(QDebug dbg, const SimpleAdmin &admin)
     dbg << "User name: " << admin.name();
     dbg << ')';
     return dbg.maybeSpace();
+}
+
+QDataStream &operator<<(QDataStream &stream, const SimpleAdmin &admin)
+{
+    stream << admin.m_id << admin.m_name;
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, SimpleAdmin &admin)
+{
+    stream >> admin.m_id;
+    stream >> admin.m_name;
+    return stream;
 }
