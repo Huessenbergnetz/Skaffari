@@ -99,11 +99,6 @@ public:
     QString nameIdString() const;
 
     /*!
-     * \brief Sets database ID and domain name to a SimpleDomain object.
-     */
-    void setData(dbid_t id, const QString &name);
-
-    /*!
      * \brief Returns \c true if this domain is valid.
      *
      * A domain is valid if the \a id is greater than \c 0 and if the \a name is not empty.

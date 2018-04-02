@@ -327,7 +327,7 @@ SimpleAccount SkaffariConfig::loadDefaultAccount(const QString &optionName)
 
     if (Q_LIKELY(q.exec())) {
         if (q.next()) {
-            acc.setData(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
+            acc = SimpleAccount(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
         }
     } else {
         qCWarning(SK_CONFIG, "Failed to query database for %s: %s", qUtf8Printable(optionName), qUtf8Printable(q.lastError().text()));
@@ -347,7 +347,7 @@ SimpleAccount SkaffariConfig::loadDefaultAccount(dbid_t accountId)
 
         if (Q_LIKELY(q.exec())) {
             if (q.next()) {
-                acc.setData(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
+                acc = SimpleAccount(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
             }
         } else {
             qCWarning(SK_CONFIG, "Failed to query database for accountID %u: %s", accountId, qUtf8Printable(q.lastError().text()));

@@ -363,11 +363,7 @@ bool Domain::hasAccess(Cutelyst::Context *c) const
 
 SimpleDomain Domain::toSimple() const
 {
-    SimpleDomain sd;
-
-    sd.setData(d->id, d->name);
-
-    return sd;
+    return SimpleDomain(d->id, d->name);
 }
 
 Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, SkaffariError *errorData)

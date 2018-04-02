@@ -107,18 +107,10 @@ QString SimpleDomain::nameIdString() const
     return ret;
 }
 
-void SimpleDomain::setData(dbid_t id, const QString &name)
-{
-    m_id = id;
-    m_name = name;
-}
-
-
 bool SimpleDomain::isValid() const
 {
     return ((m_id > 0) && !m_name.isEmpty());
 }
-
 
 std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, quint8 userType, dbid_t adminId, bool orphansOnly)
 {
@@ -195,7 +187,6 @@ QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError *e, quint8
     return lst;
 }
 
-
 SimpleDomain SimpleDomain::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
 {
     SimpleDomain dom;
@@ -217,7 +208,7 @@ SimpleDomain SimpleDomain::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
         return dom;
     }
 
-    dom.setData(id, q.value(0).toString());
+    dom = SimpleDomain(id, q.value(0).toString());
 
     return dom;
 }

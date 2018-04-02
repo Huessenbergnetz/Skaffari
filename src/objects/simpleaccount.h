@@ -119,11 +119,6 @@ public:
     QString domainname() const;
 
     /*!
-     * \brief Sets database ID, user name and domain name.
-     */
-    void setData(dbid_t id, const QString &username, const QString &domainname);
-
-    /*!
      * \brief Returns \c true if this account is valid.
      *
      * An account is valid if the \a id is greater than \c 0 anf if the \a name is not empty.

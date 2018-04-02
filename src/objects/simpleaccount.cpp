@@ -90,13 +90,6 @@ QString SimpleAccount::domainname() const
     return d->domainname;
 }
 
-void SimpleAccount::setData(dbid_t id, const QString &username, const QString &domainname)
-{
-    d->id = id;
-    d->username = username;
-    d->domainname = domainname;
-}
-
 bool SimpleAccount::isValid() const
 {
     return ((d->id > 0) && !d->username.isEmpty() && !d->domainname.isEmpty());
@@ -218,7 +211,7 @@ SimpleAccount SimpleAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t 
 
         if (Q_LIKELY(q.exec())) {
             if (q.next()) {
-                a.setData(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
+                a = SimpleAccount(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
             } else {
                 qCWarning(SK_SIMPLEACCOUNT, "Can not find account with ID %u in database.", id);
                 e->setErrorType(SkaffariError::NotFound);
