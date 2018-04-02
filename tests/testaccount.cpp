@@ -2,6 +2,8 @@
 
 #include <QTest>
 #include <QDataStream>
+#include <QJsonObject>
+#include <QJsonArray>
 
 #define _INIT_ID 1
 #define _INIT_DOMAINID 1
@@ -45,6 +47,7 @@ private Q_SLOTS:
     void calcStatus();
     void calcStatus_data();
     void datastream();
+    void toJson();
 
     void cleanupTestCase() {}
 
@@ -72,17 +75,15 @@ void AccountTest::nameIdString()
 void AccountTest::getSetId()
 {
     QCOMPARE(acc.id(), _INIT_ID);
-    const auto newId = _INIT_ID + 1;
-    acc.setId(newId);
-    QCOMPARE(acc.id(), newId);
+    acc.setId(_INIT_ID  + 1);
+    QCOMPARE(acc.id(), _INIT_ID + 1);
 }
 
 void AccountTest::getSetDomainId()
 {
     QCOMPARE(acc.domainId(), _INIT_DOMAINID);
-    const auto newDomainId = _INIT_DOMAINID + 1;
-    acc.setDomainId(newDomainId);
-    QCOMPARE(acc.domainId(), newDomainId);
+    acc.setDomainId(_INIT_DOMAINID + 1);
+    QCOMPARE(acc.domainId(), _INIT_DOMAINID + 1);
 }
 
 void AccountTest::getSetUsername()
@@ -277,6 +278,69 @@ void AccountTest::datastream()
     QCOMPARE(acc.keepLocal(), acc2.keepLocal());
     QCOMPARE(acc.catchAll(), acc2.catchAll());
     QCOMPARE(acc.status(), acc2.status());
+}
+
+void AccountTest::toJson()
+{
+    Account a;
+    QJsonObject o;
+
+    a.setId(123);
+    o.insert(QStringLiteral("id"), 123);
+
+    a.setDomainId(456);
+    o.insert(QStringLiteral("domainId"), 456);
+
+    a.setUsername(QStringLiteral("tester"));
+    o.insert(QStringLiteral("username"), QStringLiteral("tester"));
+
+    a.setImapEnabled(true);
+    o.insert(QStringLiteral("imap"), true);
+
+    a.setPopEnabled(true);
+    o.insert(QStringLiteral("pop"), true);
+
+    a.setSmtpauthEnabled(true);
+    o.insert(QStringLiteral("smtpauth"), true);
+
+    a.setSieveEnabled(false);
+    o.insert(QStringLiteral("sieve"), false);
+
+    a.setAddresses(QStringList({QStringLiteral("test@example.com"), QStringLiteral("test2@example.com")}));
+    o.insert(QStringLiteral("addresses"), QJsonArray::fromStringList(QStringList({QStringLiteral("test@example.com"), QStringLiteral("test2@example.com")})));
+
+    a.setForwards(QStringList({QStringLiteral("test@example2.com")}));
+    o.insert(QStringLiteral("forwards"), QJsonArray::fromStringList(QStringList({QStringLiteral("test@example2.com")})));
+
+    a.setQuota(123456);
+    o.insert(QStringLiteral("quota"), 123456);
+
+    a.setUsage(2345);
+    o.insert(QStringLiteral("usage"), 2345);
+
+    a.setCreated(baseDate.addYears(-1));
+    o.insert(QStringLiteral("created"), baseDate.addYears(-1).toString(Qt::ISODate));
+
+    a.setUpdated(baseDate);
+    o.insert(QStringLiteral("updated"), baseDate.toString(Qt::ISODate));
+
+    a.setValidUntil(baseDate.addYears(1));
+    o.insert(QStringLiteral("validUntil"), baseDate.addYears(1).toString(Qt::ISODate));
+
+    a.setPasswordExpires(baseDate.addDays(182));
+    o.insert(QStringLiteral("passwordExpires"), baseDate.addDays(182).toString(Qt::ISODate));
+    o.insert(QStringLiteral("passwordExpired"), false);
+
+    a.setKeepLocal(true);
+    o.insert(QStringLiteral("keepLocal"), true);
+
+    a.setCatchAll(false);
+    o.insert(QStringLiteral("catchAll"), false);
+
+    o.insert(QStringLiteral("expired"), false);
+    o.insert(QStringLiteral("status"), 0);
+
+    QCOMPARE(a.toJson(), o);
 }
 
 QTEST_MAIN(AccountTest)
