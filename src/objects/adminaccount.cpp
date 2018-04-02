@@ -308,7 +308,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
     if (type >= AdminAccount::getUserType(c)) {
         error->setErrorType(SkaffariError::AuthorizationError);
         error->setErrorText(c->translate("AdminAccount", "You are not allowed to create users of type %1.").arg(AdminAccount::typeToName(type, c)));
-        qCWarning(SK_ADMIN, "%s: not allowed to create users of type %u.", type);
+        qCWarning(SK_ADMIN, "%s: not allowed to create users of type %u.", err, type);
         return aa;
     }
 
@@ -337,7 +337,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
     if (Q_UNLIKELY(password.isEmpty())) {
         error->setErrorType(SkaffariError::ApplicationError);
         error->setErrorText(c->translate("AdminAccount", "Password encryption failed. Please check your encryption settings."));
-        qCCritical(SK_ADMIN, "%s: password encryption failed.");
+        qCCritical(SK_ADMIN, "%s: password encryption failed.", err);
         return aa;
     }
 
@@ -373,8 +373,8 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
     aa.setLang(SkaffariConfig::defLanguage());
     aa.setTz(SkaffariConfig::defTimezone());
     aa.setTemplate(QStringLiteral("default"));
-    aa.setMaxDisplay(25);
-    aa.setWarnLevel(90);
+    aa.setMaxDisplay(SkaffariConfig::defMaxdisplay());
+    aa.setWarnLevel(SkaffariConfig::defWarnlevel());
     aa.setCreated(currentUtc);
     aa.setUpdated(currentUtc);
 
@@ -503,7 +503,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, const QVariant
     if (type >= AdminAccount::getUserType(c)) {
         e->setErrorType(SkaffariError::AuthorizationError);
         e->setErrorText(c->translate("AdminAccount", "You are not allowed to set the type of this account to %1.").arg(AdminAccount::typeToName(type, c)));
-        qCCritical(SK_ADMIN, "%s: not allowed to set the type of the account to %u.", type);
+        qCCritical(SK_ADMIN, "%s: not allowed to set the type of the account to %u.", err, type);
         return ret;
     }
 
@@ -636,7 +636,7 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVari
     if (!timeZone.isValid()) {
         e->setErrorType(SkaffariError::InputError);
         e->setErrorText(c->translate("AdminAccount", "%1 is not a valid IANA time zone ID.").arg(tz));
-        qCWarning(SK_ADMIN, "%s: invalid IANA time zone ID %s.", err, tz.constData());
+        qCWarning(SK_ADMIN, "%s: invalid IANA time zone ID %s.", err, qUtf8Printable(tz));
         return ret;
     }
 
@@ -652,7 +652,7 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVari
         if (Q_UNLIKELY(encPw.isEmpty())) {
             e->setErrorType(SkaffariError::ApplicationError);
             e->setErrorText(c->translate("AdminAccount", "Password encryption failed. Please check your encryption settings."));
-            qCCritical(SK_ADMIN, "%s: password encryption failed.");
+            qCCritical(SK_ADMIN, "%s: password encryption failed.", err);
             return ret;
         }
 

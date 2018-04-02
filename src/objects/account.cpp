@@ -2289,7 +2289,7 @@ bool AccountData::canAddAddress(Cutelyst::Context *c, SkaffariError *e, const Do
         if (!addressAllowed) {
             e->setErrorText(c->translate("Account", "You can not create email addresses for other domains as long as free addresses are not allowed for this domain."));
             e->setErrorType(SkaffariError::AuthorizationError);
-            qCWarning(SK_ACCOUNT, "%s tried to add email address %s to account %s while free addresses are not allowed for domain %s.", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(nameIdString()), qUtf8Printable(myDomain.nameIdString()));
+            qCWarning(SK_ACCOUNT, "%s tried to add email address %s to account %s while free addresses are not allowed for domain %s.", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(address), qUtf8Printable(nameIdString()), qUtf8Printable(myDomain.nameIdString()));
             return ret;
         }
     }
