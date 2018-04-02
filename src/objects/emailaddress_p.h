@@ -44,7 +44,7 @@ public:
         aceId(_aceId)
     {
         const int atIdx = _name.lastIndexOf(QLatin1Char('@'));
-        if (atIdx > 0) {
+        if ((atIdx > 0) && (atIdx < (_name.size() - 1))) {
             local = _name.left(atIdx);
             domain = _name.mid(atIdx + 1);
         }
