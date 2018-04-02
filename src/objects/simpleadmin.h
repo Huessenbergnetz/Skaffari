@@ -77,6 +77,14 @@ public:
      */
     QString name() const;
 
+    /*!
+     * \brief Returns \c true if this is a valid admin account.
+     *
+     * Validity is simply determined by the fact that id() is greater than \c 0
+     * and that name() is not empty.
+     */
+    bool isValid() const;
+
 private:
     dbid_t m_id = 0;
     QString m_name;

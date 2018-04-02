@@ -77,6 +77,11 @@ QString SimpleAdmin::name() const
     return m_name;
 }
 
+bool SimpleAdmin::isValid() const
+{
+    return (m_id > 0 && !m_name.isEmpty());
+}
+
 QDebug operator<<(QDebug dbg, const SimpleAdmin &admin)
 {
     QDebugStateSaver saver(dbg);
