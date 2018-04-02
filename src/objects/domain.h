@@ -538,6 +538,9 @@ public:
 
 private:
     QSharedDataPointer<DomainData> d;
+
+    friend QDataStream &operator>>(QDataStream &stream, Domain &domain);
+    friend QDataStream &operator<<(QDataStream &stream, const Domain &domain);
 };
 
 Q_DECLARE_METATYPE(Domain)
@@ -548,6 +551,18 @@ Q_DECLARE_TYPEINFO(Domain, Q_MOVABLE_TYPE);
  * \brief Writes the \a domain to the \a dbg stream  and returns the stream.
  */
 QDebug operator<<(QDebug dbg, const Domain &domain);
+
+/*!
+ * \relates Domain
+ * \brief Reads a %Domain from the given \a stream and stores it in the given \a domain.
+ */
+QDataStream &operator>>(QDataStream &stream, Domain &domain);
+
+/*!
+ * \relates Domain
+ * \brief Writes the given \a domain to the given \a stream.
+ */
+QDataStream &operator<<(QDataStream &stream, const Domain &domain);
 
 GRANTLEE_BEGIN_LOOKUP(Domain)
 if (property == QLatin1String("id")) {

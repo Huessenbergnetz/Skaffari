@@ -1151,3 +1151,99 @@ QDebug operator<<(QDebug dbg, const Domain &domain)
     dbg << ')';
     return dbg.maybeSpace();
 }
+
+QDataStream &operator<<(QDataStream &stream, const Domain &domain)
+{
+    stream << domain.quota() << domain.domainQuota() << domain.domainQuotaUsed();
+
+    const quint64 childrenCount = static_cast<quint64>(domain.children().size());
+    stream << childrenCount;
+    if (childrenCount > 0) {
+        for (const SimpleDomain &child : domain.children()) {
+            stream << child;
+        }
+    }
+
+    const quint64 adminCount = static_cast<quint64>(domain.admins().size());
+    stream << adminCount;
+    if (adminCount > 0) {
+        for (const SimpleAdmin &admin : domain.admins()) {
+            stream << admin;
+        }
+    }
+
+    const quint64 folderCount = static_cast<quint64>(domain.folders().size());
+    stream << folderCount;
+    if (folderCount > 0) {
+        for (const Folder &folder : domain.folders()) {
+            stream << folder;
+        }
+    }
+
+    stream << domain.parent();
+    stream << domain.name() << domain.prefix() << domain.transport();
+    stream << domain.created() << domain.updated() << domain.validUntil();
+    stream << domain.id() << domain.aceId();
+    stream << domain.maxAccounts() << domain.accounts();
+    stream << domain.isFreeNamesEnabled() << domain.isFreeAddressEnabled();
+
+    return stream;
+
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, Domain &domain)
+{
+    stream >> domain.d->quota;
+    stream >> domain.d->domainQuota;
+    stream >> domain.d->domainQuotaUsed;
+
+    quint64 childrenCount = 0;
+    stream >> childrenCount;
+    if (childrenCount > 0) {
+        domain.d->children.reserve(childrenCount);
+        for (quint64 i = 0; i < childrenCount; ++i) {
+            SimpleDomain child;
+            stream >> child;
+            domain.d->children.push_back(child);
+        }
+    }
+
+    quint64 adminCount = 0;
+    stream >> adminCount;
+    if (adminCount > 0) {
+        domain.d->admins.reserve(adminCount);
+        for (quint64 i = 0; i < adminCount; ++i) {
+            SimpleAdmin admin;
+            stream >> admin;
+            domain.d->admins.push_back(admin);
+        }
+    }
+
+    quint64 folderCount = 0;
+    stream >> folderCount;
+    if (folderCount > 0) {
+        domain.d->folders.reserve(folderCount);
+        for (quint64 i = 0; i < folderCount; ++i) {
+            Folder folder;
+            stream >> folder;
+            domain.d->folders.push_back(folder);
+        }
+    }
+
+    stream >> domain.d->parent;
+    stream >> domain.d->name;
+    stream >> domain.d->prefix;
+    stream >> domain.d->transport;
+    stream >> domain.d->created;
+    stream >> domain.d->updated;
+    stream >> domain.d->validUntil;
+    stream >> domain.d->id;
+    stream >> domain.d->ace_id;
+    stream >> domain.d->maxAccounts;
+    stream >> domain.d->accounts;
+    stream >> domain.d->freeNames;
+    stream >> domain.d->freeAddress;
+
+    return stream;
+}
