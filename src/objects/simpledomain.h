@@ -157,6 +157,9 @@ public:
 private:
     QString m_name;
     dbid_t m_id = 0;
+
+    friend QDataStream &operator>>(QDataStream &stream, SimpleDomain &domain);
+    friend QDataStream &operator<<(QDataStream &stream, const SimpleDomain &domain);
 };
 
 Q_DECLARE_METATYPE(SimpleDomain)
@@ -167,6 +170,18 @@ Q_DECLARE_TYPEINFO(SimpleDomain, Q_MOVABLE_TYPE);
  * \brief Writes the \a domain to the \a debug stream and returns the stream.
  */
 QDebug operator<<(QDebug debug, const SimpleDomain &domain);
+
+/*!
+ * \relates SimpleDomain
+ * \brief Writes the given \a domain to the given \a stream.
+ */
+QDataStream &operator<<(QDataStream &stream, const SimpleDomain &domain);
+
+/*!
+ * \relates SimpleDomain
+ * \brief Reads a %SimpleDomain from the given \a stream and stores it in the given \a domain.
+ */
+QDataStream &operator>>(QDataStream &stream, SimpleDomain &domain);
 
 GRANTLEE_BEGIN_LOOKUP(SimpleDomain)
 if (property == QLatin1String("id")) {

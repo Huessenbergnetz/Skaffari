@@ -223,3 +223,16 @@ QDebug operator<<(QDebug debug, const SimpleDomain &domain)
     debug << ')';
     return debug.maybeSpace();
 }
+
+QDataStream &operator<<(QDataStream &stream, const SimpleDomain &domain)
+{
+    stream << domain.m_name << domain.m_id;
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, SimpleDomain &domain)
+{
+    stream >> domain.m_name;
+    stream >> domain.m_id;
+    return stream;
+}
