@@ -92,6 +92,9 @@ public:
 
 protected:
     QSharedDataPointer<FolderData> d;
+
+    friend QDataStream &operator<<(QDataStream &stream, const Folder &folder);
+    friend QDataStream &operator>>(QDataStream &stream, Folder &folder);
 };
 
 Q_DECLARE_METATYPE(Folder)
@@ -102,6 +105,18 @@ Q_DECLARE_TYPEINFO(Folder, Q_MOVABLE_TYPE);
  * \brief Writes the \a folder to the \a dbg stream and returns the stream.
  */
 QDebug operator<<(QDebug dbg, const Folder &folder);
+
+/*!
+ * \relates Folder
+ * \brief Writes the given \a folder to the given \a stream.
+ */
+QDataStream &operator<<(QDataStream &stream, const Folder &folder);
+
+/*!
+ * \relates Folder
+ * \brief Reads a %Folder from the given \a stream and stores it in the given \a folder.
+ */
+QDataStream &operator>>(QDataStream &stream, Folder &folder);
 
 GRANTLEE_BEGIN_LOOKUP(Folder)
 if (property == QLatin1String("id")) {

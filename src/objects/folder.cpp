@@ -18,6 +18,7 @@
 
 #include "folder_p.h"
 #include <QDebug>
+#include <QDataStream>
 #include <algorithm>
 
 Folder::Folder() :
@@ -91,4 +92,20 @@ QDebug operator<<(QDebug dbg, const Folder &folder)
     dbg << ", Name: " << folder.getName();
     dbg << ')';
     return dbg.maybeSpace();
+}
+
+QDataStream &operator<<(QDataStream &stream, const Folder &folder)
+{
+    stream << folder.getName() << folder.getId() << folder.getDomainId();
+
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, Folder &folder)
+{
+    stream >> folder.d->name;
+    stream >> folder.d->id;
+    stream >> folder.d->domainId;
+
+    return stream;
 }
