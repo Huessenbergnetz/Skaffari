@@ -146,7 +146,7 @@ void AdminEditor::create(Context *c)
 
     SkaffariError e(c);
     // if access has been granted, user type is 0
-    std::vector<SimpleDomain> domains = SimpleDomain::list(c, &e, 0, 0);
+    std::vector<SimpleDomain> domains = SimpleDomain::list(c, &e);
 
     if (e.type() != SkaffariError::NoError) {
         c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -215,7 +215,7 @@ void AdminEditor::edit(Context *c)
 
     SkaffariError e(c);
     // if access has been granted, user type is 0
-    std::vector<SimpleDomain> domains = SimpleDomain::list(c, &e, 0, 0);
+    std::vector<SimpleDomain> domains = SimpleDomain::list(c, &e);
 
     if (e.type() != SkaffariError::NoError) {
         c->setStash(QStringLiteral("error_msg"), e.errorText());

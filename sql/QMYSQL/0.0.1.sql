@@ -79,7 +79,8 @@ CREATE TABLE IF NOT EXISTS domainadmin (
   domain_id int unsigned NOT NULL,
   admin_id int unsigned NOT NULL,
   KEY domainadmin_domain_id_idx (domain_id),
-  KEY domainadmin_admin_id_idx (admin_id)
+  KEY domainadmin_admin_id_idx (admin_id),
+  FOREIGN KEY admin_to_domainadmin (admin_id) REFERENCES adminuser(id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET=latin1;
 
 
@@ -102,7 +103,8 @@ CREATE TABLE IF NOT EXISTS settings (
   maxdisplay tinyint(3) unsigned NOT NULL DEFAULT 25,
   warnlevel tinyint(2) unsigned NOT NULL DEFAULT 90,
   tz varchar(255) NOT NULL DEFAULT 'UTC',
-  lang varchar(127) NOT NULL DEFAULT 'en'
+  lang varchar(127) NOT NULL DEFAULT 'en',
+  FOREIGN KEY admin_to_settings (admin_id) REFERENCES adminuser(id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET=latin1;
 
 

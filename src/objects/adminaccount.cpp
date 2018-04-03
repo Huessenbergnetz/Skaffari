@@ -342,28 +342,110 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
     }
 
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
-    const dbid_t id = AdminAccount::setAdminAccount(c, error, username, password, type);
-    if (id <= 0) {
+
+    QSqlDatabase db = QSqlDatabase::database(Cutelyst::Sql::databaseNameThread());
+    if (Q_UNLIKELY(!db.isOpen())) {
+        error->setSqlError(db.lastError());
+        qCCritical(SK_ADMIN, "%s: failed to open database connection: %s", err, qUtf8Printable(db.lastError().text()));
         return aa;
     }
 
-    if (!AdminAccount::setAdminSettings(c, error, id)) {
-        AdminAccount::rollbackAdminAccount(c, error, id);
+    if (Q_UNLIKELY(!db.transaction())) {
+        error->setSqlError(db.lastError());
+        qCCritical(SK_ADMIN, "%s: failed to start database transaction: %s", err, qUtf8Printable(db.lastError().text()));
+        return aa;
+    }
+
+    q = QSqlQuery(db);
+
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO adminuser (username, password, type, created_at, updated_at) "
+                                             "VALUES (:username, :password, :type, :created_at, :updated_at)")))) {
+        error->setSqlError(q.lastError());
+        qCCritical(SK_ADMIN, "%s: failed to prepare databse query: %s", err, qUtf8Printable(q.lastError().text()));
+        return aa;
+    }
+    q.bindValue(QStringLiteral(":username"), username);
+    q.bindValue(QStringLiteral(":password"), password);
+    q.bindValue(QStringLiteral(":type"), type);
+    q.bindValue(QStringLiteral(":created_at"), currentUtc);
+    q.bindValue(QStringLiteral(":updated_at"), currentUtc);
+
+    if (Q_UNLIKELY(!q.exec())) {
+        error->setSqlError(q.lastError());
+        qCCritical(SK_ADMIN, "%s: failed to execute database query: %s", err, qUtf8Printable(q.lastError().text()));
+        db.rollback();
+        return aa;
+    }
+
+    const dbid_t id = q.lastInsertId().value<dbid_t>();
+    if (Q_UNLIKELY(id <= 0)) {
+        error->setErrorType(SkaffariError::ApplicationError);
+        error->setErrorText(c->translate("AdminAccount", "Faild to insert new administrator data into the database."));
+        qCCritical(SK_ADMIN, "%s: failed to insert new administrator data into the database.", err);
+        db.rollback();
+        return aa;
+    }
+
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO settings (admin_id, template, maxdisplay, warnlevel, tz, lang) "
+                                             "VALUES (:admin_id, :template, :maxdisplay, :warnlevel, :tz, :lang)")))) {
+        error->setSqlError(q.lastError());
+        qCCritical(SK_ADMIN, "%s: failed to prepare database query: %s", err, qUtf8Printable(q.lastError().text()));
+        db.rollback();
+        return aa;
+    }
+    q.bindValue(QStringLiteral(":admin_id"), id);
+    q.bindValue(QStringLiteral(":template"), QStringLiteral("default"));
+    q.bindValue(QStringLiteral(":maxdisplay"), SkaffariConfig::defMaxdisplay());
+    q.bindValue(QStringLiteral(":warnlevel"), SkaffariConfig::defWarnlevel());
+    q.bindValue(QStringLiteral(":tz"), SkaffariConfig::defTimezone());
+    q.bindValue(QStringLiteral(":lang"), SkaffariConfig::defLanguage());
+
+    if (Q_UNLIKELY(!q.exec())) {
+        error->setSqlError(q.lastError());
+        qCCritical(SK_ADMIN, "%s: failed to execute database query: %s", err, qUtf8Printable(q.lastError().text()));
+        db.rollback();
         return aa;
     }
 
     QList<dbid_t> domIds;
     if (type < AdminAccount::Administrator) {
         const QStringList assocdoms = params.value(QStringLiteral("assocdomains")).toStringList();
+        domIds.reserve(assocdoms.size());
         for (const QString &did : assocdoms) {
-            domIds << did.toULong();
+            bool ok = false;
+            const dbid_t domId = static_cast<dbid_t>(did.toULong(&ok));
+            if (ok && domId) {
+                domIds << domId;
+            }
         }
-        if (!AdminAccount::setAdminDomains(c, error, id, domIds)) {
-            AdminAccount::rollbackAdminDomains(c, error, id);
-            AdminAccount::rollbackAdminSettings(c, error, id);
-            AdminAccount::rollbackAdminAccount(c, error, id);
-            return aa;
+        if (!domIds.empty()) {
+            if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO domainadmin (domain_id, admin_id) VALUES (:domain_id, :admin_id)")))) {
+                error->setSqlError(q.lastError());
+                qCCritical(SK_ADMIN, "%s: failed to prepare database query: %s", err, qUtf8Printable(q.lastError().text()));
+                db.rollback();
+                return aa;
+            }
+            auto it = domIds.cbegin();
+            auto end = domIds.cend();
+            while (it != end) {
+                q.bindValue(QStringLiteral(":domain_id"), *it);
+                q.bindValue(QStringLiteral(":admin_id"), id);
+                if (Q_UNLIKELY(!q.exec())) {
+                    error->setSqlError(q.lastError());
+                    qCCritical(SK_ADMIN, "%s: failed to execute database query: %s", err, qUtf8Printable(q.lastError().text()));
+                    db.rollback();
+                    return aa;
+                }
+                ++it;
+            }
         }
+    }
+
+    if (Q_UNLIKELY(!db.commit())) {
+        error->setSqlError(db.lastError());
+        qCCritical(SK_ADMIN, "%s: failed to commit database transaction: %s", err, qUtf8Printable(q.lastError().text()));
+        db.rollback();
+        return aa;
     }
 
     aa.setId(id);
@@ -509,11 +591,9 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, const QVariant
 
     const QString password = params.value(QStringLiteral("password")).toString();
 
-    QSqlQuery q;
-
     if ((d->type == SuperUser) && (type != SuperUser)) {
 
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT COUNT(id) FROM adminuser WHERE type = 255"));
+        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT COUNT(id) FROM adminuser WHERE type = 255"));
 
         if (Q_UNLIKELY(!(q.exec() && q.next()))) {
             e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query count of administrators to check if this is the last administrator account."));
@@ -529,6 +609,21 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, const QVariant
         }
     }
 
+    QSqlDatabase db = QSqlDatabase::database(Cutelyst::Sql::databaseNameThread());
+    if (Q_UNLIKELY(!db.isOpen())) {
+        e->setSqlError(db.lastError(), c->translate("AdminAccount", "Failed to update administrator account in database."));
+        qCCritical(SK_ADMIN, "%s: can not establish database connection: %s", err, qUtf8Printable(db.lastError().text()));
+        return ret;
+    }
+
+    if (Q_UNLIKELY(!db.transaction())) {
+        e->setSqlError(db.lastError(), c->translate("AdminAccount", "Failed to update administrator account in database."));
+        qCCritical(SK_ADMIN, "%s: can not initiate databse transaction: %s", err, qUtf8Printable(db.lastError().text()));
+        return ret;
+    }
+
+    QSqlQuery q(db);
+
     if (!password.isEmpty()) {
         const QByteArray encPw = Cutelyst::CredentialPassword::createPassword(params.value(QStringLiteral("password")).toString().toUtf8(),
                                                                               SkaffariConfig::admPwAlgorithm(),
@@ -541,11 +636,20 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, const QVariant
             return ret;
         }
 
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE adminuser SET type = :type, password = :password, updated_at = :updated_at WHERE id = :id"));
+        if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE adminuser SET type = :type, password = :password, updated_at = :updated_at WHERE id = :id")))) {
+            e->setSqlError(q.lastError());
+            qCCritical(SK_ADMIN, "%s: can not prepare database query: %s", err, qUtf8Printable(q.lastError().text()));
+            return ret;
+        }
+
         q.bindValue(QStringLiteral(":password"), encPw);
 
     } else {
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE adminuser SET type = :type, updated_at = :updated_at WHERE id = :id"));
+        if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE adminuser SET type = :type, updated_at = :updated_at WHERE id = :id")))) {
+            e->setSqlError(q.lastError());
+            qCCritical(SK_ADMIN, "%s: can not prepare database query: %s", err, qUtf8Printable(q.lastError().text()));
+            return ret;
+        }
     }
 
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
@@ -557,37 +661,62 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError *e, const QVariant
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update administrator account in database."));
         qCCritical(SK_ADMIN, "%s: failed to update database entry: %s", err, qUtf8Printable(q.lastError().text()));;
+        db.rollback();
         return ret;
     }
 
-    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domainadmin WHERE admin_id = :id"));
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM domainadmin WHERE admin_id = :id")))) {
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update domain manager to domain connections in database."));
+        qCCritical(SK_ADMIN, "%s: can not prepare database query: %s", err, qUtf8Printable(q.lastError().text()));
+        db.rollback();
+        return ret;
+    }
     q.bindValue(QStringLiteral(":id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update domain manager to domain connections in database."));
         qCCritical(SK_ADMIN, "%s: failed to update connections between domain manager and domains in database: %s", err, qUtf8Printable(q.lastError().text()));
+        db.rollback();
         return ret;
     }
 
-    d->domains.clear();
-
+    QList<dbid_t> domIdList;
     if (type < AdminAccount::Administrator) {
         const QStringList domains = params.value(QStringLiteral("assocdomains")).toStringList();
-
-        for (const QString &adom : domains) {
-            const dbid_t did = adom.toULong();
-            q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domainadmin (domain_id, admin_id) VALUES (:domain_id, :admin_id)"));
-            q.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue<dbid_t>(did));
-            q.bindValue(QStringLiteral(":admin_id"), d->id);
-            if (Q_UNLIKELY(!q.exec())) {
+        if (!domains.empty()) {
+            domIdList.reserve(domains.size());
+            if (Q_LIKELY(!q.prepare(QStringLiteral("INSERT INTO domainadmin (domain_id, admin_id) VALUES (:domain_id, :admin_id)")))) {
                 e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update domain manager to domain connections in database."));
-                qCCritical(SK_ADMIN, "%s: failed to update connections between domain manager and domains in database: %s", err, qUtf8Printable(q.lastError().text()));
+                qCCritical(SK_ADMIN, "%s: can not prepare database query: %s", err, qUtf8Printable(q.lastError().text()));
+                db.rollback();
                 return ret;
             }
-            d->domains << did;
+            for (const QString &adom : domains) {
+                bool ok = false;
+                const dbid_t did = adom.toULong(&ok);
+                if (ok && did) {
+                    q.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue<dbid_t>(did));
+                    q.bindValue(QStringLiteral(":admin_id"), d->id);
+                    if (Q_UNLIKELY(!q.exec())) {
+                        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update domain manager to domain connections in database."));
+                        qCCritical(SK_ADMIN, "%s: failed to update connections between domain manager and domains in database: %s", err, qUtf8Printable(q.lastError().text()));
+                        db.rollback();
+                        return ret;
+                    }
+                    domIdList << did;
+                }
+            }
         }
     }
 
+    if (Q_UNLIKELY(!db.commit())) {
+        e->setSqlError(db.lastError(), c->translate("AdminAccount", "Failed to update administrator account in database."));
+        qCCritical(SK_ADMIN, "%s: failed to commit database transaction: %s", err, qUtf8Printable(db.lastError().text()));
+        db.rollback();
+        return ret;
+    }
+
+    d->domains = domIdList;
     d->type = type;
     d->updated = currentUtc;
 
@@ -640,7 +769,21 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVari
         return ret;
     }
 
-    QSqlQuery q;
+    QSqlDatabase db = QSqlDatabase::database(Cutelyst::Sql::databaseNameThread());
+
+    if (Q_UNLIKELY(!db.isOpen())) {
+        e->setSqlError(db.lastError(), c->translate("AdminAccount", "Failed to update administrator in database."));
+        qCCritical(SK_ADMIN, "%s: failed to establish database connection: %s", err, qUtf8Printable(db.lastError().text()));
+        return ret;
+    }
+
+    if (Q_UNLIKELY(!db.transaction())) {
+        e->setSqlError(db.lastError(), c->translate("AdminAccount", "Failed to update administrator in database."));
+        qCCritical(SK_ADMIN, "%s: failed to start database transaction: %s", err, qUtf8Printable(db.lastError().text()));
+        return ret;
+    }
+
+    QSqlQuery q(db);
 
     if (!password.isEmpty()) {
         const QByteArray encPw = Cutelyst::CredentialPassword::createPassword(password.toUtf8(),
@@ -656,10 +799,20 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVari
             return ret;
         }
 
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE adminuser SET password = :password, updated_at = :updated_at WHERE id = :id"));
+        if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE adminuser SET password = :password, updated_at = :updated_at WHERE id = :id")))) {
+             e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update administrator in database."));
+             qCCritical(SK_ADMIN, "%s: failed to prepare database query: %s", err, qUtf8Printable(q.lastError().text()));
+             return ret;
+        }
+
         q.bindValue(QStringLiteral(":password"), encPw);
+
     } else {
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE adminuser SET updated_at = :updated_at WHERE id = :id"));
+        if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE adminuser SET updated_at = :updated_at WHERE id = :id")))) {
+            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update administrator in database."));
+            qCCritical(SK_ADMIN, "%s: failed to prepare database query: %s", err, qUtf8Printable(q.lastError().text()));
+            return ret;
+        }
     }
 
     q.bindValue(QStringLiteral(":updated_at"), currentUtc);
@@ -668,13 +821,20 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVari
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update administrator in database."));
         qCCritical(SK_ADMIN, "%s: update account in database failed: %s", err, qUtf8Printable(q.lastError().text()));
+        db.rollback();
         return ret;
     }
 
     const quint8 maxdisplay = p.value(QStringLiteral("maxdisplay"), d->maxDisplay).value<quint8>();
     const quint8 warnlevel = p.value(QStringLiteral("warnlevel"), d->warnLevel).value<quint8>();
 
-    q = CPreparedSqlQueryThread(QStringLiteral("UPDATE settings SET maxdisplay = :maxdisplay, warnlevel = :warnlevel, lang = :lang, tz = :tz WHERE admin_id = :admin_id"));
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE settings SET maxdisplay = :maxdisplay, warnlevel = :warnlevel, lang = :lang, tz = :tz WHERE admin_id = :admin_id")))) {
+        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update administrator in database."));
+        qCCritical(SK_ADMIN, "%s: failed to prepare database query: %s", err, qUtf8Printable(q.lastError().text()));
+        db.rollback();
+        return ret;
+    }
+
     q.bindValue(QStringLiteral(":maxdisplay"), maxdisplay);
     q.bindValue(QStringLiteral(":warnlevel"), warnlevel);
     q.bindValue(QStringLiteral(":lang"), lang.name());
@@ -684,6 +844,13 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVari
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to update administrator settings in database."));
         qCCritical(SK_ADMIN, "%s: update settings in database failed: %s", err, qUtf8Printable(q.lastError().text()));
+        db.rollback();
+        return ret;
+    }
+
+    if (Q_UNLIKELY(!db.commit())) {
+        e->setSqlError(db.lastError(), c->translate("AdminAccount", "Failed to update administrator in database."));
+        qCCritical(SK_ADMIN, "%s: failed to commit database transaction: %s", err, qUtf8Printable(db.lastError().text()));
         return ret;
     }
 
@@ -723,7 +890,7 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e)
     const QByteArray errBa = errStr.toUtf8();
     const char *err = errBa.constData();
 
-    if (d->type <= AdminAccount::getUserType(c)) {
+    if (d->type >= AdminAccount::getUserType(c)) {
         e->setErrorType(SkaffariError::AuthorizationError);
         e->setErrorText(c->translate("AdminAccount", "You are not allowed to remove accounts of type %1.").arg(typeName(c)));
         qCWarning(SK_ADMIN, "%s: not allowed to remove accounts of type %u.", err, d->type);
@@ -751,24 +918,6 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e)
 
     }
 
-    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM settings WHERE admin_id = :admin_id"));
-    q.bindValue(QStringLiteral(":admin_id"), d->id);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete administrator settings from database for administrator %1.").arg(d->username));
-        qCCritical(SK_ADMIN, "%s: can not delete settings from database: %s", err, qUtf8Printable(q.lastError().text()));
-        return ret;
-    }
-
-    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domainadmin WHERE admin_id = :admin_id"));
-    q.bindValue(QStringLiteral(":admin_id"), d->id);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to delete connections between domain manager %1 and associated domains from the database.").arg(d->username));
-        qCCritical(SK_ADMIN, "%s: can not delete admin to domain connections from database: %s", err, qUtf8Printable(q.lastError().text()));
-        return ret;
-    }
-
     q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM adminuser WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), d->id);
 
@@ -781,132 +930,6 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError *e)
     ret = true;
     qCInfo(SK_ADMIN, "%s removed admin %s of type %s.", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(nameIdString()), AdminAccount::staticMetaObject.enumerator(AdminAccount::staticMetaObject.indexOfEnumerator("AdminAccountType")).valueToKey(d->type));
     qCDebug(SK_ADMIN) << *this;
-
-    return ret;
-}
-
-dbid_t AdminAccount::setAdminAccount(Cutelyst::Context *c, SkaffariError *error, const QString &user, const QByteArray &pass, qint16 type)
-{
-    dbid_t id = 0;
-
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO adminuser (username, password, type, created_at, updated_at) "
-                                                         "VALUES (:username, :password, :type, :created_at, :updated_at)"));
-
-    const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
-    q.bindValue(QStringLiteral(":username"), user);
-    q.bindValue(QStringLiteral(":password"), pass);
-    q.bindValue(QStringLiteral(":type"), type);
-    q.bindValue(QStringLiteral(":created_at"), currentUtc);
-    q.bindValue(QStringLiteral(":updated_at"), currentUtc);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to create administrator account in database."));
-        qCCritical(SK_ADMIN) << "Failed to insert new admin account into database." << q.lastError().text();
-        return id;
-    }
-
-    id = q.lastInsertId().value<dbid_t>();
-
-    return id;
-}
-
-bool AdminAccount::rollbackAdminAccount(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId)
-{
-    bool ret = false;
-
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM adminuser WHERE id = :id"));
-    q.bindValue(QStringLiteral(":id"), adminId);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to revert administrator account changes in database."));
-        qCCritical(SK_ADMIN) << "Failed to revert admin account changes in database." << q.lastError().text();
-        return ret;
-    }
-
-    ret = true;
-
-    return ret;
-}
-
-bool AdminAccount::setAdminSettings(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId)
-{
-    bool ret = false;
-
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO settings (admin_id) VALUES (:id)"));
-    q.bindValue(QStringLiteral(":id"), adminId);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to insert administrator settings into database."));
-        qCCritical(SK_ADMIN) << "Failed to insert settings for new administrator into database." << q.lastError().text();
-        return ret;
-    }
-
-    ret = true;
-
-    return ret;
-}
-
-bool AdminAccount::rollbackAdminSettings(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId)
-{
-    bool ret = false;
-
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM settings WHERE admin_id = :id"));
-
-    q.addBindValue(adminId);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to revert administrator settings in database."));
-        qCCritical(SK_ADMIN) << "Failed to revert admin settings in database." << q.lastError().text();
-        return ret;
-    }
-
-    ret = true;
-
-    return ret;
-}
-
-bool AdminAccount::setAdminDomains(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId, const QList<dbid_t> &domains)
-{
-    bool ret = false;
-
-    if (Q_LIKELY(!domains.empty())) {
-
-        for (dbid_t domId : domains) {
-
-            QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domainadmin (domain_id, admin_id) VALUES (:domain_id, :admin_id)"));
-
-            q.bindValue(QStringLiteral(":domain_id"), domId);
-            q.bindValue(QStringLiteral(":admin_id"), adminId);
-
-            if (Q_UNLIKELY(!q.exec())) {
-                error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to insert domain manager to domain connection into database."));
-                qCCritical(SK_ADMIN) << "Failed to insert omain manager to domain connection into database." << q.lastError().text();
-                return ret;
-            }
-
-        }
-
-    }
-
-    ret = true;
-
-    return ret;
-}
-
-bool AdminAccount::rollbackAdminDomains(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId)
-{
-    bool ret = false;
-
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domainadmin WHERE admin_id = :admin_id"));
-    q.bindValue(QStringLiteral(":admin_id"), adminId);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to revert domain manager to domain connections in database."));
-        qCCritical(SK_ADMIN) << "Failed to revert domain manager to domain connections in database." << q.lastError().text();
-        return ret;
-    }
-
-    ret = true;
 
     return ret;
 }

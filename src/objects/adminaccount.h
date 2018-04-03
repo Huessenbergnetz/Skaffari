@@ -92,8 +92,6 @@ public:
     /*! \brief Constructs a new administrator account object.
      *
      * Constructs a new administrator account object from the given parameters.
-     * Most important are the username and the password, by default it constructs
-     * an account of type administrator. The type can be changed by the type parameter.
      * \param id the database id of the admin account
      * \param username the user name of the administrator
      * \param type the admin account type, can not be AllAdmins
@@ -485,16 +483,6 @@ public:
 
 protected:
     QSharedDataPointer<AdminAccountData> d;
-
-private:
-    static dbid_t setAdminAccount(Cutelyst::Context *c, SkaffariError *error, const QString &user, const QByteArray &pass, qint16 type);
-    static bool rollbackAdminAccount(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId);
-
-    static bool setAdminSettings(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId);
-    static bool rollbackAdminSettings(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId);
-
-    static bool setAdminDomains(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId, const QList<dbid_t> &domains);
-    static bool rollbackAdminDomains(Cutelyst::Context *c, SkaffariError *error, dbid_t adminId);
 };
 
 Q_DECLARE_METATYPE(AdminAccount)
