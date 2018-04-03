@@ -111,6 +111,11 @@ public:
     AdminAccount(const Cutelyst::AuthenticationUser &user);
 
     /*!
+     * \overload
+     */
+    AdminAccount(dbid_t id, const QString &username, AdminAccountType type, const QList<dbid_t> &domains, const QString &tz, const QString &lang, const QString &tmpl, quint8 maxDisplay, quint8 warnLevel, const QDateTime &created, const QDateTime &updated);
+
+    /*!
      * \brief Constructs a copy of other.
      */
     AdminAccount(const AdminAccount &other);
@@ -142,25 +147,14 @@ public:
 
     /*!
      * \brief Returns the database ID.
-     * \sa setId()
      */
     dbid_t id() const;
-    /*!
-     * \brief Sets the database ID.
-     * \sa id()
-     */
-    void setId(dbid_t id);
 
     /*!
      * \brief Returns the username of this admin account.
-     * \sa setUsername()
      */
     QString username() const;
-    /*!
-     * \brief Sets the user name of this admin account.
-     * \sa username()
-     */
-    void setUsername(const QString &nUsername);
+
     /*!
      * \brief Returns a string that contains the username and the database ID.
      *
@@ -171,14 +165,8 @@ public:
 
     /*!
      * \brief Returns the domain IDs this admin is responsible for.
-     * \sa setDomains()
      */
     QList<dbid_t> domains() const;
-    /*!
-     * \brief Sets the list of domain IDs this admin is responsible for.
-     * \sa domains()
-     */
-    void setDomains(const QList<dbid_t> &nDomains);
 
     /*!
      * \brief Returns the type of this admin account.
@@ -200,18 +188,6 @@ public:
      * \sa type()
      */
     QString typeStr() const;
-    /*!
-     * \brief Sets the type of this admin account.
-     * \sa type()
-     */
-    void setType(AdminAccountType nType);
-    /*!
-     * \brief Sets the type of this admin account.
-     * Values that do not match an AdminAccountType value will
-     * be set as Disabled.
-     * \sa type()
-     */
-    void setType(quint8 nType);
 
     /*!
      * \brief Returns \c true if this admin is a super user (administrator, not domain manager).
@@ -223,71 +199,36 @@ public:
      * \sa setLang()
      */
     QString lang() const;
-    /*!
-     * \brief Sets the language for this admin.
-     * \sa lang()
-     */
-    void setLang(const QString &lang);
 
     /*!
      * \brief Returns the time zone ID for this admin.
      * \sa setTz()
      */
     QString tz() const;
-    /*!
-     * \brief Sets the time zone ID for this admin.
-     * \sa tz()
-     */
-    void setTz(const QString &tz);
-    /*!
-     * \brief Sets the time zone ID for this admin.
-     * \sa tz()
-     */
-    void setTz(const QByteArray &tz);
 
     /*!
      * \brief Returns the date and time this admin account has been created.
      * \sa setCreated()
      */
     QDateTime created() const;
-    /*!
-     * \brief Sets the date and time this admin account has been created.
-     * \sa created()
-     */
-    void setCreated(const QDateTime &created);
 
     /*!
      * \brief Returns the date and tim this admin account has been created.
      * \sa setUpdated()
      */
     QDateTime updated() const;
-    /*!
-     * \brief Sets the date and time this admin account has been created.
-     * \sa updated()
-     */
-    void setUpdated(const QDateTime &updated);
 
     /*!
      * \brief Returns the maximum number of list entries to display per page.
      * \sa setMaxDisplay()
      */
     quint8 maxDisplay() const;
-    /*!
-     * \brief Sets the maximum number of list entries to display per page.
-     * \sa maxDisplay()
-     */
-    void setMaxDisplay(quint8 maxDisplay);
 
     /*!
      * \brief Returns the warn level in percent for displaying limits like quota usage.
      * \sa setWarnLevel()
      */
     quint8 warnLevel() const;
-    /*!
-     * \brief Sets the warn level in percent for displaying limits like quota usage.
-     * \sa warnLevel()
-     */
-    void setWarnLevel(quint8 warnLevel);
 
     /*!
      * \brief Returns the template name to use.
@@ -295,12 +236,6 @@ public:
      * \sa setTemplate()
      */
     QString getTemplate() const;
-    /*!
-     * \brief Sets the template name to use.
-     * Currently not in use
-     * \sa getTemplate()
-     */
-    void setTemplate(const QString &tmpl);
 
     /*!
      * \brief Returns \c true if the account seems to be valid.

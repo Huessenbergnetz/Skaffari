@@ -64,6 +64,22 @@ AdminAccount::AdminAccount(const Cutelyst::AuthenticationUser &user) :
 
 }
 
+AdminAccount::AdminAccount(dbid_t id, const QString &username, AdminAccountType type, const QList<dbid_t> &domains, const QString &tz, const QString &lang, const QString &tmpl, quint8 maxDisplay, quint8 warnLevel, const QDateTime &created, const QDateTime &updated) :
+    d(new AdminAccountData)
+{
+    d->id = id;
+    d->username = username;
+    d->type = type;
+    d->domains = domains;
+    d->tz = tz;
+    d->tmpl = tmpl;
+    d->lang = lang;
+    d->maxDisplay = maxDisplay;
+    d->warnLevel = warnLevel;
+    d->created = created;
+    d->updated = updated;
+}
+
 AdminAccount::AdminAccount(const AdminAccount& other) :
     d(other.d)
 {
@@ -103,20 +119,9 @@ dbid_t AdminAccount::id() const
     return d->id;
 }
 
-
-void AdminAccount::setId(dbid_t id)
-{
-    d->id = id;
-}
-
 QString AdminAccount::username() const
 {
     return d->username;
-}
-
-void AdminAccount::setUsername(const QString& nUsername)
-{
-    d->username = nUsername;
 }
 
 QString AdminAccount::nameIdString() const
@@ -146,24 +151,9 @@ QString AdminAccount::typeName(Cutelyst::Context *c) const
     return AdminAccount::typeToName(d->type, c);
 }
 
-void AdminAccount::setType(AdminAccount::AdminAccountType nType)
-{
-    d->type = nType;
-}
-
-void AdminAccount::setType(quint8 nType)
-{
-    d->type = AdminAccount::getUserType(nType);
-}
-
 QList<dbid_t> AdminAccount::domains() const
 {
     return d->domains;
-}
-
-void AdminAccount::setDomains(const QList<dbid_t> &nDomains)
-{
-    d->domains = nDomains;
 }
 
 bool AdminAccount::isSuperUser() const
@@ -181,24 +171,9 @@ QString AdminAccount::lang() const
     return d->lang;
 }
 
-void AdminAccount::setLang(const QString &lang)
-{
-    d->lang = lang;
-}
-
 QString AdminAccount::tz() const
 {
     return d->tz;
-}
-
-void AdminAccount::setTz(const QString &tz)
-{
-    d->tz = tz;
-}
-
-void AdminAccount::setTz(const QByteArray &tz)
-{
-    d->tz = QString::fromLatin1(tz);
 }
 
 QDateTime AdminAccount::created() const
@@ -206,19 +181,9 @@ QDateTime AdminAccount::created() const
     return d->created;
 }
 
-void AdminAccount::setCreated(const QDateTime &created)
-{
-    d->created = created;
-}
-
 QDateTime AdminAccount::updated() const
 {
     return d->updated;
-}
-
-void AdminAccount::setUpdated(const QDateTime &updated)
-{
-    d->updated = updated;
 }
 
 quint8 AdminAccount::maxDisplay() const
@@ -226,33 +191,14 @@ quint8 AdminAccount::maxDisplay() const
     return d->maxDisplay;
 }
 
-void AdminAccount::setMaxDisplay(quint8 maxDisplay)
-{
-    d->maxDisplay = maxDisplay;
-}
-
 quint8 AdminAccount::warnLevel() const
 {
     return d->warnLevel;
 }
 
-void AdminAccount::setWarnLevel(quint8 warnLevel)
-{
-    if (warnLevel > 100) {
-        d->warnLevel = 100;
-    } else {
-        d->warnLevel = warnLevel;
-    }
-}
-
 QString AdminAccount::getTemplate() const
 {
     return d->tmpl;
-}
-
-void AdminAccount::setTemplate(const QString &tmpl)
-{
-    d->tmpl = tmpl;
 }
 
 QJsonObject AdminAccount::toJson() const
@@ -448,17 +394,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
         return aa;
     }
 
-    aa.setId(id);
-    aa.setUsername(username);
-    aa.setType(type);
-    aa.setDomains(domIds);
-    aa.setLang(SkaffariConfig::defLanguage());
-    aa.setTz(SkaffariConfig::defTimezone());
-    aa.setTemplate(QStringLiteral("default"));
-    aa.setMaxDisplay(SkaffariConfig::defMaxdisplay());
-    aa.setWarnLevel(SkaffariConfig::defWarnlevel());
-    aa.setCreated(currentUtc);
-    aa.setUpdated(currentUtc);
+    aa = AdminAccount(id, username, type, domIds, QString::fromLatin1(SkaffariConfig::defTimezone()), SkaffariConfig::defLanguage(), QStringLiteral("default"), SkaffariConfig::defMaxdisplay(), SkaffariConfig::defWarnlevel(), currentUtc, currentUtc);
 
     qCInfo(SK_ADMIN, "%s created new admin acccount %s of type %s.", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(aa.nameIdString()), AdminAccount::staticMetaObject.enumerator(AdminAccount::staticMetaObject.indexOfEnumerator("AdminAccountType")).valueToKey(type));
     qCDebug(SK_ADMIN) << aa;
@@ -505,7 +441,7 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
     const QByteArray uniBa = AdminAccount::getUserNameIdString(c).toUtf8();
     const char *uniStr = uniBa.constData();
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.username, a.type, s.lang, s.tz, s.template, s.maxdisplay, s.warnlevel, a.created_at, a.updated_at FROM adminuser a JOIN settings s ON a.id = s.admin_id WHERE a.id = :id"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.username, a.type, s.tz, s.lang, s.template, s.maxdisplay, s.warnlevel, a.created_at, a.updated_at FROM adminuser a JOIN settings s ON a.id = s.admin_id WHERE a.id = :id"));
     q.bindValue(QStringLiteral(":id"), id);
 
     if (Q_UNLIKELY(!q.exec())) {
@@ -521,39 +457,40 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
         return acc;
     }
 
-    acc.setId(id);
-    acc.setUsername(q.value(0).toString());
-    acc.setType(q.value(1).value<quint8>());
-    acc.setLang(q.value(2).toString());
-    acc.setTz(q.value(3).toString());
-    acc.setTemplate(q.value(4).toString());
-    acc.setMaxDisplay(q.value(5).value<quint8>());
-    acc.setWarnLevel(q.value(6).value<quint8>());
+    const QString _username = q.value(0).toString();
     QDateTime createdTime = q.value(7).toDateTime();
     createdTime.setTimeSpec(Qt::UTC);
-    acc.setCreated(createdTime);
     QDateTime updatedTime = q.value(8).toDateTime();
     updatedTime.setTimeSpec(Qt::UTC);
-    acc.setUpdated(updatedTime);
 
+    QList<dbid_t> doms;
     if (acc.type() < Administrator) {
 
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_id FROM domainadmin WHERE admin_id = :admin_id"));
-        q.bindValue(QStringLiteral(":admin_id"), id);
+        QSqlQuery q2 = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_id FROM domainadmin WHERE admin_id = :admin_id"));
+        q2.bindValue(QStringLiteral(":admin_id"), id);
 
-        if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query domain IDs from database this domain manager is responsible for."));
-            qCCritical(SK_ADMIN, "%s failed to query domain IDs admin %s is responsible for: %s", uniStr, qUtf8Printable(acc.nameIdString()), qUtf8Printable(q.lastError().text()));
+        if (Q_UNLIKELY(!q2.exec())) {
+            e->setSqlError(q2.lastError(), c->translate("AdminAccount", "Failed to query domain IDs from database this domain manager is responsible for."));
+            qCCritical(SK_ADMIN, "%s failed to query domain IDs admin %s (ID: %lu) is responsible for: %s", uniStr, qUtf8Printable(_username), id, qUtf8Printable(q2.lastError().text()));
             return acc;
         }
 
-        QList<dbid_t> doms;
-        while (q.next()) {
-            doms.push_back(q.value(0).value<dbid_t>());
+        while (q2.next()) {
+            doms.push_back(q2.value(0).value<dbid_t>());
         }
-
-        acc.setDomains(doms);
     }
+
+    acc = AdminAccount(id,
+                       _username,
+                       AdminAccountData::getUserType(q.value(1).value<quint8>()),
+                       doms,
+                       q.value(2).toString(),
+                       q.value(3).toString(),
+                       q.value(4).toString(),
+                       q.value(5).value<quint8>(),
+                       q.value(6).value<quint8>(),
+                       createdTime,
+                       updatedTime);
 
     return acc;
 }
