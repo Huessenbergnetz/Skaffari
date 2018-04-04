@@ -1146,7 +1146,7 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
     if (!gotUsage) {
         SkaffariIMAP imap(c);
         if (imap.login()) {
-            quota_pair quotaPair = imap.getQuota(a.username());
+            quota_pair quotaPair = imap.getQuota(userName);
             usage = quotaPair.first;
             quota = quotaPair.second;
             imap.logout();
@@ -1159,7 +1159,7 @@ Account Account::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
 
     a = Account(id,
                 q.value(0).value<dbid_t>(),
-                q.value(1).toString(),
+                userName,
                 q.value(2).toBool(),
                 q.value(3).toBool(),
                 q.value(4).toBool(),
