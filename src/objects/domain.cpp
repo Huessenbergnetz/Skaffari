@@ -387,8 +387,34 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     const QDateTime validUntil = params.value(QStringLiteral("validUntil"), defDateTime).toDateTime().toUTC();
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domain (parent_id, domain_name, prefix, maxaccounts, quota, domainquota, freenames, freeaddress, transport, created_at, updated_at, valid_until, idn_id, ace_id) "
-                                                         "VALUES (:parent_id, :domain_name, :prefix, :maxaccounts, :quota, :domainquota, :freenames, :freeaddress, :transport, :created_at, :updated_at, :valid_until, 0, 0)"));
+    // for logging
+    const QString errStr = AdminAccount::getUserNameIdString(c) + QLatin1String(" failed to create new domain ") + domainName;
+    const QByteArray errBa = errStr.toUtf8();
+    const char *err = errBa.constData();
+
+    QSqlDatabase db = QSqlDatabase::database(Cutelyst::Sql::databaseNameThread());
+
+    if (Q_UNLIKELY(!db.isOpen())) {
+        errorData->setSqlError(db.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
+        qCCritical(SK_DOMAIN, "%s: can not establish database connection: %s", err, qUtf8Printable(db.lastError().text()));
+        return dom;
+    }
+
+    if (Q_UNLIKELY(!db.transaction())) {
+        errorData->setSqlError(db.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
+        qCCritical(SK_DOMAIN, "%s: can not initiate database transaction: %s", err, qUtf8Printable(db.lastError().text()));
+        return dom;
+    }
+
+    QSqlQuery q(db);
+
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO domain (parent_id, domain_name, prefix, maxaccounts, quota, domainquota, freenames, freeaddress, transport, created_at, updated_at, valid_until, idn_id, ace_id) "
+                                             "VALUES (:parent_id, :domain_name, :prefix, :maxaccounts, :quota, :domainquota, :freenames, :freeaddress, :transport, :created_at, :updated_at, :valid_until, 0, 0)")))) {
+        errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to create new domain in database."));
+        qCCritical(SK_DOMAIN, "%s: can not prepare database query to insert data for new domain: %s", err, qUtf8Printable(q.lastError().text()));
+        return dom;
+    }
+
     q.bindValue(QStringLiteral(":parent_id"), parentId);
     q.bindValue(QStringLiteral(":domain_name"), domainName);
     q.bindValue(QStringLiteral(":prefix"), prefix);
@@ -402,137 +428,168 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
     q.bindValue(QStringLiteral(":valid_until"), validUntil);
 
-    if (Q_LIKELY(q.exec())) {
-        const dbid_t domainId = q.lastInsertId().value<dbid_t>();
-        std::vector<Folder> foldersVect;
+    if (Q_UNLIKELY(!q.exec())) {
+        errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
+        qCCritical(SK_DOMAIN, "%s: can not execute database query to insert data for new domain: %s", err, qUtf8Printable(q.lastError().text()));
+        db.rollback();
+        return dom;
+    }
+
+    const dbid_t domainId = q.lastInsertId().value<dbid_t>();
+
+    std::vector<Folder> foldersVect;
+    if (!folders.empty()) {
+        if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)")))) {
+            errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to insert default folders for new domain into database."));
+            qCCritical(SK_DOMAIN, "%s: can not prepare database query to insert default folders for new domain: %s", err, qUtf8Printable(q.lastError().text()));
+            db.rollback();
+            return dom;
+        }
+
+        foldersVect.reserve(folders.size());
+
         for (const QString &folder : folders) {
             const QString _folder = folder.trimmed();
-            if (!_folder.isEmpty()) {
-                q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)"));
+            if (Q_LIKELY(!_folder.isEmpty())) {
                 q.bindValue(QStringLiteral(":domain_id"), domainId);
                 q.bindValue(QStringLiteral(":name"), folder);
                 if (Q_LIKELY(q.exec())) {
                     const dbid_t folderId = q.lastInsertId().value<dbid_t>();
                     foldersVect.emplace_back(folderId, domainId, folder);
                 } else {
-                    errorData->setSqlError(q.lastError());
-                    qCCritical(SK_DOMAIN, "Failed to create folder %s for new domain %s in database: %s", qUtf8Printable(folder), qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
-                    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
-                    q.bindValue(QStringLiteral(":domain_id"), domainId);
-                    q.exec();
-                    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :domain_id"));
-                    q.bindValue(QStringLiteral(":domain_id"), domainId);
-                    q.exec();
+                    errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to insert default folders for new domain into database."));
+                    qCCritical(SK_DOMAIN, "%s: can not execute database query to insert default folder for new domain: %s", err, qUtf8Printable(q.lastError().text()));
+                    db.rollback();
                     return dom;
                 }
             }
         }
+    }
 
-        dbid_t domainAceId = 0;
-        if (domainName != domainNameAce) {
-            q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO domain (idn_id, domain_name, prefix, maxaccounts, quota, created_at, updated_at, valid_until) "
-                                                       "VALUES (:idn_id, :domain_name, :prefix, 0, 0, :created_at, :updated_at, :valid_until)"));
-            q.bindValue(QStringLiteral(":idn_id"), domainId);
-            q.bindValue(QStringLiteral(":domain_name"), domainNameAce);
-            const QString acePrefix = QLatin1String("xn--") + prefix;
-            q.bindValue(QStringLiteral(":prefix"), acePrefix);
-            q.bindValue(QStringLiteral(":created_at"), currentTimeUtc);
-            q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
-            q.bindValue(QStringLiteral(":valid_until"), validUntil);
+    dbid_t domainAceId = 0;
+    if (domainName != domainNameAce) {
+        if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO domain (idn_id, domain_name, prefix, maxaccounts, quota, created_at, updated_at, valid_until) "
+                                                 "VALUES (:idn_id, :domain_name, :prefix, 0, 0, :created_at, :updated_at, :valid_until)")))) {
+            errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to insert ACE version of new domain into database."));
+            qCCritical(SK_DOMAIN, "%s: can not prepare database query to insert ACE version for new domain: %s", err, qUtf8Printable(q.lastError().text()));
+            db.rollback();
+            return dom;
+        }
 
-            if (Q_LIKELY(q.exec())) {
-                domainAceId = q.lastInsertId().value<dbid_t>();
-                q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET ace_id = :ace_id WHERE id = :id"));
-                q.bindValue(QStringLiteral(":ace_id"), domainAceId);
-                q.bindValue(QStringLiteral(":id"), domainId);
-                if (Q_UNLIKELY(!q.exec())) {
-                    errorData->setSqlError(q.lastError().text());
-                    qCCritical(SK_DOMAIN, "Failed to set ID of ACE representation of new domain %s in database: %s", qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
-                    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
-                    q.bindValue(QStringLiteral(":domain_id"), domainId);
-                    q.exec();
-                    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :domain_id"));
-                    q.bindValue(QStringLiteral(":domain_id"), domainId);
-                    q.exec();
-                    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :domain_id"));
-                    q.bindValue(QStringLiteral(":domain_id"), domainAceId);
-                    q.exec();
-                    return dom;
-                }
-            } else {
-                errorData->setSqlError(q.lastError());
-                qCCritical(SK_DOMAIN, "Failed to create ACE domain %s for new domain %s in database: %s", qUtf8Printable(domainNameAce), qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
-                q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
-                q.bindValue(QStringLiteral(":domain_id"), domainId);
-                q.exec();
-                q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domain WHERE id = :domain_id"));
-                q.bindValue(QStringLiteral(":domain_id"), domainId);
-                q.exec();
+        q.bindValue(QStringLiteral(":idn_id"), domainId);
+        q.bindValue(QStringLiteral(":domain_name"), domainNameAce);
+        const QString acePrefix = QLatin1String("xn--") + prefix;
+        q.bindValue(QStringLiteral(":prefix"), acePrefix);
+        q.bindValue(QStringLiteral(":created_at"), currentTimeUtc);
+        q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
+        q.bindValue(QStringLiteral(":valid_until"), validUntil);
+
+        if (Q_UNLIKELY(!q.exec())) {
+            errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to insert ACE version of new domain into database."));
+            qCCritical(SK_DOMAIN, "%s: can not execute database query to insert ACE version for new domain: %s", err, qUtf8Printable(q.lastError().text()));
+            db.rollback();
+            return dom;
+        }
+
+        domainAceId = q.lastInsertId().value<dbid_t>();
+
+        if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE domain SET ace_id = :ace_id WHERE id = :id")))) {
+            errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to update ACE id of new domain in database."));
+            qCCritical(SK_DOMAIN, "%s: can not prepare database query to update ACE ID for new domain: %s", err, qUtf8Printable(q.lastError().text()));
+            db.rollback();
+            return dom;
+        }
+
+        q.bindValue(QStringLiteral(":ace_id"), domainAceId);
+        q.bindValue(QStringLiteral(":id"), domainId);
+
+        if (Q_UNLIKELY(!q.exec())) {
+            errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to update ACE id of new domain in database."));
+            qCCritical(SK_DOMAIN, "%s: can not execute database query to update ACE ID for new domain: %s", err, qUtf8Printable(q.lastError().text()));
+            db.rollback();
+            return dom;
+        }
+    }
+
+    const SimpleDomain parent = (parentId > 0) ? SimpleDomain::get(c, errorData, parentId) : SimpleDomain();
+
+    if (Q_UNLIKELY(errorData->type() != SkaffariError::NoError)) {
+        qCCritical(SK_DOMAIN, "%s: can not find parent domain with ID %lu for new domain.", err);
+        db.rollback();
+        return dom;
+    }
+
+    static const QHash<QString,QString> roleAccounts({
+                                                         {QStringLiteral("abuseAccount"), QStringLiteral("abuse")},
+                                                         {QStringLiteral("nocAccount"), QStringLiteral("noc")},
+                                                         {QStringLiteral("securityAccount"), QStringLiteral("security")},
+                                                         {QStringLiteral("postmasterAccount"), QStringLiteral("postmaster")},
+                                                         {QStringLiteral("hostmasterAccount"), QStringLiteral("hostmaster")},
+                                                         {QStringLiteral("webmasterAccount"), QStringLiteral("webmaster")}
+                                                     });
+
+    QHash<dbid_t,QString> addedRoleAddresses;
+
+    auto it = roleAccounts.constBegin();
+    auto end = roleAccounts.constEnd();
+    while (it != end) {
+        dbid_t roleAccId = params.value(it.key(), 0).value<dbid_t>();
+        if (roleAccId > 0) {
+            auto roleAcc = Account::get(c, errorData, roleAccId);
+            if (Q_UNLIKELY(errorData->type() != SkaffariError::NoError)) {
+                qCCritical(SK_DOMAIN, "%s: can not find account with ID %lu to use as %s account for new domain %s.", err, roleAccId, qUtf8Printable(it.value()), qUtf8Printable(domainName));
+                db.rollback();
                 return dom;
             }
-        }
 
-        dom.setId(domainId);
-        dom.setName(domainName);
-        dom.setPrefix(prefix);
-        dom.setMaxAccounts(maxAccounts);
-        dom.setQuota(quota);
-        dom.setDomainQuota(domainQuota);
-        dom.setFreeNamesEnabled(freeNames);
-        dom.setFreeAddressEnabled(freeAddress);
-        dom.setFolders(foldersVect);
-        dom.setTransport(transport);
-        dom.setCreated(currentTimeUtc);
-        dom.setUpdated(currentTimeUtc);
-        dom.setValidUntil(validUntil);
-        dom.setAceId(domainAceId);
+            const QVariantHash roleAccParams({
+                                                 {QStringLiteral("newlocalpart"), it.value()},
+                                                 {QStringLiteral("newmaildomain"), domainId}
+                                             });
+            const QString addedRoleAddress = roleAcc.addEmail(c, errorData, roleAccParams);
 
-        if (parentId > 0) {
-            dom.setParent(SimpleDomain::get(c, errorData, parentId));
-            if (Q_UNLIKELY(!dom.parent())) {
-                qCWarning(SK_DOMAIN, "Can not find parent domain with ID %u for new domain %s (ID %u).", parentId, qUtf8Printable(domainName), domainId);
-            }
-        }
-
-    } else {
-        errorData->setSqlError(q.lastError());
-        qCCritical(SK_DOMAIN, "Failed to insert new domain %s into database: %s", qUtf8Printable(domainName), qUtf8Printable(q.lastError().text()));
-    }
-
-    if (dom.isValid()) {
-        qCInfo(SK_DOMAIN, "%s created domain %s (ID: %u)", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(domainName), dom.id());
-
-        static const QHash<QString,QString> roleAccounts({
-                                                             {QStringLiteral("abuseAccount"), QStringLiteral("abuse")},
-                                                             {QStringLiteral("nocAccount"), QStringLiteral("noc")},
-                                                             {QStringLiteral("securityAccount"), QStringLiteral("security")},
-                                                             {QStringLiteral("postmasterAccount"), QStringLiteral("postmaster")},
-                                                             {QStringLiteral("hostmasterAccount"), QStringLiteral("hostmaster")},
-                                                             {QStringLiteral("webmasterAccount"), QStringLiteral("webmaster")}
-                                                         });
-        QHash<QString,QString>::const_iterator i = roleAccounts.constBegin();
-        while (i != roleAccounts.constEnd()) {
-            dbid_t roleAccId = params.value(i.key(), 0).value<dbid_t>();
-            if (roleAccId > 0) {
-                auto roleAcc = Account::get(c, errorData, roleAccId);
-                if (Q_LIKELY(roleAcc.id() > 0)) {
-                    const QVariantHash roleAccParams({
-                                                         {QStringLiteral("newlocalpart"), i.value()},
-                                                         {QStringLiteral("newmaildomain"), dom.id()}
-                                                     });
-                    const QString roleAddress = roleAcc.addEmail(c, errorData, roleAccParams);
-                    if (!roleAddress.isEmpty()) {
-                        qCInfo(SK_DOMAIN, "%s created a new email address for the %s role of new domain %s in account %s (ID: %u).", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(roleAcc.username()), roleAcc.id());
-                    } else {
-                        qCWarning(SK_DOMAIN, "Failed to add role account email address %s for new domain %s (ID: %lu) to account %s (ID: %lu): %s", qUtf8Printable(roleAddress), qUtf8Printable(dom.name()), dom.id(), qUtf8Printable(roleAcc.username()), roleAcc.id(), qUtf8Printable(errorData->errorText()));
-                    }
-                } else {
-                    qCWarning(SK_DOMAIN, "Failed to query account with ID %u to use as %s account for new domain %s: %s", roleAccId, qUtf8Printable(i.value()), qUtf8Printable(dom.name()), qUtf8Printable(errorData->errorText()));
+            if (Q_UNLIKELY(errorData->type() != SkaffariError::NoError)) {
+                qCCritical(SK_DOMAIN, "%s: can not create role account email address for new domain.", err);
+                db.rollback();
+                auto addedRolesIt = addedRoleAddresses.constBegin();
+                auto addedRolesEnd = addedRoleAddresses.constEnd();
+                while (addedRolesIt != addedRolesEnd) {
+                    auto delRoleAcc = (addedRolesIt.key() == roleAcc.id()) ? roleAcc : Account::get(c, errorData, addedRolesIt.key());
+                    delRoleAcc.removeEmail(c, errorData, addedRolesIt.value());
+                    ++addedRolesIt;
                 }
+                errorData->setErrorType(SkaffariError::SqlError);
+                errorData->setErrorText(c->translate("Domain", "Failed to insert role account email addresses into databaes."));
+                return dom;
             }
-            ++i;
+
+            addedRoleAddresses.insert(roleAccId, addedRoleAddress);
         }
+        ++it;
     }
+
+    if (Q_UNLIKELY(!db.commit())) {
+        errorData->setSqlError(db.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
+        qCCritical(SK_DOMAIN, "%s: can not commit database transaction to add new domain into database: %s", err, qUtf8Printable(db.lastError().text()));
+        db.rollback();
+        return dom;
+    }
+
+    dom.setId(domainId);
+    dom.setName(domainName);
+    dom.setPrefix(prefix);
+    dom.setMaxAccounts(maxAccounts);
+    dom.setQuota(quota);
+    dom.setDomainQuota(domainQuota);
+    dom.setFreeNamesEnabled(freeNames);
+    dom.setFreeAddressEnabled(freeAddress);
+    dom.setFolders(foldersVect);
+    dom.setTransport(transport);
+    dom.setCreated(currentTimeUtc);
+    dom.setUpdated(currentTimeUtc);
+    dom.setValidUntil(validUntil);
+    dom.setAceId(domainAceId);
+    dom.setParent(parent);
 
     return dom;
 }
