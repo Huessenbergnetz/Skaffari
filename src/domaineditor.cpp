@@ -437,7 +437,7 @@ void DomainEditor::remove(Context* c)
     const bool isAjax = Utils::isAjax(c);
     QJsonObject json;
 
-    if (c->stash(QStringLiteral("userType")).value<qint16>() == 0) {
+    if (AdminAccount::getUserType(c) >= AdminAccount::Administrator) {
 
         auto req = c->req();
 
