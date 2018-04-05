@@ -175,17 +175,17 @@ bool Skaffari::init()
         if (backend.compare(QLatin1String("syslog"), Qt::CaseInsensitive) == 0) {
             qSetMessagePattern(QStringLiteral("%{message}"));
             qInstallMessageHandler(syslogMessageOutput);
-            qCInfo(SK_CORE, "Using syslog logging backend.");
+            qCInfo(SK_CORE, "Logging backend: syslog");
         }
 #ifdef WITH_SYSTEMD
         else if (backend.compare(QLatin1String("journald"), Qt::CaseInsensitive) == 0) {
             qSetMessagePattern(QStringLiteral("%{message}"));
             qInstallMessageHandler(journaldMessageOutput);
-            qCInfo(SK_CORE, "Using systemd's journald logging backend.");
+            qCInfo(SK_CORE, "Logging backend: journald");
         }
 #endif
         else {
-            qCInfo(SK_CORE, "Using stdout logging backend.");
+            qCInfo(SK_CORE, "Logging backend: stdout");
         }
         messageHandlerInstalled = true;
     }
@@ -194,24 +194,15 @@ bool Skaffari::init()
     QCoreApplication::setApplicationVersion(QStringLiteral(SKAFFARI_VERSION));
 
     const auto supportedLocales = loadTranslationsFromDir(QStringLiteral("skaffari"), QStringLiteral(SKAFFARI_L10NDIR), QStringLiteral("_"));
-    qCInfo(SK_CORE) << "Loaded the following locales:" << supportedLocales;
+    qCInfo(SK_CORE) << "Loaded locales:" << supportedLocales;
 
+    qCDebug(SK_CORE) << "Registering Qt meta types for typedefs.";
     qRegisterMetaType<quota_size_t>("quota_size_t");
     qRegisterMetaType<dbid_t>("dbid_t");
-//    qRegisterMetaType<Folder>();
-//    qRegisterMetaType<Domain>();
-//    qRegisterMetaType<SimpleAdmin>();
-//    qRegisterMetaType<SimpleDomain>();
-//    qRegisterMetaType<SimpleAccount>();
-//    qRegisterMetaType<AdminAccount>();
-//    qRegisterMetaType<Language>();
-//    qRegisterMetaType<Account>();
-//    qRegisterMetaType<HelpEntry>();
     qRegisterMetaType<HelpHash>("HelpHash");
-//    qRegisterMetaType<EmailAddress>();
-//    qRegisterMetaType<SkaffariError>();
     qRegisterMetaTypeStreamOperators<QTimeZone>("QTimeZone");
 
+    qCDebug(SK_CORE) << "Registering Grantlee meta types.";
     Grantlee::registerMetaType<Folder>();
     Grantlee::registerMetaType<Domain>();
     Grantlee::registerMetaType<SimpleAdmin>();
@@ -223,13 +214,15 @@ bool Skaffari::init()
     Grantlee::registerMetaType<HelpEntry>();
     Grantlee::registerMetaType<EmailAddress>();
 
-    const QString tmplName = generalConfig.value(QStringLiteral("template"), QStringLiteral("default")).toString();
-    const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + tmplName;
-    SkaffariConfig::setTmplBasePath(tmplBasePath);
+    const QString tmplName = generalConfig.value(QStringLiteral("template"), QStringLiteral("default")).toString().trimmed();
 
     if (!isInitialized) {
+        const QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1Char('/') + tmplName;
+        qCInfo(SK_CORE, "Template: %s", qUtf8Printable(tmplBasePath));
+        SkaffariConfig::setTmplBasePath(tmplBasePath);
+
         QVariantMap tmplConfig;
-        QFile tmplConfigFile(tmplBasePath + QLatin1String("/metadata.json"));
+        QFile tmplConfigFile(SkaffariConfig::tmplBasePath() + QLatin1String("/metadata.json"));
         if (tmplConfigFile.exists()) {
             qCDebug(SK_CORE, "Found template metadata file.");
             if (tmplConfigFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
@@ -271,11 +264,14 @@ bool Skaffari::init()
 
         SkaffariConfig::loadSettingsFromDB();
 
+        QSqlDatabase::removeDatabase(Sql::databaseNameThread());
+
         isInitialized = true;
     }
 
-    QString sitePath = tmplBasePath + QLatin1String("/site");
+    const QString sitePath = SkaffariConfig::tmplBasePath() + QLatin1String("/site");
 
+    qCDebug(SK_CORE) << "Registering Grantlee view.";
     auto view = new GrantleeView(this);
     view->setTemplateExtension(QStringLiteral(".html"));
     view->setWrapper(QStringLiteral("wrapper.html"));
@@ -284,9 +280,9 @@ bool Skaffari::init()
     view->engine()->addDefaultLibrary(QStringLiteral("grantlee_i18ntags"));
     view->engine()->addDefaultLibrary(QStringLiteral("grantlee_skaffari"));
 
-    const QString tmplTransFilePath = tmplBasePath + QLatin1String("/l10n");
-    view->loadTranslationsFromDir(tmplName, tmplBasePath + QLatin1String("/l10n"), QStringLiteral("_"));
+    view->loadTranslationsFromDir(tmplName, SkaffariConfig::tmplBasePath() + QLatin1String("/l10n"), QStringLiteral("_"));
 
+    qCDebug(SK_CORE) << "Registering Controllers.";
     new Root(this);
     new Login(this);
     new Logout(this);
@@ -296,8 +292,10 @@ bool Skaffari::init()
     new MyAccount(this);
     new SettingsEditor(this);
 
+    qCDebug(SK_CORE) << "Registering plugins.";
+
     auto staticSimple = new StaticSimple(this);
-    const QString staticPath = tmplBasePath + QLatin1String("/static");
+    const QString staticPath = SkaffariConfig::tmplBasePath() + QLatin1String("/static");
     staticSimple->setIncludePaths({staticPath, QStringLiteral(SKAFFARI_STATICDIR)});
 
     if (SkaffariConfig::useMemcached()) {
@@ -313,6 +311,11 @@ bool Skaffari::init()
         sess->setStorage(new MemcachedSessionStore(this, this));
     }
 
+    auto lsp = new LangSelect(this, LangSelect::Session);
+    lsp->setFallbackLocale(QLocale(QLocale::English));
+    lsp->setSupportedLocales(supportedLocales);
+    lsp->setSessionKey(QStringLiteral("lang"));
+
     auto csrf = new CSRFProtection(this);
     csrf->setDefaultDetachTo(QStringLiteral("/csrfdenied"));
 
@@ -323,11 +326,6 @@ bool Skaffari::init()
     cred->setPasswordType(CredentialPassword::Hashed);
     auto store = new AuthStoreSql;
     auth->addRealm(store, cred);
-
-    auto lsp = new LangSelect(this, LangSelect::Session);
-    lsp->setFallbackLocale(QLocale(QLocale::English));
-    lsp->setSupportedLocales(supportedLocales);
-    lsp->setSessionKey(QStringLiteral("lang"));
 
     defaultHeaders().setHeader(QStringLiteral("X-Frame-Options"), QStringLiteral("DENY"));
     defaultHeaders().setHeader(QStringLiteral("X-Content-Type-Options"), QStringLiteral("nosniff"));
@@ -357,7 +355,17 @@ bool Skaffari::initDb() const
     const QString dbhost = dbconfig.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
     const int dbport = dbconfig.value(QStringLiteral("port"), QStringLiteral("3306")).toInt();
 
-    qCDebug(SK_CORE) << "Establishing database connection";
+    if (!isInitialized) {
+        qCDebug(SK_CORE, "Initializing database connection.");
+        qCDebug(SK_CORE, "DB Type: %s", qUtf8Printable(dbtype));
+        qCDebug(SK_CORE, "DB Name: %s", qUtf8Printable(dbname));
+        qCDebug(SK_CORE, "DB User: %s", qUtf8Printable(dbuser));
+        qCDebug(SK_CORE, "DB Host: %s", qUtf8Printable(dbhost));
+        qCDebug(SK_CORE, "DB Port: %i", dbport);
+    } else {
+        qCDebug(SK_CORE) << "Establishing database connection:";
+    }
+
     QSqlDatabase db;
     const QString dbConName = Sql::databaseNameThread();
     if (dbtype == QLatin1String("QMYSQL")) {

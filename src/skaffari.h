@@ -43,7 +43,7 @@ public:
     /*!
      * \brief Constructs a new application instance.
      */
-    Q_INVOKABLE explicit Skaffari(QObject *parent = 0);
+    Q_INVOKABLE explicit Skaffari(QObject *parent = nullptr);
 
     /*!
      * \brief Destroys the application instance.
@@ -54,7 +54,7 @@ public:
      * \brief Initializes the application and returns \c true on success.
      */
     bool init() override;
-    
+
     /*!
      * \brief This will be called after the engine forked and will setup the database connection.
      *
