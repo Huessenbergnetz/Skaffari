@@ -386,10 +386,9 @@ public:
      * \param c Pointer to the current context, used for translations.
      * \param p Parameters from the HTML form to update in the database.
      * \param e Pointer to an error object to give feedback on database errors.
-     * \param u The user that wants to update the domain, used to decide which parameters could be updated.
      * \return \c true on success
      */
-    bool update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *e, const Cutelyst::AuthenticationUser &u);
+    bool update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *e);
 
     /*!
      * \brief Loads the domain identified by \a domainId into the stash of context \a c.

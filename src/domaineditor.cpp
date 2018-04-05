@@ -91,8 +91,7 @@ void DomainEditor::edit(Context *c)
 {
 
     Domain dom = Domain::fromStash(c);
-
-    AuthenticationUser user = Authentication::user(c);
+    const auto user = AdminAccount::getUser(c);
 
     auto req = c->req();
     if (req->isPost()) {
@@ -100,7 +99,7 @@ void DomainEditor::edit(Context *c)
         c->setStash(QStringLiteral("_def_boolean"), false);
 
         ValidatorResult vr;
-        if (AdminAccount::getUserType(user) >= AdminAccount::Administrator) {
+        if (user.type() >= AdminAccount::Administrator) {
 
             static Validator v({
                             new ValidatorIn(QStringLiteral("transport"), QStringList({QStringLiteral("cyrus"), QStringLiteral("lmtp"), QStringLiteral("smtp"), QStringLiteral("uucp")})),
@@ -126,7 +125,7 @@ void DomainEditor::edit(Context *c)
         if (vr) {
             vr.addValue(QStringLiteral("folders"), req->bodyParam(QStringLiteral("folders")));
             SkaffariError e(c);
-            if (dom.update(c, vr.values(), &e, user)) {
+            if (dom.update(c, vr.values(), &e)) {
                 c->stash({
                              {QStringLiteral("domain"), QVariant::fromValue<Domain>(dom)},
                              {QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated domain %1.").arg(dom.name())}
@@ -170,7 +169,7 @@ void DomainEditor::edit(Context *c)
     help.insert(QStringLiteral("freeAddress"), HelpEntry(c->translate("DomainEditor", "Allow free addresses"), c->translate("DomainEditor", "If enabled, user accounts in this domain can have email addresses for all domains managed by Skaffari. If disabled, only email addresses for this domain can be added to user accounts in this domain.")));
 
     SkaffariError e(c);
-    const std::vector<SimpleDomain> doms = SimpleDomain::list(c, &e, user.value(QStringLiteral("type")).value<qint16>(), user.id().value<dbid_t>(), true);
+    const std::vector<SimpleDomain> doms = SimpleDomain::list(c, &e, user.type(), user.id(), true);
     if (e.type() != SkaffariError::NoError) {
         c->setStash(QStringLiteral("error_msg"), e.errorText());
     }

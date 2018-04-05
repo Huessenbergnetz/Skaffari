@@ -504,7 +504,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
     Q_ASSERT_X(c, "get domain", "invalid Cutelyst context");
 
     // for logging
-    const QString errStr = AdminAccount::getUserNameIdString(c) + QLatin1String(" failed to get domain with ID ") + QString::number(domId) + QLatin1String(" from the database");
+    const QString errStr = AdminAccount::getUserNameIdString(c) + QLatin1String(" failed to get domain with ID ") + QString::number(domId);
     const QByteArray errBa = errStr.toUtf8();
     const char *err = errBa.constData();
 
@@ -600,11 +600,11 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
     } else {
         if (q.lastError().type() != QSqlError::NoError) {
             errorData->setSqlError(q.lastError());
-            qCCritical(SK_DOMAIN, "Failed to query database for domain with ID %u: %s", domId, qUtf8Printable(q.lastError().text()));
+            qCCritical(SK_DOMAIN, "%s: can not execute database query: %s", err, qUtf8Printable(q.lastError().text()));
         } else {
             errorData->setErrorType(SkaffariError::NotFound);
             errorData->setErrorText(c->translate("Domain", "The domain with ID %1 could not be found in the database.").arg(domId));
-            qCWarning(SK_DOMAIN, "Domain ID %u not found in database.", domId);
+            qCWarning(SK_DOMAIN, "%s: not found in database.", err);
         }
     }
 
@@ -619,7 +619,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
     Q_ASSERT_X(c, "list domains", "invalid Cutelyst context");
 
     // for logging
-    const QString errStr = AdminAccount::getUserNameIdString(c) + QLatin1String(" failed to query domain list from the database");
+    const QString errStr = AdminAccount::getUserNameIdString(c) + QLatin1String(" failed to query domain list");
     const QByteArray errBa = errStr.toUtf8();
     const char *err = errBa.constData();
 
@@ -724,7 +724,7 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
     Q_ASSERT_X(c, "remove domain", "invalid Cutelyst context");
 
     // for logging
-    const QString errStr = AdminAccount::getUserNameIdString(c) + QLatin1String(" failed to remove domain ") + nameIdString() + QStringLiteral(" from database");
+    const QString errStr = AdminAccount::getUserNameIdString(c) + QLatin1String(" failed to remove domain ") + nameIdString();
     const QByteArray errBa = errStr.toUtf8();
     const char *err = errBa.constData();
 
@@ -737,7 +737,7 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
         return ret;
     }
 
-    while (q.next() && (error->type() == SkaffariError::NoError)) {
+    while (q.next()) {
         Account a = Account::get(c, error, q.value(0).value<dbid_t>());
         if (a.isValid()) {
             if (Q_UNLIKELY(!a.remove(c, error))) {
@@ -885,41 +885,78 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
     return ret;
 }
 
-bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *e, const Cutelyst::AuthenticationUser &u)
+bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *e)
 {
     bool ret = false;
 
     Q_ASSERT_X(c, "update domain", "invalid context object");
     Q_ASSERT_X(!p.empty(), "update domain", "empty parameters");
     Q_ASSERT_X(e, "update domain", "invalid error object");
-    Q_ASSERT_X(!u.isNull(), "update domain", "invalid user");
 
-    QSqlQuery q;
+    const auto admin = AdminAccount::getUser(c);
+
+    // for logging
+    const QString errStr = admin.nameIdString() + QLatin1String(" failed to update domain ") + nameIdString();
+    const QByteArray errBa = errStr.toUtf8();
+    const char *err = errBa.constData();
+
+    QSqlDatabase db = QSqlDatabase::database(Cutelyst::Sql::databaseNameThread());
+
+    if (Q_UNLIKELY(!db.isOpen())) {
+        e->setSqlError(db.lastError(), c->translate("Domain", "Failed to update domain in database."));
+        qCCritical(SK_DOMAIN, "%s: can not establish database connection: %s", err, qUtf8Printable(db.lastError().text()));
+        return ret;
+    }
+
+    if (Q_UNLIKELY(!db.transaction())) {
+        e->setSqlError(db.lastError(), c->translate("Domain", "Failed to update domain in database."));
+        qCCritical(SK_DOMAIN, "%s: can not initiate database transaction: %s", err, qUtf8Printable(db.lastError().text()));
+        return ret;
+    }
+
+    QSqlQuery q(db);
 
     const QStringList folders = p.value(QStringLiteral("folders")).toString().trimmed().split(QLatin1Char(','), QString::SkipEmptyParts);
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
     const quota_size_t quota = p.value(QStringLiteral("quota")).value<quota_size_t>() / Q_UINT64_C(1024);
+    std::vector<Folder> foldersVect;
+
+    // only for administrators or above
+    const quota_size_t domainQuota = p.value(QStringLiteral("domainQuota")).value<quota_size_t>() / Q_UINT64_C(1024);
+    const quint32 maxAccounts = p.value(QStringLiteral("maxAccounts"), d->maxAccounts).value<quint32>();
+    const bool freeNames = p.value(QStringLiteral("freeNames"), d->freeNames).toBool();
+    const bool freeAddress = p.value(QStringLiteral("freeAddress"), d->freeAddress).toBool();
+    const QString transport = p.value(QStringLiteral("transport"), d->transport).toString();
+    const QDateTime validUntil = p.value(QStringLiteral("validUntil"), d->validUntil).toDateTime().toUTC();
+    SimpleDomain parentDom;
 
 
-    if (AdminAccount::getUserType(u) >= AdminAccount::Administrator) {
-
-        const quota_size_t domainQuota = p.value(QStringLiteral("domainQuota")).value<quota_size_t>() / Q_UINT64_C(1024);
+    if (admin.type() >= AdminAccount::Administrator) {
 
         const dbid_t parentId = p.value(QStringLiteral("parent"), 0).value<dbid_t>();
         if (parentId == d->id) {
             e->setErrorType(SkaffariError::InputError);
             e->setErrorText(c->translate("Domain", "You can not set a domain as its own parent domain."));
-            qCCritical(SK_DOMAIN, "Tried to set domain ID %u as parent for domain ID %u.", parentId, parentId);
+            qCCritical(SK_DOMAIN, "%s: can not set domain as own parent.", err);
             return ret;
         }
 
-        const quint32 maxAccounts = p.value(QStringLiteral("maxAccounts"), d->maxAccounts).value<quint32>();
-        const bool freeNames = p.value(QStringLiteral("freeNames"), d->freeNames).toBool();
-        const bool freeAddress = p.value(QStringLiteral("freeAddress"), d->freeAddress).toBool();
-        const QString transport = p.value(QStringLiteral("transport"), d->transport).toString();
-        const QDateTime validUntil = p.value(QStringLiteral("validUntil"), d->validUntil).toDateTime().toUTC();
+        if (parentId != d->parent.id()) {
+            if (parentId > 0) {
+                parentDom = SimpleDomain::get(c, e, parentId);
+                if (Q_UNLIKELY(!d->parent)) {
+                    qCWarning(SK_DOMAIN, "%s: can not find parent domain.", err);
+                    return ret;
+                }
+            }
+        }
 
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET maxaccounts = :maxaccounts, quota = :quota, domainquota = :domainquota, freenames = :freenames, freeaddress = :freeaddress, transport = :transport, updated_at = :updated_at, parent_id = :parent_id, valid_until = :valid_until WHERE id = :id"));
+        if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE domain SET maxaccounts = :maxaccounts, quota = :quota, domainquota = :domainquota, freenames = :freenames, freeaddress = :freeaddress, transport = :transport, updated_at = :updated_at, parent_id = :parent_id, valid_until = :valid_until WHERE id = :id")))) {
+            e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
+            qCCritical(SK_DOMAIN, "%s: can not prepare query to update domain in database: %s", qUtf8Printable(q.lastError().text()));
+            return ret;
+        }
+
         q.bindValue(QStringLiteral(":maxaccounts"), maxAccounts);
         q.bindValue(QStringLiteral(":quota"), quota);
         q.bindValue(QStringLiteral(":domainquota"), domainQuota);
@@ -931,85 +968,94 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
         q.bindValue(QStringLiteral(":valid_until"), validUntil);
         q.bindValue(QStringLiteral(":id"), d->id);
 
-        if (!q.exec()) {
-            e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain %1 in database.").arg(d->name));
-            qCCritical(SK_DOMAIN, "Failed to update domain %s in database: %s", qUtf8Printable(d->name), qUtf8Printable(q.lastError().text()));
+        if (Q_UNLIKELY(!q.exec())) {
+            e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
+            qCCritical(SK_DOMAIN, "%s: can not execute query to update domain in database: %s", qUtf8Printable(q.lastError().text()));
+            db.rollback();
             return ret;
         }
 
-        d->quota = quota;
-        d->maxAccounts = maxAccounts;
-        d->domainQuota = domainQuota;
-        d->freeNames = freeNames;
-        d->freeAddress = freeAddress;
-        d->transport = transport;
-        d->updated = currentTimeUtc;
+    } else if (admin.domains().contains(d->id)) {
 
-        if (parentId != d->parent.id()) {
-            if (parentId > 0) {
-                d->parent = SimpleDomain::get(c, e, parentId);
-                if (Q_UNLIKELY(!d->parent)) {
-                    qWarning(SK_DOMAIN, "Can not find parent domain with ID %u for domain %s (ID: %u).", parentId, qUtf8Printable(d->name), d->id);
-                }
-            } else {
-                d->parent = SimpleDomain();
-            }
+        if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE domain SET quota = :quota, updated_at = :updated_at WHERE id = :id")))) {
+            e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
+            qCCritical(SK_DOMAIN, "%s: can not prepare query to update domain in database: %s", qUtf8Printable(q.lastError().text()));
+            return ret;
         }
 
-        ret = true;
-
-    } else if (u.value(QStringLiteral("domains")).value<QVariantList>().contains(d->id)) {
-
-        q = CPreparedSqlQueryThread(QStringLiteral("UPDATE domain SET quota = :quota, updated_at = :updated_at WHERE id = :id"));
         q.bindValue(QStringLiteral(":quota"), quota);
         q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
         q.bindValue(QStringLiteral(":id"), d->id);
 
-        if (!q.exec()) {
-            e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain %1 in database.").arg(d->name));
-            qCCritical(SK_DOMAIN, "Failed to update domain %s in database: %s", qUtf8Printable(d->name), qUtf8Printable(q.lastError().text()));
+        if (Q_UNLIKELY(!q.exec())) {
+            e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
+            qCCritical(SK_DOMAIN, "%s: can not execute query to update domain in database: %s", qUtf8Printable(q.lastError().text()));
+            db.rollback();
             return ret;
         }
 
-        d->quota = quota;
-        d->updated = currentTimeUtc;
-
-        ret = true;
     } else {
         e->setErrorType(SkaffariError::AuthorizationError);
         e->setErrorText(c->translate("Domain", "You are not authorized to update this domain."));
-        qCWarning(SK_DOMAIN, "Access denied: %s tried to update domain %s (ID: %lu)", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(d->name), d->id);
+        qCWarning(SK_DOMAIN, "%s: access denied!", err);
         return ret;
     }
 
-    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
-    q.bindValue(QStringLiteral(":domain_id"), d->id);
-    if (Q_LIKELY(q.exec())) {
-        d->folders.clear();
-        if (!folders.empty()) {
-            d->folders.reserve(folders.size());
-            for (const QString &folder : folders) {
-                const QString _folder = folder.trimmed();
-                if (Q_LIKELY(!_folder.isEmpty())) {
-                    q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)"));
-                    q.bindValue(QStringLiteral(":domain_id"), d->id);
-                    q.bindValue(QStringLiteral(":name"), folder);
-                    if (Q_LIKELY(q.exec())) {
-                        d->folders.emplace_back(q.lastInsertId().value<dbid_t>(), d->id, folder);
-                    } else {
-                        qCCritical(SK_DOMAIN, "Failed to save default folder \"%s\" for domain %s (ID: %lu) to database: %s", qUtf8Printable(folder), qUtf8Printable(d->name), d->id, qUtf8Printable(q.lastError().text()));
-                    }
-                }
-            }
-            d->folders.shrink_to_fit();
-        }
-    } else {
-        qCCritical(SK_DOMAIN) << "Failed to delete default folders for domain" << d->name << "from database:" << q.lastError().text();
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id")))) {
+        e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+        qCCritical(SK_DOMAIN, "%s: can not prepare query to delete current default folders from database: %s", err, qUtf8Printable(q.lastError().text()));
+        return ret;
     }
 
-    if (ret) {
-        qCInfo(SK_DOMAIN, "%s updated domain %s (ID: %lu)", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(d->name), d->id);
+    q.bindValue(QStringLiteral(":domain_id"), d->id);
+
+    if (Q_UNLIKELY(!q.exec())) {
+        e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+        qCCritical(SK_DOMAIN, "%s: can not execute query to delete current default folders from database: %s", err, qUtf8Printable(q.lastError().text()));
+        return ret;
     }
+
+    if (!folders.empty()) {
+        if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)")))) {
+            e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+            qCCritical(SK_DOMAIN, "%s: can not prepare query to insert default folders into database: %s", err, qUtf8Printable(q.lastError().text()));
+            return ret;
+        }
+        foldersVect.reserve(folders.size());
+        for (const QString &folder : folders) {
+            const QString &_folder = folder.trimmed();
+            if (Q_LIKELY(!_folder.isEmpty())) {
+                q.bindValue(QStringLiteral(":domain_id"), d->id);
+                q.bindValue(QStringLiteral(":name"), _folder);
+                if (Q_UNLIKELY(!q.exec())) {
+                    e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+                    qCCritical(SK_DOMAIN, "%s: can not execute query to insert default folders into database: %s", err, qUtf8Printable(q.lastError().text()));
+                    return ret;
+                }
+                foldersVect.emplace_back(q.lastInsertId().value<dbid_t>(), d->id, _folder);
+            }
+        }
+        foldersVect.shrink_to_fit();
+    }
+
+    if (admin.type() >= AdminAccount::Administrator) {
+        d->maxAccounts = maxAccounts;
+        d->parent = parentDom;
+        d->domainQuota = domainQuota;
+        d->freeAddress = freeAddress;
+        d->freeNames = freeNames;
+        d->transport = transport;
+        d->validUntil = validUntil;
+    }
+
+    d->quota = quota;
+    d->folders = foldersVect;
+    d->updated = currentTimeUtc;
+
+    qCInfo(SK_DOMAIN, "%s updated domain %s.", qUtf8Printable(admin.nameIdString()), qUtf8Printable(nameIdString()));
+    qCDebug(SK_DOMAIN) << *this;
+
+    ret = true;
 
     return ret;
 }
@@ -1034,9 +1080,7 @@ void Domain::toStash(Cutelyst::Context *c, dbid_t domainId)
 Domain Domain::fromStash(Cutelyst::Context *c)
 {
     Domain d;
-
     d = c->stash(QStringLiteral(DOMAIN_STASH_KEY)).value<Domain>();
-
     return d;
 }
 
@@ -1070,14 +1114,14 @@ QString Domain::getCatchAllAccount(Cutelyst::Context *c, SkaffariError *e) const
     Q_ASSERT_X(c, "get catch-all account", "invalid context object");
     Q_ASSERT_X(e, "get catch-all account", "invalid error object");
 
-    const QString catchAllAlias = QLatin1Char('@') + QString::fromLatin1(QUrl::toAce(name()));
+    const QString catchAllAlias = QLatin1Char('@') + d->name;
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT username FROM virtual WHERE alias = :alias"));
     q.bindValue(QStringLiteral(":alias"), catchAllAlias);
 
     if (Q_UNLIKELY(!q.exec())) {
         e->setSqlError(q.lastError(), c->translate("Domain", "Failed to get catch-all account for this domain."));
-        qCCritical(SK_DOMAIN, "Failed to get catch-all account for domain ID %u: %s", id(), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_DOMAIN, "Failed to get catch-all account for domain ID %u: %s", d->id, qUtf8Printable(q.lastError().text()));
         return username;
     }
 
@@ -1113,8 +1157,9 @@ QDebug operator<<(QDebug dbg, const Domain &domain)
 #else
     if (!domain.children().empty()) {
         dbg << ", Children: std::vector(";
-        auto it = domain.folders().cbegin();
-        auto end = domain.folders().cend();
+        const auto children = domain.children();
+        auto it = children.cbegin();
+        auto end = children.cend();
         if (it != end) {
             dbg << *it;
             ++it;
@@ -1127,8 +1172,9 @@ QDebug operator<<(QDebug dbg, const Domain &domain)
     }
     if (!domain.admins().empty()) {
         dbg << ", Admins: std::vector(";
-        auto it = domain.folders().cbegin();
-        auto end = domain.folders().cend();
+        const auto admins = domain.admins();
+        auto it = admins.cbegin();
+        auto end = admins.cend();
         if (it != end) {
             dbg << *it;
             ++it;
@@ -1141,8 +1187,9 @@ QDebug operator<<(QDebug dbg, const Domain &domain)
     }
     if (!domain.folders().empty()) {
         dbg << ", Default folders: std::vector(";
-        auto it = domain.folders().cbegin();
-        auto end = domain.folders().cend();
+        const auto folders = domain.folders();
+        auto it = folders.cbegin();
+        auto end = folders.cend();
         if (it != end) {
             dbg << *it;
             ++it;
