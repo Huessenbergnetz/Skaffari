@@ -15,20 +15,20 @@ private Q_SLOTS:
     void boolOperator();
     void constructor();
     void nameIdString();
-    void getSetId();
-    void getSetName();
-    void getSetPrefix();
-    void getSetTransport();
-    void getSetQuota();
-    void getSetMaxAccounts();
-    void getSetDomainQuota();
-    void getSetDomainQuotaUsed();
-    void getSetFreeNamesEnabled();
-    void getSetFreeAddressEnabled();
-    void getSetAccounts();
-    void getSetCreated();
-    void getSetUpdated();
-    void getSetValidUntil();
+    void id();
+    void name();
+    void prefix();
+    void transport();
+    void quota();
+    void maxAccounts();
+    void domainQuota();
+    void domainQuotaUsed();
+    void isFreeNamesEnabled();
+    void isFreeAddressEnabled();
+    void accounts();
+    void created();
+    void updated();
+    void validUntil();
     void aceName();
     void aceId();
     void isIdn();
@@ -56,7 +56,17 @@ void DomainTest::boolOperator()
 
 void DomainTest::constructor()
 {
-    m_dom = Domain(12, QStringLiteral("example.com"), QStringLiteral("xmp"), QStringLiteral("cyrus"), 1610612736, 1000, 1610612736000, 161061273600, true, false, 100, QDateTime(QDate(2018, 3, 28), QTime(16, 0)), QDateTime(QDate(2018, 3, 28), QTime(17, 0)), QDateTime(QDate(2118, 3, 28), QTime(16, 0)));
+    std::vector<SimpleAdmin> admins{
+        SimpleAdmin(1, QStringLiteral("admin1")),
+        SimpleAdmin(2, QStringLiteral("admin2"))
+    };
+
+    std::vector<Folder> folders{
+        Folder(20, 12, QStringLiteral("Trash")),
+        Folder(21, 21, QStringLiteral("Spam"))
+    };
+
+    m_dom = Domain(12, 5, QStringLiteral("example.com"), QStringLiteral("xmp"), QStringLiteral("cyrus"), 1610612736, 1000, 1610612736000, 161061273600, true, false, 100, QDateTime(QDate(2018, 3, 28), QTime(16, 0)), QDateTime(QDate(2018, 3, 28), QTime(17, 0)), QDateTime(QDate(2118, 3, 28), QTime(16, 0)), SimpleDomain(10, QStringLiteral("example.de")), std::vector<SimpleDomain>(), admins, folders);
     QVERIFY(m_dom);
 }
 
@@ -65,114 +75,77 @@ void DomainTest::nameIdString()
     QCOMPARE(m_dom.nameIdString(), QStringLiteral("example.com (ID: 12)"));
 }
 
-void DomainTest::getSetId()
+void DomainTest::id()
 {
     QCOMPARE(m_dom.id(), 12);
-    const auto newId = 24;
-    m_dom.setId(newId);
-    QCOMPARE(m_dom.id(), newId);
 }
 
-void DomainTest::getSetName()
+void DomainTest::name()
 {
     QCOMPARE(m_dom.name(), QStringLiteral("example.com"));
-    const auto newName = QStringLiteral("beispiel.de");
-    m_dom.setName(newName);
-    QCOMPARE(m_dom.name(), QStringLiteral("beispiel.de"));
 }
 
-void DomainTest::getSetPrefix()
+void DomainTest::prefix()
 {
     QCOMPARE(m_dom.prefix(), QStringLiteral("xmp"));
-    const auto newPrefix = QStringLiteral("bsp");
-    m_dom.setPrefix(newPrefix);
-    QCOMPARE(m_dom.prefix(), newPrefix);
 }
 
-void DomainTest::getSetTransport()
+void DomainTest::transport()
 {
     QCOMPARE(m_dom.transport(), QStringLiteral("cyrus"));
-    const auto newTransport = QStringLiteral("lmtp");
-    m_dom.setTransport(newTransport);
-    QCOMPARE(m_dom.transport(), newTransport);
 }
 
-void DomainTest::getSetQuota()
+void DomainTest::quota()
 {
     QCOMPARE(m_dom.quota(), 1610612736);
-    const auto newQuota = 805306368;
-    m_dom.setQuota(newQuota);
-    QCOMPARE(m_dom.quota(), newQuota);
 }
 
-void DomainTest::getSetMaxAccounts()
+void DomainTest::maxAccounts()
 {
     QCOMPARE(m_dom.maxAccounts(), 1000);
-    const auto newMaxAccounts = 500;
-    m_dom.setMaxAccounts(newMaxAccounts);
-    QCOMPARE(m_dom.maxAccounts(), newMaxAccounts);
 }
 
-void DomainTest::getSetDomainQuota()
+void DomainTest::domainQuota()
 {
     QCOMPARE(m_dom.domainQuota(), 1610612736000);
-    const auto newDomainQuota = 805306368000;
-    m_dom.setDomainQuota(newDomainQuota);
-    QCOMPARE(m_dom.domainQuota(), newDomainQuota);
 }
 
-void DomainTest::getSetDomainQuotaUsed()
+void DomainTest::domainQuotaUsed()
 {
     QCOMPARE(m_dom.domainQuotaUsed(), 161061273600);
-    const auto newDomainQuotaUsed = 80530636800;
-    m_dom.setDomainQuotaUsed(newDomainQuotaUsed);
-    QCOMPARE(m_dom.domainQuotaUsed(), newDomainQuotaUsed);
+    m_dom.setDomainQuotaUsed(80530636800);
+    QCOMPARE(m_dom.domainQuotaUsed(), 80530636800);
+    m_dom.setDomainQuotaUsed(161061273600);
 }
 
-void DomainTest::getSetFreeNamesEnabled()
+void DomainTest::isFreeNamesEnabled()
 {
     QCOMPARE(m_dom.isFreeNamesEnabled(), true);
-    m_dom.setFreeNamesEnabled(false);
-    QCOMPARE(m_dom.isFreeNamesEnabled(), false);
 }
 
-void DomainTest::getSetFreeAddressEnabled()
+void DomainTest::isFreeAddressEnabled()
 {
     QCOMPARE(m_dom.isFreeAddressEnabled(), false);
-    m_dom.setFreeAddressEnabled(true);
-    QCOMPARE(m_dom.isFreeAddressEnabled(), true);
 }
 
-void DomainTest::getSetAccounts()
+void DomainTest::accounts()
 {
     QCOMPARE(m_dom.accounts(), 100);
-    const auto newAccounts = 50;
-    m_dom.setAccounts(newAccounts);
-    QCOMPARE(m_dom.accounts(), newAccounts);
 }
 
-void DomainTest::getSetCreated()
+void DomainTest::created()
 {
     QCOMPARE(m_dom.created(), QDateTime(QDate(2018, 3, 28), QTime(16, 0)));
-    const auto newCreated = QDateTime(QDate(2019, 3, 28), QTime(16, 0));
-    m_dom.setCreated(newCreated);
-    QCOMPARE(m_dom.created(), newCreated);
 }
 
-void DomainTest::getSetUpdated()
+void DomainTest::updated()
 {
     QCOMPARE(m_dom.updated(), QDateTime(QDate(2018, 3, 28), QTime(17, 0)));
-    const auto newUpdated = QDateTime(QDate(2019, 3, 28), QTime(17, 0));
-    m_dom.setUpdated(newUpdated);
-    QCOMPARE(m_dom.updated(), newUpdated);
 }
 
-void DomainTest::getSetValidUntil()
+void DomainTest::validUntil()
 {
     QCOMPARE(m_dom.validUntil(), QDateTime(QDate(2118, 3, 28), QTime(16, 0)));
-    const auto newValidUntil = QDateTime(QDate(2119, 3, 28), QTime(16, 0));
-    m_dom.setValidUntil(newValidUntil);
-    QCOMPARE(m_dom.validUntil(), newValidUntil);
 }
 
 void DomainTest::aceName()
@@ -182,12 +155,12 @@ void DomainTest::aceName()
 
 void DomainTest::aceId()
 {
-    QCOMPARE(m_dom.aceId(), 0);
+    QCOMPARE(m_dom.aceId(), 5);
 }
 
 void DomainTest::isIdn()
 {
-    QCOMPARE(m_dom.isIdn(), false);
+    QCOMPARE(m_dom.isIdn(), true);
 }
 
 void DomainTest::toSimple()
@@ -210,23 +183,20 @@ void DomainTest::accountUsagePercent()
 
 void DomainTest::dataStream()
 {
-    Domain d1(12, QStringLiteral("example.com"), QStringLiteral("xmp"), QStringLiteral("cyrus"), 1610612736, 1000, 1610612736000, 161061273600, true, false, 100, QDateTime(QDate(2018, 3, 28), QTime(16, 0)), QDateTime(QDate(2018, 3, 28), QTime(17, 0)), QDateTime(QDate(2118, 3, 28), QTime(16, 0)));
-    d1.setParent(SimpleDomain(13, QStringLiteral("example.net")));
-
     std::vector<SimpleDomain> children;
     children.emplace_back(SimpleDomain(1, QStringLiteral("example.org")));
     children.emplace_back(SimpleDomain(2, QStringLiteral("example.mil")));
-    d1.setChildren(children);
 
     std::vector<SimpleAdmin> admins;
     admins.emplace_back(SimpleAdmin(1, QStringLiteral("admin")));
-    d1.setAdmins(admins);
 
     std::vector<Folder> folders;
     folders.emplace_back(Folder(1, 12, QStringLiteral("Papierkorb")));
     folders.emplace_back(Folder(2, 12, QStringLiteral("Vorlagen")));
     folders.emplace_back(Folder(3, 12, QStringLiteral("Versandte Nachrichten")));
-    d1.setFolders(folders);
+
+    Domain d1(12, 0, QStringLiteral("example.com"), QStringLiteral("xmp"), QStringLiteral("cyrus"), 1610612736, 1000, 1610612736000, 161061273600, true, false, 100, QDateTime(QDate(2018, 3, 28), QTime(16, 0)), QDateTime(QDate(2018, 3, 28), QTime(17, 0)), QDateTime(QDate(2118, 3, 28), QTime(16, 0)), SimpleDomain(13, QStringLiteral("example.net")), children, admins, folders);
+
 
     QVERIFY(d1.isValid());
 

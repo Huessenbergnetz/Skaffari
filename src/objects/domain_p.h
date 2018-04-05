@@ -38,8 +38,12 @@ class DomainData : public QSharedData
 public:
     DomainData() : QSharedData() {}
 
-    DomainData(dbid_t _id, const QString &_name, const QString &_prefix, const QString &_transport, quota_size_t _quota, quint32 _maxAccounts, quota_size_t _domainQuota, quota_size_t _domainQuotaUsed, bool _freeNames, bool _freeAddress, quint32 _accounts, const QDateTime &_created, const QDateTime &_updated, const QDateTime _validUntil) :
+    DomainData(dbid_t _id, dbid_t _aceId, const QString &_name, const QString &_prefix, const QString &_transport, quota_size_t _quota, quint32 _maxAccounts, quota_size_t _domainQuota, quota_size_t _domainQuotaUsed, bool _freeNames, bool _freeAddress, quint32 _accounts, const QDateTime &_created, const QDateTime &_updated, const QDateTime _validUntil, const SimpleDomain &_parent, const std::vector<SimpleDomain> &_children, const std::vector<SimpleAdmin> &_admins, const std::vector<Folder> &_folders) :
         QSharedData(),
+        parent(_parent),
+        children(_children),
+        admins(_admins),
+        folders(_folders),
         quota(_quota),
         domainQuota(_domainQuota),
         domainQuotaUsed(_domainQuotaUsed),
@@ -50,6 +54,7 @@ public:
         updated(_updated),
         validUntil(_validUntil),
         id(_id),
+        ace_id(_aceId),
         maxAccounts(_maxAccounts),
         accounts(_accounts),
         freeNames(_freeNames),
@@ -58,13 +63,13 @@ public:
 
     ~DomainData() {}
 
-    quota_size_t quota = 0;
-    quota_size_t domainQuota = 0;
-    quota_size_t domainQuotaUsed = 0;
+    SimpleDomain parent;
     std::vector<SimpleDomain> children;
     std::vector<SimpleAdmin> admins;
     std::vector<Folder> folders;
-    SimpleDomain parent;
+    quota_size_t quota = 0;
+    quota_size_t domainQuota = 0;
+    quota_size_t domainQuotaUsed = 0;
     QString name;
     QString prefix;
     QString transport;

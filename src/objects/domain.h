@@ -103,7 +103,7 @@ public:
      * \param updated           date and time this domain has been updated in UTC time zone
      * \param validUntil        date and time until accounts in this domain can be valid
      */
-    Domain(dbid_t id, const QString &name, const QString &prefix, const QString &transport, quota_size_t quota, quint32 maxAccounts, quota_size_t domainQuota, quota_size_t domainQuotaUsed, bool freeNames, bool freeAddress, quint32 accounts, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil);
+    Domain(dbid_t id, dbid_t aceId, const QString &name, const QString &prefix, const QString &transport, quota_size_t quota, quint32 maxAccounts, quota_size_t domainQuota, quota_size_t domainQuotaUsed, bool freeNames, bool freeAddress, quint32 accounts, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const SimpleDomain &parent, const std::vector<SimpleDomain> &children, const std::vector<SimpleAdmin> &admins, const std::vector<Folder> &folders);
 
     /*!
      * \brief Constructs a copy of \a other.
@@ -137,31 +137,22 @@ public:
 
     /*!
      * \brief Returns the database ID of the domain.
-     * \sa setId()
      */
     dbid_t id() const;
-    /*!
-     * \brief Sets the database ID of this domain.
-     * \sa id()
-     */
-    void setId(dbid_t nId);
 
     /*!
      * \brief Returns the domain name.
-     * \sa setName(), aceName()
+     * \sa aceName()
      */
     QString name() const;
-    /*!
-     * \brief Sets the domain name.
-     * \sa name()
-     */
-    void setName(const QString &nName);
+
     /*!
      * \brief Returns the ACE version of the domain name.
      * If this is not an IDN it will return the same as name().
      * \sa name()
      */
     QString aceName() const;
+
     /*!
      * \brief Returns a string that contains the username and the database ID.
      *
@@ -172,50 +163,25 @@ public:
 
     /*!
      * \brief Returns the prefix used for the domain.
-     * \sa setPrefix()
      */
     QString prefix() const;
-    /*!
-     * \brief Sets the prefix used for this domain.
-     * \sa prefix()
-     */
-    void setPrefix(const QString &nPrefix);
 
     /*!
      * \brief Returns the transport method used for this domain.
-     * \sa setTransport()
      */
     QString transport() const;
-    /*!
-     * \brief Sets the transport method used for this domain.
-     * \sa transport()
-     */
-    void setTransport(const QString &nTransport);
 
     /*!
      * \brief Returns the default quota for new accounts in this domain.
-     * \sa setQuota()
      */
     quota_size_t quota() const;
-    /*!
-     * \brief Sets the default quota for new accounts in this domain.
-     * \sa quota()
-     */
-    void setQuota(quota_size_t nQuota);
 
     /*!
      * \brief Returns the number of maximum allowed accounts in this domain.
      *
      * If this returns \c 0, there is no limit.
-     *
-     * \sa setMaxAccounts()
      */
     quint32 maxAccounts() const;
-    /*!
-     * \brief Sets the maximum number of allowed accounts in this domain.
-     * \sa maxAccounts()
-     */
-    void setMaxAccounts(quint32 nMaxAccounts);
 
     /*!
      * \brief Returns the overall quota for all accounts in this domain in KiB.
@@ -225,14 +191,6 @@ public:
      * \sa setDomainQuota()
      */
     quota_size_t domainQuota() const;
-    /*!
-     * \brief Sets the allowed overall account quota for this domain.
-     *
-     * If this is set to \c 0, there will be no limit.
-     *
-     * \sa domainQuota()
-     */
-    void setDomainQuota(quota_size_t nDomainQuota);
 
     /*!
      * \brief Returns the overall used quota for all accounts in this domain in KiB.
@@ -248,121 +206,56 @@ public:
 
     /*!
      * \brief Returns \c true if free account user names are allowed for this domain.
-     * \sa setFreeNamesEnabled()
      */
     bool isFreeNamesEnabled() const;
-    /*!
-     * \brief Set this to \c true if free account user names are allowed in this domain.
-     * \sa isFreeNamesEnabled()
-     */
-    void setFreeNamesEnabled(bool nFreeNames);
 
     /*!
      * \brief Returns \c true if free email addresses are allowed for this domain.
-     * \sa setFreeAddressEnabled()
      */
     bool isFreeAddressEnabled() const;
-    /*!
-     * \brief Set this to \c true if free email addresses are allowed in this domain.
-     * \sa isFreeAddressEnabled()
-     */
-    void setFreeAddressEnabled(bool nFreeAddress);
 
     /*!
      * \brief Returns the list of default folders that will be created for new accounts in this domain.
-     * \sa setFolders()
      */
     std::vector<Folder> folders() const;
-    /*!
-     * \brief Sets the default folders that will be created for new accounts in this domain.
-     * \sa folders()
-     */
-    void setFolders(const std::vector<Folder> &nFolders);
 
     /*!
      * \brief Returns the number of accounts in this domain.
-     * \sa setAccounts()
      */
     quint32 accounts() const;
-    /*!
-     * \brief Sets the number of accounts available in this domain.
-     * \sa accounts()
-     */
-    void setAccounts(quint32 nAccounts);
 
     /*!
      * \brief Returns a list of administrators that are responsible for this domain.
      *
      * The admins in this list are admin users of type AdminAccount::DomainMaster that are
      * associated to this domain.
-     *
-     * \sa setAdmins()
      */
     std::vector<SimpleAdmin> admins() const;
-    /*!
-     * \brief Sets the list of admins that are responsible for this domain.
-     *
-     * The admins in this list should be admins of type AdminAccount::DomainMaster that are
-     * associated to this domain.
-     *
-     * \sa admins()
-     */
-    void setAdmins(const std::vector<SimpleAdmin> &adminList);
 
     /*!
      * \brief Returns the date and time this domain has been created.
-     * \sa setCreated()
      */
     QDateTime created() const;
-    /*!
-     * \brief Sets the date and time this domain has been created.
-     * \sa created()
-     */
-    void setCreated(const QDateTime &dt);
 
     /*!
      * \brief Returns the date and time this domain has been updated.
-     * \sa setUpdated()
      */
     QDateTime updated() const;
-    /*!
-     * \brief Sets the date and time this domain has been updated.
-     * \sa updated()
-     */
-    void setUpdated(const QDateTime &dt);
 
     /*!
      * \brief Returns the date and time until accounts in this domain can be valid.
-     * \sa setValidUntil()
      */
     QDateTime validUntil() const;
-    /*!
-     * \brief Sets the date and time until accounts in this domain can be valid.
-     * \sa validUntil()
-     */
-    void setValidUntil(const QDateTime &dt);
 
     /*!
      * \brief Returns information about the parent domain, if any has been set.
-     * \sa setParent()
      */
     SimpleDomain parent() const;
-    /*!
-     * \brief Sets the parent domain information.
-     * \sa parent()
-     */
-    void setParent(const SimpleDomain &parent);
 
     /*!
      * \brief Returns a list of child domains if any.
-     * \sa setChildren()
      */
     std::vector<SimpleDomain> children() const;
-    /*!
-     * \brief Sets the list of child domains.
-     * \sa children()
-     */
-    void setChildren(const std::vector<SimpleDomain> &children);
 
     /*!
      * \brief Returns \c true if this domain has an internationalized domain name (IDN).
@@ -372,15 +265,8 @@ public:
 
     /*!
      * \brief Returns the dabase ID of the corresponding ACE version of the domain name.
-     * \sa setAceId()
      */
     dbid_t aceId() const;
-
-    /*!
-     * \brief Sets the database ID of the corresponding ACE version of the domain name.
-     * \sa aceId()
-     */
-    void setAceId(dbid_t aceId);
 
     /*!
      * \brief Returns the percental value of used domain quota if any quota is set.
