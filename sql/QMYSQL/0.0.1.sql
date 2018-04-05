@@ -71,7 +71,8 @@ CREATE TABLE IF NOT EXISTS folder (
   domain_id int unsigned NOT NULL,
   name varchar(255) NOT NULL,
   special_use text CHARACTER SET latin1,
-  KEY idx_folder_domain_id (domain_id)
+  KEY idx_folder_domain_id (domain_id),
+  FOREIGN KEY domain_to_folder (domain_id) REFERENCES domain(id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
@@ -80,6 +81,7 @@ CREATE TABLE IF NOT EXISTS domainadmin (
   admin_id int unsigned NOT NULL,
   KEY domainadmin_domain_id_idx (domain_id),
   KEY domainadmin_admin_id_idx (admin_id),
+  FOREIGN KEY domain_to_domainadmin (domain_id) REFERENCES domain(id) ON DELETE CASCADE,
   FOREIGN KEY admin_to_domainadmin (admin_id) REFERENCES adminuser(id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET=latin1;
 

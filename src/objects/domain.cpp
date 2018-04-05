@@ -839,24 +839,6 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
         return ret;
     }
 
-    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM domainadmin WHERE domain_id = :domain_id"));
-    q.bindValue(QStringLiteral(":domain_id"), d->id);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain to domain manager connections from database."));
-        qCCritical(SK_DOMAIN, "Failed to remove domain to domain manager connections for domain %s from database: %s. Abort removing domain.", qUtf8Printable(d->name), qUtf8Printable(q.lastError().text()));
-        return ret;
-    }
-
-    q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id"));
-    q.bindValue(QStringLiteral(":domain_id"), d->id);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain default folders from database."));
-        qCCritical(SK_DOMAIN, "Failed to remove default folders for domain %s (ID: %u) from database: %s. Abort removing domain.", qUtf8Printable(d->name), d->id, qUtf8Printable(q.lastError().text()));
-        return ret;
-    }
-
     if (deleteChildren) {
         if (!d->children.empty()) {
             for (const SimpleDomain &kid : d->children) {
