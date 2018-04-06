@@ -428,6 +428,9 @@ public:
 
 protected:
     QSharedDataPointer<AdminAccountData> d;
+
+    friend QDataStream &operator>>(QDataStream &stream, AdminAccount &account);
+    friend QDataStream &operator<<(QDataStream &stream, const AdminAccount &account);
 };
 
 Q_DECLARE_METATYPE(AdminAccount)
@@ -438,6 +441,18 @@ Q_DECLARE_TYPEINFO(AdminAccount, Q_MOVABLE_TYPE);
  * \brief Writes the admin \a account to the \a dbg stream and returns the stream.
  */
 QDebug operator<<(QDebug dbg, const AdminAccount &account);
+
+/*!
+ * \relates AdminAccount
+ * \brief Reads a %Domain from the given \a stream and stores it in the given \a account.
+ */
+QDataStream &operator>>(QDataStream &stream, AdminAccount &account);
+
+/*!
+ * \relates AdminAccount
+ * \brief Writes the given \a account to the given \a stream.
+ */
+QDataStream &operator<<(QDataStream &stream, const AdminAccount &account);
 
 GRANTLEE_BEGIN_LOOKUP(AdminAccount)
 if (property == QLatin1String("id")) {

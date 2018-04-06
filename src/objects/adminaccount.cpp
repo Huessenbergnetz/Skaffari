@@ -35,6 +35,7 @@
 #include <QDebug>
 #include <QMetaEnum>
 #include <QLocale>
+#include <QDataStream>
 
 Q_LOGGING_CATEGORY(SK_ADMIN, "skaffari.admin")
 
@@ -1060,6 +1061,35 @@ QDebug operator<<(QDebug dbg, const AdminAccount &account)
     dbg << ')';
     dbg.setAutoInsertSpaces(oldSetting);
     return dbg.maybeSpace();
+}
+
+QDataStream& operator<<(QDataStream &stream, const AdminAccount &account)
+{
+    stream << account.domains() << account.username() << account.lang()
+           << account.getTemplate() << account.tz() << account.created()
+           << account.updated() << account.id() << static_cast<quint8>(account.type())
+           << account.maxDisplay() << account.warnLevel();
+
+    return stream;
+}
+
+QDataStream& operator>>(QDataStream &stream, AdminAccount &account)
+{
+    stream >> account.d->domains;
+    stream >> account.d->username;
+    stream >> account.d->lang;
+    stream >> account.d->tmpl;
+    stream >> account.d->tz;
+    stream >> account.d->created;
+    stream >> account.d->updated;
+    stream >> account.d->id;
+    quint8 _type;
+    stream >> _type;
+    account.d->type = AdminAccount::getUserType(_type);
+    stream >> account.d->maxDisplay;
+    stream >> account.d->warnLevel;
+
+    return stream;
 }
 
 #include "moc_adminaccount.cpp"
