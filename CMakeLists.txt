@@ -29,7 +29,6 @@ set(CMAKE_INSTALL_SYSCONFDIR "/etc/skaffari" CACHE PATH "Directory to install co
 set(SQL_INSTALL_DIR "${APPDIR}/sql" CACHE PATH "Directory to install SQL files")
 set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATADIR}/doc/skaffari" CACHE PATH "Directory to install documentation")
 set(CMAKE_INSTALL_MANDIR "${CMAKE_INSTALL_DATADIR}/man" CACHE PATH "Directory to install man pages")
-set(BUILD_TEMPLATES OFF CACHE BOOL "If enabled, template assests will be build")
 
 set(Grantlee5_MAJOR_MINOR_VERSION_STRING "${Grantlee5_VERSION_MAJOR}.${Grantlee5_VERSION_MINOR}" )
 set(GRANTLEE_PLUGIN_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/grantlee/${Grantlee5_MAJOR_MINOR_VERSION_STRING} )
