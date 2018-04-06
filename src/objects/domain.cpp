@@ -1250,8 +1250,6 @@ QDataStream &operator<<(QDataStream &stream, const Domain &domain)
     stream << domain.isFreeNamesEnabled() << domain.isFreeAddressEnabled();
 
     return stream;
-
-    return stream;
 }
 
 QDataStream &operator>>(QDataStream &stream, Domain &domain)
