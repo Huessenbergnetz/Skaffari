@@ -405,10 +405,20 @@ public:
     static QString typeToName(AdminAccount::AdminAccountType type, Cutelyst::Context *c);
 
     /*!
+     * \brief Returns a list of integer strings that show the allowed types a user with \a userType can create.
+     */
+    static QStringList allowedTypes(AdminAccount::AdminAccountType userType);
+
+    /*!
      * \brief Returns a list of integer strings that show the types the currently logged in user can create.
      * \param c pointer to the current context
      */
     static QStringList allowedTypes(Cutelyst::Context *c);
+
+    /*!
+     * \brief Returns the maximum allowed type a user with \a userType can create.
+     */
+    static AdminAccount::AdminAccountType maxAllowedType(AdminAccount::AdminAccountType userType);
 
     /*!
      * \brief Returns the maximum allowed type the current logged in user can created.

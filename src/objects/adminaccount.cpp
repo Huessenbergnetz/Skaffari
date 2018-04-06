@@ -39,6 +39,7 @@
 Q_LOGGING_CATEGORY(SK_ADMIN, "skaffari.admin")
 
 #define ADMIN_ACCOUNT_STASH_KEY "adminaccount"
+#define ADMIN_USER_STASH_KEY "user"
 
 AdminAccount::AdminAccount() :
     d(new AdminAccountData)
@@ -912,7 +913,7 @@ AdminAccount AdminAccount::fromStash(Cutelyst::Context *c)
 
 AdminAccount AdminAccount::getUser(Cutelyst::Context *c)
 {
-    return c->stash(QStringLiteral("user")).value<AdminAccount>();
+    return c->stash(QStringLiteral(ADMIN_USER_STASH_KEY)).value<AdminAccount>();
 }
 
 AdminAccount::AdminAccountType AdminAccount::getUserType(quint8 type)
@@ -927,7 +928,7 @@ AdminAccount::AdminAccountType AdminAccount::getUserType(const Cutelyst::Authent
 
 AdminAccount::AdminAccountType AdminAccount::getUserType(Cutelyst::Context *c)
 {
-    return c->stash(QStringLiteral("user")).value<AdminAccount>().type();
+    return c->stash(QStringLiteral(ADMIN_USER_STASH_KEY)).value<AdminAccount>().type();
 }
 
 AdminAccount::AdminAccountType AdminAccount::getUserType(const QVariant &user)
@@ -937,18 +938,18 @@ AdminAccount::AdminAccountType AdminAccount::getUserType(const QVariant &user)
 
 dbid_t AdminAccount::getUserId(Cutelyst::Context *c)
 {
-    return c->stash(QStringLiteral("user")).value<AdminAccount>().id();
+    return c->stash(QStringLiteral(ADMIN_USER_STASH_KEY)).value<AdminAccount>().id();
 }
 
 QString AdminAccount::getUserName(Cutelyst::Context *c)
 {
-    return c->stash(QStringLiteral("user")).value<AdminAccount>().username();
+    return c->stash(QStringLiteral(ADMIN_USER_STASH_KEY)).value<AdminAccount>().username();
 }
 
 QString AdminAccount::getUserNameIdString(Cutelyst::Context *c)
 {
     QString ret;
-    const AdminAccount a = c->stash(QStringLiteral("user")).value<AdminAccount>();
+    const AdminAccount a = c->stash(QStringLiteral(ADMIN_USER_STASH_KEY)).value<AdminAccount>();
     ret = a.username() + QLatin1String(" (ID: ") + QString::number(a.id()) + QLatin1Char(')');
     return ret;
 }
@@ -977,17 +978,17 @@ QString AdminAccount::typeToName(AdminAccount::AdminAccountType type, Cutelyst::
     return name;
 }
 
-QStringList AdminAccount::allowedTypes(Cutelyst::Context *c)
+QStringList AdminAccount::allowedTypes(AdminAccount::AdminAccountType userType)
 {
     QStringList lst;
 
     const QMetaEnum me = QMetaEnum::fromType<AdminAccount::AdminAccountType>();
 
     if (me.isValid() && (me.keyCount() > 0)) {
-        const int userType = static_cast<int>(AdminAccount::getUserType(c));
+        const int _userType = static_cast<int>(userType);
         for (int i = 0; i < me.keyCount(); ++i) {
             const auto type = me.value(i);
-            if ((type != 0) && ((userType == 255) || (type < userType))) {
+            if ((type != 0) && ((_userType == 255) || (type < _userType))) {
                 lst << QString::number(type);
             }
         }
@@ -996,11 +997,14 @@ QStringList AdminAccount::allowedTypes(Cutelyst::Context *c)
     return lst;
 }
 
-AdminAccount::AdminAccountType AdminAccount::maxAllowedType(Cutelyst::Context *c)
+QStringList AdminAccount::allowedTypes(Cutelyst::Context *c)
+{
+    return AdminAccount::allowedTypes(AdminAccount::getUserType(c));
+}
+
+AdminAccount::AdminAccountType AdminAccount::maxAllowedType(AdminAccount::AdminAccountType userType)
 {
     AdminAccount::AdminAccountType max = AdminAccount::Disabled;
-
-    const auto userType = AdminAccount::getUserType(c);
 
     if (userType == AdminAccount::SuperUser) {
         max = AdminAccount::SuperUser;
@@ -1018,6 +1022,11 @@ AdminAccount::AdminAccountType AdminAccount::maxAllowedType(Cutelyst::Context *c
     }
 
     return max;
+}
+
+AdminAccount::AdminAccountType AdminAccount::maxAllowedType(Cutelyst::Context *c)
+{
+    return AdminAccount::maxAllowedType(AdminAccount::getUserType(c));
 }
 
 QDebug operator<<(QDebug dbg, const AdminAccount &account)
