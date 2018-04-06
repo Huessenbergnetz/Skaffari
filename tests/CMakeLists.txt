@@ -11,6 +11,7 @@ endfunction(skaffari_test _testname _link1 _link2 _link3)
 
 skaffari_test(testdomain "" "" "")
 skaffari_test(testaccount "" "" "")
+skaffari_test(testadminaccount Cutelyst::Core "" "")
 skaffari_test(testemailaddress "" "" "")
 skaffari_test(testfolder "" "" "")
 skaffari_test(testsimpleaccount "" "" "")
