@@ -36,7 +36,6 @@ class Context;
 }
 
 class SkaffariError;
-class SimpleAccountData;
 
 /*!
  * \ingroup skaffaricore
@@ -44,6 +43,8 @@ class SimpleAccountData;
  */
 class SimpleAccount
 {
+    class Data;
+    QSharedDataPointer<Data> d;
 public:
     /*!
      * \brief Constructs an invalid, empty %SimpleAccount.
@@ -184,9 +185,6 @@ public:
      * \return          Single account.
      */
     static SimpleAccount get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
-
-private:
-    QSharedDataPointer<SimpleAccountData> d;
 };
 
 Q_DECLARE_METATYPE(SimpleAccount)

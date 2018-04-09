@@ -28,7 +28,6 @@ set (skaffari_SRCS
     objects/helpentry_p.h
     objects/simpleaccount.cpp
     objects/simpleaccount.h
-    objects/simpleaccount_p.h
     objects/emailaddress.cpp
     objects/emailaddress.h
     objects/emailaddress_p.h

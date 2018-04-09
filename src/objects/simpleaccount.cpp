@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "simpleaccount_p.h"
+#include "simpleaccount.h"
 #include "skaffarierror.h"
 #include <Cutelyst/Context>
 #include <Cutelyst/Plugins/Utils/Sql>
@@ -25,18 +25,52 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QJsonValue>
+#include <QSharedData>
+#include <QCollator>
 #include <QDebug>
 #include <algorithm>
 
 Q_LOGGING_CATEGORY(SK_SIMPLEACCOUNT, "skaffari.simpleaccount")
 
-SimpleAccount::SimpleAccount() : d(new SimpleAccountData)
+class SimpleAccountCollator : public QCollator
+{
+public:
+    explicit SimpleAccountCollator(const QLocale &locale) :
+        QCollator(locale)
+    {}
+
+    bool operator() (const SimpleAccount &left, const SimpleAccount &right) { return (compare(left.username(), right.username()) > 0); }
+};
+
+
+class SimpleAccount::Data : public QSharedData
+{
+public:
+    Data() = default;
+
+    Data(dbid_t _id, const QString &_username, const QString &_domainname) :
+        QSharedData(),
+        username(_username),
+        domainname(_domainname),
+        id(_id)
+    {}
+
+    Data(const Data &other) = default;
+
+    ~Data() = default;
+
+    QString username;
+    QString domainname;
+    dbid_t id = 0;
+};
+
+SimpleAccount::SimpleAccount() : d(new Data)
 {
 
 }
 
 SimpleAccount::SimpleAccount(dbid_t id, const QString &username, const QString &domainname) :
-    d(new SimpleAccountData(id, username, domainname))
+    d(new Data(id, username, domainname))
 {
 
 }
