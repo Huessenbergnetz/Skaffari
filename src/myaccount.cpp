@@ -51,7 +51,7 @@ void MyAccount::index(Context *c)
 {
     AuthenticationUser user = Authentication::user(c);
     SkaffariError e(c);
-    AdminAccount aac = AdminAccount::get(c, &e, user.id().value<dbid_t>());
+    AdminAccount aac = AdminAccount::get(c, e, user.id().value<dbid_t>());
     if (aac.isValid()) {
 
         static const QStringList tzIds = ([]() -> QStringList {
@@ -84,7 +84,7 @@ void MyAccount::index(Context *c)
             const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
             if (vr) {
                 SkaffariError e(c);
-                if (aac.updateOwn(c, &e, vr.values())) {
+                if (aac.updateOwn(c, e, vr.values())) {
                     c->setStash(QStringLiteral("status_msg"), c->translate("MyAccount", "Your account has been updated."));
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());

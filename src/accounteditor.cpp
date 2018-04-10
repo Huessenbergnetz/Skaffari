@@ -119,7 +119,7 @@ void AccountEditor::edit(Context* c)
         const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
         if (vr) {
             SkaffariError e(c);
-            if (a.update(c, &e, &dom, vr.values())) {
+            if (a.update(c, e, &dom, vr.values())) {
                 a.toStash(c);
                 dom.toStash(c);
                 c->setStash(QStringLiteral("status_msg"), c->translate("AccountEditor", "User account %1 successfully updated.").arg(a.username()));
@@ -159,7 +159,7 @@ void AccountEditor::edit(Context* c)
     help.insert(QStringLiteral("smtpauth"), HelpEntry(c->translate("AccountEditor", "SMTP Access"), c->translate("AccountEditor", "If enabled, the user of this account can send emails via this server through the SMTP protocol.")));
 
     SkaffariError getCatchAllError(c);
-    const QString catchAllUser = dom.getCatchAllAccount(c, &getCatchAllError);
+    const QString catchAllUser = dom.getCatchAllAccount(c, getCatchAllError);
     const QString catchAllTitle = c->translate("AccountEditor", "Catch All");
     QString catchAllHelp;
     if (catchAllUser == a.username()) {
@@ -194,7 +194,7 @@ void AccountEditor::remove(Context* c)
         if (c->req()->bodyParam(QStringLiteral("accountName")) == a.username()) {
 
             SkaffariError e(c);
-            if (a.remove(c, &e)) {
+            if (a.remove(c, e)) {
 
                 const QString statusMsg = c->translate("AccountEditor", "User account %1 successfully removed.").arg(a.username());
 
@@ -258,7 +258,7 @@ void AccountEditor::addresses(Context *c)
 
     if (d.isFreeAddressEnabled()) {
         SkaffariError sde(c);
-        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(SimpleDomain::list(c, &sde)));
+        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(SimpleDomain::list(c, sde)));
     } else if (!d.children().empty()) {
         std::vector<SimpleDomain> maildomains = d.children();
         maildomains.insert(maildomains.begin(), d.toSimple());
@@ -312,7 +312,7 @@ void AccountEditor::edit_address(Context *c, const QString &address)
         if (d.isFreeAddressEnabled()) {
             AuthenticationUser user = Authentication::user(c);
             SkaffariError sde(c);
-            const std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, &sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().value<dbid_t>());
+            const std::vector<SimpleDomain> maildomains = SimpleDomain::list(c, sde, user.value(QStringLiteral("type")).value<quint8>(), user.id().value<dbid_t>());
             c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
         } else if (!d.children().empty()) {
             std::vector<SimpleDomain> maildomains = d.children();
@@ -335,7 +335,7 @@ void AccountEditor::edit_address(Context *c, const QString &address)
         if (vr) {
 
             SkaffariError e(c);
-            const QString newAddress = a.updateEmail(c, &e, vr.values(), oldAddress);
+            const QString newAddress = a.updateEmail(c, e, vr.values(), oldAddress);
             if (e.type() == SkaffariError::NoError) {
 
                 const QString statusMsg = c->translate("AccountEditor", "Successfully changed email address from %1 to %2.").arg(oldAddress, newAddress);
@@ -491,7 +491,7 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 
         } else {
             SkaffariError e(c);
-            if (a.removeEmail(c, &e, _address)) {
+            if (a.removeEmail(c, e, _address)) {
 
                 const QString statusMsg = c->translate("AccountEditor", "Successfully removed email address %1 from account %2.").arg(_address, a.username());
 
@@ -562,7 +562,7 @@ void AccountEditor::add_address(Context *c)
         if (vr) {
 
             SkaffariError e(c);
-            const QString newAddress = a.addEmail(c, &e, vr.values());
+            const QString newAddress = a.addEmail(c, e, vr.values());
             if (e.type() == SkaffariError::NoError) {
 
                 const QString statusMsg = c->translate("AccountEditor", "Successfully added email address %1 to account %2.").arg(newAddress, a.username());
@@ -620,7 +620,7 @@ void AccountEditor::add_address(Context *c)
 
     if (d.isFreeAddressEnabled()) {
         SkaffariError sde(c);
-        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(SimpleDomain::list(c, &sde)));
+        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(SimpleDomain::list(c, sde)));
     } else if (!d.children().empty()) {
         std::vector<SimpleDomain> maildomains = d.children();
         maildomains.insert(maildomains.begin(), d.toSimple());
@@ -675,7 +675,7 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
 
         } else {
             SkaffariError e(c);
-            if (a.removeForward(c, &e, forward)) {
+            if (a.removeForward(c, e, forward)) {
 
                 const QString statusMsg = c->translate("AccountEditor", "Successfully removed forward email address %1 from account %2.").arg(forward, a.username());
 
@@ -740,7 +740,7 @@ void AccountEditor::add_forward(Context *c)
 
             SkaffariError e(c);
             const QString newForward = vr.value(QStringLiteral("newforward")).toString();
-            if (a.addForward(c, &e, newForward)) {
+            if (a.addForward(c, e, newForward)) {
 
                 const QString statusMsg = c->translate("AccountEditor", "Successfully added forward email address %1 to account %2.").arg(newForward, a.username());
 
@@ -830,7 +830,7 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
 
             SkaffariError e(c);
             const QString newForward = c->req()->bodyParam(QStringLiteral("newforward"));
-            if (a.editForward(c, &e, oldForward, newForward)) {
+            if (a.editForward(c, e, oldForward, newForward)) {
 
                 const QString statusMsg = c->translate("AccountEditor", "Successfully changed forward %1 into %2 for account %3.").arg(oldForward, newForward, a.username());
                 auto d = Domain::fromStash(c);
@@ -915,7 +915,7 @@ void AccountEditor::keep_local(Context *c)
         const bool _keepLocal = (c->req()->bodyParameter(QStringLiteral("keeplocal"), QStringLiteral("false")) == QLatin1String("true"));
 
         SkaffariError e(c);
-        if (a.changeKeepLocal(c, &e, _keepLocal)) {
+        if (a.changeKeepLocal(c, e, _keepLocal)) {
 
             const QString statusMsg = _keepLocal
                     ? c->translate("AccountEditor", "Successfully enabled the keeping of forwarded emails in the local mailbox of account %1.").arg(a.username())
@@ -977,7 +977,7 @@ void AccountEditor::check(Context *c)
         auto d = Domain::fromStash(c);
 
         SkaffariError e(c);
-        const QStringList actions = a.check(c, &e, d, c->req()->bodyParameters());
+        const QStringList actions = a.check(c, e, d, c->req()->bodyParameters());
 
         a.toStash(c);
 
@@ -1033,7 +1033,7 @@ void AccountEditor::list(Context *c)
     const QString searchString = c->req()->queryParam(QStringLiteral("searchString"));
 
     SkaffariError e(c);
-    const QJsonArray accounts = SimpleAccount::listJson(c, &e, AdminAccount::getUserType(c), AdminAccount::getUserId(c), domainId, searchString);
+    const QJsonArray accounts = SimpleAccount::listJson(c, e, AdminAccount::getUserType(c), AdminAccount::getUserId(c), domainId, searchString);
     QJsonObject o;
     o.insert(QStringLiteral("accounts"), accounts);
     if (e.type() != SkaffariError::NoError) {

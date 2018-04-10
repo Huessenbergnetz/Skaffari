@@ -301,12 +301,12 @@ public:
      * will contain information about the error.
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
-     * \param e Pointer to an object taking information about occurring errors.
+     * \param e Object taking information about occurring errors.
      * \param p Input parameters containting information about the new account.
      * \param d The domain the account should be created in.
      * \return A valid Account object on success.
      */
-    static Account create(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p, const Domain &d, const QStringList &selectedKids);
+    static Account create(Cutelyst::Context *c, SkaffariError &e, const QVariantHash &p, const Domain &d, const QStringList &selectedKids);
 
     /*!
      * \brief Removes the account from the database and the IMAP server.
@@ -317,16 +317,16 @@ public:
      * If deletion fails, the SkaffariError object pointed to by \a e will contain information about the error.
      *
      * \param c         Pointer to the current context, used for string translation and user authentication.
-     * \param e         Pointer to an object taking information about occurring errors.
+     * \param e         Object taking information about occurring errors.
      * \param domain    The domain the account to delete belongs to.
      * \return \c true on success.
      */
-    bool remove(Cutelyst::Context *c, SkaffariError *e) const;
+    bool remove(Cutelyst::Context *c, SkaffariError &e) const;
 
     /*!
      * \brief Lists all accounts belonging to the domain \a d.
      * \param c             Pointer to the current context, used for string translation and user authentication.
-     * \param e             Pointer to an object taking information about occurring errors.
+     * \param e             Object taking information about occurring errors.
      * \param d             The domain you want to list the accounts from.
      * \param p             Contains information about the pagination.
      * \param sortBy        Column to sort the accounts by.
@@ -335,7 +335,7 @@ public:
      * \param searchString  The string to search for in the column defined by \a searchRole.
      * \return A pagination object containing information about the pagination and the list of accounts.
      */
-    static Cutelyst::Pagination list(Cutelyst::Context *c, SkaffariError *e, const Domain &d, const Cutelyst::Pagination &p, const QString &sortBy = QStringLiteral("username"), const QString &sortOrder = QStringLiteral("ASC"), const QString &searchRole = QStringLiteral("username"), const QString &searchString = QString());
+    static Cutelyst::Pagination list(Cutelyst::Context *c, SkaffariError &e, const Domain &d, const Cutelyst::Pagination &p, const QString &sortBy = QStringLiteral("username"), const QString &sortOrder = QStringLiteral("ASC"), const QString &searchRole = QStringLiteral("username"), const QString &searchString = QString());
 
     /*!
      * \brief Gets the account defined by database ID \a id from the database.
@@ -344,11 +344,11 @@ public:
      * by \a e will contain information about occurred errors.
      *
      * \param c     Pointer to the current context, used for string translation, user authentication and to set the stash.
-     * \param e     Pointer to an object taking information about occurring errors.
+     * \param e     Object taking information about occurring errors.
      * \param id    The database ID of the account.
      * \return      Account object containing the account data.
      */
-    static Account get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
+    static Account get(Cutelyst::Context *c, SkaffariError &e, dbid_t id);
 
     /*!
      * \brief Requests information about the account defined by \a accountId from the database and adds it to the stash.
@@ -382,12 +382,12 @@ public:
      * If the update fails, the SkaffariError object pointed to by \a e will contain information about occurred errors.
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
-     * \param e Pointer to an object taking information about occurring errors.
+     * \param e Object taking information about occurring errors.
      * \param dom Pointer to an Domain object that will have it's used domain quota updated.
      * \param p Updated parameters for this account.
      * \return \c true on success.
      */
-    bool update(Cutelyst::Context *c, SkaffariError *e, Domain *dom, const QVariantHash &p);
+    bool update(Cutelyst::Context *c, SkaffariError &e, Domain *dom, const QVariantHash &p);
 
     /*!
      * \brief Checks if all account data is available and creates missing data.
@@ -395,12 +395,12 @@ public:
      * This will for example check for missing mailbox on the IMAP server and wrong or missing storage quotas.
      *
      * \param c         Pointer to the current context, used for string translation and user authentication.
-     * \param e         Pointer to an object taking information about occurring errors.
+     * \param e         Object taking information about occurring errors.
      * \param domain    Object containing information about the domain the account belongs to.
      * \param p         Man of input parameters containing checks to perform.
      * \return List of actions performed for this account.
      */
-    QStringList check(Cutelyst::Context *c, SkaffariError *e, const Domain &domain = Domain(), const Cutelyst::ParamsMultiMap &p = Cutelyst::ParamsMultiMap());
+    QStringList check(Cutelyst::Context *c, SkaffariError &e, const Domain &domain = Domain(), const Cutelyst::ParamsMultiMap &p = Cutelyst::ParamsMultiMap());
 
     /*!
      * \brief Updates a single email address connected to the account pointed to by \a a.
@@ -408,13 +408,12 @@ public:
      * If the update fails, the SkaffariError object pointed to by \a e will contain information about occurred errors.
      *
      * \param c             Pointer to the current context, used for string translation and user authentication.
-     * \param e             Pointer to an object taking information about occurring errors.
-     * \param a             Pointer to the Account object the email address should be updated for.
+     * \param e             Object taking information about occurring errors.
      * \param p             Input parameters containing the updated email address.
      * \param oldAddress    The old email address.
      * \return \c updated email address
      */
-    QString updateEmail(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p, const QString &oldAddress);
+    QString updateEmail(Cutelyst::Context *c, SkaffariError &e, const QVariantHash &p, const QString &oldAddress);
 
     /*!
      * \brief Adds a new email address to the account.
@@ -423,20 +422,20 @@ public:
      * about occurred errors.
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
-     * \param e Pointer to an object taking information about occurring errors.
+     * \param e Object taking information about occurring errors.
      * \param p Input parameters containing the new email address.
      * \return \c added email address
      */
-    QString addEmail(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p);
+    QString addEmail(Cutelyst::Context *c, SkaffariError &e, const QVariantHash &p);
 
     /*!
      * \brief Removes an email address from the account pointed to by \a a.
      * \param c         Pointer to the current context, used for string translation and user authentication.
-     * \param e         Pointer to an object taking information about occurring errors.
+     * \param e         Object taking information about occurring errors.
      * \param address   The address that should be removed.
      * \return \c true on success.
      */
-    bool removeEmail(Cutelyst::Context *c, SkaffariError *e, const QString &address);
+    bool removeEmail(Cutelyst::Context *c, SkaffariError &e, const QString &address);
 
     /*!
      * \brief Adds a new \a forward address to the account pointed to by \a a.
@@ -445,39 +444,39 @@ public:
      * about occurred errors.
      *
      * \param c Pointer to the current context, used for string translation and user authentication.
-     * \param e Pointer to an object taking information about occurring errors.
+     * \param e Object taking information about occurring errors.
      * \param forward The new forward to add.
      * \return \c true on success.
      */
-    bool addForward(Cutelyst::Context *c, SkaffariError *e, const QString &forward);
+    bool addForward(Cutelyst::Context *c, SkaffariError &e, const QString &forward);
 
     /*!
      * \brief Removes a \a forward email address from the account.
      * \param c         Pointer to the current context, used for string translation and user authentication.
-     * \param e         Pointer to an object taking information about occurring errors.
+     * \param e         Object taking information about occurring errors.
      * \param forward   The forward address that should be removed.
      * \return \c true on success
      */
-    bool removeForward(Cutelyst::Context *c, SkaffariError *e, const QString &forward);
+    bool removeForward(Cutelyst::Context *c, SkaffariError &e, const QString &forward);
 
     /*!
      * \brief Edits a forward address on the account.
      * \param c             Pointer to the current context, used for string translation and user authentication.
-     * \param e             Pointer to an object taking information about occurring errors.
+     * \param e             Object taking information about occurring errors.
      * \param oldForward    Old forward address that should be changed.
      * \param newForward    New forward address the old one should be changed to.
      * \return              \c true on succes
      */
-    bool editForward(Cutelyst::Context *c, SkaffariError *e, const QString &oldForward, const QString &newForward);
+    bool editForward(Cutelyst::Context *c, SkaffariError &e, const QString &oldForward, const QString &newForward);
 
     /*!
      * \brief Changes the keeping of forwarded mails of the account to \a keepLocal.
      * \param c         Pointer to the current context, used for string translation and user authentication.
-     * \param e         Pointer to an object taking information about occurring errors.
+     * \param e         Object taking information about occurring errors.
      * \param keepLocal Set to \c true if forwarded mails should be kept in local mail box, to \c false otherwise.
      * \return          \c true on success
      */
-    bool changeKeepLocal(Cutelyst::Context *c, SkaffariError *e, bool keepLocal);
+    bool changeKeepLocal(Cutelyst::Context *c, SkaffariError &e, bool keepLocal);
 
     /*!
      * \brief Converts an email address from ACE into UTF-8.

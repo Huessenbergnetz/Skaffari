@@ -105,12 +105,11 @@ bool EmailAddress::isValid() const
     return ((d->id > 0) && !d->local.isEmpty() && !d->domain.isEmpty());
 }
 
-std::vector<EmailAddress> EmailAddress::list(Cutelyst::Context *c, SkaffariError *e, const QString &username)
+std::vector<EmailAddress> EmailAddress::list(Cutelyst::Context *c, SkaffariError &e, const QString &username)
 {
     std::vector<EmailAddress> lst;
 
     Q_ASSERT_X(c, "list email addresses", "invalid context object pointer");
-    Q_ASSERT_X(e, "list email addresses", "invalid error object pointer");
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, ace_id, alias FROM virtual WHERE dest = :username AND username = :username AND idn_id = 0 ORDER BY alias ASC"));
     q.bindValue(QStringLiteral(":username"), username);
@@ -132,18 +131,17 @@ std::vector<EmailAddress> EmailAddress::list(Cutelyst::Context *c, SkaffariError
             std::sort(lst.begin(), lst.end(), eanc);
         }
     } else {
-        e->setSqlError(q.lastError(), c->translate("EmailAddress", "Failed to query the list of email addresses for account %1.").arg(username));
+        e.setSqlError(q.lastError(), c->translate("EmailAddress", "Failed to query the list of email addresses for account %1.").arg(username));
     }
 
     return lst;
 }
 
-EmailAddress EmailAddress::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
+EmailAddress EmailAddress::get(Cutelyst::Context *c, SkaffariError &e, dbid_t id)
 {
     EmailAddress address;
 
     Q_ASSERT_X(c, "get email address by id", "invalid context object pointer");
-    Q_ASSERT_X(e, "get email address by id", "invalid error object pointer");
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT ace_id, alias FROM virtual WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), id);
@@ -152,22 +150,21 @@ EmailAddress EmailAddress::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id
         if (q.next()) {
             address = EmailAddress(id, q.value(0).value<dbid_t>(), q.value(1).toString());
         } else {
-            e->setErrorType(SkaffariError::NotFound);
-            e->setErrorText(c->translate("EmailAddress", "Can not find email address with database ID %1.").arg(id));
+            e.setErrorType(SkaffariError::NotFound);
+            e.setErrorText(c->translate("EmailAddress", "Can not find email address with database ID %1.").arg(id));
         }
     } else {
-        e->setSqlError(q.lastError(), c->translate("EmailAddress", "Failed to query email address with ID %1 from the database.").arg(id));
+        e.setSqlError(q.lastError(), c->translate("EmailAddress", "Failed to query email address with ID %1 from the database.").arg(id));
     }
 
     return address;
 }
 
-EmailAddress EmailAddress::get(Cutelyst::Context *c, SkaffariError *e, const QString &alias)
+EmailAddress EmailAddress::get(Cutelyst::Context *c, SkaffariError &e, const QString &alias)
 {
     EmailAddress address;
 
     Q_ASSERT_X(c, "get email address by alias", "invalid context object pointer");
-    Q_ASSERT_X(e, "get email address by alias", "invalid error object pointer");
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT id, ace_id FROM virtual WHERE alias = :alias"));
     q.bindValue(QStringLiteral(":alias"), alias);
@@ -176,11 +173,11 @@ EmailAddress EmailAddress::get(Cutelyst::Context *c, SkaffariError *e, const QSt
         if (q.next()) {
             address = EmailAddress(q.value(0).value<dbid_t>(), q.value(1).value<dbid_t>(), alias);
         } else {
-            e->setErrorType(SkaffariError::NotFound);
-            e->setErrorText(c->translate("EmailAddress", "Can not find email address %1.").arg(alias));
+            e.setErrorType(SkaffariError::NotFound);
+            e.setErrorText(c->translate("EmailAddress", "Can not find email address %1.").arg(alias));
         }
     } else {
-        e->setSqlError(q.lastError(), c->translate("EmailAddress", "Failed to query email address %1 from the database.").arg(alias));
+        e.setSqlError(q.lastError(), c->translate("EmailAddress", "Failed to query email address %1 from the database.").arg(alias));
     }
 
     return address;

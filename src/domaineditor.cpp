@@ -64,7 +64,7 @@ DomainEditor::~DomainEditor()
 void DomainEditor::index(Context *c)
 {
     SkaffariError e(c);
-    auto doms = Domain::list(c, &e, Authentication::user(c));
+    auto doms = Domain::list(c, e, Authentication::user(c));
 
     c->stash({
                  {QStringLiteral("domains"), QVariant::fromValue<std::vector<Domain>>(doms)},
@@ -125,7 +125,7 @@ void DomainEditor::edit(Context *c)
         if (vr) {
             vr.addValue(QStringLiteral("folders"), req->bodyParam(QStringLiteral("folders")));
             SkaffariError e(c);
-            if (dom.update(c, vr.values(), &e)) {
+            if (dom.update(c, vr.values(), e)) {
                 dom.toStash(c);
                 c->setStash(QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated domain %1.").arg(dom.name()));
             } else {
@@ -167,7 +167,7 @@ void DomainEditor::edit(Context *c)
     help.insert(QStringLiteral("freeAddress"), HelpEntry(c->translate("DomainEditor", "Allow free addresses"), c->translate("DomainEditor", "If enabled, user accounts in this domain can have email addresses for all domains managed by Skaffari. If disabled, only email addresses for this domain can be added to user accounts in this domain.")));
 
     SkaffariError e(c);
-    const std::vector<SimpleDomain> doms = SimpleDomain::list(c, &e, user.type(), user.id(), true);
+    const std::vector<SimpleDomain> doms = SimpleDomain::list(c, e, user.type(), user.id(), true);
     if (e.type() != SkaffariError::NoError) {
         c->setStash(QStringLiteral("error_msg"), e.errorText());
     }
@@ -258,7 +258,7 @@ void DomainEditor::accounts(Context* c)
 
     SkaffariError e(c);
     if (loadAccounts) {
-        pag = Account::list(c, &e, dom, pag, sortBy, sortOrder, searchRole, searchString);
+        pag = Account::list(c, e, dom, pag, sortBy, sortOrder, searchRole, searchString);
     }
 
     const QString newCookieData = accountsPerPage + QLatin1Char(';') + currentPage + QLatin1Char(';') + sortBy + QLatin1Char(';') + sortOrder + QLatin1Char(';') + searchRole + QLatin1Char(';') + searchString;
@@ -367,7 +367,7 @@ void DomainEditor::create(Context* c)
             const auto params = vr.values();
             if (vr) {
                 SkaffariError e(c);
-                auto dom = Domain::create(c, params, &e);
+                auto dom = Domain::create(c, params, e);
                 if (dom.isValid()) {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/domain/edit"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, c->translate("DomainEditor", "Successfully created new domain %1").arg(dom.name()))));
                     return;
@@ -382,7 +382,7 @@ void DomainEditor::create(Context* c)
             for (const QString &a : {QStringLiteral("abuseAccount"), QStringLiteral("nocAccount"), QStringLiteral("securityAccount"), QStringLiteral("postmasterAccount"), QStringLiteral("hostmasterAccount"), QStringLiteral("webmasterAccount")}) {
                 const dbid_t aId = params.value(a, 0).value<dbid_t>();
                 if (aId > 0) {
-                    c->setStash(a, QVariant::fromValue<SimpleAccount>(SimpleAccount::get(c, &getAccountsErrors, aId)));
+                    c->setStash(a, QVariant::fromValue<SimpleAccount>(SimpleAccount::get(c, getAccountsErrors, aId)));
                 }
             }
         }
@@ -410,7 +410,7 @@ void DomainEditor::create(Context* c)
 
         SkaffariError e(c);
         AuthenticationUser user = Authentication::user(c);
-        const std::vector<SimpleDomain> doms = SimpleDomain::list(c, &e, user.value(QStringLiteral("type")).value<qint16>(), user.id().value<dbid_t>(), true);
+        const std::vector<SimpleDomain> doms = SimpleDomain::list(c, e, user.value(QStringLiteral("type")).value<qint16>(), user.id().value<dbid_t>(), true);
         if (e.type() != SkaffariError::NoError) {
             c->setStash(QStringLiteral("error_msg"), e.errorText());
         }
@@ -444,7 +444,7 @@ void DomainEditor::remove(Context* c)
             if (dom.name() == req->bodyParam(QStringLiteral("domainName"))) {
 
                 SkaffariError e(c);
-                if (dom.remove(c, &e, req->bodyParam(QStringLiteral("newParentId"), QStringLiteral("0")).toULong(), false)) {
+                if (dom.remove(c, e, req->bodyParam(QStringLiteral("newParentId"), QStringLiteral("0")).toULong(), false)) {
 
                     const QString statusMsg = c->translate("DomainEditor", "The domain %1 has been successfully deleted.").arg(dom.name());
 
@@ -599,7 +599,7 @@ void DomainEditor::add_account(Context* c)
             if (enoughQuotaLeft) {
 
                 SkaffariError e(c);
-                Account account = Account::create(c, &e, vr.values(), dom, p.values(QStringLiteral("children")));
+                Account account = Account::create(c, e, vr.values(), dom, p.values(QStringLiteral("children")));
                 if (account.isValid()) {
 
                     Session::deleteValue(c, QStringLiteral("domainQuotaUsed_") + QString::number(dom.id()));
@@ -745,7 +745,7 @@ void DomainEditor::add_account(Context* c)
     help.insert(QStringLiteral("children"), HelpEntry(c->translate("DomainEditor", "Child domains"), c->translate("DomainEditor", "For all selected child domains there will be email addresses created with the same local part if not already existing.")));
 
     SkaffariError getCatchAllUserError(c);
-    const QString catchAllUser = dom.getCatchAllAccount(c, &getCatchAllUserError);
+    const QString catchAllUser = dom.getCatchAllAccount(c, getCatchAllUserError);
     const QString catchAllLabel = c->translate("DomainEditor", "Catch All");
     const QString catchAllText = catchAllUser.isEmpty()
             ? c->translate("DomainEditor", "If enabled, this user will receive all emails sent to addresses not defined for this domain.")

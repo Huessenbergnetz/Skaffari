@@ -140,12 +140,11 @@ QJsonObject SimpleAccount::toJson() const
     return o;
 }
 
-std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariError *e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId, const QString searchString)
+std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariError &e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId, const QString searchString)
 {
     std::vector<SimpleAccount> lst;
 
     Q_ASSERT_X(c, "list simple accounts", "invalid context object");
-    Q_ASSERT_X(e, "list simple accounts", "invalid error object");
 
     QSqlQuery q;
 
@@ -193,7 +192,7 @@ std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariErr
     }
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("SimpleAccount", "Failed to query list of accounts from database."));
+        e.setSqlError(q.lastError(), c->translate("SimpleAccount", "Failed to query list of accounts from database."));
         return lst;
     }
 
@@ -213,12 +212,11 @@ std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariErr
     return lst;
 }
 
-QJsonArray SimpleAccount::listJson(Cutelyst::Context *c, SkaffariError *e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId, const QString searchString)
+QJsonArray SimpleAccount::listJson(Cutelyst::Context *c, SkaffariError &e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId, const QString searchString)
 {
     QJsonArray lst;
 
     Q_ASSERT_X(c, "list simple accounts json", "invalid context object");
-    Q_ASSERT_X(e, "list simple accounts json", "invalid error object");
 
     const std::vector<SimpleAccount> _lst = SimpleAccount::list(c, e, adminType, adminId, domainId, searchString);
 
@@ -231,12 +229,11 @@ QJsonArray SimpleAccount::listJson(Cutelyst::Context *c, SkaffariError *e, Admin
     return lst;
 }
 
-SimpleAccount SimpleAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
+SimpleAccount SimpleAccount::get(Cutelyst::Context *c, SkaffariError &e, dbid_t id)
 {
     SimpleAccount a;
 
     Q_ASSERT_X(c, "get simple account", "invalid context object");
-    Q_ASSERT_X(e, "get simple account", "invalid error object");
 
     if (id > 0) {
 
@@ -248,11 +245,11 @@ SimpleAccount SimpleAccount::get(Cutelyst::Context *c, SkaffariError *e, dbid_t 
                 a = SimpleAccount(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
             } else {
                 qCWarning(SK_SIMPLEACCOUNT, "Can not find account with ID %u in database.", id);
-                e->setErrorType(SkaffariError::NotFound);
-                e->setErrorText(c->translate("SimpleAccount", "Can not find account with database ID %1.").arg(id));
+                e.setErrorType(SkaffariError::NotFound);
+                e.setErrorText(c->translate("SimpleAccount", "Can not find account with database ID %1.").arg(id));
             }
         } else {
-            e->setSqlError(q.lastError(), c->translate("SimpleAccount", "Failed to query account from database."));
+            e.setSqlError(q.lastError(), c->translate("SimpleAccount", "Failed to query account from database."));
             qCWarning(SK_SIMPLEACCOUNT, "Failed to query account with ID %u from database: %s", id, qUtf8Printable(q.lastError().text()));
         }
     }

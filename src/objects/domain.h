@@ -340,28 +340,28 @@ public:
      *
      * \param c         pointer to the current context, used for translating strings
      * \param params    parameters used to create the new domain
-     * \param errorData pointer to an object taking error information
+     * \param errorData object taking error information
      */
-    static Domain create(Cutelyst::Context *c, const QVariantHash &params, SkaffariError *errorData);
+    static Domain create(Cutelyst::Context *c, const QVariantHash &params, SkaffariError &errorData);
 
     /*!
      * \brief Returns the domain identified by \a domId from the database.
      * \param c         pointer to the current context, used for translating strings
      * \param domId     database ID of the domain to query
-     * \param errorData pointer to an object taking error information
+     * \param errorData object taking error information
      */
-    static Domain get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData);
+    static Domain get(Cutelyst::Context *c, dbid_t domId, SkaffariError &errorData);
 
     /*!
      * \brief Returns a list of domains from the database.
      * \param c         pointer to the current context, used for translating strings
-     * \param errorData pointer to an object taking error information
+     * \param errorData object taking error information
      * \param user      the currently authenticated user, used to either query all or only associated domains
      * \param orderBy   the database column to order the list by
      * \param sort      the sorting direction
      * \param limit     optional limit for the result, if \c 0, there will be no limit
      */
-    static std::vector<Domain> list(Cutelyst::Context *c, SkaffariError *errorData, const Cutelyst::AuthenticationUser &user, const QString orderBy = QLatin1String("domain_name"), const QString sort = QLatin1String("ASC"), quint32 limit = 0);
+    static std::vector<Domain> list(Cutelyst::Context *c, SkaffariError &errorData, const Cutelyst::AuthenticationUser &user, const QString orderBy = QLatin1String("domain_name"), const QString sort = QLatin1String("ASC"), quint32 limit = 0);
 
     /*!
      * \brief Returns \c true if \a domainName is part of the database.
@@ -374,21 +374,21 @@ public:
      * \brief Removes the %Domain and all of their accounts from the database and the IMAP server.
      *
      * \param c                 Pointer to the current context, used for translations.
-     * \param error             Pointer to an error object to give feedback on database and IMAP errors.
+     * \param error             Object to give feedback on database and IMAP errors.
      * \param newParent         Database ID of the new parent domain if the domain to remove has child domains.
      * \param deleteChildren    If \c true, child domains will be removed too.
      * \return \c true on success
      */
-    bool remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParentId, bool deleteChildren);
+    bool remove(Cutelyst::Context *c, SkaffariError &error, dbid_t newParentId, bool deleteChildren);
 
     /*!
      * \brief Updates domain \a d in the database.
      * \param c Pointer to the current context, used for translations.
      * \param p Parameters from the HTML form to update in the database.
-     * \param e Pointer to an error object to give feedback on database errors.
+     * \param e Object to give feedback on database errors.
      * \return \c true on success
      */
-    bool update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *e);
+    bool update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &e);
 
     /*!
      * \brief Puts this domain into the current context stash.
@@ -425,10 +425,10 @@ public:
     /*!
      * \brief Returns the user name of the account used to catch-all emails without recipient.
      * \param c The current context, used for translations.
-     * \param e Pointer to an object taking error information.
+     * \param e Object taking error information.
      * \return User name of the catch-all account.
      */
-    QString getCatchAllAccount(Cutelyst::Context *c, SkaffariError *e) const;
+    QString getCatchAllAccount(Cutelyst::Context *c, SkaffariError &e) const;
 
 private:
     QSharedDataPointer<DomainData> d;

@@ -67,7 +67,7 @@ bool AdminEditor::Auto(Context *c)
 void AdminEditor::index(Context *c)
 {
     SkaffariError e(c);
-   const auto accounts = AdminAccount::list(c, &e);
+    const auto accounts = AdminAccount::list(c, e);
 
     if (Q_UNLIKELY(e.type() != SkaffariError::NoError)) {
         c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -83,7 +83,7 @@ void AdminEditor::index(Context *c)
 void AdminEditor::base(Context *c, const QString &id)
 {
     SkaffariError e(c);
-    const AdminAccount a = AdminAccount::get(c, &e, id.toULong());
+    const AdminAccount a = AdminAccount::get(c, e, id.toULong());
     if (!a.isValid()) {
         if (e.type() != SkaffariError::NoError) {
             e.toStash(c);
@@ -129,7 +129,7 @@ void AdminEditor::create(Context *c)
         if (vr) {
             vr.addValue(QStringLiteral("assocdomains"), assocDomains);
             SkaffariError e(c);
-            AdminAccount::create(c, vr.values(), &e);
+            AdminAccount::create(c, vr.values(), e);
 
             if (e.type() == SkaffariError::NoError) {
                 c->res()->redirect(c->uriForAction(QStringLiteral("/admin/index"),
@@ -146,7 +146,7 @@ void AdminEditor::create(Context *c)
 
     SkaffariError e(c);
     // if access has been granted, user type is 0
-    std::vector<SimpleDomain> domains = SimpleDomain::list(c, &e);
+    std::vector<SimpleDomain> domains = SimpleDomain::list(c, e);
 
     if (e.type() != SkaffariError::NoError) {
         c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -200,7 +200,7 @@ void AdminEditor::edit(Context *c)
         if (vr) {
             vr.addValue(QStringLiteral("assocdomains"), QVariant::fromValue<QStringList>(req->bodyParameters(QStringLiteral("assocdomains"))));
             SkaffariError e(c);
-            if (aac.update(c, &e, vr.values())) {
+            if (aac.update(c, e, vr.values())) {
                 c->stash({
                              {QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac)},
                              {QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated administrator %1.").arg(aac.username())}
@@ -215,7 +215,7 @@ void AdminEditor::edit(Context *c)
 
     SkaffariError e(c);
     // if access has been granted, user type is 0
-    std::vector<SimpleDomain> domains = SimpleDomain::list(c, &e);
+    std::vector<SimpleDomain> domains = SimpleDomain::list(c, e);
 
     if (e.type() != SkaffariError::NoError) {
         c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -255,7 +255,7 @@ void AdminEditor::remove(Context *c)
         if (aac.username() == req->bodyParam(QStringLiteral("adminName"))) {
 
             SkaffariError e(c);
-            if (aac.remove(c, &e)) {
+            if (aac.remove(c, e)) {
 
                 const QString statusMsg = c->translate("AdminEditor", "Successfully removed administrator %1.").arg(aac.username());
 

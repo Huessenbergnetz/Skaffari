@@ -269,24 +269,24 @@ public:
      *
      * \param c         pointer to the current context, used for translating strings
      * \param params    parameters for the new accounts
-     * \param error     pointer to an object taking error information
+     * \param error     object taking error information
      */
-    static AdminAccount create(Cutelyst::Context *c, const QVariantHash &params, SkaffariError *error);
+    static AdminAccount create(Cutelyst::Context *c, const QVariantHash &params, SkaffariError &error);
 
     /*!
      * \brief Returns a list of all administrator accounts from the database.
      * \param c     pointer to the current context, used for translating strings
-     * \param error pointer to an object taking error information
+     * \param error object taking error information
      */
-    static std::vector<AdminAccount> list(Cutelyst::Context *c, SkaffariError *error);
+    static std::vector<AdminAccount> list(Cutelyst::Context *c, SkaffariError &error);
 
     /*!
      * \brief Returns a single administrator account from the database identified by the database \a id.
      * \param c     pointer to the current context, used for translating strings
-     * \param e     pointer to an object taking error information
+     * \param e     object taking error information
      * \param id    database id of the administrator account to get
      */
-    static AdminAccount get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
+    static AdminAccount get(Cutelyst::Context *c, SkaffariError &e, dbid_t id);
 
     /*!
      * \brief Updates the administrator account with the new \a params and returns \c true on success.
@@ -299,11 +299,11 @@ public:
      * assocdomains | QStringList    | list of domains this account will be associated to if the type is AdminAccount::DomainMaster
      *
      * \param c         pointer to the current context, used for translating strings
-     * \param e         pointer to an object taking error information
+     * \param e         object taking error information
      * \param params    parameters used to update the account
      * \return \c true on success
      */
-    bool update(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &params);
+    bool update(Cutelyst::Context *c, SkaffariError &e, const QVariantHash &params);
 
     /*!
      * \brief Updates the account of the currently authenticated administrator \a u with the new parameters \a p and returns \c true on success.
@@ -318,19 +318,19 @@ public:
      * tz           | QString        | new time zone value
      *
      * \param c pointer to the current context, used for translating strings
-     * \param e pointer to an object taking error information
+     * \param e object taking error information
      * \param p parameters used to update the account
      * \return \c true on success
      */
-    bool updateOwn(Cutelyst::Context *c, SkaffariError *e, const QVariantHash &p);
+    bool updateOwn(Cutelyst::Context *c, SkaffariError &e, const QVariantHash &p);
 
     /*!
      * \brief Removes the administrator account and returns \c true on success.
      * \param c pointer to the current context, used for translating strings
-     * \param e pointer to an object taking error information
+     * \param e object taking error information
      * \return \c true on success
      */
-    bool remove(Cutelyst::Context *c, SkaffariError *e);
+    bool remove(Cutelyst::Context *c, SkaffariError &e);
 
     /*!
      * \brief Puts the admin account identified by \a adminId into the stash of the current context \a c.

@@ -279,11 +279,11 @@ SimpleDomain Domain::toSimple() const
     return SimpleDomain(d->id, d->name);
 }
 
-Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, SkaffariError *errorData)
+Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, SkaffariError &errorData)
 {
     Domain dom;
 
-    Q_ASSERT_X(errorData, "create new domain", "invalid errorData object");
+    Q_ASSERT_X(c, "create new domain", "invalid context object");
 
     const QString domainNameAce = params.value(QStringLiteral("domainName")).toString().toLower();
     const QString domainName = QUrl::fromAce(domainNameAce.toLatin1());
@@ -308,13 +308,13 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     QSqlDatabase db = QSqlDatabase::database(Cutelyst::Sql::databaseNameThread());
 
     if (Q_UNLIKELY(!db.isOpen())) {
-        errorData->setSqlError(db.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
+        errorData.setSqlError(db.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
         qCCritical(SK_DOMAIN, "%s: can not establish database connection: %s", err, qUtf8Printable(db.lastError().text()));
         return dom;
     }
 
     if (Q_UNLIKELY(!db.transaction())) {
-        errorData->setSqlError(db.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
+        errorData.setSqlError(db.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
         qCCritical(SK_DOMAIN, "%s: can not initiate database transaction: %s", err, qUtf8Printable(db.lastError().text()));
         return dom;
     }
@@ -323,7 +323,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
 
     if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO domain (parent_id, domain_name, prefix, maxaccounts, quota, domainquota, freenames, freeaddress, transport, created_at, updated_at, valid_until, idn_id, ace_id) "
                                              "VALUES (:parent_id, :domain_name, :prefix, :maxaccounts, :quota, :domainquota, :freenames, :freeaddress, :transport, :created_at, :updated_at, :valid_until, 0, 0)")))) {
-        errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to create new domain in database."));
+        errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to create new domain in database."));
         qCCritical(SK_DOMAIN, "%s: can not prepare database query to insert data for new domain: %s", err, qUtf8Printable(q.lastError().text()));
         return dom;
     }
@@ -342,7 +342,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     q.bindValue(QStringLiteral(":valid_until"), validUntil);
 
     if (Q_UNLIKELY(!q.exec())) {
-        errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
+        errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
         qCCritical(SK_DOMAIN, "%s: can not execute database query to insert data for new domain: %s", err, qUtf8Printable(q.lastError().text()));
         db.rollback();
         return dom;
@@ -353,7 +353,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     std::vector<Folder> foldersVect;
     if (!folders.empty()) {
         if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)")))) {
-            errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to insert default folders for new domain into database."));
+            errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to insert default folders for new domain into database."));
             qCCritical(SK_DOMAIN, "%s: can not prepare database query to insert default folders for new domain: %s", err, qUtf8Printable(q.lastError().text()));
             db.rollback();
             return dom;
@@ -370,7 +370,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
                     const dbid_t folderId = q.lastInsertId().value<dbid_t>();
                     foldersVect.emplace_back(folderId, domainId, folder);
                 } else {
-                    errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to insert default folders for new domain into database."));
+                    errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to insert default folders for new domain into database."));
                     qCCritical(SK_DOMAIN, "%s: can not execute database query to insert default folder for new domain: %s", err, qUtf8Printable(q.lastError().text()));
                     db.rollback();
                     return dom;
@@ -383,7 +383,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     if (domainName != domainNameAce) {
         if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO domain (idn_id, domain_name, prefix, maxaccounts, quota, created_at, updated_at, valid_until) "
                                                  "VALUES (:idn_id, :domain_name, :prefix, 0, 0, :created_at, :updated_at, :valid_until)")))) {
-            errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to insert ACE version of new domain into database."));
+            errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to insert ACE version of new domain into database."));
             qCCritical(SK_DOMAIN, "%s: can not prepare database query to insert ACE version for new domain: %s", err, qUtf8Printable(q.lastError().text()));
             db.rollback();
             return dom;
@@ -398,7 +398,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
         q.bindValue(QStringLiteral(":valid_until"), validUntil);
 
         if (Q_UNLIKELY(!q.exec())) {
-            errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to insert ACE version of new domain into database."));
+            errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to insert ACE version of new domain into database."));
             qCCritical(SK_DOMAIN, "%s: can not execute database query to insert ACE version for new domain: %s", err, qUtf8Printable(q.lastError().text()));
             db.rollback();
             return dom;
@@ -407,7 +407,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
         domainAceId = q.lastInsertId().value<dbid_t>();
 
         if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE domain SET ace_id = :ace_id WHERE id = :id")))) {
-            errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to update ACE id of new domain in database."));
+            errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to update ACE id of new domain in database."));
             qCCritical(SK_DOMAIN, "%s: can not prepare database query to update ACE ID for new domain: %s", err, qUtf8Printable(q.lastError().text()));
             db.rollback();
             return dom;
@@ -417,7 +417,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
         q.bindValue(QStringLiteral(":id"), domainId);
 
         if (Q_UNLIKELY(!q.exec())) {
-            errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to update ACE id of new domain in database."));
+            errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to update ACE id of new domain in database."));
             qCCritical(SK_DOMAIN, "%s: can not execute database query to update ACE ID for new domain: %s", err, qUtf8Printable(q.lastError().text()));
             db.rollback();
             return dom;
@@ -426,7 +426,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
 
     const SimpleDomain parent = (parentId > 0) ? SimpleDomain::get(c, errorData, parentId) : SimpleDomain();
 
-    if (Q_UNLIKELY(errorData->type() != SkaffariError::NoError)) {
+    if (Q_UNLIKELY(errorData.type() != SkaffariError::NoError)) {
         qCCritical(SK_DOMAIN, "%s: can not find parent domain with ID %lu for new domain.", err);
         db.rollback();
         return dom;
@@ -449,7 +449,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
         dbid_t roleAccId = params.value(it.key(), 0).value<dbid_t>();
         if (roleAccId > 0) {
             auto roleAcc = Account::get(c, errorData, roleAccId);
-            if (Q_UNLIKELY(errorData->type() != SkaffariError::NoError)) {
+            if (Q_UNLIKELY(errorData.type() != SkaffariError::NoError)) {
                 qCCritical(SK_DOMAIN, "%s: can not find account with ID %lu to use as %s account for new domain %s.", err, roleAccId, qUtf8Printable(it.value()), qUtf8Printable(domainName));
                 db.rollback();
                 return dom;
@@ -461,7 +461,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
                                              });
             const QString addedRoleAddress = roleAcc.addEmail(c, errorData, roleAccParams);
 
-            if (Q_UNLIKELY(errorData->type() != SkaffariError::NoError)) {
+            if (Q_UNLIKELY(errorData.type() != SkaffariError::NoError)) {
                 qCCritical(SK_DOMAIN, "%s: can not create role account email address for new domain.", err);
                 db.rollback();
                 auto addedRolesIt = addedRoleAddresses.constBegin();
@@ -471,8 +471,8 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
                     delRoleAcc.removeEmail(c, errorData, addedRolesIt.value());
                     ++addedRolesIt;
                 }
-                errorData->setErrorType(SkaffariError::SqlError);
-                errorData->setErrorText(c->translate("Domain", "Failed to insert role account email addresses into databaes."));
+                errorData.setErrorType(SkaffariError::SqlError);
+                errorData.setErrorText(c->translate("Domain", "Failed to insert role account email addresses into databaes."));
                 return dom;
             }
 
@@ -482,7 +482,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     }
 
     if (Q_UNLIKELY(!db.commit())) {
-        errorData->setSqlError(db.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
+        errorData.setSqlError(db.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
         qCCritical(SK_DOMAIN, "%s: can not commit database transaction to add new domain into database: %s", err, qUtf8Printable(db.lastError().text()));
         db.rollback();
         return dom;
@@ -496,11 +496,10 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     return dom;
 }
 
-Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
+Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError &errorData)
 {
     Domain dom;
 
-    Q_ASSERT_X(errorData, "get domain", "invalid errorData object");
     Q_ASSERT_X(c, "get domain", "invalid Cutelyst context");
 
     // for logging
@@ -539,11 +538,11 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
                 if (parentId > 0) {
                     parentDom = SimpleDomain::get(c, errorData, parentId);
                     if (!parentDom.isValid()) {
-                        if (errorData->type() == SkaffariError::NotFound) {
-                            errorData->setErrorText(c->translate("Domain", "Can not find parent domain with ID %1.").arg(parentId));
+                        if (errorData.type() == SkaffariError::NotFound) {
+                            errorData.setErrorText(c->translate("Domain", "Can not find parent domain with ID %1.").arg(parentId));
                             qCCritical(SK_DOMAIN, "%s: can not find parent domain with ID %lu.", err, parentId);
                         } else {
-                            errorData->setSqlError(errorData->qSqlError(), c->translate("Domain", "Failed to query parent domain from database."));
+                            errorData.setSqlError(errorData.qSqlError(), c->translate("Domain", "Failed to query parent domain from database."));
                             qCCritical(SK_DOMAIN, "%s: failed to query database for parent domain.", err);
                         }
                     }
@@ -551,12 +550,12 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
                     QSqlQuery cq = CPreparedSqlQueryThread(QStringLiteral("SELECT id, domain_name FROM domain WHERE parent_id = :id"));
                     cq.bindValue(QStringLiteral(":id"), domId);
                     if (Q_UNLIKELY(!cq.exec())) {
-                        errorData->setSqlError(cq.lastError(), c->translate("Domain", "Failed to query child domains from the database."));
+                        errorData.setSqlError(cq.lastError(), c->translate("Domain", "Failed to query child domains from the database."));
                         qCCritical(SK_DOMAIN, "%s: failed to execute database query to get child domains: %s", err, qUtf8Printable(cq.lastError().text()));
                     }
                 }
 
-                if (errorData->type() == SkaffariError::NoError) {
+                if (errorData.type() == SkaffariError::NoError) {
                     QDateTime createdTime = q.value(12).toDateTime();
                     createdTime.setTimeSpec(Qt::UTC);
                     QDateTime updatedTime = q.value(13).toDateTime();
@@ -586,24 +585,24 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
                 }
 
             } else {
-                errorData->setSqlError(aq.lastError(), c->translate("Domain", "Failed to query responsible administrators from the database."));
+                errorData.setSqlError(aq.lastError(), c->translate("Domain", "Failed to query responsible administrators from the database."));
                 qCCritical(SK_DOMAIN, "%s: failed to execute database query to get responsible admins: %s", err, qUtf8Printable(aq.lastError().text()));
             }
 
         } else {
 
-            errorData->setSqlError(fq.lastError(), c->translate("Domain", "Failed to query default folders from the database."));
+            errorData.setSqlError(fq.lastError(), c->translate("Domain", "Failed to query default folders from the database."));
             qCCritical(SK_DOMAIN, "%s: failed to execute dabase query to get default folders: %s", err, qUtf8Printable(fq.lastError().text()));
 
         }
 
     } else {
         if (q.lastError().type() != QSqlError::NoError) {
-            errorData->setSqlError(q.lastError());
+            errorData.setSqlError(q.lastError());
             qCCritical(SK_DOMAIN, "%s: can not execute database query: %s", err, qUtf8Printable(q.lastError().text()));
         } else {
-            errorData->setErrorType(SkaffariError::NotFound);
-            errorData->setErrorText(c->translate("Domain", "The domain with ID %1 could not be found in the database.").arg(domId));
+            errorData.setErrorType(SkaffariError::NotFound);
+            errorData.setErrorText(c->translate("Domain", "The domain with ID %1 could not be found in the database.").arg(domId));
             qCWarning(SK_DOMAIN, "%s: not found in database.", err);
         }
     }
@@ -611,11 +610,10 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError *errorData)
     return dom;
 }
 
-std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData, const Cutelyst::AuthenticationUser &user, const QString orderBy, const QString sort, quint32 limit)
+std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError &errorData, const Cutelyst::AuthenticationUser &user, const QString orderBy, const QString sort, quint32 limit)
 {
     std::vector<Domain> lst;
 
-    Q_ASSERT_X(errorData, "list domains", "invalid errorData object");
     Q_ASSERT_X(c, "list domains", "invalid Cutelyst context");
 
     // for logging
@@ -639,7 +637,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
         prepString.append(QStringLiteral(" LIMIT %1").arg(limit));
     }
     if (Q_UNLIKELY(!q.prepare(prepString))) {
-        errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to query domain list from database."));
+        errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to query domain list from database."));
         qCCritical(SK_DOMAIN, "%s: failed to prepare database query: %s", err, qUtf8Printable(q.lastError().text()));
         return lst;
     }
@@ -686,7 +684,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError *errorData,
                              std::vector<Folder>());
         }
     } else {
-        errorData->setSqlError(q.lastError(), c->translate("Domain", "Failed to query domain list from database."));
+        errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to query domain list from database."));
         qCCritical(SK_DOMAIN, "%s: failed to execute database query: %s", err, qUtf8Printable(q.lastError().text()));
     }
 
@@ -716,11 +714,10 @@ bool Domain::isAvailable(const QString &domainName)
     return available;
 }
 
-bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParentId, bool deleteChildren)
+bool Domain::remove(Cutelyst::Context *c, SkaffariError &error, dbid_t newParentId, bool deleteChildren)
 {
     bool ret = false;
 
-    Q_ASSERT_X(error, "remove domain", "invalid errorData object");
     Q_ASSERT_X(c, "remove domain", "invalid Cutelyst context");
 
     // for logging
@@ -732,7 +729,7 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
     q.bindValue(QStringLiteral(":domain_id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to get database IDs of the accounts for this domain."));
+        error.setSqlError(q.lastError(), c->translate("Domain", "Failed to get database IDs of the accounts for this domain."));
         qCCritical(SK_DOMAIN, "%s: failed to execute query to get acount IDs for the domain: %s", err, qUtf8Printable(q.lastError().text()));
         return ret;
     }
@@ -766,13 +763,13 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
     QSqlDatabase db = QSqlDatabase::database(Cutelyst::Sql::databaseNameThread());
 
     if (Q_UNLIKELY(!db.isOpen())) {
-        error->setSqlError(db.lastError(), c->translate("Domain", "Failed to remove domain from database."));
+        error.setSqlError(db.lastError(), c->translate("Domain", "Failed to remove domain from database."));
         qCCritical(SK_DOMAIN, "%s: can not establish database connection: %s", err, qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
     if (Q_UNLIKELY(!db.transaction())) {
-        error->setSqlError(db.lastError(), c->translate("Domain", "Failed to remove domain from database."));
+        error.setSqlError(db.lastError(), c->translate("Domain", "Failed to remove domain from database."));
         qCCritical(SK_DOMAIN, "%s: can not initiate database transaction: %s", err, qUtf8Printable(q.lastError().text()));
         return ret;
     }
@@ -782,7 +779,7 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
     if (!deleteChildren) {
 
         if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE domain SET parent_id = :new_parent_id WHERE parent_id = :old_parent_id")))) {
-            error->setSqlError(q.lastError(), c->translate("Domain", "Failed to set new parent domain for child domains."));
+            error.setSqlError(q.lastError(), c->translate("Domain", "Failed to set new parent domain for child domains."));
             qCCritical(SK_DOMAIN, "%s: can not prepare database query to set new parent domain: %s", err, qUtf8Printable(q.lastError().text()));
             return ret;
         }
@@ -791,7 +788,7 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
         q.bindValue(QStringLiteral(":old_parent_id"), d->id);
 
         if (Q_UNLIKELY(!q.exec())) {
-            error->setSqlError(q.lastError(), c->translate("Domain", "Failed to set new parent domain for child domains."));
+            error.setSqlError(q.lastError(), c->translate("Domain", "Failed to set new parent domain for child domains."));
             qCCritical(SK_DOMAIN, "%s: can not execute database query to set new parent domain: %s", err, qUtf8Printable(q.lastError().text()));
             db.rollback();
             return ret;
@@ -804,7 +801,7 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
         const QString aceEmailLike = QLatin1String("%@") + aceName();
 
         if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM virtual WHERE alias LIKE :alias")))) {
-            error->setSqlError(q.lastError(), c->translate("Domain", "Failed to rmove ACE email addresses from the database."));
+            error.setSqlError(q.lastError(), c->translate("Domain", "Failed to rmove ACE email addresses from the database."));
             qCCritical(SK_DOMAIN, "%s: can not prepare query to remove ACE email addresses from database: %s", err, qUtf8Printable(q.lastError().text()));
             db.rollback();
             return ret;
@@ -813,14 +810,14 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
         q.bindValue(QStringLiteral(":alias"), aceEmailLike);
 
         if (Q_UNLIKELY(!q.exec())) {
-            error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove ACE email addresses from the database."));
+            error.setSqlError(q.lastError(), c->translate("Domain", "Failed to remove ACE email addresses from the database."));
             qCCritical(SK_DOMAIN, "%s: can not execute query to remove ACE email addresses from database: %s", err, qUtf8Printable(q.lastError().text()));
             db.rollback();
             return ret;
         }
 
         if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM domain WHERE idn_id = :id")))) {
-            error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove ACE domain name from the database."));
+            error.setSqlError(q.lastError(), c->translate("Domain", "Failed to remove ACE domain name from the database."));
             qCCritical(SK_DOMAIN, "%s: can not prepare query to remove ACE domain name from database: %s", err, qUtf8Printable(q.lastError().text()));
             db.rollback();
             return ret;
@@ -829,7 +826,7 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
         q.bindValue(QStringLiteral(":id"), d->id);
 
         if (Q_UNLIKELY(!q.exec())) {
-            error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove ACE domain name from the database."));
+            error.setSqlError(q.lastError(), c->translate("Domain", "Failed to remove ACE domain name from the database."));
             qCCritical(SK_DOMAIN, "%s: can not execute query to remove ACE domain name from database: %s", err, qUtf8Printable(q.lastError().text()));
             db.rollback();
             return ret;
@@ -839,7 +836,7 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
     const QString emailLike = QLatin1String("%@") + d->name;
 
     if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM virtual WHERE alias LIKE :alias")))) {
-        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove email addresses from database."));
+        error.setSqlError(q.lastError(), c->translate("Domain", "Failed to remove email addresses from database."));
         qCCritical(SK_DOMAIN, "%s: can not prepare query to remove email addresses from database: %s", err, qUtf8Printable(q.lastError().text()));
         db.rollback();
         return ret;
@@ -848,14 +845,14 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
     q.bindValue(QStringLiteral(":alias"), emailLike);
 
     if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove email addresses from database."));
+        error.setSqlError(q.lastError(), c->translate("Domain", "Failed to remove email addresses from database."));
         qCCritical(SK_DOMAIN, "%s: can not execute query to remove email addresses from database: %s", err, qUtf8Printable(q.lastError().text()));
         db.rollback();
         return ret;
     }
 
     if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM domain WHERE id = :id")))) {
-        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain from database."));
+        error.setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain from database."));
         qCCritical(SK_DOMAIN, "%s: can not prepare database query: %s", err, qUtf8Printable(q.lastError().text()));
         db.rollback();
         return ret;
@@ -864,14 +861,14 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
     q.bindValue(QStringLiteral(":id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
-        error->setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain from database."));
+        error.setSqlError(q.lastError(), c->translate("Domain", "Failed to remove domain from database."));
         qCCritical(SK_DOMAIN, "%s: can not execute database query: %s", err, qUtf8Printable(q.lastError().text()));
         db.rollback();
         return ret;
     }
 
     if (Q_UNLIKELY(!db.commit())) {
-        error->setSqlError(db.lastError(), c->translate("Domain", "Failed to remove domain from database."));
+        error.setSqlError(db.lastError(), c->translate("Domain", "Failed to remove domain from database."));
         qCCritical(SK_DOMAIN, "%s: can not commit database transaction: %s", err, qUtf8Printable(db.lastError().text()));
         db.rollback();
         return ret;
@@ -885,13 +882,12 @@ bool Domain::remove(Cutelyst::Context *c, SkaffariError *error, dbid_t newParent
     return ret;
 }
 
-bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *e)
+bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &e)
 {
     bool ret = false;
 
     Q_ASSERT_X(c, "update domain", "invalid context object");
     Q_ASSERT_X(!p.empty(), "update domain", "empty parameters");
-    Q_ASSERT_X(e, "update domain", "invalid error object");
 
     const auto admin = AdminAccount::getUser(c);
 
@@ -903,13 +899,13 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
     QSqlDatabase db = QSqlDatabase::database(Cutelyst::Sql::databaseNameThread());
 
     if (Q_UNLIKELY(!db.isOpen())) {
-        e->setSqlError(db.lastError(), c->translate("Domain", "Failed to update domain in database."));
+        e.setSqlError(db.lastError(), c->translate("Domain", "Failed to update domain in database."));
         qCCritical(SK_DOMAIN, "%s: can not establish database connection: %s", err, qUtf8Printable(db.lastError().text()));
         return ret;
     }
 
     if (Q_UNLIKELY(!db.transaction())) {
-        e->setSqlError(db.lastError(), c->translate("Domain", "Failed to update domain in database."));
+        e.setSqlError(db.lastError(), c->translate("Domain", "Failed to update domain in database."));
         qCCritical(SK_DOMAIN, "%s: can not initiate database transaction: %s", err, qUtf8Printable(db.lastError().text()));
         return ret;
     }
@@ -935,8 +931,8 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
 
         const dbid_t parentId = p.value(QStringLiteral("parent"), 0).value<dbid_t>();
         if (parentId == d->id) {
-            e->setErrorType(SkaffariError::InputError);
-            e->setErrorText(c->translate("Domain", "You can not set a domain as its own parent domain."));
+            e.setErrorType(SkaffariError::InputError);
+            e.setErrorText(c->translate("Domain", "You can not set a domain as its own parent domain."));
             qCCritical(SK_DOMAIN, "%s: can not set domain as own parent.", err);
             return ret;
         }
@@ -952,7 +948,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
         }
 
         if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE domain SET maxaccounts = :maxaccounts, quota = :quota, domainquota = :domainquota, freenames = :freenames, freeaddress = :freeaddress, transport = :transport, updated_at = :updated_at, parent_id = :parent_id, valid_until = :valid_until WHERE id = :id")))) {
-            e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
+            e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
             qCCritical(SK_DOMAIN, "%s: can not prepare query to update domain in database: %s", qUtf8Printable(q.lastError().text()));
             return ret;
         }
@@ -969,7 +965,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
         q.bindValue(QStringLiteral(":id"), d->id);
 
         if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
+            e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
             qCCritical(SK_DOMAIN, "%s: can not execute query to update domain in database: %s", qUtf8Printable(q.lastError().text()));
             db.rollback();
             return ret;
@@ -978,7 +974,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
     } else if (admin.domains().contains(d->id)) {
 
         if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE domain SET quota = :quota, updated_at = :updated_at WHERE id = :id")))) {
-            e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
+            e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
             qCCritical(SK_DOMAIN, "%s: can not prepare query to update domain in database: %s", qUtf8Printable(q.lastError().text()));
             return ret;
         }
@@ -988,21 +984,21 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
         q.bindValue(QStringLiteral(":id"), d->id);
 
         if (Q_UNLIKELY(!q.exec())) {
-            e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
+            e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
             qCCritical(SK_DOMAIN, "%s: can not execute query to update domain in database: %s", qUtf8Printable(q.lastError().text()));
             db.rollback();
             return ret;
         }
 
     } else {
-        e->setErrorType(SkaffariError::AuthorizationError);
-        e->setErrorText(c->translate("Domain", "You are not authorized to update this domain."));
+        e.setErrorType(SkaffariError::AuthorizationError);
+        e.setErrorText(c->translate("Domain", "You are not authorized to update this domain."));
         qCWarning(SK_DOMAIN, "%s: access denied!", err);
         return ret;
     }
 
     if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id")))) {
-        e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+        e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
         qCCritical(SK_DOMAIN, "%s: can not prepare query to delete current default folders from database: %s", err, qUtf8Printable(q.lastError().text()));
         return ret;
     }
@@ -1010,14 +1006,14 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
     q.bindValue(QStringLiteral(":domain_id"), d->id);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+        e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
         qCCritical(SK_DOMAIN, "%s: can not execute query to delete current default folders from database: %s", err, qUtf8Printable(q.lastError().text()));
         return ret;
     }
 
     if (!folders.empty()) {
         if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)")))) {
-            e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+            e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
             qCCritical(SK_DOMAIN, "%s: can not prepare query to insert default folders into database: %s", err, qUtf8Printable(q.lastError().text()));
             return ret;
         }
@@ -1028,7 +1024,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
                 q.bindValue(QStringLiteral(":domain_id"), d->id);
                 q.bindValue(QStringLiteral(":name"), _folder);
                 if (Q_UNLIKELY(!q.exec())) {
-                    e->setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+                    e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
                     qCCritical(SK_DOMAIN, "%s: can not execute query to insert default folders into database: %s", err, qUtf8Printable(q.lastError().text()));
                     return ret;
                 }
@@ -1082,7 +1078,7 @@ void Domain::toStash(Cutelyst::Context *c, dbid_t domainId)
     Q_ASSERT_X(c, "domain to stash", "invalid context object");
 
     SkaffariError e(c);
-    Domain d = Domain::get(c, domainId, &e);
+    Domain d = Domain::get(c, domainId, e);
     if (Q_LIKELY(d.isValid())) {
         c->stash({
                      {QStringLiteral(DOMAIN_STASH_KEY), QVariant::fromValue<Domain>(d)},
@@ -1124,12 +1120,11 @@ bool Domain::checkAccess(Cutelyst::Context *c, dbid_t domainId)
     return allowed;
 }
 
-QString Domain::getCatchAllAccount(Cutelyst::Context *c, SkaffariError *e) const
+QString Domain::getCatchAllAccount(Cutelyst::Context *c, SkaffariError &e) const
 {
     QString username;
 
     Q_ASSERT_X(c, "get catch-all account", "invalid context object");
-    Q_ASSERT_X(e, "get catch-all account", "invalid error object");
 
     const QString catchAllAlias = QLatin1Char('@') + d->name;
 
@@ -1137,7 +1132,7 @@ QString Domain::getCatchAllAccount(Cutelyst::Context *c, SkaffariError *e) const
     q.bindValue(QStringLiteral(":alias"), catchAllAlias);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("Domain", "Failed to get catch-all account for this domain."));
+        e.setSqlError(q.lastError(), c->translate("Domain", "Failed to get catch-all account for this domain."));
         qCCritical(SK_DOMAIN, "Failed to get catch-all account for domain ID %u: %s", d->id, qUtf8Printable(q.lastError().text()));
         return username;
     }

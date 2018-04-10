@@ -155,13 +155,13 @@ public:
     /*!
      * \brief Returns a list of accounts.
      * \param c         Pointer to the current context, used for localization.
-     * \param e         Pointer to an object taking occurring errors.
+     * \param e         Object taking occurring errors.
      * \param adminType The type of the admin user to determine domain access.
      * \param adminId   The database ID of the admin user to determine domain access.
      * \param domainId  The database ID of the domain to request accounts for. If 0 and permission is granted, all accounts will be returned.
      * \return          List of simple account objects.
      */
-    static std::vector<SimpleAccount> list(Cutelyst::Context *c, SkaffariError *e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
+    static std::vector<SimpleAccount> list(Cutelyst::Context *c, SkaffariError &e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
 
     /*!
      * \brief Returns a JSON array of accounts.
@@ -169,22 +169,22 @@ public:
      * \sa toJson()
      *
      * \param c         Pointer to the current context, used for localization.
-     * \param e         Pointer to an object taking occurring errors.
+     * \param e         Object taking occurring errors.
      * \param adminType The type of the admin user to determine domain access.
      * \param adminId   The database ID of the admin user to determine domain access.
      * \param domainId  The database ID of the domain to request accounts for. If 0 and permission is granted, all accounts will be returned.
      * \return          JSON array containing objects with account ID, user name and domain name.
      */
-    static QJsonArray listJson(Cutelyst::Context *c, SkaffariError *e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
+    static QJsonArray listJson(Cutelyst::Context *c, SkaffariError &e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
 
     /*!
      * \brief Returns the account with the specified database \a id.
      * \param c         Poiner to the current context, used for localization.
-     * \param e         Pointer to an object taking occurring errors.
+     * \param e         Object taking occurring errors.
      * \param id        The database ID of the accout to get.
      * \return          Single account.
      */
-    static SimpleAccount get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
+    static SimpleAccount get(Cutelyst::Context *c, SkaffariError &e, dbid_t id);
 };
 
 Q_DECLARE_METATYPE(SimpleAccount)

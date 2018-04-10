@@ -102,12 +102,11 @@ bool SimpleDomain::isValid() const
     return ((m_id > 0) && !m_name.isEmpty());
 }
 
-std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, quint8 userType, dbid_t adminId, bool orphansOnly)
+std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError &e, quint8 userType, dbid_t adminId, bool orphansOnly)
 {
     std::vector<SimpleDomain> lst;
 
     Q_ASSERT_X(c, "list simple domains", "invalid context object");
-    Q_ASSERT_X(e, "list simple domains", "invalid error object");
 
     QSqlQuery q;
 
@@ -127,7 +126,7 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
     }
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("SimpleDomain", "Failed to query the list of domains from the database."));
+        e.setSqlError(q.lastError(), c->translate("SimpleDomain", "Failed to query the list of domains from the database."));
         return lst;
     }
 
@@ -147,7 +146,7 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
     return lst;
 }
 
-std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError *e, bool orphansOnly)
+std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError &e, bool orphansOnly)
 {
     std::vector<SimpleDomain> lst;
     const auto user = Cutelyst::Authentication::user(c);
@@ -156,12 +155,11 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
 }
 
 
-QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError *e, quint8 userType, dbid_t adminId, bool orphansOnly)
+QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError &e, quint8 userType, dbid_t adminId, bool orphansOnly)
 {
     QJsonArray lst;
 
     Q_ASSERT_X(c, "list simple domains as JSON", "invalid context object");
-    Q_ASSERT_X(e, "list simple domains as JSON", "invalid error object");
 
     const std::vector<SimpleDomain> _lst = SimpleDomain::list(c, e, userType, adminId, orphansOnly);
 
@@ -177,24 +175,23 @@ QJsonArray SimpleDomain::listJson(Cutelyst::Context *c, SkaffariError *e, quint8
     return lst;
 }
 
-SimpleDomain SimpleDomain::get(Cutelyst::Context *c, SkaffariError *e, dbid_t id)
+SimpleDomain SimpleDomain::get(Cutelyst::Context *c, SkaffariError &e, dbid_t id)
 {
     SimpleDomain dom;
 
     Q_ASSERT_X(c, "get simple domain data", "invalid context object");
-    Q_ASSERT_X(e, "get simple domain data", "invalid error object");
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_name FROM domain WHERE id = :id AND idn_id = 0"));
     q.bindValue(QStringLiteral(":id"), id);
 
     if (Q_UNLIKELY(!q.exec())) {
-        e->setSqlError(q.lastError(), c->translate("SimpleDomain", "Failed to query simple domain data for domain ID %1.").arg(id));
+        e.setSqlError(q.lastError(), c->translate("SimpleDomain", "Failed to query simple domain data for domain ID %1.").arg(id));
         return dom;
     }
 
     if (Q_UNLIKELY(!q.next())) {
-        e->setErrorType(SkaffariError::NotFound);
-        e->setErrorText(c->translate("SimpleDomain", "Can not find domain with database ID %1.").arg(id));
+        e.setErrorType(SkaffariError::NotFound);
+        e.setErrorText(c->translate("SimpleDomain", "Can not find domain with database ID %1.").arg(id));
         return dom;
     }
 

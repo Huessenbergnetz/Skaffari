@@ -133,29 +133,29 @@ public:
     /*!
      * \brief Returns a list of email addresses from the virtual table associacted with the \a username.
      * \param c         Pointer to the current context, used for localization.
-     * \param e         Pointer to an object taking error inforamtion.
+     * \param e         Object taking error inforamtion.
      * \param username  The username to lookup the email addresses for.
      * \return          List of email address objects.
      */
-    static std::vector<EmailAddress> list(Cutelyst::Context *c, SkaffariError *e, const QString &username);
+    static std::vector<EmailAddress> list(Cutelyst::Context *c, SkaffariError &e, const QString &username);
 
     /*!
      * \brief Returns the email address identified by its database \a id.
      * \param c     Pointer to the current context, used for localization.
-     * \param e     Pointer to an object taking error information.
+     * \param e     Object taking error information.
      * \param id    The database ID of the email address to query.
      * \return      The email address object.
      */
-    static EmailAddress get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
+    static EmailAddress get(Cutelyst::Context *c, SkaffariError &e, dbid_t id);
 
     /*!
      * \brief Returns the email address identified by the \a alias (address).
      * \param c     Pointer to the current context, used for localization.
-     * \param e     Pointer to an object taking error information.
+     * \param e     Object taking error information.
      * \param alias The alias/addres of the email address to query.
      * \return      The email address object.
      */
-    static EmailAddress get(Cutelyst::Context *c, SkaffariError *e, const QString &alias);
+    static EmailAddress get(Cutelyst::Context *c, SkaffariError &e, const QString &alias);
 
 private:
     QSharedDataPointer<EmailAddressData> d;

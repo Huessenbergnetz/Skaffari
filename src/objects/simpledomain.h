@@ -122,37 +122,37 @@ public:
     /*!
      * \brief Returns a list of domains for the admin defined by \a adminId.
      * \param c             Pointer to the current context, used for localization.
-     * \param e             Pointer to an object taking occurring errors.
+     * \param e             Object taking occurring errors.
      * \param userType      The type of the admin user to determine domain access.
      * \param adminId       The database ID of the admin user to determine domain access.
      * \param orphansOnly   Only return domains that do not have a parent domain.
      */
-    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, quint8 userType, dbid_t adminId, bool orphansOnly = false);
+    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError &e, quint8 userType, dbid_t adminId, bool orphansOnly = false);
 
     /*!
      * \brief Returns a list of domains for the currently logged in administrator.
      * \param c             Pointer to the current context, used for localization and getting the current admin.
-     * \param e             Pointer to an object taking occuring errors.
+     * \param e             Object taking occuring errors.
      * \param orphansOnly   Only return domains that do not have a parent domain.
      */
-    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError *e, bool orphansOnly = false);
+    static std::vector<SimpleDomain> list(Cutelyst::Context *c, SkaffariError &e, bool orphansOnly = false);
 
     /*!
      * \brief Returns a JSON array of domains for the admin defined by \a adminId.
      * \param c         Pointer to the current context, used for localization.
-     * \param e         Pointer to an object taking occurring errors.
+     * \param e         Object taking occurring errors.
      * \param userType  The type of the admin user to determine domain access.
      * \param adminId   The database ID of the admin user to determine domain access.
      */
-    static QJsonArray listJson(Cutelyst::Context *c , SkaffariError *e, quint8 userType, dbid_t adminId, bool orphansOnly = false);
+    static QJsonArray listJson(Cutelyst::Context *c , SkaffariError &e, quint8 userType, dbid_t adminId, bool orphansOnly = false);
 
     /*!
      * \brief Returns a single simple domain object identified by its database \a id.
      * \param c     Pointer to the current context, used for localization.
-     * \param e     Pointer to an object taking occurring errors.
+     * \param e     Object taking occurring errors.
      * \param id    The database ID of the domain to retrieve.
      */
-    static SimpleDomain get(Cutelyst::Context *c, SkaffariError *e, dbid_t id);
+    static SimpleDomain get(Cutelyst::Context *c, SkaffariError &e, dbid_t id);
 
 private:
     QString m_name;
