@@ -1196,18 +1196,19 @@ void Account::toStash(Cutelyst::Context *c, dbid_t accountId)
     }
 }
 
-void Account::toStash(Cutelyst::Context *c, const Account &a)
+bool Account::toStash(Cutelyst::Context *c) const
 {
     Q_ASSERT_X(c, "account to stash", "invalid context object");
-
-    if (Q_LIKELY(a.isValid())) {
+    if (Q_LIKELY(isValid())) {
         c->stash({
-                     {QStringLiteral(ACCOUNT_STASH_KEY), QVariant::fromValue<Account>(a)},
-                     {QStringLiteral("site_subtitle"), a.username()}
+                     {QStringLiteral(ACCOUNT_STASH_KEY), QVariant::fromValue<Account>(*this)},
+                     {QStringLiteral("site_subtitle"), d->username}
                  });
+        return true;
     } else {
         c->res()->setStatus(404);
         c->detach(c->getAction(QStringLiteral("error")));
+        return false;
     }
 }
 

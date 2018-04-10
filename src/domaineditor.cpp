@@ -126,10 +126,8 @@ void DomainEditor::edit(Context *c)
             vr.addValue(QStringLiteral("folders"), req->bodyParam(QStringLiteral("folders")));
             SkaffariError e(c);
             if (dom.update(c, vr.values(), &e)) {
-                c->stash({
-                             {QStringLiteral("domain"), QVariant::fromValue<Domain>(dom)},
-                             {QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated domain %1.").arg(dom.name())}
-                         });
+                dom.toStash(c);
+                c->setStash(QStringLiteral("status_msg"), c->translate("DomainEditor", "Successfully updated domain %1.").arg(dom.name()));
             } else {
                 c->setStash(QStringLiteral("error_msg"), e.errorText());
                 c->res()->setStatus(Response::InternalServerError);
@@ -784,19 +782,6 @@ void DomainEditor::check(Context *c)
     }
 
     c->setStash(QStringLiteral("template"), QStringLiteral("domain/check.html"));
-}
-
-QStringList DomainEditor::trimFolderStrings(const QStringList& folders)
-{
-    QStringList trimmed;
-
-    if (!folders.empty()) {
-        for (const QString &folder : folders) {
-            trimmed << folder.simplified();
-        }
-    }
-
-    return trimmed;
 }
 
 #include "moc_domaineditor.cpp"

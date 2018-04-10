@@ -1060,6 +1060,23 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *
     return ret;
 }
 
+bool Domain::toStash(Cutelyst::Context *c) const
+{
+    Q_ASSERT_X(c, "domain to stash", "invalid context object");
+
+    if (Q_LIKELY(isValid())) {
+        c->stash({
+                     {QStringLiteral(DOMAIN_STASH_KEY), QVariant::fromValue<Domain>(*this)},
+                     {QStringLiteral("site_title"), d->name}
+                 });
+        return true;
+    } else {
+        c->res()->setStatus(404);
+        c->detach(c->getAction(QStringLiteral("error")));
+        return false;
+    }
+}
+
 void Domain::toStash(Cutelyst::Context *c, dbid_t domainId)
 {
     Q_ASSERT_X(c, "domain to stash", "invalid context object");

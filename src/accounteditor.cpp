@@ -120,11 +120,9 @@ void AccountEditor::edit(Context* c)
         if (vr) {
             SkaffariError e(c);
             if (a.update(c, &e, &dom, vr.values())) {
-                c->stash({
-                             {QStringLiteral("status_msg"), c->translate("AccountEditor", "User account %1 successfully updated.").arg(a.username())},
-                             {QStringLiteral("account"), QVariant::fromValue<Account>(a)},
-                             {QStringLiteral("domain"), QVariant::fromValue<Domain>(dom)}
-                         });
+                a.toStash(c);
+                dom.toStash(c);
+                c->setStash(QStringLiteral("status_msg"), c->translate("AccountEditor", "User account %1 successfully updated.").arg(a.username()));
             } else {
                 c->setStash(QStringLiteral("error_msg"), e.errorText());
                 c->res()->setStatus(500);
@@ -981,7 +979,7 @@ void AccountEditor::check(Context *c)
         SkaffariError e(c);
         const QStringList actions = a.check(c, &e, d, c->req()->bodyParameters());
 
-        Account::toStash(c, a);
+        a.toStash(c);
 
         if (isAjax) {
 

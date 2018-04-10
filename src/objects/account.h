@@ -359,11 +359,13 @@ public:
     static void toStash(Cutelyst::Context *c, dbid_t accountId);
 
     /*!
-     * \brief Puts the account \a into the context statsh.
-     * \param c         Pointer to the current context.
-     * \param a         Account to put into the context stash.
+     * \brief Puts this account into the context stash.
+     * If the account it not valid, a 404 error will be returned and the processing
+     * will be detached to the Root::error() method.
+     * \param c Pointer to the current context.
+     * \return \c true if the account was valid, otherwise \c false.
      */
-    static void toStash(Cutelyst::Context *c, const Account &a);
+    bool toStash(Cutelyst::Context *c) const;
 
     /*!
      * \brief Returns the current Account object from the stash.

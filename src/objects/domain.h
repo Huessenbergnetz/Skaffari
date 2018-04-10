@@ -391,6 +391,15 @@ public:
     bool update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError *e);
 
     /*!
+     * \brief Puts this domain into the current context stash.
+     * If the domain it not valid, a 404 error will be returned and the processing
+     * will be detached to the Root::error() method.
+     * \param c Pointer to the current context.
+     * \return \c true if the domain was valid, otherwise \c false.
+     */
+    bool toStash(Cutelyst::Context *c) const;
+
+    /*!
      * \brief Loads the domain identified by \a domainId into the stash of context \a c.
      *
      * \param c The current context.

@@ -62,9 +62,6 @@ public:
 
     C_ATTR(create, :Local("create") :Args(0))
     void create(Context *c);
-
-private:
-    static QStringList trimFolderStrings(const QStringList &folders);
 };
 
 #endif //DOMAINEDITOR_H
