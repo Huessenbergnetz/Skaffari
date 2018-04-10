@@ -3,7 +3,6 @@ set (skaffari_SRCS
     imap/skaffariimap.h
     imap/skaffariimaperror.cpp
     imap/skaffariimaperror.h
-    imap/skaffariimaperror_p.h
     objects/account.cpp
     objects/account.h
     objects/account_p.h

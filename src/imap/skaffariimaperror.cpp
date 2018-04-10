@@ -16,16 +16,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "skaffariimaperror_p.h"
+#include "skaffariimaperror.h"
+#include <QSharedData>
+#include <QSslError>
+
+class SkaffariIMAPError::Data : public QSharedData
+{
+public:
+    Data(SkaffariIMAPError::ErrorType _errorType, const QString &_errorText) :
+        errorText(_errorText),
+        errorType(_errorType)
+    {}
+
+    explicit Data(const QSslError &sslError) :
+        errorText(sslError.errorString()),
+        errorType(SkaffariIMAPError::EncryptionError)
+    {}
+
+    explicit Data(const Data &other) :
+        QSharedData(other),
+        errorText(other.errorText),
+        errorType(other.errorType)
+    {}
+
+    ~Data() {}
+
+    QString errorText;
+    SkaffariIMAPError::ErrorType errorType = SkaffariIMAPError::NoError;
+};
 
 SkaffariIMAPError::SkaffariIMAPError(SkaffariIMAPError::ErrorType type, const QString errorText) :
-    d(new SkaffariIMAPErrorData(type, errorText))
+    d(new Data(type, errorText))
 {
 
 }
 
 SkaffariIMAPError::SkaffariIMAPError(const QSslError &sslError) :
-    d(new SkaffariIMAPErrorData(sslError))
+    d(new Data(sslError))
 {
 
 }
@@ -35,9 +62,21 @@ SkaffariIMAPError::SkaffariIMAPError(const SkaffariIMAPError& other) : d(other.d
 
 }
 
+SkaffariIMAPError::SkaffariIMAPError(SkaffariIMAPError &&other) noexcept :
+    d(std::move(other.d))
+{
+    other.d = nullptr;
+}
+
 SkaffariIMAPError& SkaffariIMAPError::operator=(const SkaffariIMAPError& other)
 {
     d = other.d;
+    return *this;
+}
+
+SkaffariIMAPError& SkaffariIMAPError::operator=(SkaffariIMAPError &&other) noexcept
+{
+    swap(other);
     return *this;
 }
 
@@ -54,6 +93,11 @@ bool SkaffariIMAPError::operator!=(const SkaffariIMAPError& other) const
 SkaffariIMAPError::~SkaffariIMAPError()
 {
 
+}
+
+void SkaffariIMAPError::swap(SkaffariIMAPError &other) noexcept
+{
+    std::swap(d, other.d);
 }
 
 SkaffariIMAPError::ErrorType SkaffariIMAPError::type() const

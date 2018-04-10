@@ -23,7 +23,6 @@
 #include <QSharedDataPointer>
 
 class QSslError;
-class SkaffariIMAPErrorData;
 
 /*!
  * \ingroup skaffaricore
@@ -49,10 +48,13 @@ public:
     explicit SkaffariIMAPError(ErrorType type = NoError, const QString errorText = QString());
     explicit SkaffariIMAPError(const QSslError &sslError);
     SkaffariIMAPError(const SkaffariIMAPError &other);
+    SkaffariIMAPError(SkaffariIMAPError &&other) noexcept;
     SkaffariIMAPError& operator=(const SkaffariIMAPError &other);
+    SkaffariIMAPError& operator=(SkaffariIMAPError &&other) noexcept;
+    ~SkaffariIMAPError();
+    void swap(SkaffariIMAPError &other) noexcept;
     bool operator==(const SkaffariIMAPError &other) const;
     bool operator!=(const SkaffariIMAPError &other) const;
-    ~SkaffariIMAPError();
 
     ErrorType type() const;
     QString errorText() const;
@@ -61,7 +63,8 @@ public:
     void clear();
 
 private:
-    QSharedDataPointer<SkaffariIMAPErrorData> d;
+    class Data;
+    QSharedDataPointer<Data> d;
 };
 
 #endif // SKAFFARIIMAPERROR_H
