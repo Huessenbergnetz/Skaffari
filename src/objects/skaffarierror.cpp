@@ -16,12 +16,93 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "skaffarierror_p.h"
+#include "skaffarierror.h"
+#include <Cutelyst/Context>
 #include <QDebugStateSaver>
+#include <QSharedData>
 
 #define STASH_KEY "_sk_error"
 
-QString SkaffariErrorData::databaseErrorText() const
+class SkaffariError::Data : public QSharedData
+{
+public:
+    explicit Data(Cutelyst::Context *_c) :
+        QSharedData(),
+        c(_c)
+    {}
+
+    Data(Cutelyst::Context *_c, SkaffariError::ErrorType _type , const QString _errorText, const QVariant _errorData) :
+        QSharedData(),
+        c(_c),
+        errorText(_errorText),
+        errorData(_errorData),
+        errorType(_type)
+    {
+        switch (errorType) {
+        case SkaffariError::AuthenticationError:
+            status = Cutelyst::Response::Unauthorized;
+            break;
+        case SkaffariError::AuthorizationError:
+            status = Cutelyst::Response::Forbidden;
+            break;
+        case SkaffariError::NotFound:
+            status = Cutelyst::Response::NotFound;
+            break;
+        case SkaffariError::InputError:
+            status = Cutelyst::Response::BadRequest;
+            break;
+        default:
+            status = Cutelyst::Response::InternalServerError;
+            break;
+        }
+    }
+
+    Data(Cutelyst::Context *_c, const QSqlError &_sqlError, const QString &_errorText) :
+        QSharedData(),
+        c(_c),
+        qSqlError(_sqlError),
+        errorType(SkaffariError::SqlError),
+        status(Cutelyst::Response::InternalServerError)
+    {
+        if (_errorText.isEmpty()) {
+            errorText = qSqlError.text();
+        } else {
+            errorText = _errorText;
+            errorText.append(QChar(QChar::Space));
+            errorText.append(qSqlError.text());
+        }
+    }
+
+    Data(Cutelyst::Context *_c, const SkaffariIMAPError& _imapError, const QString _errorText) :
+        QSharedData(),
+        c(_c),
+        imapError(_imapError),
+        errorType(SkaffariError::ImapError),
+        status(Cutelyst::Response::InternalServerError)
+    {
+        if (_errorText.isEmpty()) {
+            errorText = imapError.errorText();
+        } else {
+            errorText = _errorText;
+            errorText.append(QChar(QChar::Space));
+            errorText.append(imapError.errorText());
+        }
+    }
+
+    ~Data() {}
+
+    QString databaseErrorText() const;
+
+    Cutelyst::Context *c = nullptr;
+    QSqlError qSqlError;
+    QString errorText;
+    QVariant errorData;
+    SkaffariIMAPError imapError;
+    SkaffariError::ErrorType errorType = SkaffariError::NoError;
+    Cutelyst::Response::HttpStatus status = Cutelyst::Response::OK;
+};
+
+QString SkaffariError::Data::databaseErrorText() const
 {
     QString es;
     if (c) {
@@ -37,25 +118,25 @@ QString SkaffariErrorData::databaseErrorText() const
 }
 
 SkaffariError::SkaffariError(Cutelyst::Context *c) :
-    d(new SkaffariErrorData(c))
+    d(new Data(c))
 {
 
 }
 
 SkaffariError::SkaffariError(Cutelyst::Context *c, SkaffariError::ErrorType type, const QString errorText, const QVariant errorData) :
-    d(new SkaffariErrorData(c, type, errorText, errorData))
+    d(new Data(c, type, errorText, errorData))
 {
 
 }
 
 SkaffariError::SkaffariError(Cutelyst::Context *c, const QSqlError& sqlError, const QString errorText) :
-    d(new SkaffariErrorData(c, sqlError, errorText))
+    d(new Data(c, sqlError, errorText))
 {
 
 }
 
 SkaffariError::SkaffariError(Cutelyst::Context *c, const SkaffariIMAPError& imapError, const QString errorText) :
-    d(new SkaffariErrorData(c, imapError, errorText))
+    d(new Data(c, imapError, errorText))
 {
 
 }

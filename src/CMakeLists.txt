@@ -19,7 +19,6 @@ set (skaffari_SRCS
     objects/simpledomain.h
     objects/skaffarierror.cpp
     objects/skaffarierror.h
-    objects/skaffarierror_p.h
     objects/folder.cpp
     objects/folder.h
     objects/helpentry.cpp

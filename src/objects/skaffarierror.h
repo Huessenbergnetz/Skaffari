@@ -30,8 +30,6 @@ namespace Cutelyst {
 class Context;
 }
 
-class SkaffariErrorData;
-
 /*!
  * \ingroup skaffaricore
  * \brief The SkaffariError class provides Skaffari error information.
@@ -238,7 +236,8 @@ public:
     static SkaffariError fromStash(Cutelyst::Context *c);
 
 private:
-    QSharedDataPointer<SkaffariErrorData> d;
+    class Data;
+    QSharedDataPointer<Data> d;
 };
 
 /*!
