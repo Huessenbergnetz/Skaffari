@@ -16,22 +16,59 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "emailaddress_p.h"
+#include "emailaddress.h"
 #include "skaffarierror.h"
 #include <Cutelyst/Context>
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
+#include <QSharedData>
+#include <QCollator>
 #include <algorithm>
 
-EmailAddress::EmailAddress() : d(new EmailAddressData)
+class EmailAddressNameCollator : public QCollator
+{
+public:
+    explicit EmailAddressNameCollator(const QLocale &locale) :
+        QCollator(locale)
+    {}
+
+    bool operator() (const EmailAddress &left, const EmailAddress &right) { return (compare(left.name(), right.name())); }
+};
+
+class EmailAddress::Data : public QSharedData
+{
+public:
+    Data() : QSharedData() {}
+
+    Data(dbid_t _id, dbid_t _aceId, const QString &_name) :
+        QSharedData(),
+        id(_id),
+        aceId(_aceId)
+    {
+        const int atIdx = _name.lastIndexOf(QLatin1Char('@'));
+        if ((atIdx > 0) && (atIdx < (_name.size() - 1))) {
+            local = _name.left(atIdx);
+            domain = _name.mid(atIdx + 1);
+        }
+    }
+
+    ~Data() {}
+
+    QString local;
+    QString domain;
+    dbid_t id = 0;
+    dbid_t aceId = 0;
+};
+
+EmailAddress::EmailAddress() : d(new Data)
 {
 
 }
 
 EmailAddress::EmailAddress(dbid_t id, dbid_t aceId, const QString &name) :
-    d(new EmailAddressData(id, aceId, name))
+    d(new Data(id, aceId, name))
 {
 
 }

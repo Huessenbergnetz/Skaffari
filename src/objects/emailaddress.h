@@ -30,7 +30,6 @@ class Context;
 }
 
 class SkaffariError;
-class EmailAddressData;
 
 /*!
  * \ingroup skaffaricore
@@ -158,7 +157,8 @@ public:
     static EmailAddress get(Cutelyst::Context *c, SkaffariError &e, const QString &alias);
 
 private:
-    QSharedDataPointer<EmailAddressData> d;
+    class Data;
+    QSharedDataPointer<Data> d;
 };
 
 Q_DECLARE_METATYPE(EmailAddress)
