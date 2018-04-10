@@ -19,14 +19,14 @@
 #ifndef SKAFFARICONFIG_H
 #define SKAFFARICONFIG_H
 
-#include <QCryptographicHash>
-#include <QAbstractSocket>
-#include <QLoggingCategory>
 #include "../../common/password.h"
 #include "../../common/global.h"
 #include "../imap/skaffariimap.h"
 #include "../objects/account.h"
 #include "../objects/simpleaccount.h"
+#include <QCryptographicHash>
+#include <QAbstractSocket>
+#include <QLoggingCategory>
 
 Q_DECLARE_LOGGING_CATEGORY(SK_CONFIG)
 
@@ -422,63 +422,7 @@ public:
      */
     static bool useMemcachedSession();
 
-#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
-    static int pwqDifok();
-#endif
-
 private:
-    static Password::Method m_accPwMethod;
-    static Password::Algorithm m_accPwAlgorithm;
-    static quint32 m_accPwRounds;
-#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
-    static QString m_accPwSettingsFile;
-    static int m_accPwThreshold;
-#else
-    static quint8 m_accPwMinlength;
-#endif
-
-    static QCryptographicHash::Algorithm m_admPwAlgorithm;
-    static quint32 m_admPwRounds;
-#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
-    static QString m_admPwSettingsFile;
-    static int m_admPwThreshold;
-#else
-    static quint8 m_admPwMinlength;
-#endif
-
-    static quota_size_t m_defDomainquota;
-    static quota_size_t m_defQuota;
-    static quint32 m_defMaxaccounts;
-    static QString m_defLanguage;
-    static QByteArray m_defTimezone;
-    static quint8 m_defMaxdisplay;
-    static quint8 m_defWarnlevel;
-    static SimpleAccount m_defAbuseAccount;
-    static SimpleAccount m_defNocAccount;
-    static SimpleAccount m_defSecurityAccount;
-    static SimpleAccount m_defPostmasterAccount;
-    static SimpleAccount m_defHostmasterAccount;
-    static SimpleAccount m_defWebmasterAccount;
-
-    static QString m_imapHost;
-    static quint16 m_imapPort;
-    static QString m_imapUser;
-    static QString m_imapPassword;
-    static QString m_imapPeername;
-    static QAbstractSocket::NetworkLayerProtocol m_imapProtocol;
-    static SkaffariIMAP::EncryptionType m_imapEncryption;
-    static Account::CreateMailbox m_imapCreatemailbox;
-    static bool m_imapUnixhierarchysep;
-    static bool m_imapDomainasprefix;
-    static bool m_imapFqun;
-
-    static QString m_template;
-    static QString m_tmplBasePath;
-    static bool m_tmplAsyncAccountList;
-
-    static bool m_useMemcached;
-    static bool m_useMemcachedSession;
-
     static QVariant loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal = QVariant());
     static SimpleAccount loadDefaultAccount(const QString &optionName);
     static SimpleAccount loadDefaultAccount(dbid_t accountId);

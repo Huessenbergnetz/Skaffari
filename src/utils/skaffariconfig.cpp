@@ -21,136 +21,142 @@
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QGlobalStatic>
+#include <QReadWriteLock>
+#include <QReadLocker>
+#include <QWriteLocker>
 #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
 #include <pwquality.h>
 #endif
 
 Q_LOGGING_CATEGORY(SK_CONFIG, "skaffari.config")
 
-Password::Method SkaffariConfig::m_accPwMethod = static_cast<Password::Method>(SK_DEF_ACC_PWMETHOD);
-Password::Algorithm SkaffariConfig::m_accPwAlgorithm = static_cast<Password::Algorithm>(SK_DEF_ACC_PWALGORITHM);
-quint32 SkaffariConfig::m_accPwRounds = SK_DEF_ACC_PWROUNDS;
+struct ConfigValues
+{
+    mutable QReadWriteLock lock{QReadWriteLock::Recursive};
+
+    Password::Method accPwMethod = static_cast<Password::Method>(SK_DEF_ACC_PWMETHOD);
+    Password::Algorithm accPwAlgorithm = static_cast<Password::Algorithm>(SK_DEF_ACC_PWALGORITHM);
+    quint32 accPwRounds = SK_DEF_ACC_PWROUNDS;
 #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
-QString SkaffariConfig::m_accPwSettingsFile;
-int SkaffariConfig::m_accPwThreshold = SK_DEF_ACC_PWTHRESHOLD;
+    QString accPwSettingsFile;
+    int accPwThreshold = SK_DEF_ACC_PWTHRESHOLD;
 #else
-quint8 SkaffariConfig::m_accPwMinlength = SK_DEF_ACC_PWMINLENGTH;
+    quint8 SkaffariConfig::m_accPwMinlength = SK_DEF_ACC_PWMINLENGTH;
 #endif
 
-QCryptographicHash::Algorithm SkaffariConfig::m_admPwAlgorithm = static_cast<QCryptographicHash::Algorithm>(SK_DEF_ADM_PWALGORITHM);
-quint32 SkaffariConfig::m_admPwRounds = SK_DEF_ADM_PWROUNDS;
+    QCryptographicHash::Algorithm admPwAlgorithm = static_cast<QCryptographicHash::Algorithm>(SK_DEF_ADM_PWALGORITHM);
+    quint32 admPwRounds = SK_DEF_ADM_PWROUNDS;
 #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
-QString SkaffariConfig::m_admPwSettingsFile;
-int SkaffariConfig::m_admPwThreshold = SK_DEF_ADM_PWTHRESHOLD;
+    QString admPwSettingsFile;
+    int admPwThreshold = SK_DEF_ADM_PWTHRESHOLD;
 #else
-quint8 SkaffariConfig::m_admPwMinlength = SK_DEF_ADM_PWMINLENGTH;
+    quint8 SkaffariConfig::m_admPwMinlength = SK_DEF_ADM_PWMINLENGTH;
 #endif
 
-quota_size_t SkaffariConfig::m_defDomainquota = SK_DEF_DEF_DOMAINQUOTA;
-quota_size_t SkaffariConfig::m_defQuota = SK_DEF_DEF_QUOTA;
-quint32 SkaffariConfig::m_defMaxaccounts = SK_DEF_DEF_MAXACCOUNTS;
-QString SkaffariConfig::m_defLanguage = QLatin1String(SK_DEF_DEF_LANGUAGE);
-QByteArray SkaffariConfig::m_defTimezone = QByteArrayLiteral(SK_DEF_DEF_TIMEZONE);
-quint8 SkaffariConfig::m_defMaxdisplay = SK_DEF_DEF_MAXDISPLAY;
-quint8 SkaffariConfig::m_defWarnlevel = SK_DEF_DEF_WARNLEVEL;
-SimpleAccount SkaffariConfig::m_defAbuseAccount;
-SimpleAccount SkaffariConfig::m_defNocAccount;
-SimpleAccount SkaffariConfig::m_defPostmasterAccount;
-SimpleAccount SkaffariConfig::m_defHostmasterAccount;
-SimpleAccount SkaffariConfig::m_defWebmasterAccount;
-SimpleAccount SkaffariConfig::m_defSecurityAccount;
+    quota_size_t defDomainquota = SK_DEF_DEF_DOMAINQUOTA;
+    quota_size_t defQuota = SK_DEF_DEF_QUOTA;
+    quint32 defMaxaccounts = SK_DEF_DEF_MAXACCOUNTS;
+    QString defLanguage = QLatin1String(SK_DEF_DEF_LANGUAGE);
+    QByteArray defTimezone = QByteArrayLiteral(SK_DEF_DEF_TIMEZONE);
+    quint8 defMaxdisplay = SK_DEF_DEF_MAXDISPLAY;
+    quint8 defWarnlevel = SK_DEF_DEF_WARNLEVEL;
+    SimpleAccount defAbuseAccount;
+    SimpleAccount defNocAccount;
+    SimpleAccount defPostmasterAccount;
+    SimpleAccount defHostmasterAccount;
+    SimpleAccount defWebmasterAccount;
+    SimpleAccount defSecurityAccount;
 
-QString SkaffariConfig::m_imapHost;
-QString SkaffariConfig::m_imapUser;
-QString SkaffariConfig::m_imapPassword;
-QString SkaffariConfig::m_imapPeername;
-quint16 SkaffariConfig::m_imapPort = 143;
-QAbstractSocket::NetworkLayerProtocol SkaffariConfig::m_imapProtocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(SK_DEF_IMAP_PROTOCOL);
-SkaffariIMAP::EncryptionType SkaffariConfig::m_imapEncryption = static_cast<SkaffariIMAP::EncryptionType>(SK_DEF_IMAP_ENCRYPTION);
-Account::CreateMailbox SkaffariConfig::m_imapCreatemailbox = static_cast<Account::CreateMailbox>(SK_DEF_IMAP_CREATEMAILBOX);
-bool SkaffariConfig::m_imapUnixhierarchysep = SK_DEF_IMAP_UNIXHIERARCHYSEP;
-bool SkaffariConfig::m_imapDomainasprefix = SK_DEF_IMAP_DOMAINASPREFIX;
-bool SkaffariConfig::m_imapFqun = SK_DEF_IMAP_FQUN;
+    QString imapHost;
+    QString imapUser;
+    QString imapPassword;
+    QString imapPeername;
+    quint16 imapPort = 143;
+    QAbstractSocket::NetworkLayerProtocol imapProtocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(SK_DEF_IMAP_PROTOCOL);
+    SkaffariIMAP::EncryptionType imapEncryption = static_cast<SkaffariIMAP::EncryptionType>(SK_DEF_IMAP_ENCRYPTION);
+    Account::CreateMailbox imapCreatemailbox = static_cast<Account::CreateMailbox>(SK_DEF_IMAP_CREATEMAILBOX);
+    bool imapUnixhierarchysep = SK_DEF_IMAP_UNIXHIERARCHYSEP;
+    bool imapDomainasprefix = SK_DEF_IMAP_DOMAINASPREFIX;
+    bool imapFqun = SK_DEF_IMAP_FQUN;
 
-QString SkaffariConfig::m_template = QStringLiteral("default");
-QString SkaffariConfig::m_tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1String("/default");
-bool SkaffariConfig::m_tmplAsyncAccountList = SK_DEF_TMPL_ASYNCACCOUNTLIST;
+    QString tmpl = QStringLiteral("default");
+    QString tmplBasePath = QStringLiteral(SKAFFARI_TMPLDIR) + QLatin1String("/default");
+    bool tmplAsyncAccountList = SK_DEF_TMPL_ASYNCACCOUNTLIST;
 
-bool SkaffariConfig::m_useMemcached = false;
-bool SkaffariConfig::m_useMemcachedSession = false;
-
-SkaffariConfig::SkaffariConfig()
-{
-
-}
-
-SkaffariConfig::~SkaffariConfig()
-{
-
-}
+    bool useMemcached = false;
+    bool useMemcachedSession = false;
+};
+Q_GLOBAL_STATIC(ConfigValues, cfg)
 
 void SkaffariConfig::load(const QVariantMap &general, const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &imap, const QVariantMap &tmpl)
 {
-    SkaffariConfig::m_template = general.value(QStringLiteral("template"), QStringLiteral("default")).toString();
-    SkaffariConfig::m_useMemcached = general.value(QStringLiteral("usememcached"), false).toBool();
-    SkaffariConfig::m_useMemcachedSession = general.value(QStringLiteral("usememcachedsession"), false).toBool();
+    QWriteLocker locker(&cfg->lock);
 
-    SkaffariConfig::m_accPwMethod = static_cast<Password::Method>(accounts.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
-    SkaffariConfig::m_accPwAlgorithm = static_cast<Password::Algorithm>(accounts.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>());
-    SkaffariConfig::m_accPwRounds = accounts.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>();
+    cfg->tmpl = general.value(QStringLiteral("template"), QStringLiteral("default")).toString();
+    cfg->useMemcached = general.value(QStringLiteral("usememcached"), false).toBool();
+    cfg->useMemcachedSession = general.value(QStringLiteral("usememcachedsession"), false).toBool();
+
+    cfg->accPwMethod = static_cast<Password::Method>(accounts.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
+    cfg->accPwAlgorithm = static_cast<Password::Algorithm>(accounts.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>());
+    cfg->accPwRounds = accounts.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>();
 #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
-    SkaffariConfig::m_accPwSettingsFile = accounts.value(QStringLiteral("pwsettingsfile")).toString();
-    SkaffariConfig::m_accPwThreshold = accounts.value(QStringLiteral("pwthreshold"), SK_DEF_ACC_PWTHRESHOLD).toInt();
+    cfg->accPwSettingsFile = accounts.value(QStringLiteral("pwsettingsfile")).toString();
+    cfg->accPwThreshold = accounts.value(QStringLiteral("pwthreshold"), SK_DEF_ACC_PWTHRESHOLD).toInt();
 #else
-    SkaffariConfig::m_accPwMinlength = accounts.value(QStringLiteral("pwminlength"), SK_DEF_ACC_PWMINLENGTH).value<quint8>();
+    cfg->accPwMinlength = accounts.value(QStringLiteral("pwminlength"), SK_DEF_ACC_PWMINLENGTH).value<quint8>();
 #endif
 
-    SkaffariConfig::m_admPwAlgorithm = static_cast<QCryptographicHash::Algorithm>(admins.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM).value<quint8>());
-    SkaffariConfig::m_admPwRounds = admins.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>();
+    cfg->admPwAlgorithm = static_cast<QCryptographicHash::Algorithm>(admins.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM).value<quint8>());
+    cfg->admPwRounds = admins.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).value<quint32>();
 #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
-    SkaffariConfig::m_admPwSettingsFile = admins.value(QStringLiteral("pwsettingsfile")).toString();
-    SkaffariConfig::m_admPwThreshold = admins.value(QStringLiteral("pwthreshold"), SK_DEF_ADM_PWTHRESHOLD).toInt();
+    cfg->admPwSettingsFile = admins.value(QStringLiteral("pwsettingsfile")).toString();
+    cfg->admPwThreshold = admins.value(QStringLiteral("pwthreshold"), SK_DEF_ADM_PWTHRESHOLD).toInt();
 #else
-    SkaffariConfig::m_admPwMinlength = admins.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>();
+    cfg->admPwMinlength = admins.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).value<quint8>();
 #endif
 
-    SkaffariConfig::m_imapHost = imap.value(QStringLiteral("host")).toString();
-    SkaffariConfig::m_imapUser = imap.value(QStringLiteral("user")).toString();
-    SkaffariConfig::m_imapPassword = imap.value(QStringLiteral("password")).toString();
-    SkaffariConfig::m_imapPeername = imap.value(QStringLiteral("peername")).toString();
-    SkaffariConfig::m_imapPort = imap.value(QStringLiteral("port"), 143).value<quint16>();
-    SkaffariConfig::m_imapProtocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(imap.value(QStringLiteral("protocol"), SK_DEF_IMAP_PROTOCOL).value<quint8>());
-    SkaffariConfig::m_imapEncryption = static_cast<SkaffariIMAP::EncryptionType>(imap.value(QStringLiteral("encryption"), SK_DEF_IMAP_ENCRYPTION).value<quint8>());
-    SkaffariConfig::m_imapCreatemailbox = static_cast<Account::CreateMailbox>(imap.value(QStringLiteral("createmailbox"), SK_DEF_IMAP_CREATEMAILBOX).value<quint8>());
-    SkaffariConfig::m_imapUnixhierarchysep = imap.value(QStringLiteral("unixhierarchysep"), SK_DEF_IMAP_UNIXHIERARCHYSEP).toBool();
-    SkaffariConfig::m_imapDomainasprefix = imap.value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool();
-    SkaffariConfig::m_imapFqun = imap.value(QStringLiteral("fqun"), SK_DEF_IMAP_FQUN).toBool();
+    cfg->imapHost = imap.value(QStringLiteral("host")).toString();
+    cfg->imapUser = imap.value(QStringLiteral("user")).toString();
+    cfg->imapPassword = imap.value(QStringLiteral("password")).toString();
+    cfg->imapPeername = imap.value(QStringLiteral("peername")).toString();
+    cfg->imapPort = imap.value(QStringLiteral("port"), 143).value<quint16>();
+    cfg->imapProtocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(imap.value(QStringLiteral("protocol"), SK_DEF_IMAP_PROTOCOL).value<quint8>());
+    cfg->imapEncryption = static_cast<SkaffariIMAP::EncryptionType>(imap.value(QStringLiteral("encryption"), SK_DEF_IMAP_ENCRYPTION).value<quint8>());
+    cfg->imapCreatemailbox = static_cast<Account::CreateMailbox>(imap.value(QStringLiteral("createmailbox"), SK_DEF_IMAP_CREATEMAILBOX).value<quint8>());
+    cfg->imapUnixhierarchysep = imap.value(QStringLiteral("unixhierarchysep"), SK_DEF_IMAP_UNIXHIERARCHYSEP).toBool();
+    cfg->imapDomainasprefix = imap.value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool();
+    cfg->imapFqun = imap.value(QStringLiteral("fqun"), SK_DEF_IMAP_FQUN).toBool();
 
-    SkaffariConfig::m_tmplAsyncAccountList = tmpl.value(QStringLiteral("asyncaccountlist"), SK_DEF_TMPL_ASYNCACCOUNTLIST).toBool();
+    cfg->tmplAsyncAccountList = tmpl.value(QStringLiteral("asyncaccountlist"), SK_DEF_TMPL_ASYNCACCOUNTLIST).toBool();
 }
 
 void SkaffariConfig::loadSettingsFromDB()
 {
+    QWriteLocker locker(&cfg->lock);
+
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT option_value FROM options WHERE option_name = :option_name"));
 
-    SkaffariConfig::m_defDomainquota = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), SK_DEF_DEF_DOMAINQUOTA).value<quota_size_t>();
-    SkaffariConfig::m_defQuota = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_QUOTA), SK_DEF_DEF_QUOTA).value<quota_size_t>();
-    SkaffariConfig::m_defMaxaccounts = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
-    SkaffariConfig::m_defLanguage = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), QLatin1String(SK_DEF_DEF_LANGUAGE)).toString();
-    SkaffariConfig::m_defTimezone = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QLatin1String(SK_DEF_DEF_TIMEZONE)).toByteArray();
-    SkaffariConfig::m_defMaxdisplay = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SK_DEF_DEF_MAXDISPLAY).value<quint8>();
-    SkaffariConfig::m_defWarnlevel = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SK_DEF_DEF_WARNLEVEL).value<quint8>();
+    cfg->defDomainquota = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), SK_DEF_DEF_DOMAINQUOTA).value<quota_size_t>();
+    cfg->defQuota = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_QUOTA), SK_DEF_DEF_QUOTA).value<quota_size_t>();
+    cfg->defMaxaccounts = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
+    cfg->defLanguage = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), QLatin1String(SK_DEF_DEF_LANGUAGE)).toString();
+    cfg->defTimezone = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QLatin1String(SK_DEF_DEF_TIMEZONE)).toByteArray();
+    cfg->defMaxdisplay = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SK_DEF_DEF_MAXDISPLAY).value<quint8>();
+    cfg->defWarnlevel = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SK_DEF_DEF_WARNLEVEL).value<quint8>();
 
-    SkaffariConfig::m_defAbuseAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC));
-    SkaffariConfig::m_defNocAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC));
-    SkaffariConfig::m_defSecurityAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC));
-    SkaffariConfig::m_defPostmasterAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC));
-    SkaffariConfig::m_defHostmasterAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC));
-    SkaffariConfig::m_defWebmasterAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC));
+    cfg->defAbuseAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC));
+    cfg->defNocAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC));
+    cfg->defSecurityAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC));
+    cfg->defPostmasterAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC));
+    cfg->defHostmasterAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC));
+    cfg->defWebmasterAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC));
 }
 
 void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
 {
+    QWriteLocker locker(&cfg->lock);
+
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO options (option_name, option_value) "
                                                          "VALUES (:option_name, :option_value) "
                                                          "ON DUPLICATE KEY UPDATE "
@@ -167,61 +173,63 @@ void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
         }
     }
 
-    SkaffariConfig::m_defDomainquota = options.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), SkaffariConfig::m_defDomainquota).value<quota_size_t>();
-    SkaffariConfig::m_defQuota = options.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), SkaffariConfig::m_defQuota).value<quota_size_t>();
-    SkaffariConfig::m_defMaxaccounts = options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), SkaffariConfig::m_defMaxaccounts).value<quint32>();
-    SkaffariConfig::m_defLanguage = options.value(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), SkaffariConfig::m_defLanguage).toString();
-    SkaffariConfig::m_defTimezone = options.value(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), SkaffariConfig::m_defTimezone).toByteArray();
-    SkaffariConfig::m_defMaxdisplay = options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SkaffariConfig::m_defMaxdisplay).value<quint8>();
-    SkaffariConfig::m_defWarnlevel = options.value(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SkaffariConfig::m_defWarnlevel).value<quint8>();
+    cfg->defDomainquota = options.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), cfg->defDomainquota).value<quota_size_t>();
+    cfg->defQuota = options.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), cfg->defQuota).value<quota_size_t>();
+    cfg->defMaxaccounts = options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), cfg->defMaxaccounts).value<quint32>();
+    cfg->defLanguage = options.value(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), cfg->defLanguage).toString();
+    cfg->defTimezone = options.value(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), cfg->defTimezone).toByteArray();
+    cfg->defMaxdisplay = options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), cfg->defMaxdisplay).value<quint8>();
+    cfg->defWarnlevel = options.value(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), cfg->defWarnlevel).value<quint8>();
 
-    SkaffariConfig::m_defAbuseAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), SkaffariConfig::m_defAbuseAccount.id()).value<dbid_t>());
-    SkaffariConfig::m_defNocAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), SkaffariConfig::m_defNocAccount.id()).value<dbid_t>());
-    SkaffariConfig::m_defSecurityAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), SkaffariConfig::m_defSecurityAccount.id()).value<dbid_t>());
-    SkaffariConfig::m_defPostmasterAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), SkaffariConfig::m_defPostmasterAccount.id()).value<dbid_t>());
-    SkaffariConfig::m_defHostmasterAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), SkaffariConfig::m_defHostmasterAccount.id()).value<dbid_t>());
-    SkaffariConfig::m_defWebmasterAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), SkaffariConfig::m_defWebmasterAccount.id()).value<dbid_t>());
+    cfg->defAbuseAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), cfg->defAbuseAccount.id()).value<dbid_t>());
+    cfg->defNocAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), cfg->defNocAccount.id()).value<dbid_t>());
+    cfg->defSecurityAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), cfg->defSecurityAccount.id()).value<dbid_t>());
+    cfg->defPostmasterAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), cfg->defPostmasterAccount.id()).value<dbid_t>());
+    cfg->defHostmasterAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), cfg->defHostmasterAccount.id()).value<dbid_t>());
+    cfg->defWebmasterAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), cfg->defWebmasterAccount.id()).value<dbid_t>());
 }
 
 QVariantHash SkaffariConfig::getSettingsFromDB()
 {
+    QReadLocker locker(&cfg->lock);
     QVariantHash s;
     s.reserve(13);
 
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), SkaffariConfig::m_defDomainquota);
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), SkaffariConfig::m_defQuota);
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), SkaffariConfig::m_defMaxaccounts);
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), SkaffariConfig::m_defLanguage);
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), SkaffariConfig::m_defTimezone);
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SkaffariConfig::m_defMaxdisplay);
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SkaffariConfig::m_defWarnlevel);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), cfg->defDomainquota);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), cfg->defQuota);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), cfg->defMaxaccounts);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), cfg->defLanguage);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), cfg->defTimezone);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), cfg->defMaxdisplay);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), cfg->defWarnlevel);
 
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), QVariant::fromValue<SimpleAccount>(SkaffariConfig::m_defAbuseAccount));
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), QVariant::fromValue<SimpleAccount>(SkaffariConfig::m_defNocAccount));
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), QVariant::fromValue<SimpleAccount>(SkaffariConfig::m_defSecurityAccount));
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), QVariant::fromValue<SimpleAccount>(SkaffariConfig::m_defPostmasterAccount));
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), QVariant::fromValue<SimpleAccount>(SkaffariConfig::m_defHostmasterAccount));
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), QVariant::fromValue<SimpleAccount>(SkaffariConfig::m_defWebmasterAccount));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), QVariant::fromValue<SimpleAccount>(cfg->defAbuseAccount));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), QVariant::fromValue<SimpleAccount>(cfg->defNocAccount));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), QVariant::fromValue<SimpleAccount>(cfg->defSecurityAccount));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), QVariant::fromValue<SimpleAccount>(cfg->defPostmasterAccount));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), QVariant::fromValue<SimpleAccount>(cfg->defHostmasterAccount));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), QVariant::fromValue<SimpleAccount>(cfg->defWebmasterAccount));
 
     return s;
 }
 
-QString SkaffariConfig::tmpl() { return m_template; }
-QString SkaffariConfig::tmplBasePath() { return SkaffariConfig::m_tmplBasePath; }
-void SkaffariConfig::setTmplBasePath(const QString &path) { SkaffariConfig::m_tmplBasePath = path; }
-bool SkaffariConfig::useMemcached() { return m_useMemcached; }
-bool SkaffariConfig::useMemcachedSession() { return (m_useMemcached && m_useMemcachedSession); }
+QString SkaffariConfig::tmpl() { QReadLocker locker(&cfg->lock); return cfg->tmpl; }
+QString SkaffariConfig::tmplBasePath() { QReadLocker locker(&cfg->lock); return cfg->tmplBasePath; }
+void SkaffariConfig::setTmplBasePath(const QString &path) { QWriteLocker locker(&cfg->lock); cfg->tmplBasePath = path; }
+bool SkaffariConfig::useMemcached() { QReadLocker locker(&cfg->lock); return cfg->useMemcached; }
+bool SkaffariConfig::useMemcachedSession() { QReadLocker locker(&cfg->lock); return cfg->useMemcachedSession; }
 
-Password::Method SkaffariConfig::accPwMethod() { return m_accPwMethod; }
-Password::Algorithm SkaffariConfig::accPwAlgorithm() { return m_accPwAlgorithm; }
-quint32 SkaffariConfig::accPwRounds() { return m_accPwRounds; }
+Password::Method SkaffariConfig::accPwMethod() { QReadLocker locker(&cfg->lock); return cfg->accPwMethod; }
+Password::Algorithm SkaffariConfig::accPwAlgorithm() { QReadLocker locker(&cfg->lock); return cfg->accPwAlgorithm; }
+quint32 SkaffariConfig::accPwRounds() { QReadLocker locker(&cfg->lock); return cfg->accPwRounds; }
 quint8 SkaffariConfig::accPwMinlength()
 {
+    QReadLocker locker(&cfg->lock);
 #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     pwquality_settings_t *pwq;
     pwq = pwquality_default_settings();
-    if (!SkaffariConfig::m_accPwSettingsFile.isEmpty()) {
-        if (pwquality_read_config(pwq, SkaffariConfig::m_accPwSettingsFile.toUtf8().constData(), nullptr) != 0) {
+    if (!cfg->accPwSettingsFile.isEmpty()) {
+        if (pwquality_read_config(pwq, cfg->accPwSettingsFile.toUtf8().constData(), nullptr) != 0) {
             pwquality_read_config(pwq, nullptr, nullptr);
         }
     } else {
@@ -234,23 +242,24 @@ quint8 SkaffariConfig::accPwMinlength()
     pwquality_free_settings(pwq);
     return static_cast<quint8>(minLen);
 #else
-    return m_accPwMinlength;
+    return cfg->accPwMinlength;
 #endif
 }
 #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
-QString SkaffariConfig::accPwSettingsFile() { return m_accPwSettingsFile; }
-int SkaffariConfig::accPwThreshold() { return m_accPwThreshold; }
+QString SkaffariConfig::accPwSettingsFile() { QReadLocker locker(&cfg->lock); return cfg->accPwSettingsFile; }
+int SkaffariConfig::accPwThreshold() { QReadLocker locker(&cfg->lock); return cfg->accPwThreshold; }
 #endif
 
-QCryptographicHash::Algorithm SkaffariConfig::admPwAlgorithm() { return m_admPwAlgorithm; }
-quint32 SkaffariConfig::admPwRounds() { return m_admPwRounds; }
+QCryptographicHash::Algorithm SkaffariConfig::admPwAlgorithm() { QReadLocker locker(&cfg->lock); return cfg->admPwAlgorithm; }
+quint32 SkaffariConfig::admPwRounds() { QReadLocker locker(&cfg->lock); return cfg->admPwRounds; }
 quint8 SkaffariConfig::admPwMinlength()
 {
+    QReadLocker locker(&cfg->lock);
 #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
     pwquality_settings_t *pwq;
     pwq = pwquality_default_settings();
-    if (!SkaffariConfig::m_admPwSettingsFile.isEmpty()) {
-        if (pwquality_read_config(pwq, SkaffariConfig::m_admPwSettingsFile.toUtf8().constData(), nullptr) != 0) {
+    if (!cfg->admPwSettingsFile.isEmpty()) {
+        if (pwquality_read_config(pwq, cfg->admPwSettingsFile.toUtf8().constData(), nullptr) != 0) {
             pwquality_read_config(pwq, nullptr, nullptr);
         }
     } else {
@@ -263,40 +272,40 @@ quint8 SkaffariConfig::admPwMinlength()
     pwquality_free_settings(pwq);
     return static_cast<quint8>(minLen);
 #else
-    return m_admPwMinlength;
+    return cfg->admPwMinlength;
 #endif
 }
 #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
-QString SkaffariConfig::admPwSettingsFile() { return m_admPwSettingsFile; }
-int SkaffariConfig::admPwThreshold() { return m_admPwThreshold; }
+QString SkaffariConfig::admPwSettingsFile() { QReadLocker locker(&cfg->lock); return cfg->admPwSettingsFile; }
+int SkaffariConfig::admPwThreshold() { QReadLocker locker(&cfg->lock); return cfg->admPwThreshold; }
 #endif
 
-quota_size_t SkaffariConfig::defDomainquota() { return SkaffariConfig::m_defDomainquota; }
-quota_size_t SkaffariConfig::defQuota() { return SkaffariConfig::m_defQuota; }
-quint32 SkaffariConfig::defMaxaccounts() { return SkaffariConfig::m_defMaxaccounts; }
-QString SkaffariConfig::defLanguage() { return SkaffariConfig::m_defLanguage; }
-QByteArray SkaffariConfig::defTimezone() { return SkaffariConfig::m_defTimezone; }
-quint8 SkaffariConfig::defMaxdisplay() { return SkaffariConfig::m_defMaxdisplay; }
-quint8 SkaffariConfig::defWarnlevel() { return SkaffariConfig::m_defWarnlevel; }
-SimpleAccount SkaffariConfig::defAbuseAccount() { return SkaffariConfig::m_defAbuseAccount; }
-SimpleAccount SkaffariConfig::defNocAccount() { return SkaffariConfig::m_defNocAccount; }
-SimpleAccount SkaffariConfig::defPostmasterAccount() { return SkaffariConfig::m_defPostmasterAccount; }
-SimpleAccount SkaffariConfig::defHostmasterAccount() { return SkaffariConfig::m_defHostmasterAccount; }
-SimpleAccount SkaffariConfig::defWebmasterAccount() { return SkaffariConfig::m_defWebmasterAccount; }
+quota_size_t SkaffariConfig::defDomainquota() { QReadLocker locker(&cfg->lock); return cfg->defDomainquota; }
+quota_size_t SkaffariConfig::defQuota() { QReadLocker locker(&cfg->lock); return cfg->defQuota; }
+quint32 SkaffariConfig::defMaxaccounts() { QReadLocker locker(&cfg->lock); return cfg->defMaxaccounts; }
+QString SkaffariConfig::defLanguage() { QReadLocker locker(&cfg->lock); return cfg->defLanguage; }
+QByteArray SkaffariConfig::defTimezone() { QReadLocker locker(&cfg->lock); return cfg->defTimezone; }
+quint8 SkaffariConfig::defMaxdisplay() { QReadLocker locker(&cfg->lock); return cfg->defMaxdisplay; }
+quint8 SkaffariConfig::defWarnlevel() { QReadLocker locker(&cfg->lock); return cfg->defWarnlevel; }
+SimpleAccount SkaffariConfig::defAbuseAccount() { QReadLocker locker(&cfg->lock); return cfg->defAbuseAccount; }
+SimpleAccount SkaffariConfig::defNocAccount() { QReadLocker locker(&cfg->lock); return cfg->defNocAccount; }
+SimpleAccount SkaffariConfig::defPostmasterAccount() { QReadLocker locker(&cfg->lock); return cfg->defPostmasterAccount; }
+SimpleAccount SkaffariConfig::defHostmasterAccount() { QReadLocker locker(&cfg->lock); return cfg->defHostmasterAccount; }
+SimpleAccount SkaffariConfig::defWebmasterAccount() { QReadLocker locker(&cfg->lock);  return cfg->defWebmasterAccount; }
 
-QString SkaffariConfig::imapHost() { return SkaffariConfig::m_imapHost; }
-quint16 SkaffariConfig::imapPort() { return SkaffariConfig::m_imapPort; }
-QString SkaffariConfig::imapUser() { return SkaffariConfig::m_imapUser; }
-QString SkaffariConfig::imapPassword() { return SkaffariConfig::m_imapPassword; }
-QString SkaffariConfig::imapPeername() { return SkaffariConfig::m_imapPeername; }
-QAbstractSocket::NetworkLayerProtocol SkaffariConfig::imapProtocol() { return SkaffariConfig::m_imapProtocol; }
-SkaffariIMAP::EncryptionType SkaffariConfig::imapEncryption() { return SkaffariConfig::m_imapEncryption; }
-Account::CreateMailbox SkaffariConfig::imapCreatemailbox() { return SkaffariConfig::m_imapCreatemailbox; }
-bool SkaffariConfig::imapUnixhierarchysep() { return SkaffariConfig::m_imapUnixhierarchysep; }
-bool SkaffariConfig::imapDomainasprefix() { return (SkaffariConfig::m_imapUnixhierarchysep && SkaffariConfig::m_imapDomainasprefix); }
-bool SkaffariConfig::imapFqun() { return (SkaffariConfig::m_imapUnixhierarchysep && SkaffariConfig::m_imapDomainasprefix && SkaffariConfig::m_imapFqun); }
+QString SkaffariConfig::imapHost() { QReadLocker locker(&cfg->lock); return cfg->imapHost; }
+quint16 SkaffariConfig::imapPort() { QReadLocker locker(&cfg->lock); return cfg->imapPort; }
+QString SkaffariConfig::imapUser() { QReadLocker locker(&cfg->lock); return cfg->imapUser; }
+QString SkaffariConfig::imapPassword() { QReadLocker locker(&cfg->lock);  return cfg->imapPassword; }
+QString SkaffariConfig::imapPeername() { QReadLocker locker(&cfg->lock); return cfg->imapPeername; }
+QAbstractSocket::NetworkLayerProtocol SkaffariConfig::imapProtocol() { QReadLocker locker(&cfg->lock); return cfg->imapProtocol; }
+SkaffariIMAP::EncryptionType SkaffariConfig::imapEncryption() { QReadLocker locker(&cfg->lock); return cfg->imapEncryption; }
+Account::CreateMailbox SkaffariConfig::imapCreatemailbox() { QReadLocker locker(&cfg->lock); return cfg->imapCreatemailbox; }
+bool SkaffariConfig::imapUnixhierarchysep() { QReadLocker locker(&cfg->lock); return cfg->imapUnixhierarchysep; }
+bool SkaffariConfig::imapDomainasprefix() { QReadLocker locker(&cfg->lock); return cfg->imapDomainasprefix;}
+bool SkaffariConfig::imapFqun() { QReadLocker locker(&cfg->lock); return cfg->imapUnixhierarchysep && cfg->imapDomainasprefix && cfg->imapFqun; }
 
-bool SkaffariConfig::tmplAsyncAccountList() { return SkaffariConfig::m_tmplAsyncAccountList; }
+bool SkaffariConfig::tmplAsyncAccountList() { QReadLocker locker(&cfg->lock); return cfg->tmplAsyncAccountList; }
 
 QVariant SkaffariConfig::loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal)
 {
