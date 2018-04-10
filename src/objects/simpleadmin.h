@@ -34,7 +34,7 @@ public:
     /*!
      * \brief Constructs an invalid, empty %SimpleAdmin.
      */
-    SimpleAdmin();
+    SimpleAdmin() = default;
     /*!
      * \brief Constructs a new %SimpleAdmin with the given parameters.
      * \param id    database ID of the account
@@ -60,7 +60,7 @@ public:
     /*!
      * \brief Destroys this %SimpleAdmin instance.
      */
-    ~SimpleAdmin();
+    ~SimpleAdmin() = default;
 
     /*!
      * \brief Swapts this %SimpleAdmin instance with \a other.

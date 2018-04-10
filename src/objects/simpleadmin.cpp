@@ -20,13 +20,8 @@
 #include <QDebug>
 #include <QDataStream>
 
-SimpleAdmin::SimpleAdmin()
-{
-
-}
-
 SimpleAdmin::SimpleAdmin(dbid_t id, const QString &name) :
-    m_id(id), m_name(name)
+    m_id{id}, m_name{name}
 {
 
 }
@@ -55,11 +50,6 @@ SimpleAdmin& SimpleAdmin::operator=(SimpleAdmin &&other) noexcept
 {
     swap(other);
     return *this;
-}
-
-SimpleAdmin::~SimpleAdmin()
-{
-
 }
 
 void SimpleAdmin::swap(SimpleAdmin &other) noexcept

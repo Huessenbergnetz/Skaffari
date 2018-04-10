@@ -41,19 +41,14 @@ public:
     bool operator() (const SimpleDomain &left, const SimpleDomain &right) { return (compare(left.name(), right.name()) < 0); }
 };
 
-SimpleDomain::SimpleDomain()
-{
-
-}
-
 SimpleDomain::SimpleDomain(dbid_t id, const QString &name) :
-    m_name(name), m_id(id)
+    m_name {name}, m_id{id}
 {
 
 }
 
 SimpleDomain::SimpleDomain(const SimpleDomain &other) :
-    m_name(other.m_name), m_id(other.m_id)
+    m_name{other.m_name}, m_id{other.m_id}
 {
 
 }
@@ -77,11 +72,6 @@ SimpleDomain& SimpleDomain::operator=(SimpleDomain &&other) noexcept
 {
     swap(other);
     return *this;
-}
-
-SimpleDomain::~SimpleDomain()
-{
-
 }
 
 void SimpleDomain::swap(SimpleDomain &other) noexcept

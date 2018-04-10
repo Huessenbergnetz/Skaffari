@@ -41,7 +41,7 @@ public:
     /*!
      * \brief Constructs an invalid, empty SimpleDomain.
      */
-    SimpleDomain();
+    SimpleDomain() = default;
 
     /*!
      * \brief Constructs a new SimpleDomain with given database \a id and domain \a name.
@@ -71,7 +71,7 @@ public:
     /*!
      * \brief Destroys the simple domain.
      */
-    ~SimpleDomain();
+    ~SimpleDomain() = default;
 
     /*!
      * \brief Swaps this %SimpleDomain instance with \a other.
