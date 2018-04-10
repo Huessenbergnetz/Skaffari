@@ -35,11 +35,6 @@ public:
     bool operator() (const Language &left, const Language &right) { return (compare(left.name(), right.name())); }
 };
 
-Language::Language()
-{
-
-}
-
 Language::Language(const QLocale &locale) :
     m_locale(locale)
 {
@@ -68,11 +63,6 @@ Language& Language::operator=(Language &&other) noexcept
 {
     swap(other);
     return *this;
-}
-
-Language::~Language()
-{
-
 }
 
 void Language::swap(Language &other) noexcept

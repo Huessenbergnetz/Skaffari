@@ -39,7 +39,7 @@ public:
     /*!
      * \brief Constructs an empty %Language object with C locale.
      */
-    Language();
+    Language() = default;
     /*!
      * \brief Constructs a %Language object for the given \a locale.
      */
@@ -63,7 +63,7 @@ public:
     /*!
      * Destroys the %Language instance.
      */
-    ~Language();
+    ~Language() = default;
 
     /*!
      * \brief Swaps this %Language instance with \a other.
@@ -98,13 +98,13 @@ Q_DECLARE_METATYPE(Language)
 Q_DECLARE_TYPEINFO(Language, Q_MOVABLE_TYPE);
 
 GRANTLEE_BEGIN_LOOKUP(Language)
-QVariant var;
 if (property == QLatin1String("code")) {
-    var.setValue(object.code());
+    return QVariant(object.code());
 } else if (property == QLatin1String("name")) {
-    var.setValue(object.name());
+    return QVariant(object.name());
+} else {
+    return QVariant();
 }
-return var;
 GRANTLEE_END_LOOKUP
 
 #endif // LANGUAGE_H
