@@ -16,17 +16,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "helpentry_p.h"
+#include "helpentry.h"
+#include <QSharedData>
 #include <algorithm>
 
+class HelpEntry::Data : public QSharedData
+{
+public:
+    Data() : QSharedData() {}
+
+    Data(const QString &_title, const QString &_text) :
+        QSharedData(),
+        title(_title),
+        text(_text)
+    {}
+
+    ~Data() {}
+
+    QString title;
+    QString text;
+};
+
 HelpEntry::HelpEntry() :
-    d(new HelpEntryData)
+    d(new Data)
 {
 
 }
 
 HelpEntry::HelpEntry(const QString &title, const QString &text) :
-    d(new HelpEntryData(title, text))
+    d(new Data(title, text))
 {
 
 }

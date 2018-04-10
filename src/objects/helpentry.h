@@ -22,8 +22,6 @@
 #include <QSharedDataPointer>
 #include <grantlee5/grantlee/metatype.h>
 
-class HelpEntryData;
-
 /*!
  * \ingroup skaffaricore
  * \brief Represents a single help entry.
@@ -84,7 +82,8 @@ public:
     QString getText() const;
 
 protected:
-    QSharedDataPointer<HelpEntryData> d;
+    class Data;
+    QSharedDataPointer<Data> d;
 };
 
 Q_DECLARE_METATYPE(HelpEntry)
