@@ -16,19 +16,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "folder_p.h"
+#include "folder.h"
 #include <QDebug>
 #include <QDataStream>
 #include <algorithm>
 
+#include <QSharedData>
+
+class Folder::Data : public QSharedData
+{
+public:
+    Data() : QSharedData() {}
+
+    Data(dbid_t _id, dbid_t _domainId, const QString &_name) :
+        QSharedData(),
+        name(_name),
+        id(_id),
+        domainId(_domainId)
+    {}
+
+    ~Data() {}
+
+    QString name;
+    dbid_t id = 0;
+    dbid_t domainId = 0;
+};
+
 Folder::Folder() :
-    d(new FolderData)
+    d(new Data)
 {
 
 }
 
 Folder::Folder(dbid_t id, dbid_t domainId, const QString &name) :
-    d(new FolderData(id, domainId, name))
+    d(new Data(id, domainId, name))
 {
 
 }

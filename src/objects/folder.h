@@ -23,8 +23,6 @@
 #include <grantlee5/grantlee/metatype.h>
 #include "../../common/global.h"
 
-class FolderData;
-
 /*!
  * \ingroup skaffaricore
  * \brief Contains information about a single default folder.
@@ -90,8 +88,9 @@ public:
      */
     QString getName() const;
 
-protected:
-    QSharedDataPointer<FolderData> d;
+private:
+    class Data;
+    QSharedDataPointer<Data> d;
 
     friend QDataStream &operator<<(QDataStream &stream, const Folder &folder);
     friend QDataStream &operator>>(QDataStream &stream, Folder &folder);

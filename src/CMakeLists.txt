@@ -22,7 +22,6 @@ set (skaffari_SRCS
     objects/skaffarierror_p.h
     objects/folder.cpp
     objects/folder.h
-    objects/folder_p.h
     objects/helpentry.cpp
     objects/helpentry.h
     objects/helpentry_p.h
