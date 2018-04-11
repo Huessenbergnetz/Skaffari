@@ -38,7 +38,9 @@
 #include <Cutelyst/Plugins/Utils/validatorboolean.h>
 #include <Cutelyst/Plugins/Utils/validatorfilesize.h>
 #include <Cutelyst/Plugins/Utils/validatormin.h>
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
 #include <Cutelyst/Plugins/Utils/validatorpwquality.h>
+#endif
 #include <Cutelyst/Plugins/Utils/validatoremail.h>
 #include <Cutelyst/Plugins/Utils/validatorbefore.h>
 #include <Cutelyst/Plugins/StatusMessage>
