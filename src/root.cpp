@@ -130,13 +130,15 @@ void Root::index(Context *c)
 
 void Root::about(Context *c)
 {
-    QStringList description;
+    std::vector<QString> description;
+    description.reserve(4);
     description.push_back(c->translate("Root", "Skaffari is a web application for managing email accounts, based on Cutelyst and written in Qt/C++. It serves as a link and access to a combination of SQL database, IMAP and SMTP server. Skaffari bundles administrative tasks such as the creation of new email domains and email accounts, as well as the creation of new email addresses and email forwards."));
     description.push_back(c->translate("Root", "Administrators can be either global or only responsible for specific domains. Individual domains and accounts can be subject to certain restrictions such as storage space, number of accounts or user names."));
     description.push_back(c->translate("Root", "Skaffari has been tested to work with Cyrus IMAP, Postfix and pam_mysql and was inspired by a PHP-based tool called web-cyradm."));
     description.push_back(c->translate("Root", "By the way, Skaffari is the Old High German word for steward."));
 
-    QVariantList coreComponents;
+    std::vector<QVariantMap> coreComponents;
+    coreComponents.reserve(5);
     coreComponents.push_back(QVariantMap({
                                              {QStringLiteral("name"), QStringLiteral("Skaffari")},
                                              {QStringLiteral("version"), QStringLiteral(SKAFFARI_VERSION)},
@@ -185,6 +187,8 @@ void Root::about(Context *c)
                                                  {QStringLiteral("license"), QStringLiteral("BSD License")},
                                                  {QStringLiteral("licenseUrl"), QStringLiteral("http://libmemcached.org/License.html")}
                                              }));
+    } else {
+        coreComponents.shrink_to_fit();
     }
 
     QFile tmplMetadataFile(SkaffariConfig::tmplBasePath() + QLatin1String("/metadata.json"));
@@ -207,8 +211,8 @@ void Root::about(Context *c)
     c->stash({
                  {QStringLiteral("template"), QStringLiteral("about.html")},
                  {QStringLiteral("site_title"), c->translate("Root", "About")},
-                 {QStringLiteral("core_components"), coreComponents},
-                 {QStringLiteral("description"), description}
+                 {QStringLiteral("core_components"), QVariant::fromValue<std::vector<QVariantMap>>(coreComponents)},
+                 {QStringLiteral("description"), QVariant::fromValue<std::vector<QString>>(description)}
              });
 }
 
