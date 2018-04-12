@@ -268,3 +268,17 @@ QDebug operator<<(QDebug dbg, const SimpleAccount &account)
     dbg << ')';
     return dbg.maybeSpace();
 }
+
+QDataStream &operator<<(QDataStream &stream, const SimpleAccount &account)
+{
+    stream << account.d->username << account.d->domainname << account.d->id;
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, SimpleAccount &account)
+{
+    stream >> account.d->username;
+    stream >> account.d->domainname;
+    stream >> account.d->id;
+    return stream;
+}

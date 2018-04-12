@@ -45,6 +45,8 @@ class SimpleAccount
 {
     class Data;
     QSharedDataPointer<Data> d;
+    friend QDataStream &operator>>(QDataStream &stream, SimpleAccount &account);
+    friend QDataStream &operator<<(QDataStream &stream, const SimpleAccount &account);
 public:
     /*!
      * \brief Constructs an invalid, empty %SimpleAccount.
@@ -195,6 +197,18 @@ Q_DECLARE_TYPEINFO(SimpleAccount, Q_MOVABLE_TYPE);
  * \brief Writes the \a account to the \a dbg stream and returns the stream.
  */
 QDebug operator<<(QDebug dbg, const SimpleAccount &account);
+
+/*!
+ * \relates SimpleAccount
+ * \brief Writes the given \a account to the given \a stream.
+ */
+QDataStream &operator<<(QDataStream &stream, const SimpleAccount &account);
+
+/*!
+ * \relates SimpleAccount
+ * \brief Reads an %SimpleAccount from the given \a stream and stores it in the given \a account.
+ */
+QDataStream &operator>>(QDataStream &stream, SimpleAccount &account);
 
 GRANTLEE_BEGIN_LOOKUP(SimpleAccount)
 if (property == QLatin1String("id")) {
