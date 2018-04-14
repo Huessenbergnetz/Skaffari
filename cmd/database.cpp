@@ -191,11 +191,11 @@ bool Database::setAdmin(const QString &adminUser, const QByteArray &adminPasswor
         return ret;
     }
 
-    if (Q_UNLIKELY(!setAdminDomains(id))) {
-        rollbackAdminSettings(id);
-        rollbackAdminAccount(id);
-        return ret;
-    }
+//    if (Q_UNLIKELY(!setAdminDomains(id))) {
+//        rollbackAdminSettings(id);
+//        rollbackAdminAccount(id);
+//        return ret;
+//    }
 
     ret = true;
 
@@ -216,7 +216,7 @@ int Database::setAdminAccount(const QString &user, const QByteArray &pass)
     QDateTime current = QDateTime::currentDateTimeUtc();
     q.addBindValue(user);
     q.addBindValue(pass);
-    q.addBindValue(0);
+    q.addBindValue(255);
     q.addBindValue(current);
     q.addBindValue(current);
 
