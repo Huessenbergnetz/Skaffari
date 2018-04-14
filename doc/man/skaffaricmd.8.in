@@ -103,6 +103,10 @@ file system error
 .RS 4
 IMAP error
 .RE
+\fB6\fR
+.RS 4
+encryption error
+.RE
 \fB99\fR
 .RS 4
 other error
