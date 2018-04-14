@@ -33,7 +33,7 @@ Password::Password(const QString &pw) :
 }
 
 
-QByteArray Password::encrypt(Method method, Algorithm algo, quint32 rounds)
+QByteArray Password::encrypt(Method method, Algorithm algo, quint32 rounds) const
 {
     QByteArray pw;
 

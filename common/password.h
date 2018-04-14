@@ -86,7 +86,7 @@ public:
      * \param rounds    The number of encryption rounds to use if the algorithm supports it.
      * \return          Encrypted password.
      */
-    QByteArray encrypt(Method method, Algorithm algo = Default, quint32 rounds = 0);
+    QByteArray encrypt(Method method, Algorithm algo = Default, quint32 rounds = 0) const;
 
     /*!
      * \brief Checks if the unencrypted password in the constructor is equal to the saved password.
