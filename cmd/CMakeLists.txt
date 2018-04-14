@@ -66,6 +66,7 @@ target_link_libraries(skaffaricmd
         Qt5::Network
         Cutelyst::Authentication
         Cutelyst::Utils::Sql
+        Cutelyst::Utils::Validator
         crypt
 )
 

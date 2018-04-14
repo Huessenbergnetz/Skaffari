@@ -21,6 +21,7 @@
 #include <QDir>
 #include <QVersionNumber>
 #include <Cutelyst/Plugins/Authentication/credentialpassword.h>
+#include <Cutelyst/Plugins/Utils/validatorpwquality.h>
 #include <QCryptographicHash>
 #include <QStringList>
 #include <QTimeZone>
@@ -83,7 +84,7 @@ int Setup::exec() const
         }
     }
 
-    if (!dbaccess) {
+    while (!dbaccess) {
         printDesc(tr("Please enter the data to connect to your database system."));
 
         dbparams = askDatabaseConfig(dbparams);
@@ -92,20 +93,21 @@ int Setup::exec() const
 
         if (!db.open(dbparams)) {
             printFailed();
-            return dbError(db.lastDbError());
         } else {
             printDone();
+            dbaccess = true;
         }
-
-        os.beginGroup(QStringLiteral("Database"));
-        QVariantHash::const_iterator i = dbparams.constBegin();
-        while (i != dbparams.constEnd()) {
-            os.setValue(i.key(), i.value());
-            ++i;
-        }
-        os.endGroup();
-        os.sync();
     }
+
+    os.beginGroup(QStringLiteral("Database"));
+    QVariantHash::const_iterator i = dbparams.constBegin();
+    while (i != dbparams.constEnd()) {
+        os.setValue(i.key(), i.value());
+        ++i;
+    }
+    os.endGroup();
+    os.sync();
+
 
     printStatus(tr("Checking database layout"));
 
@@ -157,13 +159,41 @@ int Setup::exec() const
         printDesc(tr("Create an administrator account to login into your Skaffari installation. This account can create further administrators and domain managers."));
 
         const QString adminUser = readString(tr("User name"), QStringLiteral("admin"));
-        const QString adminPass = readString(tr("Password"), QString());
+        bool adminPassValid = false;
+        QString adminPass;
+        while (!adminPassValid) {
+            adminPass = readString(tr("Password"), QString());
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
+            printStatus(tr("Checking administrator password quality"));
+            if (Cutelyst::ValidatorPwQuality::validate(adminPass, adminsParams.value(QStringLiteral("pwsettingsfile")), QString(), adminUser) >= adminsParams.value(QStringLiteral("pwthreshold")).toInt()) {
+                printDone();
+                adminPassValid = true;
+            } else {
+                printFailed();
+            }
+#else
+            printStatus(tr("Checking administrator password length"));
+            if (adminPass.length() >= adminsParams.value(QStringLiteral("pwminlength")).toInt()) {
+                printDone();
+                adminPassValid = true;
+            } else {
+                printFailed();
+            }
+#endif
+        }
 
+        printStatus(tr("Encrypting administrator password"));
         const QByteArray pw = Cutelyst::CredentialPassword::createPassword(adminPass.toUtf8(),
                                                                            static_cast<QCryptographicHash::Algorithm>(adminsParams.value(QStringLiteral("pwalgorithm")).value<quint8>()),
                                                                            adminsParams.value(QStringLiteral("pwrounds")).toInt(),
                                                                            24,
                                                                            27);
+        if (!pw.isEmpty()) {
+            printDone();
+        } else {
+            printFailed();
+            return error(tr("Failed to encrypt administrator password. Encrypted password was empty."), 6);
+        }
 
         printStatus(tr("Creating new administrator account in database"));
         if (!db.setAdmin(adminUser, pw)) {
@@ -226,6 +256,7 @@ int Setup::exec() const
 
     printStatus(tr("Checking for IMAP administrator account"));
     QString cyrusAdmin = db.checkCyrusAdmin();
+    QString cyrusAdminPass;
     if (!cyrusAdmin.isEmpty()) {
         printDone(cyrusAdmin);
     } else {
@@ -235,24 +266,50 @@ int Setup::exec() const
         printDesc(tr("The administrator user for the IMAP server is defined in the imapd.conf in the admins: key. The user name that you enter here must also be specified in the imapd.conf. The administrator is used to perform various tasks on the IMAP server, such as setting storage quotas and creating/deleting mailboxes and folders. The user is created in the database used for Skaffari."));
 
         cyrusAdmin = readString(tr("IMAP administrator user"), QStringLiteral("cyrus"));
-        Password cyrusAdminPw(readString(tr("IMAP administrator password"), QString()));
 
-        printStatus(tr("Creating IMAP administrator in database"));
+        bool cyrusAdminPassValid = false;
+        while (!cyrusAdminPassValid) {
+            cyrusAdminPass = readString(tr("IMAP administrator password"), QString());
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
+            printStatus(tr("Checking IMAP administrator password quality"));
+            if (Cutelyst::ValidatorPwQuality::validate(cyrusAdminPass, accPwParams.value(QStringLiteral("pwsettingsfile")), QString(), cyrusAdmin) >= accPwParams.value(QStringLiteral("pwthreshold")).toInt()) {
+                printDone();
+                cyrusAdminPassValid = true;
+            } else {
+                printFailed();
+            }
+#else
+            printStatus(tr("Checking IMAP administrator password length"));
+            if (cyrusAdminPass.length() >= accPwParams.value(QStringLiteral("pwminlength")).toInt()) {
+                printDone();
+                cyrusAdminPassValid = true;
+            } else {
+                printFailed();
+            }
+#endif
+        }
+
+        printStatus(tr("Encrypting IMAP administrator password"));
+        const Password cyrusAdminPw(cyrusAdminPass);
         const Password::Method accountsPwMethod = accPwParams.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<Password::Method>();
         const Password::Algorithm accountsPwAlgo = accPwParams.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<Password::Algorithm>();
         const quint32 accountsPwRounds = accPwParams.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).value<quint32>();
         const QByteArray cyrusAdminPwEnc = cyrusAdminPw.encrypt(accountsPwMethod, accountsPwAlgo, accountsPwRounds);
         if (cyrusAdminPwEnc.isEmpty()) {
             printFailed();
-            return configError(tr("Failed to encrypt Cyrus administrator password."));
+            return error(tr("Failed to encrypt Cyrus administrator password."), 6);
+        } else {
+            printDone();
         }
+
+        printStatus(tr("Creating IMAP administrator in database"));
 
         if (!db.setCryusAdmin(cyrusAdmin, cyrusAdminPwEnc)) {
             printFailed();
             return dbError(db.lastDbError());
+        } else {
+            printDone();
         }
-
-        printDone();
     }
 
     QVariantHash imapParams;
@@ -302,25 +359,28 @@ int Setup::exec() const
             printDesc(tr("Connection to your IMAP server failed. Please reenter your connection data."));
         } else {
             printDesc(tr("Please enter the data to connect to your IMAP server."));
+            imapaccess = false;
         }
         printDesc(QString());
         printDesc(tr("Connection to your IMAP server as administrator is used to perform tasks like setting quotas and creating/deleting mailboxes and folders. The user account has to be defined as administrator in the imapd.conf file in the admins: key."));
         printDesc(QString());
 
-        imapParams = askImapConfig(imapParams);
-
-        printStatus(tr("Establishing IMAP connection"));
-        imap.setParams(imapParams);
-        imapaccess = imap.login();
-        if (Q_LIKELY(imapaccess)) {
-            if (Q_UNLIKELY(!imap.logout())) {
+        while (!imapaccess) {
+            imapParams = askImapConfig(imapParams);
+            printStatus(tr("Establishing IMAP connection"));
+            imap.setParams(imapParams);
+            if (imap.login()) {
+                if (imap.logout()) {
+                    printDone();
+                    imapaccess = true;
+                } else {
+                    printFailed();
+                    return imapError(imap.lastError());
+                }
+            } else {
                 printFailed();
-                return imapError(imap.lastError());
+                printError(imap.lastError());
             }
-            printDone();
-        } else {
-            printFailed();
-            return imapError(imap.lastError());
         }
 
         os.beginGroup(QStringLiteral("IMAP"));
