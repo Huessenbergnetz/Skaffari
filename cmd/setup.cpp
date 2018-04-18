@@ -81,6 +81,7 @@ int Setup::exec() const
             printDone();
         } else {
             printFailed();
+            printError(db.lastDbError().text());
         }
     }
 
@@ -93,6 +94,7 @@ int Setup::exec() const
 
         if (!db.open(dbparams)) {
             printFailed();
+            printError(db.lastDbError().text());
         } else {
             printDone();
             dbaccess = true;
