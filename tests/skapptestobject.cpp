@@ -19,7 +19,7 @@
 
 SkAppTestObject::SkAppTestObject(QObject *parent) : QObject(parent)
 {
-    m_containerName = QString::fromLatin1(QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha1).toHex()).left(16);
+
 }
 
 SkAppTestObject::~SkAppTestObject()
@@ -27,7 +27,12 @@ SkAppTestObject::~SkAppTestObject()
 
 }
 
-bool SkAppTestObject::startContainer(const QMap<QString, QString> &config) const
+QString SkAppTestObject::createContainerName() const
+{
+    return QString::fromLatin1(QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha1).toHex()).left(16);
+}
+
+bool SkAppTestObject::startContainer(const QMap<QString, QString> &config, const QString &name, int mysqlPort, int imapPort, int sievePort) const
 {
     QLocalSocket docker;
     docker.connectToServer(QStringLiteral(DOCKER_SOCKET));
@@ -84,21 +89,21 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config) const
 
     QJsonArray imapPortsArray;
     QJsonObject imapHostPort{
-        {QStringLiteral("HostPort"), QString::number(m_imapPort)}
+        {QStringLiteral("HostPort"), QString::number(imapPort)}
     };
     imapPortsArray.append(imapHostPort);
     pb.insert(QStringLiteral("143/tcp"), imapPortsArray);
 
     QJsonArray mysqlPortsArray;
     QJsonObject mysqlHostPort{
-        {QStringLiteral("HostPort"), QString::number(m_mysqlPort)}
+        {QStringLiteral("HostPort"), QString::number(mysqlPort)}
     };
     mysqlPortsArray.append(mysqlHostPort);
     pb.insert(QStringLiteral("3306/tcp"), mysqlPortsArray);
 
     QJsonArray sievePortsArry;
     QJsonObject sieveHostPort{
-        {QStringLiteral("HostPort"), QString::number(m_sievePort)}
+        {QStringLiteral("HostPort"), QString::number(sievePort)}
     };
     sievePortsArry.append(sieveHostPort);
     pb.insert(QStringLiteral("4190/tcp"), sievePortsArry);
@@ -120,7 +125,7 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config) const
     }
     QJsonDocument po{o};
 
-    cmd = QLatin1String("POST /v1.32/containers/create?name=") + m_containerName + QLatin1String(" HTTP/1.1\r\nHost:\r\nContent-Type: application/json\r\nContent-Length:");
+    cmd = QLatin1String("POST /v1.32/containers/create?name=") + name + QLatin1String(" HTTP/1.1\r\nHost:\r\nContent-Type: application/json\r\nContent-Length:");
     const auto content = po.toJson(QJsonDocument::Compact);
     cmd.append(QString::number(content.length()));
     cmd.append(QLatin1String("\r\n\r\n"));
@@ -137,7 +142,7 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config) const
         return false;
     }
 
-    cmd = QLatin1String("POST /v1.32/containers/") + m_containerName + QLatin1String("/start HTTP/1.1\r\nHost:\r\n\r\n");
+    cmd = QLatin1String("POST /v1.32/containers/") + name + QLatin1String("/start HTTP/1.1\r\nHost:\r\n\r\n");
 
     if (docker.write(cmd.toLatin1()) != cmd.length()) {
         qCritical() << "Failed to write command to docker socket.";
@@ -152,7 +157,7 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config) const
     {
         QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QMYSQL"), QStringLiteral("amarsch"));
         db.setHostName(QStringLiteral("127.0.0.1"));
-        db.setPort(m_mysqlPort);
+        db.setPort(mysqlPort);
         db.setDatabaseName(config.value(QStringLiteral("SKAFFARI_DB_NAME")));
         db.setUserName(config.value(QStringLiteral("SKAFFARI_DB_USER")));
         db.setPassword(config.value(QStringLiteral("SKAFFARI_DB_PASS")));
@@ -175,7 +180,7 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config) const
     return true;
 }
 
-bool SkAppTestObject::stopContainer() const
+bool SkAppTestObject::stopContainer(const QString &name) const
 {
     QLocalSocket docker;
     docker.connectToServer(QStringLiteral(DOCKER_SOCKET));
@@ -183,7 +188,7 @@ bool SkAppTestObject::stopContainer() const
         return false;
     }
 
-    QString cmd = QLatin1String("DELETE /v1.32/containers/") + m_containerName + QLatin1String("?force=true HTTP/1.1\r\nHost:\r\n\r\n");
+    QString cmd = QLatin1String("DELETE /v1.32/containers/") + name + QLatin1String("?force=true HTTP/1.1\r\nHost:\r\n\r\n");
 
     if (docker.write(cmd.toLatin1()) != cmd.length()) {
         qCritical() << "Failed to write command to docker socket.";
@@ -336,7 +341,7 @@ bool SkCmdProc::enterString(const QString &str)
 
 qint64 SkCmdProc::enterNumber(int number)
 {
-    const QByteArray ba = QByteArray::number(number);
+    const QByteArray ba = QString::number(number).toUtf8();
     if (write(ba) == ba.length()) {
         if (write("\n") == 1) {
             return true;

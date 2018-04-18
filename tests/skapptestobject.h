@@ -15,14 +15,16 @@ public:
     ~SkAppTestObject();
 
 protected:
-    bool startContainer(const QMap<QString,QString> &config) const;
-    bool stopContainer() const;
+    bool startContainer(const QMap<QString,QString> &config, const QString &name, int mysqlPort, int imapPort, int sievePort) const;
+    bool stopContainer(const QString &name) const;
 //    bool startMysql();
 //    bool createDatabase();
 
-    const int m_mysqlPort{46000};
-    const int m_imapPort{47000};
-    const int m_sievePort{48000};
+    QString createContainerName() const;
+
+//    const int m_mysqlPort{46000};
+//    const int m_imapPort{47000};
+//    const int m_sievePort{48000};
 
 private:
 //    QTemporaryDir m_mysqlWorkingDir;
@@ -32,7 +34,6 @@ private:
 //    QTemporaryFile m_mysqlConfigFile;
 //    QProcess m_mysqlProcess;
 
-    QString m_containerName;
 };
 
 class SkCmdProc : public QProcess
