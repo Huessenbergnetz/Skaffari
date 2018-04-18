@@ -8,6 +8,8 @@
 #include <QSqlQuery>
 #include <QSqlError>
 
+#define QSQLDBNAME "skdb"
+
 class CmdSetupTest : public SkAppTestObject
 {
     Q_OBJECT
@@ -21,25 +23,42 @@ private Q_SLOTS:
     void doTest_data();
 
     void cleanup();
+    void cleanupTestCase();
 };
 
 void CmdSetupTest::initTestCase()
 {
-    QVERIFY2(checkRootUser(), "These tests can only be executed as root.");
-    QVERIFY(startMysql());
-    QVERIFY(createDatabase());
-    QVERIFY(startCyrus());
+    QMap<QString,QString> config{
+        {QStringLiteral("SKAFFARI_DB_NAME"), m_dbName},
+        {QStringLiteral("SKAFFARI_DB_USER"), m_dbUser},
+        {QStringLiteral("SKAFFARI_DB_PASS"), m_dbPass},
+        {QStringLiteral("IMAP_ADMINS"), m_imapUser},
+        {QStringLiteral("UNIXHIERARCHYSEP"), QStringLiteral("no")},
+        {QStringLiteral("VIRTDOMAINS"), QStringLiteral("no")},
+        {QStringLiteral("SASL_PWCHECK_METHOD"), QStringLiteral("auxprop")},
+        {QStringLiteral("SASL_AUXPROP_PLUGIN"), QStringLiteral("sql")},
+        {QStringLiteral("SASL_SQL_ENGINE"), QStringLiteral("mysql")},
+        {QStringLiteral("SASL_SQL_HOSTNAMES"), QStringLiteral("127.0.0.1:3306")}
+
+    };
+    QVERIFY(startContainer(config));
+}
+
+void CmdSetupTest::cleanupTestCase()
+{
+    QVERIFY(stopContainer());
 }
 
 void CmdSetupTest::cleanup()
 {
-    QSqlDatabase::removeDatabase(QStringLiteral("skdb"));
+    QSqlDatabase::removeDatabase(QStringLiteral(QSQLDBNAME));
 }
 
 void CmdSetupTest::doTest()
 {
     QFETCH(QString, dbType);
     QFETCH(QString, dbHost);
+    QFETCH(int, dbPort);
     QFETCH(int, admPwAlgo);
     QFETCH(int, admPwIter);
     QFETCH(int, admPwThreshold);
@@ -50,6 +69,9 @@ void CmdSetupTest::doTest()
     QFETCH(int, accPwRounds);
     QFETCH(int, accPwThreshold);
     QFETCH(QString, imapPass);
+    QFETCH(QString, imapHost);
+    QFETCH(int, imapPort);
+
 
     QTemporaryFile confFile;
     QVERIFY(confFile.open());
@@ -74,6 +96,11 @@ void CmdSetupTest::doTest()
 
     QVERIFY(cmd.waitForReadyRead());
     qDebug() << QString::fromUtf8(cmd.readAll());
+    cmd.write(QString::number(dbPort).toUtf8());
+    cmd.write("\n");
+
+    QVERIFY(cmd.waitForReadyRead());
+    qDebug() << QString::fromUtf8(cmd.readAll());
     cmd.write(m_dbName.toUtf8());
     cmd.write("\n");
 
@@ -88,23 +115,25 @@ void CmdSetupTest::doTest()
     cmd.write("\n");
 
     QVERIFY(cmd.waitForReadyRead());
+    qDebug() << QString::fromUtf8(cmd.readAll());
     conf.sync();
     conf.beginGroup(QStringLiteral("Database"));
     QCOMPARE(conf.value(QStringLiteral("type")).toString(), dbType);
     QCOMPARE(conf.value(QStringLiteral("host")).toString(), dbHost);
+    QCOMPARE(conf.value(QStringLiteral("port")).toInt(), dbPort);
     QCOMPARE(conf.value(QStringLiteral("name")).toString(), m_dbName);
     QCOMPARE(conf.value(QStringLiteral("user")).toString(), m_dbUser);
     QCOMPARE(conf.value(QStringLiteral("password")).toString(), m_dbPass);
     conf.endGroup();
     {
-        QSqlDatabase db = QSqlDatabase::addDatabase(dbType, QStringLiteral("skdb"));
+        QSqlDatabase db = QSqlDatabase::addDatabase(dbType, QStringLiteral(QSQLDBNAME));
         db.setDatabaseName(m_dbName);
         db.setUserName(m_dbUser);
         db.setPassword(m_dbPass);
-        db.setConnectOptions(QStringLiteral("UNIX_SOCKET=%1").arg(dbHost));
+        db.setHostName(dbHost);
+        db.setPort(dbPort);
         QVERIFY(db.open());
     }
-    qDebug() << QString::fromUtf8(cmd.readAll());
 
     cmd.write(QString::number(admPwAlgo).toUtf8());
     cmd.write("\n");
@@ -141,7 +170,7 @@ void CmdSetupTest::doTest()
     QCOMPARE(conf.value(QStringLiteral("pwthreshold")).toInt(), admPwThreshold);
     conf.endGroup();
     {
-        QSqlQuery q(QSqlDatabase::database(QStringLiteral("skdb")));
+        QSqlQuery q(QSqlDatabase::database(QStringLiteral(QSQLDBNAME)));
         QVERIFY(q.exec(QStringLiteral("SELECT username, password, type FROM adminuser")));
         QCOMPARE(q.size(), 1);
         QVERIFY(q.next());
@@ -192,12 +221,48 @@ void CmdSetupTest::doTest()
 
     QVERIFY(cmd.waitForReadyRead());
     qDebug() << QString::fromUtf8(cmd.readAll());
+
+    QVERIFY(cmd.waitForReadyRead());
+    qDebug() << QString::fromUtf8(cmd.readAll());
+    cmd.write(imapHost.toUtf8());
+    cmd.write("\n");
+
+    QVERIFY(cmd.waitForReadyRead());
+    qDebug() << QString::fromUtf8(cmd.readAll());
+    cmd.write(QString::number(imapPort).toUtf8());
+    cmd.write("\n");
+
+    QVERIFY(cmd.waitForReadyRead());
+    qDebug() << QString::fromUtf8(cmd.readAll());
+    cmd.write(m_imapUser.toUtf8());
+    cmd.write("\n");
+
+    QVERIFY(cmd.waitForReadyRead());
+    qDebug() << QString::fromUtf8(cmd.readAll());
+    cmd.write(imapPass.toUtf8());
+    cmd.write("\n");
+
+    QVERIFY(cmd.waitForReadyRead());
+    qDebug() << QString::fromUtf8(cmd.readAll());
+    cmd.write(QString::number(0).toUtf8());
+    cmd.write("\n");
+
+    QVERIFY(cmd.waitForReadyRead());
+    qDebug() << QString::fromUtf8(cmd.readAll());
+    cmd.write(QString::number(0).toUtf8());
+    cmd.write("\n");
+
+    QVERIFY(cmd.waitForReadyRead());
+    qDebug() << QString::fromUtf8(cmd.readAll());
+
+    QSqlDatabase::removeDatabase(QStringLiteral(QSQLDBNAME));
 }
 
 void CmdSetupTest::doTest_data()
 {
     QTest::addColumn<QString>("dbType");
     QTest::addColumn<QString>("dbHost");
+    QTest::addColumn<int>("dbPort");
     QTest::addColumn<int>("admPwAlgo");
     QTest::addColumn<int>("admPwIter");
     QTest::addColumn<int>("admPwThreshold");
@@ -208,8 +273,10 @@ void CmdSetupTest::doTest_data()
     QTest::addColumn<int>("accPwRounds");
     QTest::addColumn<int>("accPwThreshold");
     QTest::addColumn<QString>("imapPass");
+    QTest::addColumn<QString>("imapHost");
+    QTest::addColumn<int>("imapPort");
 
-    QTest::newRow("test-00") << QStringLiteral("QMYSQL") << mysqlSocket() << 3 << 10000 << 50 << QStringLiteral("admin") << QStringLiteral("wYezOAT3elS9") << 0 << 0 << 0 << 30 << QStringLiteral("BLeon8WD70d7");
+    QTest::newRow("test-00") << QStringLiteral("QMYSQL") << QStringLiteral("127.0.0.1") << m_mysqlPort << 3 << 10000 << 50 << QStringLiteral("admin") << QStringLiteral("wYezOAT3elS9") << 0 << 0 << 0 << 30 << QStringLiteral("BLeon8WD70d7") << QStringLiteral("127.0.0.1") << m_imapPort;
 }
 
 QTEST_MAIN(CmdSetupTest)

@@ -16,6 +16,7 @@ target_link_libraries(skapp_test
     PUBLIC
         Qt5::Test
         Qt5::Sql
+        Qt5::Network
         skaffari
 )
 
