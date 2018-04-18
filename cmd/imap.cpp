@@ -82,7 +82,9 @@ bool Imap::login()
     QList<QByteArray> response;
     if (Q_UNLIKELY(!checkResponse(this->readAll(), QLatin1String("*"), &response))) {
         this->disconnectFromHost();
-        this->waitForDisconnected();
+        if (state() != QSslSocket::UnconnectedState) {
+            this->waitForDisconnected();
+        }
         return false;
     }
 
@@ -104,7 +106,9 @@ bool Imap::login()
 
             if (Q_UNLIKELY(!checkResponse(this->readAll(), tag))) {
                 this->disconnectFromHost();
-                this->waitForDisconnected();
+                if (state() != QSslSocket::UnconnectedState) {
+                    this->waitForDisconnected();
+                }
                 return false;
             }
 
@@ -121,7 +125,9 @@ bool Imap::login()
         } else {
             m_lastError = tr("STARTTLS is not supported. Aborting.");
             this->disconnectFromHost();
-            this->waitForDisconnected();
+            if (state() != QSslSocket::UnconnectedState) {
+                this->waitForDisconnected();
+            }
             return false;
         }
     }
@@ -132,7 +138,9 @@ bool Imap::login()
     if (Q_UNLIKELY(this->write(loginCommand.toLatin1()) < 0)) {
         m_lastError = tr("Failed to send login command to the IMAP server: %1").arg(errorString());
         this->disconnectFromHost();
-        this->waitForDisconnected();
+        if (state() != QSslSocket::UnconnectedState) {
+            this->waitForDisconnected();
+        }
         return false;
     }
 
@@ -144,7 +152,9 @@ bool Imap::login()
 
     if (Q_UNLIKELY(!this->checkResponse(this->readAll(), tag2, &response))) {
         this->disconnectFromHost();
-        this->waitForDisconnected();
+        if (state() != QSslSocket::UnconnectedState) {
+            this->waitForDisconnected();
+        }
         return false;
     }
 
@@ -167,7 +177,9 @@ bool Imap::login()
                 if (Imap::m_capabilities.empty()) {
                     m_lastError = tr("Failed to get capabilities from the IMAP server.");
                     this->disconnectFromHost();
-                    this->waitForDisconnected();
+                    if (state() != QSslSocket::UnconnectedState) {
+                        this->waitForDisconnected();
+                    }
                     return false;
                 }
             }
