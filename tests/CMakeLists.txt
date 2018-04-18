@@ -20,6 +20,13 @@ target_link_libraries(skapp_test
         skaffari
 )
 
+set(SKAFFARI_CMD_EXE "${CMAKE_BINARY_DIR}/cmd/skaffaricmd")
+
+target_compile_definitions(skapp_test
+    PRIVATE
+        SKAFFARI_CMD="${SKAFFARI_CMD_EXE}"
+)
+
 function(skaffari_test _testname _link1 _link2 _link3)
     add_executable(${_testname}_exec ${_testname}.cpp)
     add_test(NAME ${_testname} COMMAND ${_testname}_exec)
@@ -27,17 +34,11 @@ function(skaffari_test _testname _link1 _link2 _link3)
     target_include_directories(${_testname}_exec PRIVATE ${Cutelyst2Qt5_INCLUDE_DIR})
 endfunction(skaffari_test _testname _link1 _link2 _link3)
 
-set(SKAFFARI_CMD_EXE "${CMAKE_BINARY_DIR}/cmd/skaffaricmd")
-
 function(skaffari_app_test _testname _link1 _link2 _link3)
     add_executable(${_testname}_exec ${_testname}.cpp)
 #    add_test(NAME ${_testname} COMMAND ${_testname}_exec)
     target_link_libraries(${_testname}_exec ${_link1} ${_link2} ${_link3} skapp_test)
     target_include_directories(${_testname}_exec PRIVATE ${Cutelyst2Qt5_INCLUDE_DIR})
-    target_compile_definitions(${_testname}_exec
-        PRIVATE
-            SKAFFARI_CMD="${SKAFFARI_CMD_EXE}"
-    )
 endfunction(skaffari_app_test _testname _link1 _link2 _link3)
 
 skaffari_test(testdomain "" "" "")

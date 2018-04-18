@@ -20,15 +20,9 @@ protected:
 //    bool startMysql();
 //    bool createDatabase();
 
-    const int m_mysqlPort{45678};
-    const int m_imapPort{46000};
-    const int m_sievePort{46400};
-
-    const QString m_dbName{"skaffaridb"};
-    const QString m_dbUser{"skaffari"};
-    const QString m_dbPass{"w9cf7j1QxzgK"};
-
-    const QString m_imapUser{"cyrus"};
+    const int m_mysqlPort{46000};
+    const int m_imapPort{47000};
+    const int m_sievePort{48000};
 
 private:
 //    QTemporaryDir m_mysqlWorkingDir;
@@ -39,6 +33,26 @@ private:
 //    QProcess m_mysqlProcess;
 
     QString m_containerName;
+};
+
+class SkCmdProc : public QProcess
+{
+    Q_OBJECT
+public:
+    explicit SkCmdProc(QObject *parent = nullptr);
+    ~SkCmdProc();
+
+    bool enterString(const QString &str);
+    qint64 enterNumber(int number);
+    qint64 enterBool(bool b);
+
+    void setShowOutput(bool show);
+
+    bool waitForOutput();
+
+private:
+    const int m_waitForOutputTimeOut{5000};
+    bool m_showOutput = false;
 };
 
 #endif // SKAPPTESTOBJECT_H

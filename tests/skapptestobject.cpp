@@ -119,7 +119,6 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config) const
         o.insert(QStringLiteral("Env"), QJsonArray::fromStringList(containerEnv));
     }
     QJsonDocument po{o};
-    qDebug() << po;
 
     cmd = QLatin1String("POST /v1.32/containers/create?name=") + m_containerName + QLatin1String(" HTTP/1.1\r\nHost:\r\nContent-Type: application/json\r\nContent-Length:");
     const auto content = po.toJson(QJsonDocument::Compact);
@@ -154,8 +153,9 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config) const
         QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QMYSQL"), QStringLiteral("amarsch"));
         db.setHostName(QStringLiteral("127.0.0.1"));
         db.setPort(m_mysqlPort);
-        db.setUserName(m_dbUser);
-        db.setPassword(m_dbPass);
+        db.setDatabaseName(config.value(QStringLiteral("SKAFFARI_DB_NAME")));
+        db.setUserName(config.value(QStringLiteral("SKAFFARI_DB_USER")));
+        db.setPassword(config.value(QStringLiteral("SKAFFARI_DB_PASS")));
         int tries = 0;
         while (!db.open() && tries < 5) {
             QEventLoop loop;
@@ -311,3 +311,62 @@ bool SkAppTestObject::stopContainer() const
 
 //    return true;
 //}
+
+SkCmdProc::SkCmdProc(QObject *parent) : QProcess(parent)
+{
+    setProgram(QStringLiteral(SKAFFARI_CMD));
+    setProcessChannelMode(QProcess::MergedChannels);
+}
+
+SkCmdProc::~SkCmdProc()
+{
+
+}
+
+bool SkCmdProc::enterString(const QString &str)
+{
+    const QByteArray ba = str.toUtf8();
+    if (write(ba) == ba.length()) {
+        if (write("\n") == 1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+qint64 SkCmdProc::enterNumber(int number)
+{
+    const QByteArray ba = QByteArray::number(number);
+    if (write(ba) == ba.length()) {
+        if (write("\n") == 1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+qint64 SkCmdProc::enterBool(bool b)
+{
+    if (b) {
+        return write("y\n") == 2;
+    } else {
+        return write("n\n") == 2;
+    }
+}
+
+void SkCmdProc::setShowOutput(bool show)
+{
+    m_showOutput = show;
+}
+
+bool SkCmdProc::waitForOutput()
+{
+    if (waitForReadyRead(m_waitForOutputTimeOut)) {
+        if (m_showOutput) {
+            qDebug() << readAll();
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
