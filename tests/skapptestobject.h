@@ -48,11 +48,12 @@ public:
     qint64 enterBool(bool b);
 
     void setShowOutput(bool show);
+    void setTimeOut(int msecs);
 
     bool waitForOutput();
 
 private:
-    const int m_waitForOutputTimeOut{5000};
+    int m_waitForOutputTimeOut{5000};
     bool m_showOutput = false;
 };
 

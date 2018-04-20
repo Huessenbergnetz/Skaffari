@@ -364,6 +364,11 @@ void SkCmdProc::setShowOutput(bool show)
     m_showOutput = show;
 }
 
+void SkCmdProc::setTimeOut(int msecs)
+{
+    m_waitForOutputTimeOut = msecs;
+}
+
 bool SkCmdProc::waitForOutput()
 {
     if (waitForReadyRead(m_waitForOutputTimeOut)) {
