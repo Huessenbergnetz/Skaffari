@@ -73,6 +73,16 @@ public:
     };
 
     /*!
+     * \brief Supported authentication mechanism.
+     */
+    enum AuthMech : quint8 {
+        CLEAR       = 0,    /**< Clear text, uses LOGIN "user" "pass" */
+        LOGIN       = 1,    /**< Uses <a href="https://www.ietf.org/archive/id/draft-murchison-sasl-login-00.txt">SASL LOGIN</a> */
+        PLAIN       = 2,    /**< Uses SASL PLAIN (<a href="https://tools.ietf.org/html/rfc4616">RFC4616</a>) */
+        CRAMMD5     = 3     /**< Uses SASL CRAM-MD5 (<a href="https://tools.ietf.org/html/rfc2195">RFC2195</a>) */
+    };
+
+    /*!
      * \brief Constructs a new SkaffariIMAP object.
      *
      * A newly created object will have the configuration read from the Skaffari configuration file IMAP section.
@@ -317,6 +327,29 @@ private:
      */
     bool sendCommand(const QString &command);
 
+    bool sendCommand(const QString &tag, const QString &command);
+
+    bool sendCommand(const QByteArray &command);
+
+    bool sendCommand(const QByteArray &tag, const QByteArray &command);
+
+    /*!
+     * \brief Performs a disconnection and sets a new error if \a type is not NoError and \a error is not empty.
+     * \return always \c false
+     */
+    bool disconnectOnError(SkaffariIMAPError::ErrorType type = SkaffariIMAPError::NoError, const QString &error = QString());
+
+    /*!
+     * \brief Waits for a response from the IMAP server by calling QSslSocket::waitForReadyRead().
+     *
+     * If \a disConn is set to \c true, a disconnection will be performed. If \a error is not empty, that string
+     * will be set to the generated SkaffariIMAPError. The timeout in \a msecs will be set to the
+     * QSslSocket::waitForReadyRead() funciton.
+     *
+     * \return \c true if the was a response within timeout in \a msecs, otherwise \c false.
+     */
+    bool waitForResponse(bool disConn = false, const QString &error = QString(), int msecs = 30000);
+
     static QStringList m_capabilities;
     static const QString m_allAcl;
 
@@ -330,6 +363,7 @@ private:
     QChar m_hierarchysep = QLatin1Char('.');
     NetworkLayerProtocol m_protocol = QAbstractSocket::AnyIPProtocol;
     EncryptionType m_encType = StartTLS;
+    AuthMech m_authMech = CLEAR;
     bool m_loggedIn = false;
 
     Q_DISABLE_COPY(SkaffariIMAP)

@@ -42,6 +42,7 @@ public:
         SocketError,
         ResponseError,
         InternalError,
+        ConfigError,
         Unknown
     };
 

@@ -54,6 +54,13 @@ public:
         Undefined	= 3     /**< the response can not be parsed */
     };
 
+    enum AuthMech : quint8 {
+        CLEAR       = 0,
+        LOGIN       = 1,
+        PLAIN       = 2,
+        CRAMMD5     = 3
+    };
+
     /*!
      * \brief Constructs a new %Imap object with the given \a parent.
      */
@@ -71,7 +78,7 @@ public:
      * \param peerName      TLS/SSL peer name
      * \param parent        parent object
      */
-    Imap(const QString &user, const QString &password, const QString &host = QStringLiteral("localhost"), quint16 port = 143, NetworkLayerProtocol protocol = QAbstractSocket::AnyIPProtocol, EncryptionType conType = StartTLS, QChar hierarchysep = QLatin1Char('.'), const QString peerName = QString(), QObject* parent = nullptr);
+    Imap(const QString &user, const QString &password, AuthMech mech, const QString &host = QStringLiteral("localhost"), quint16 port = 143, NetworkLayerProtocol protocol = QAbstractSocket::AnyIPProtocol, EncryptionType conType = StartTLS, QChar hierarchysep = QLatin1Char('.'), const QString peerName = QString(), QObject* parent = nullptr);
     ~Imap();
 
     /*!
@@ -128,6 +135,10 @@ public:
      * \brief Sets the IMAP hierarchy \a separator used by the server.
      */
     void setHierarchySeparator(QChar separator);
+    /*!
+     * \brief Sets the authentication mechanism that should be used.
+     */
+    void setAuthMech(AuthMech mech);
 
     /*!
      * \brief Returns the human readable name of the encryption \a type.
@@ -145,6 +156,14 @@ public:
      * \brief Returns the human readable name of the network layer \a protocol.
      */
     static QString networkProtocolToString(quint8 protocol);
+    /*!
+     * \brief Returns the human readable name of the authentication \a mechanism.
+     */
+    static QString authMechToString(AuthMech mechanism);
+    /*!
+     * \brief Returns the human readable name of the authentication \a mechanism.
+     */
+    static QString authMechToString(quint8 mechanism);
 
     /*!
      * \brief Returns the last occurred error.
@@ -154,6 +173,8 @@ public:
 private:
     bool checkResponse(const QByteArray &data, const QString &tag = QLatin1String("."), QList<QByteArray> *response = nullptr);
     QString getTag();
+    bool disconnectOnError(const QString &error = QString());
+    bool waitForRespsonse(bool _abort = false, const QString &error = QString(), int msecs = 30000);
     QString m_user;
     QString m_password;
     QString m_host;
@@ -166,6 +187,7 @@ private:
     bool m_loggedIn = false;
     static QStringList m_capabilities;
     quint32 m_tagSequence = 0;
+    AuthMech m_authMech = CLEAR;
 };
 
 #endif // IMAP_H

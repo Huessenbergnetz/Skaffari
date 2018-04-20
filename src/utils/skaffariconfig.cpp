@@ -75,6 +75,7 @@ struct ConfigValues
     quint16 imapPort = 143;
     QAbstractSocket::NetworkLayerProtocol imapProtocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(SK_DEF_IMAP_PROTOCOL);
     SkaffariIMAP::EncryptionType imapEncryption = static_cast<SkaffariIMAP::EncryptionType>(SK_DEF_IMAP_ENCRYPTION);
+    SkaffariIMAP::AuthMech imapAuthMech = static_cast<SkaffariIMAP::AuthMech>(SK_DEF_IMAP_AUTHMECH);
     Account::CreateMailbox imapCreatemailbox = static_cast<Account::CreateMailbox>(SK_DEF_IMAP_CREATEMAILBOX);
     bool imapUnixhierarchysep = SK_DEF_IMAP_UNIXHIERARCHYSEP;
     bool imapDomainasprefix = SK_DEF_IMAP_DOMAINASPREFIX;
@@ -127,6 +128,7 @@ void SkaffariConfig::load(const QVariantMap &general, const QVariantMap &account
     cfg->imapUnixhierarchysep = imap.value(QStringLiteral("unixhierarchysep"), SK_DEF_IMAP_UNIXHIERARCHYSEP).toBool();
     cfg->imapDomainasprefix = imap.value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool();
     cfg->imapFqun = imap.value(QStringLiteral("fqun"), SK_DEF_IMAP_FQUN).toBool();
+    cfg->imapAuthMech = static_cast<SkaffariIMAP::AuthMech>(imap.value(QStringLiteral("authmech"), SK_DEF_IMAP_AUTHMECH).value<quint8>());
 
     cfg->tmplAsyncAccountList = tmpl.value(QStringLiteral("asyncaccountlist"), SK_DEF_TMPL_ASYNCACCOUNTLIST).toBool();
 }
@@ -304,6 +306,7 @@ Account::CreateMailbox SkaffariConfig::imapCreatemailbox() { QReadLocker locker(
 bool SkaffariConfig::imapUnixhierarchysep() { QReadLocker locker(&cfg->lock); return cfg->imapUnixhierarchysep; }
 bool SkaffariConfig::imapDomainasprefix() { QReadLocker locker(&cfg->lock); return cfg->imapDomainasprefix;}
 bool SkaffariConfig::imapFqun() { QReadLocker locker(&cfg->lock); return cfg->imapUnixhierarchysep && cfg->imapDomainasprefix && cfg->imapFqun; }
+SkaffariIMAP::AuthMech SkaffariConfig::imapAuthmech() { QReadLocker locker(&cfg->lock); return cfg->imapAuthMech; }
 
 bool SkaffariConfig::tmplAsyncAccountList() { QReadLocker locker(&cfg->lock); return cfg->tmplAsyncAccountList; }
 

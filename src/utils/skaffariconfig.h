@@ -389,8 +389,19 @@ public:
      * If enabled, usernames will be email addresses like john.doe@example.com.
      *
      * \note This will only return \c true, if imapUnixhierarchysep() and imapDomainasprefix() return \c true as well.
+     *
+     * \par Config file key
+     * IMAP/fqun
      */
     static bool imapFqun();
+
+    /*!
+     * \brief Authentication mechanism to use for the connection to the IMAP server.
+     *
+     * \par Config file key
+     * IMAP/authmech
+     */
+    static SkaffariIMAP::AuthMech imapAuthmech();
 
     /*!
      * \brief Returns the directory name of the template currently in use.

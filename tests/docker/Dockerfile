@@ -4,7 +4,8 @@ WORKDIR /init
 
 RUN zypper ar -G https://download.opensuse.org/repositories/home:/buschmann23/openSUSE_Leap_42.3/home:buschmann23.repo && \
 zypper ref && \
-zypper -n install cyrus-imapd mariadb hostname rsyslog cyrus-sasl cyrus-sasl-plain cyrus-sasl-sqlauxprop pam_mysql && \
+zypper -n install cyrus-imapd mariadb hostname rsyslog cyrus-sasl cyrus-sasl-plain cyrus-sasl-sqlauxprop pam_mysql \
+cyrus-sasl-crammd5 cyrus-sasl-digestmd5 cyrus-sasl-saslauthd cyrus-sasl-scram && \
 zypper clean && \
 mkdir /var/run/mysql && \
 chown mysql:mysql /var/run/mysql && \

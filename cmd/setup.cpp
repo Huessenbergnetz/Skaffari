@@ -336,6 +336,7 @@ int Setup::exec() const
                        {tr("Port"), imapParams.value(QStringLiteral("port")).toString()},
                        {tr("Protocol"), Imap::networkProtocolToString(imapParams.value(QStringLiteral("protocol")).value<quint8>())},
                        {tr("Encryption"), Imap::encryptionTypeToString(imapParams.value(QStringLiteral("encryption")).value<quint8>())},
+                       {tr("Authentication"), Imap::authMechToString(imapParams.value(QStringLiteral("authmech")).value<quint8>())},
                        {tr("User"), imapParams.value(QStringLiteral("user")).toString()},
                        {tr("Password"), QStringLiteral("********")},
                        {tr("Peer name"), imapParams.value(QStringLiteral("peername")).toString()}

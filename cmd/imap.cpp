@@ -1,6 +1,6 @@
 /*
  * Skaffari - a mail account administration web interface based on Cutelyst
- * Copyright (C) 2017 Matthias Fehring <kontakt@buschmann23.de>
+ * Copyright (C) 2017-2018 Matthias Fehring <kontakt@buschmann23.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,6 +18,7 @@
 
 #include "imap.h"
 #include <QSslError>
+#include <QMessageAuthenticationCode>
 
 QStringList Imap::m_capabilities = QStringList();
 
@@ -27,8 +28,8 @@ Imap::Imap(QObject *parent) : QSslSocket(parent)
 }
 
 
-Imap::Imap(const QString &user, const QString &password, const QString &host, quint16 port, NetworkLayerProtocol protocol, EncryptionType conType, QChar hierarchysep, const QString peerName, QObject *parent) :
-    QSslSocket(parent), m_user(user), m_password(password), m_host(host), m_port(port), m_protocol(protocol), m_encType(conType), m_hierarchysep(hierarchysep)
+Imap::Imap(const QString &user, const QString &password, AuthMech mech, const QString &host, quint16 port, NetworkLayerProtocol protocol, EncryptionType conType, QChar hierarchysep, const QString peerName, QObject *parent) :
+    QSslSocket(parent), m_user(user), m_password(password), m_host(host), m_port(port), m_protocol(protocol), m_encType(conType), m_hierarchysep(hierarchysep), m_authMech(mech)
 {
     setPeerVerifyName(peerName);
 }
@@ -132,30 +133,135 @@ bool Imap::login()
         }
     }
 
-    const QString tag2 = getTag();
-    const QString loginCommand = tag2 + QLatin1String(" LOGIN ") + m_user + QChar(QChar::Space) + m_password + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+    if (m_authMech == CLEAR) {
 
-    if (Q_UNLIKELY(this->write(loginCommand.toLatin1()) < 0)) {
-        m_lastError = tr("Failed to send login command to the IMAP server: %1").arg(errorString());
-        this->disconnectFromHost();
-        if (state() != QSslSocket::UnconnectedState) {
-            this->waitForDisconnected();
+        const QString tag2 = getTag();
+        QString cmd = tag2 + QLatin1String(" LOGIN \"") + m_user + QLatin1String("\" \"") + m_password + QLatin1String("\"\r\n");
+        QByteArray cmdBa = cmd.toUtf8();
+        if (Q_UNLIKELY(write(cmdBa) != cmdBa.length())) {
+            return disconnectOnError(tr("Failed to send %1 command to the IMAP server: %2").arg(QStringLiteral("LOGIN"), errorString()));
         }
-        return false;
-    }
 
-    if (Q_UNLIKELY(!this->waitForReadyRead())) {
-        m_lastError = tr("Connection to the IMAP server timed out while waiting for a response to the login command.");
-        this->abort();
-        return false;
-    }
-
-    if (Q_UNLIKELY(!this->checkResponse(this->readAll(), tag2, &response))) {
-        this->disconnectFromHost();
-        if (state() != QSslSocket::UnconnectedState) {
-            this->waitForDisconnected();
+        if (Q_UNLIKELY(!waitForRespsonse(true, tr("Connection to the IMAP server timed out while waiting for a response to %1.").arg(QStringLiteral("LOGIN"))))) {
+            return false;
         }
-        return false;
+
+        if (Q_UNLIKELY(!checkResponse(readAll(), tag2, &response))) {
+            return disconnectOnError();
+        }
+
+    } else if (m_authMech == LOGIN) {
+        const QString tag2 = getTag();
+        QString cmd = tag2 + QLatin1String(" AUTHENTICATE LOGIN") + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+        QByteArray cmdBa = cmd.toLatin1();
+        if (Q_UNLIKELY(write(cmdBa) != cmdBa.length())) {
+            return disconnectOnError(tr("Failed to send %1 command to the IMAP server: %2").arg(QStringLiteral("AUTHENTICATE LOGIN"), errorString()));
+        }
+
+        if (Q_UNLIKELY(!waitForRespsonse(true, tr("Connection to the IMAP server timed out while waiting for a response to %1.").arg(QStringLiteral("AUTHENTICATE LOGIN"))))) {
+            return false;
+        }
+
+        if (Q_UNLIKELY(!readAll().startsWith('+'))) {
+            return disconnectOnError(tr("Invalid response from the IMAP server to %1.").arg(QStringLiteral("AUTHENTICATE LOGIN")));
+        }
+
+        cmd = QString::fromLatin1(m_user.toUtf8().toBase64()) + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+        cmdBa = cmd.toLatin1();
+        if (Q_UNLIKELY(write(cmdBa) != cmdBa.length())) {
+            return disconnectOnError(tr("Failed to send user name to IMAP server: %1").arg(errorString()));
+        }
+
+        if (Q_UNLIKELY(!waitForRespsonse(true, tr("Connection to the IMAP server timed out while waiting for a response to the sent user name.")))) {
+            return false;
+        }
+
+        if (Q_UNLIKELY(!readAll().startsWith('+'))) {
+            return disconnectOnError(tr("Invalid response from the IMAP server to the sent user name."));
+        }
+
+        cmd = QString::fromLatin1(m_password.toUtf8().toBase64()) + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+        cmdBa = cmd.toLatin1();
+        if (Q_UNLIKELY(write(cmdBa) != cmdBa.length())) {
+            return disconnectOnError(tr("Failed to send password to IMAP server: %1").arg(errorString()));
+        }
+
+        if (Q_UNLIKELY(!waitForRespsonse(true, tr("Connection to the IMAP server timed out while waiting for a response to the sent password.")))) {
+            return false;
+        }
+
+        if (Q_UNLIKELY(!checkResponse(readAll(), tag2, &response))) {
+            return disconnectOnError();
+        }
+
+    } else if (m_authMech == PLAIN) {
+
+        const QString tag2 = getTag();
+        QString cmd = tag2 + QLatin1String(" AUTHENTICATE PLAIN") + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+        QByteArray cmdBa = cmd.toLatin1();
+        if (Q_UNLIKELY(write(cmdBa) != cmdBa.length())) {
+            return disconnectOnError(tr("Failed to send %1 command to the IMAP server: %2").arg(QStringLiteral("AUTHENTICATE PLAIN"), errorString()));
+        }
+
+        if (Q_UNLIKELY(!waitForRespsonse(true, tr("Connection to the IMAP server timed out while waiting for a response to %1.").arg(QStringLiteral("AUTHENTICATE LOGIN"))))) {
+            return false;
+        }
+
+        if (Q_UNLIKELY(!readAll().startsWith('+'))) {
+            return disconnectOnError(tr("Invalid response from the IMAP server to %1.").arg(QStringLiteral("AUTHENTICATE PLAIN")));
+        }
+
+        cmdBa = QByteArrayLiteral("\0") + m_user.toUtf8() + QByteArrayLiteral("\0") + m_password.toUtf8() + QByteArrayLiteral("\r\n");
+        if (Q_UNLIKELY(write(cmdBa) != cmdBa.size())) {
+            return disconnectOnError(tr("Failed to send authentication credentials to the IMAP server: %1").arg(errorString()));
+        }
+
+        if (Q_UNLIKELY(!waitForRespsonse(true, tr("Connection to the IMAP server timed out while waiting for a response after sending authentication credentials.")))) {
+            return false;
+        }
+
+        if (!Q_UNLIKELY(!checkResponse(readAll(), tag2, &response))) {
+            return disconnectOnError();
+        }
+
+    } else if (m_authMech == CRAMMD5) {
+
+        const QString tag2 = getTag();
+        QString cmd = tag2 + QLatin1String(" AUTHENTICATE CRAM-MD5") + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+        QByteArray cmdBa = cmd.toLatin1();
+        if (Q_UNLIKELY(write(cmdBa) != cmdBa.length())) {
+            return disconnectOnError(tr("Failed to send %1 command to the IMAP server: %2").arg(QStringLiteral("AUTHENTICATE CRAM-MD5"), errorString()));
+        }
+
+        if (Q_UNLIKELY(!waitForRespsonse(true, tr("Connection to the IMAP server timed out while waiting for a response to %1.").arg(QStringLiteral("AUTHENTICATE CRAM-MD5"))))) {
+            return false;
+        }
+
+        QByteArray challenge = readAll();
+        if (Q_UNLIKELY(!challenge.startsWith('+'))) {
+            return disconnectOnError(tr("Invalid response from the IMAP server to %1.").arg(QStringLiteral("AUTHENTICATE CRAM-MD5")));
+        }
+
+        challenge = challenge.mid(2);
+        challenge = QByteArray::fromBase64(challenge);
+
+        if (Q_UNLIKELY(!(challenge.startsWith('<') && challenge.endsWith('>')))) {
+            return disconnectOnError(tr("Invalid challenge format for CRAM-MD5 authentication mechanism."));
+        }
+
+        const QByteArray challengeAnswer = QMessageAuthenticationCode::hash(challenge, m_password.toUtf8(), QCryptographicHash::Md5).toHex().toLower().toBase64() + QByteArrayLiteral("\r\n");
+
+        if (Q_UNLIKELY(write(challengeAnswer) != challengeAnswer.size())) {
+            return disconnectOnError(tr("Failed to send challenge response for CRAM-MD5 to the IMAP server: %1").arg(errorString()));
+        }
+
+        if (Q_UNLIKELY(!waitForRespsonse(true, tr("Connection to the IMAP server timed out while waiting for a response to the CRAM-MD5 challenge response.")))) {
+            return false;
+        }
+
+        if (!Q_UNLIKELY(!checkResponse(readAll(), tag2, &response))) {
+            return disconnectOnError();
+        }
     }
 
     if (Imap::m_capabilities.empty()) {
@@ -444,6 +550,7 @@ void Imap::setParams(const QVariantHash &parameters)
     m_password = parameters.value(QStringLiteral("password")).toString();
     m_protocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(parameters.value(QStringLiteral("protocol")).toInt());
     m_encType = static_cast<EncryptionType>(parameters.value(QStringLiteral("encryption")).value<quint8>());
+    m_authMech = static_cast<AuthMech>(parameters.value(QStringLiteral("authmech")).value<quint8>());
     setPeerVerifyName(parameters.value(QStringLiteral("peername")).toString());
 }
 
@@ -452,6 +559,10 @@ void Imap::setHierarchySeparator(QChar separator)
     m_hierarchysep = separator;
 }
 
+void Imap::setAuthMech(AuthMech mech)
+{
+    m_authMech = mech;
+}
 
 QString Imap::encryptionTypeToString(EncryptionType type)
 {
@@ -503,13 +614,31 @@ QString Imap::networkProtocolToString(QAbstractSocket::NetworkLayerProtocol prot
     return str;
 }
 
-
-
 QString Imap::networkProtocolToString(quint8 protocol)
 {
     return networkProtocolToString(static_cast<QAbstractSocket::NetworkLayerProtocol>(protocol));
 }
 
+QString Imap::authMechToString(AuthMech mechanism)
+{
+    switch (mechanism) {
+    case CLEAR:
+        return QStringLiteral("CLEAR");
+    case LOGIN:
+        return QStringLiteral("LOGIN");
+    case PLAIN:
+        return QStringLiteral("PLAIN");
+    case CRAMMD5:
+        return QStringLiteral("CRAM-MD5");
+    default:
+        return QStringLiteral("INVALID!");
+    }
+}
+
+QString Imap::authMechToString(quint8 mechanism)
+{
+    return Imap::authMechToString(static_cast<Imap::AuthMech>(mechanism));
+}
 
 QString Imap::lastError() const
 {
@@ -520,4 +649,34 @@ QString Imap::lastError() const
 QString Imap::getTag()
 {
     return QStringLiteral("a%1").arg(++m_tagSequence, 6, 10, QLatin1Char('0'));
+}
+
+bool Imap::disconnectOnError(const QString &error)
+{
+    if (!error.isEmpty()) {
+        m_lastError = error;
+    }
+    disconnectFromHost();
+    if (state() != QSslSocket::UnconnectedState) {
+        if (Q_UNLIKELY(!waitForDisconnected())) {
+            abort();
+        }
+    }
+    return false;
+}
+
+bool Imap::waitForRespsonse(bool _abort, const QString &error, int msecs)
+{
+    if (Q_UNLIKELY(!waitForReadyRead(msecs))) {
+        const QString _error = !error.isEmpty() ? error : tr("Connection to the IMAP server timed out.");
+        if (_abort) {
+            m_lastError = _error;
+            abort();
+        } else {
+            disconnectOnError(_error);
+        }
+        return false;
+    } else {
+        return true;
+    }
 }

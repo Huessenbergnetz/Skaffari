@@ -123,6 +123,19 @@ QVariantHash ConfigInput::askImapConfig(const QVariantHash &defaults) const
         }
     }
 
+    const quint8 imapauthmech = readChar(tr("Authentication mechanism"),
+                                         defaults.value(QStringLiteral("authmech"), imapencryption ? 1 : 2).value<quint8>(),
+                                         QStringList{
+                                             tr("The authentication mechanism used by your IMAP server. Skaffari has not negotiated the available mechanisms with your IMAP server. As the administrator, you should know for yourself which mechanisms are supported by your server."),
+                                             tr("Mechanisms supported by Skaffari:"),
+                                             tr("0: Clear Text"),
+                                             QStringLiteral("1: LOGIN"),
+                                             QStringLiteral("2: PLAIN"),
+                                             QStringLiteral("3: CRAM-MD5")
+                                         },
+                                         QList<quint8>{0,1,2,3});
+    conf.insert(QStringLiteral("authmech"), imapauthmech);
+
     return conf;
 }
 

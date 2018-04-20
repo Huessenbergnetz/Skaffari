@@ -67,6 +67,7 @@ set(DEFVAL_IMAP_CREATEMAILBOX 3 CACHE INTERNAL "Strategy to create new mailboxes
 set(DEFVAL_IMAP_UNIXHIERARCHYSEP false CACHE INTERNAL "Default value for unix hierarchy separator")
 set(DEFVAL_IMAP_DOMAINASPREFIX false CACHE INTERNAL "Default value for domain as prefix")
 set(DEFVAL_IMAP_FQUN false CACHE INTERNAL "Default value for fqun")
+set(DEFVAL_IMAP_AUTHMECH 0 CACHE INTERNAL "Default valur for authmech")
 set(DEFVAL_TMPL_ASYNCACCOUNTLIST false CACHE INTERNAL "Default value for async account list")
 
 configure_file(common/config.h.in ${CMAKE_BINARY_DIR}/common/config.h)

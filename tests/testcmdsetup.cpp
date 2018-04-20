@@ -55,12 +55,13 @@ void CmdSetupTest::doTest()
     QFETCH(QString, imapPass);
     QFETCH(int, imapEnc);
     QFETCH(QString, imapPeer);
+    QFETCH(int, imapAuthMech);
     QFETCH(bool, unixHierarchySep);
     QFETCH(bool, domainAsPrefix);
     QFETCH(bool, fqun);
     QFETCH(int, createMailboxes);
 
-    qDebug() << "AdmPwAlgo:" << admPwAlgo << "UnixHierarchySep:" << unixHierarchySep << "DomainAsPrefix:" << domainAsPrefix << "FQUN:" << fqun << "CreateMailBoxes:" << createMailboxes;
+    qDebug() << "AdmPwAlgo:" << admPwAlgo << "AuthMech:" << imapAuthMech << "UnixHierarchySep:" << unixHierarchySep << "DomainAsPrefix:" << domainAsPrefix << "FQUN:" << fqun << "CreateMailBoxes:" << createMailboxes;
 
     QMap<QString,QString> config{
         {QStringLiteral("SKAFFARI_DB_NAME"), dbName},
@@ -72,12 +73,28 @@ void CmdSetupTest::doTest()
         {QStringLiteral("SASL_PWCHECK_METHOD"), QStringLiteral("auxprop")},
         {QStringLiteral("SASL_AUXPROP_PLUGIN"), QStringLiteral("sql")},
         {QStringLiteral("SASL_SQL_HOSTNAMES"), QStringLiteral("127.0.0.1:3306")}
-
     };
     if (dbType == QLatin1String("QMYSQL")) {
         config.insert(QStringLiteral("SASL_SQL_ENGINE"), QStringLiteral("mysql"));
     } else {
         QFAIL("Invalid SQL database type.");
+    }
+    switch (imapAuthMech) {
+    case 0:
+        config.insert(QStringLiteral("SASL_MECH_LIST"), QStringLiteral("login plain"));
+        break;
+    case 1:
+        config.insert(QStringLiteral("SASL_MECH_LIST"), QStringLiteral("login"));
+        break;
+    case 2:
+        config.insert(QStringLiteral("SASL_MECH_LIST"), QStringLiteral("plain"));
+        break;
+    case 3:
+        config.insert(QStringLiteral("SASL_MECH_LIST"), QStringLiteral("cram-md5"));
+        break;
+    default:
+        QFAIL("Invalid imap authentication mechanism.");
+        break;
     }
     const QString containerName = createContainerName();
     QVERIFY(startContainer(config, containerName, dbPort, imapPort, sievePort));
@@ -88,6 +105,10 @@ void CmdSetupTest::doTest()
     QVERIFY(conf.status() == QSettings::NoError);
 
     SkCmdProc cmd;
+    cmd.setShowOutput(false);
+    if (imapAuthMech > 1) {
+        cmd.setTimeOut(10000);
+    }
     cmd.setArguments({QStringLiteral("--setup"), QStringLiteral("--ini"), confFile.fileName()});
     cmd.start();
 
@@ -179,6 +200,9 @@ void CmdSetupTest::doTest()
         QVERIFY(cmd.waitForOutput());
         QVERIFY(cmd.enterString(imapPeer));
     }
+
+    QVERIFY(cmd.waitForOutput());
+    QVERIFY(cmd.enterNumber(imapAuthMech));
 
     QVERIFY(cmd.waitForOutput());
     QVERIFY(cmd.enterBool(true));
@@ -305,6 +329,7 @@ void CmdSetupTest::doTest_data()
     QTest::addColumn<QString>("imapPass");
     QTest::addColumn<int>("imapEnc");
     QTest::addColumn<QString>("imapPeer");
+    QTest::addColumn<int>("imapAuthMech");
     QTest::addColumn<bool>("unixHierarchySep");
     QTest::addColumn<bool>("domainAsPrefix");
     QTest::addColumn<bool>("fqun");
@@ -314,7 +339,6 @@ void CmdSetupTest::doTest_data()
     int port = 44819;
 
     for (int _admPwAlgo : {3,4,5,6,7,8,9,10}) {
-
         QTest::newRow(QStringLiteral("test-%1").arg(++testNo, 3, 10, QLatin1Char('0')).toUtf8().constData())
                 << QStringLiteral("QMYSQL")             // db type
                 << port++                               // db port
@@ -336,6 +360,7 @@ void CmdSetupTest::doTest_data()
                 << QStringLiteral("BLeon8WD70d7")       // imap admin password
                 << 0                                    // imap transport encryption (0: unsecured)
                 << QString()                            // imap ssl peer name (not used because connection is not encrypted)
+                << 0                                    // imap authentication mechanism
                 << false                                // use unix hierarchy separator
                 << false                                // use domain as prefix (not available if unix hierarchy seperator is disabled)
                 << false                                // use fully qualified use names (not available if unix hierarchy seperator or domain as prefix is disabled)
@@ -364,6 +389,7 @@ void CmdSetupTest::doTest_data()
                 << QStringLiteral("BLeon8WD70d7")       // imap admin password
                 << 0                                    // imap transport encryption (0: unsecured)
                 << QString()                            // imap ssl peer name (not used because connection is not encrypted)
+                << 0                                    // imap authentication mechanism
                 << false                                // use unix hierarchy separator
                 << false                                // use domain as prefix (not available if unix hierarchy seperator is disabled)
                 << false                                // use fully qualified use names (not available if unix hierarchy seperator or domain as prefix is disabled)
@@ -393,6 +419,7 @@ void CmdSetupTest::doTest_data()
                     << QStringLiteral("BLeon8WD70d7")       // imap admin password
                     << 0                                    // imap transport encryption (0: unsecured)
                     << QString()                            // imap ssl peer name (not used because connection is not encrypted)
+                    << 0                                    // imap authentication mechanism
                     << true                                 // use unix hierarchy separator
                     << _domainAsPrefix                      // use domain as prefix (not available if unix hierarchy seperator is disabled)
                     << _fqun                                // use fully qualified use names (not available if unix hierarchy seperator or domain as prefix is disabled)
@@ -400,8 +427,38 @@ void CmdSetupTest::doTest_data()
         }
     }
 
+    for (int _authMech : {0,1,2,3}) {
+        QTest::newRow(QStringLiteral("test-%1").arg(++testNo, 3, 10, QLatin1Char('0')).toUtf8().constData())
+                << QStringLiteral("QMYSQL")             // db type
+                << port++                               // db port
+                << QStringLiteral("maildb")             // db name
+                << QStringLiteral("skaffari")           // db user
+                << QStringLiteral("LaN4TEsaLk2d")       // db pass
+                << 3                                    // admin password algo
+                << 10000                                // admin password iterations
+                << 50                                   // admin password quality threshold
+                << QStringLiteral("admin")              // admin user name
+                << QStringLiteral("wYezOAT3elS9")       // admin user password
+                << 0                                    // account password method (0: unencrypted plain text)
+                << 0                                    // account password algo (not needed for plain text)
+                << 0                                    // account password iterations (not needed for plain text)
+                << 30                                   // account password threshold
+                << port++                               // imap port
+                << port++                               // sieve port
+                << QStringLiteral("cyrus")              // imap admin user
+                << QStringLiteral("BLeon8WD70d7")       // imap admin password
+                << 0                                    // imap transport encryption (0: unsecured)
+                << QString()                            // imap ssl peer name (not used because connection is not encrypted)
+                << _authMech                            // imap authentication mechanism
+                << false                                // use unix hierarchy separator
+                << false                                // use domain as prefix (not available if unix hierarchy seperator is disabled)
+                << false                                // use fully qualified use names (not available if unix hierarchy seperator or domain as prefix is disabled)
+                << 0;                                   // create mailboxes
+    }
+
 //    QTest::newRow(QStringLiteral("test-%1").arg(++testNo, 3, 10, QLatin1Char('0')).toUtf8().constData())
 //            << QStringLiteral("QMYSQL")             // db type
+//            << port++                               // db port
 //            << QStringLiteral("maildb")             // db name
 //            << QStringLiteral("skaffari")           // db user
 //            << QStringLiteral("LaN4TEsaLk2d")       // db pass
@@ -414,10 +471,13 @@ void CmdSetupTest::doTest_data()
 //            << 0                                    // account password algo (not needed for plain text)
 //            << 0                                    // account password iterations (not needed for plain text)
 //            << 30                                   // account password threshold
+//            << port++                               // imap port
+//            << port++                               // sieve port
 //            << QStringLiteral("cyrus")              // imap admin user
 //            << QStringLiteral("BLeon8WD70d7")       // imap admin password
 //            << 0                                    // imap transport encryption (0: unsecured)
 //            << QString()                            // imap ssl peer name (not used because connection is not encrypted)
+//            << 2                                    // imap authentication mechanism
 //            << false                                // use unix hierarchy separator
 //            << false                                // use domain as prefix (not available if unix hierarchy seperator is disabled)
 //            << false                                // use fully qualified use names (not available if unix hierarchy seperator or domain as prefix is disabled)
