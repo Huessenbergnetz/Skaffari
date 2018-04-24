@@ -17,6 +17,7 @@ public:
 protected:
     bool startContainer(const QMap<QString,QString> &config, const QString &name, int mysqlPort, int imapPort, int sievePort) const;
     bool stopContainer(const QString &name) const;
+    bool stopContainers() const;
 //    bool startMysql();
 //    bool createDatabase();
 

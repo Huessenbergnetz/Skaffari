@@ -6,16 +6,72 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QJsonParseError>
 #include <QSqlDatabase>
 #include <QEventLoop>
 #include <QTimer>
 #include <QSqlError>
 #include <QUuid>
 #include <QCryptographicHash>
+#include <QVersionNumber>
 
 #define DOCKER_SOCKET "/var/run/docker.sock"
 #define DOCKER_IMAGE_NAME "skaffaritestenv"
 #define DOCKER_IMAGE_TAG "skaffaritestenv:latest"
+
+struct DockerResponse
+{
+    QString contentType;
+    QString osType;
+    QString server;
+    QString status;
+    QByteArray data;
+    QVersionNumber apiVersion;
+    QDateTime date;
+    int statusCode;
+    qint64 contentLength;
+    bool dockerExperimental;
+
+    static DockerResponse read(QLocalSocket &socket);
+};
+
+DockerResponse DockerResponse::read(QLocalSocket &socket)
+{
+    DockerResponse resp;
+
+    bool prevLineEmpty = false;
+
+    while (socket.canReadLine()) {
+        const QString line = QString::fromUtf8(socket.readLine()).trimmed();
+        if (line.isEmpty() && prevLineEmpty) {
+            break;
+        } else {
+            prevLineEmpty = true;
+        }
+        if (line.startsWith(QLatin1String("HTTP"))) {
+            const int statusCodeIdx = line.indexOf(QChar(QChar::Space)) + 1;
+            resp.statusCode = line.midRef(statusCodeIdx, 3).toInt();
+            resp.status = line.mid(line.indexOf(QChar(QChar::Space), statusCodeIdx) + 1);
+        } else if (line.startsWith(QLatin1String("Api-Version:"))) {
+            resp.apiVersion = QVersionNumber::fromString(line.mid(line.indexOf(QChar(QChar::Space)) + 1));
+        } else if (line.startsWith(QLatin1String("Content-Type:"))) {
+            resp.contentType = line.mid(line.indexOf(QChar(QChar::Space)) + 1);
+        } else if (line.startsWith(QLatin1String("Docker-Experimental:"))) {
+            const QStringRef exp = line.midRef(line.indexOf(QChar(QChar::Space)) + 1);
+            resp.dockerExperimental = exp == "true";
+        } else if (line.startsWith(QLatin1String("Date:"))) {
+            resp.date = QDateTime::fromString(line.mid(line.indexOf(QChar(QChar::Space)) + 1), Qt::RFC2822Date);
+        } else if (line.startsWith(QLatin1String("Content-Length:"))) {
+            resp.contentLength = line.midRef(line.indexOf(QChar(QChar::Space)) + 1).toLongLong();
+        }
+    }
+
+    if (socket.canReadLine()) {
+        resp.data = socket.readLine(resp.contentLength).trimmed();
+    }
+
+    return resp;
+}
 
 SkAppTestObject::SkAppTestObject(QObject *parent) : QObject(parent)
 {
@@ -142,6 +198,12 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config, const
         return false;
     }
 
+    const DockerResponse resp1 = DockerResponse::read(docker);
+    if (resp1.statusCode != 201) {
+        qCritical() << "Docker error response:" << resp1.status;
+        return false;
+    }
+
     cmd = QLatin1String("POST /v1.32/containers/") + name + QLatin1String("/start HTTP/1.1\r\nHost:\r\n\r\n");
 
     if (docker.write(cmd.toLatin1()) != cmd.length()) {
@@ -151,6 +213,12 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config, const
 
     if (!docker.waitForReadyRead()) {
         qCritical() << "Timeout while waiting for response from docker.";
+        return false;
+    }
+
+    const DockerResponse resp2 = DockerResponse::read(docker);
+    if (resp2.statusCode != 204) {
+        qCritical() << "Docker error response:" << resp2.status;
         return false;
     }
 
@@ -200,7 +268,76 @@ bool SkAppTestObject::stopContainer(const QString &name) const
         return false;
     }
 
+    const DockerResponse resp = DockerResponse::read(docker);
+    if (resp.statusCode != 204) {
+        qCritical() << "Docker error response:" << resp.status;
+        return false;
+    }
+
     return true;
+}
+
+bool SkAppTestObject::stopContainers() const
+{
+    QLocalSocket docker;
+    docker.connectToServer(QStringLiteral(DOCKER_SOCKET));
+    if (!docker.waitForConnected()) {
+        qCritical() << "Failed to connect to docker socket.";
+        return false;
+    }
+
+    QString cmd = QLatin1String("GET /v1.32/containers/json?all=true&filters=");
+    QJsonObject filters;
+    QJsonArray ancestors{QJsonValue(QStringLiteral(DOCKER_IMAGE_NAME))};
+    filters.insert(QStringLiteral("ancestor"), ancestors);
+    const QJsonDocument json{filters};
+    cmd.append(json.toJson(QJsonDocument::Compact));
+    cmd.append(QStringLiteral(" HTTP/1.1\r\nHost:\r\n\r\n"));
+
+    if (docker.write(cmd.toLatin1()) != cmd.length()) {
+        qCritical() << "Failed to write command to docker socket.";
+        return false;
+    }
+
+    if (!docker.waitForReadyRead()) {
+        qCritical() << "Timeout while waiting for response from docker.";
+        return false;
+    }
+
+
+    const DockerResponse resp = DockerResponse::read(docker);
+
+    if (resp.statusCode != 200) {
+        qCritical() << "Docker error response:" << resp.status;
+        return false;
+    }
+
+    QJsonParseError jsonErrors;
+    const QJsonDocument respJson = QJsonDocument::fromJson(resp.data, &jsonErrors);
+    if (jsonErrors.error != QJsonParseError::NoError) {
+        qCritical() << "Can not parse JSON response:" << jsonErrors.errorString();
+        return false;
+    }
+    const QJsonArray containers = respJson.array();
+    if (containers.empty()) {
+        return true;
+    }
+
+    bool ok = true;
+
+    for (const QJsonValue &c : containers) {
+        const QJsonObject o = c.toObject();
+        if (!o.isEmpty()) {
+            if (!stopContainer(o.value(QStringLiteral("Id")).toString())) {
+                qCritical() << "Failed to stop container with ID:" << o.value(QStringLiteral("id")).toString();
+                ok = false;
+            }
+        } else {
+            ok = false;
+        }
+    }
+
+    return ok;
 }
 
 //bool SkAppTestObject::startMysql()

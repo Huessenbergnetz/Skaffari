@@ -25,7 +25,7 @@ private Q_SLOTS:
 
 void CmdSetupTest::cleanupTestCase()
 {
-//    QVERIFY(stopContainer());
+    QVERIFY(stopContainers());
 }
 
 void CmdSetupTest::cleanup()
