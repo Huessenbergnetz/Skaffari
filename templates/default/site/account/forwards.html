@@ -78,12 +78,12 @@
             <div class="modal-header">
                 <h5 class="modal-title" id="forwardModalLabel"></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="{{ _("Close") }}">
-                    <span aria-hidden="true">&times;</span>
+                    <span aria-hidden="true">&#xD7;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <form id="forwardForm" data-addaction="/account/{{ domain.id }}/{{ account.id }}/add_forward">
-                    <input type="email" id="newforward" name="newforward" class="form-control" placeholder="{{ _("Forward email address") }}" required />
+                    <input type="email" id="newforward" name="newforward" class="form-control" placeholder="{{ _("Forward email address") }}" required="required" />
                 </form>
                 <div id="modal-message-container">
                 </div>

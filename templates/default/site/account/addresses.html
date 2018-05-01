@@ -70,7 +70,7 @@
             <div class="modal-header">
                 <h5 class="modal-title" id="addressModalLabel"></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="{{ _("Close") }}">
-                    <span aria-hidden="true">&times;</span>
+                    <span aria-hidden="true">&#xD7;</span>
                 </button>
             </div>
             <div class="modal-body">
@@ -79,7 +79,7 @@
                         <div class="row">
                             {% if maildomains.count %}
                             <div class="col-12 col-md-6">
-                                <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" placeholder="{{ _("Local part") }}" required>
+                                <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" placeholder="{{ _("Local part") }}" required="required" />
                             </div>
                             <div class="col-12 col-md-6">
                                 <select class="form-control" id="newmaildomain" name="newmaildomain">
@@ -91,11 +91,11 @@
                             {% else %}
                             <div class="col">
                                 <div class="input-group">
-                                    <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" value="{{ newlocalpart }}">
+                                    <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" value="{{ newlocalpart }}" />
                                     <div class="input-group-append"><span class="input-group-text">@{{ domain.name }}</span></div>
                                 </div>
                             </div>
-                            <input type="hidden" id="newmaildomain" name="newmaildomain" value="{{ domain.id }}">
+                            <input type="hidden" id="newmaildomain" name="newmaildomain" value="{{ domain.id }}" />
                             {% endif %}
                         </div>
                         <div class="row">

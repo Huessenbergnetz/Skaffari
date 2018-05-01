@@ -11,13 +11,13 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="created">{{ help.created.title }}</label>
-                <input type="text" id="created" class="form-control-plaintext" value="{% sk_tzc adminaccount.created dtFormatString %}" aria-describedby="createdDesc" readonly>
+                <input type="text" id="created" class="form-control-plaintext" value="{% sk_tzc adminaccount.created dtFormatString %}" aria-describedby="createdDesc" readonly="readonly" />
                 <small id="createdDesc" class="form-text text-muted">{{ help.created.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="updated">{{ help.updated.title }}</label>
-                <input type="text" id="updated" class="form-control-plaintext" value="{% sk_tzc adminaccount.updated dtFormatString %}" aria-describedby="updatedDesc" readonly>
+                <input type="text" id="updated" class="form-control-plaintext" value="{% sk_tzc adminaccount.updated dtFormatString %}" aria-describedby="updatedDesc" readonly="readonly" />
                 <small id="updatedDesc" class="form-text text-muted">{{ help.updated.text }}</small>
             </div>
 
@@ -29,14 +29,14 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="password" class="col-form-label">{{ help.password.title }}</label>
-                <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ help.password.title }}" aria-describedby="passwordDesc" autocomplete="new-password"{% if not adminaccount.isValid %} required{% endif %}>
+                <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ help.password.title }}" aria-describedby="passwordDesc" autocomplete="new-password"{% if not adminaccount.isValid %} required="required"{% endif %} />
                 {% if validationErrors.password.count %}<div class="invalid-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
                 <small id="passwordDesc" class="form-text text-muted">{{ help.password.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="password_confirmation" class="col-form-label">{{ help.password_confirmation.title }}</label>
-                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ help.password_confirmation.title }}" aria-describedby="passwordConfirmDesc"{% if not adminaccount.isValid %} required{% endif %}>
+                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ help.password_confirmation.title }}" aria-describedby="passwordConfirmDesc"{% if not adminaccount.isValid %} required="required"{% endif %} />
                 <small id="passwordConfirmDesc" class="form-text text-muted">{{ help.password_confirmation.text }}</small>
             </div>
 
@@ -48,14 +48,14 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="maxdisplay" class="col-form-label">{{ help.maxdisplay.title }}</label>
-                <input type="number" id="maxdisplay" name="maxdisplay" class="form-control{% if validationErrors.maxdisplay.count %} is-invalid{% endif %}" placeholder="{{ help.maxdisplay.title }}" min="15" max="255" step="1" value="{{ userMaxDisplay }}" aria-describedby="maxdisplayDesc">
+                <input type="number" id="maxdisplay" name="maxdisplay" class="form-control{% if validationErrors.maxdisplay.count %} is-invalid{% endif %}" placeholder="{{ help.maxdisplay.title }}" min="15" max="255" step="1" value="{{ userMaxDisplay }}" aria-describedby="maxdisplayDesc" />
                 <small id="maxdisplayDesc" class="form-text text-muted">{{ help.maxdisplay.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="warnlevel" class="col-form-label">{{ help.warnlevel.title }}</label>
                 <div class="input-group">
-                    <input type="number" id="warnlevel" name="warnlevel" class="form-control" placeholder="{{ help.warnlevel.title }}" min="0" max="100" step="1" value="{{ userWarnLevel }}" aria-describedby="warnlevelDesc">
+                    <input type="number" id="warnlevel" name="warnlevel" class="form-control" placeholder="{{ help.warnlevel.title }}" min="0" max="100" step="1" value="{{ userWarnLevel }}" aria-describedby="warnlevelDesc" />
                     <div class="input-group-append"><span class="input-group-text" id="warnPerc">%</span></div>
                 </div>
                 <small id="warnlevelDesc" class="form-text text-muted">{{ help.warnlevel.text }}</small>
@@ -71,7 +71,7 @@
                 <label for="lang" class="col-form-label">{{ help.lang.title }}</label>
                 <select class="form-control select2" id="lang" name="lang" aria-describedby="langDesc">
                     {% for lng in langs %}
-                    <option value="{{ lng.code }}"{% if adminaccount.lang == lng.code %} selected{% endif %}>{{ lng.name }}</option>
+                    <option value="{{ lng.code }}"{% if adminaccount.lang == lng.code %} selected="selected"{% endif %}>{{ lng.name }}</option>
                     {% endfor %}
                 </select>
                 <small id="langDesc" class="form-text text-muted">{{ help.lang.text }}</small>
@@ -81,7 +81,7 @@
                 <label for="tz" class="col-form-label">{{ help.tz.title }}</label>
                 <select class="form-control select2" id="tz" name="tz" aria-describedby="tzDesc">
                     {% for tz in timezones %}
-                    <option value="{{ tz }}"{% if adminaccount.tz == tz %} selected{% endif %}>{{ tz }}</option>
+                    <option value="{{ tz }}"{% if adminaccount.tz == tz %} selected="selected"{% endif %}>{{ tz }}</option>
                     {% endfor %}
                 </select>
                 <small id="tzDesc" class="form-text text-muted">{{ help.tz.text }}</small>

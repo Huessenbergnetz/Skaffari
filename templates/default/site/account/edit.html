@@ -14,19 +14,19 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="created">{{ help.created.title }}</label>
-                <input type="text" class="form-control-plaintext" id="created" aria-describedby="createdDesc" value="{% sk_tzc account.created dtFormatString %}" readonly>
+                <input type="text" class="form-control-plaintext" id="created" aria-describedby="createdDesc" value="{% sk_tzc account.created dtFormatString %}" readonly="readonly" />
                 <small id="createdDesc" class="form-text text-muted">{{ help.created.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="updated">{{ help.updated.title }}</label>
-                <input type="text" class="form-control-plaintext" id="updated" aria-describedby="updatedDesc" value="{% sk_tzc account.updated dtFormatString %}" readonly>
+                <input type="text" class="form-control-plaintext" id="updated" aria-describedby="updatedDesc" value="{% sk_tzc account.updated dtFormatString %}" readonly="readonly" />
                 <small id="updatedDesc" class="form-text text-muted">{{ help.updated.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="validUntil">{{ help.validUntil.title }}</label>
-                <input type="datetime-local" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} is-invalid{% endif %}" placeholder="{{ dtFormatPlaceholder }}" value="{% sk_tzc validUntil|default_if_none:account.validUntil "yyyy-MM-ddTHH:mm" %}" aria-describedby="validUntilDesc" pattern="^(2\d{3})-(0[1-9]|1[012])-(31|30|0[1-9]|[12][0-9])T([01][0-9]|2[0-3]):([0-5][0-9])$" required>
+                <input type="datetime-local" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} is-invalid{% endif %}" placeholder="{{ dtFormatPlaceholder }}" value="{% sk_tzc validUntil|default_if_none:account.validUntil "yyyy-MM-ddTHH:mm" %}" aria-describedby="validUntilDesc" pattern="^(2\d{3})-(0[1-9]|1[012])-(31|30|0[1-9]|[12][0-9])T([01][0-9]|2[0-3]):([0-5][0-9])$" required="required" />
                 {% if validationErrors.validUntil.count %}<div class="invalid-feedback"><small>{{ validationErrors.validUntil.0 }}</small></div>{% endif %}
                 <small id="validUntilDesc" class="form-text text-muted">{{ help.validUntil.text }}</small>
             </div>
@@ -52,7 +52,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="passwordExpires">{{ help.passwordExpires.title }}</label>
-                <input type="datetime-local" id="passwordExpires" name="passwordExpires" class="form-control{% if validationErrors.passwordExpires.count %} is-invalid{% endif %}" placeholder="{{ dtFormatPlaceholder }}" value="{% sk_tzc passwordExpires|default_if_none:account.passwordExpires "yyyy-MM-ddTHH:mm" %}" aria-describedby="passwordExpiresDesc" pattern="^(2\d{3})-(0[1-9]|1[012])-(31|30|0[1-9]|[12][0-9])T([01][0-9]|2[0-3]):([0-5][0-9])$" required>
+                <input type="datetime-local" id="passwordExpires" name="passwordExpires" class="form-control{% if validationErrors.passwordExpires.count %} is-invalid{% endif %}" placeholder="{{ dtFormatPlaceholder }}" value="{% sk_tzc passwordExpires|default_if_none:account.passwordExpires "yyyy-MM-ddTHH:mm" %}" aria-describedby="passwordExpiresDesc" pattern="^(2\d{3})-(0[1-9]|1[012])-(31|30|0[1-9]|[12][0-9])T([01][0-9]|2[0-3]):([0-5][0-9])$" required="required" />
                 {% if validationErrors.passwordExpires.count %}<div class="invalid-feedback"><small>{{ validationErrors.passwordExpires.0 }}</small></div>{% endif %}
                 <small id="passwordExpiresDesc" class="form-text text-muted">{{ help.passwordExpires.text }}</small>
             </div>
@@ -61,7 +61,7 @@
                 <label for="quota" class="col-form-label">{{ help.quota.title }}</label>
                 <div class="input-group">
                     <div class="input-group-prepend"><span class="input-group-text">{% sk_fsf account.usage 2 2 1024 %} /</span></div>
-                    <input type="text" id="quota" name="quota" class="form-control{% if validationErrors.quota.count %} is-invalid{% endif %}" value="{% sk_fsf account.quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="quotaDesc" pattern="{{ quotaPattern }}">
+                    <input type="text" id="quota" name="quota" class="form-control{% if validationErrors.quota.count %} is-invalid{% endif %}" value="{% sk_fsf account.quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="quotaDesc" pattern="{{ quotaPattern }}" />
                 </div>
                 {% if validationErrors.quota.count %}<div class="invalid-feedback"><small>{{ validationErrors.quota.0 }}</small></div>{% endif %}
                 <small id="quotaDesc" class="form-text text-muted">{{ help.quota.text }}</small>
@@ -76,7 +76,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="imap" name="imap" value="1" aria-describedby="imapDesc"{% if account.imap %} checked{% endif %}>
+                    <input type="checkbox" class="form-check-input" id="imap" name="imap" value="1" aria-describedby="imapDesc"{% if account.imap %} checked="checked"{% endif %} />
                     <label class="form-check-label">{{ help.imap.title }}</label>
                     <small id="imapDesc" class="form-text text-muted">{{ help.imap.text }}</small>
                 </div>
@@ -84,7 +84,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="pop" name="pop" value="1" aria-describedby="popDesc"{% if account.pop %} checked{% endif %}>
+                    <input type="checkbox" class="form-check-input" id="pop" name="pop" value="1" aria-describedby="popDesc"{% if account.pop %} checked="checked"{% endif %} />
                     <label class="form-check-label">{{ help.pop.title }}</label>
                     <small id="popDesc" class="form-text text-muted">{{ help.pop.text }}</small>
                 </div>
@@ -92,7 +92,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="sieve" name="sieve" value="1" aria-describedby="sieveDesc"{% if account.sieve %} checked{% endif %}>
+                    <input type="checkbox" class="form-check-input" id="sieve" name="sieve" value="1" aria-describedby="sieveDesc"{% if account.sieve %} checked="checked"{% endif %} />
                     <label class="form-check-label">{{ help.sieve.title }}</label>
                     <small id="sieveDesc" class="form-text text-muted">{{ help.sieve.text }}</small>
                 </div>
@@ -100,7 +100,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="smtpauth" name="smtpauth" value="1" aria-describedby="smtpauthDesc"{% if account.smtpauth %} checked{% endif %}>
+                    <input type="checkbox" class="form-check-input" id="smtpauth" name="smtpauth" value="1" aria-describedby="smtpauthDesc"{% if account.smtpauth %} checked="checked"{% endif %} />
                     <label class="form-check-label">{{ help.smtpauth.title }}</label>
                     <small id="smtpauthDesc" class="form-text text-muted">{{ help.smtpauth.text }}</small>
                 </div>
@@ -108,7 +108,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="catchall" name="catchall" value="1" aria-describedby="catchall"{% if account.catchAll %} checked{% endif %}>
+                    <input type="checkbox" class="form-check-input" id="catchall" name="catchall" value="1" aria-describedby="catchall"{% if account.catchAll %} checked="checked"{% endif %} />
                     <label class="form-check-label">{{ help.catchall.title }}</label>
                     <small id="catchallDesc" class="form-text text-muted">{{ help.catchall.text }}</small>
                 </div>

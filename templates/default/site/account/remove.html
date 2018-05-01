@@ -8,7 +8,7 @@
                 <p class="card-text">{{ _("To proceed, please enter the user name of the account you want to delete.") }}</p>
                 <form method="post">
                     {% c_csrf_token %}
-                    <input type="text" id="accountName" name="accountName" class="form-control" value="" required>
+                    <input type="text" id="accountName" name="accountName" class="form-control" value="" required="required" />
                     <div class="mt-3">
                         <a class="btn btn-secondary" href="/domain/{{ domain.id }}/accounts"><i class="fas fa-times"></i> {{ _("Cancel") }}</a>
                         <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> {{ _("Remove") }}</button>

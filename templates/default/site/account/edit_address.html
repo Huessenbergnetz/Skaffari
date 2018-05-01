@@ -12,13 +12,13 @@
             <div class="row form-group">
                 <div class="col-6">
                     <label for="newlocalpart">{{ localpart }}</label>
-                    <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" value="{{ newlocalpart|default:localpart }}" placeholder="{{ _("Local part") }}">
+                    <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" value="{{ newlocalpart|default:localpart }}" placeholder="{{ _("Local part") }}" />
                 </div>
                 <div class="col-6">
                     <label for="newmaildomain">@{{ maildomain }}</label>
                     <select class="form-control" id="newmaildomain" name="newmaildomain" class="form-control">
                         {% for dom in maildomains %}
-                        <option value="{{ dom.id }}"{% if dom.name == maildomain %} selected{% endif %}>@{{ dom.name }}</option>
+                        <option value="{{ dom.id }}"{% if dom.name == maildomain %} selected="selected"{% endif %}>@{{ dom.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -28,7 +28,7 @@
                 <div class="col">
                     <label for="newlocalpart">{{ localpart}}@{{ maildomain }}</label>
                     <div class="input-group">
-                        <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" value="{{ newlocalpart|default:localpart }}" placeholder="{{ _("Local part") }}"">
+                        <input type="text" id="newlocalpart" name="newlocalpart" class="form-control" value="{{ newlocalpart|default:localpart }}" placeholder="{{ _("Local part") }}" required="required" />
                         <div class="input-group-append"><span class="input-group-text">@{{ maildomain }}</span></div>
                     </div>
                 </div>

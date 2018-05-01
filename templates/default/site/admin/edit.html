@@ -13,19 +13,19 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="username">{{ help.username.title }}</label>
-                <input type="text" class="form-control-plaintext" id="username" aria-describedby="usernameDesc" value="{{ adminaccount.username }}" readonly>
+                <input type="text" class="form-control-plaintext" id="username" aria-describedby="usernameDesc" value="{{ adminaccount.username }}" readonly="readonly" />
                 <small id="usernameDesc" class="form-text text-muted">{{ help.username.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="created">{{ help.created.title }}</label>
-                <input type="text" class="form-control-plaintext" id="created" aria-describedby="createdDesc" value="{% sk_tzc adminaccount.created dtFormatString %}" readonly>
+                <input type="text" class="form-control-plaintext" id="created" aria-describedby="createdDesc" value="{% sk_tzc adminaccount.created dtFormatString %}" readonly="readonly" />
                 <small id="createdDesc" class="form-text text-muted">{{ help.created.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="updated">{{ help.updated.title }}</label>
-                <input type="text" class="form-control-plaintext" id="updated" aria-describedby="updatedDesc" value="{% sk_tzc adminaccount.updated dtFormatString %}" readonly>
+                <input type="text" class="form-control-plaintext" id="updated" aria-describedby="updatedDesc" value="{% sk_tzc adminaccount.updated dtFormatString %}" readonly="readonly" />
                 <small id="updatedDesc" class="form-text text-muted">{{ help.updated.text }}</small>
             </div>
 
@@ -37,14 +37,14 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="passsword">{{ help.password.title }}</label>
-                <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ help.password.title }}" aria-describedby="passwordDesc" autocomplete="new-password">
+                <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ help.password.title }}" aria-describedby="passwordDesc" autocomplete="new-password" />
                 {% if validationErrors.password.count %}<div class="invalid-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
                 <small id="passwordDesc" class="form-text text-muted">{{ help.password.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                  <label class="col-form-label" for="password_confirmation">{{ help.password_confirmation.title }}</label>
-                 <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ help.password_confirmation.title }}" aria-describedby="passwordConfirmDesc">
+                 <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ help.password_confirmation.title }}" aria-describedby="passwordConfirmDesc" />
                  <small id="passwordConfirmDesc" class="form-text text-muted">{{ help.password_confirmation.text }}</small>
             </div>
 
@@ -52,7 +52,7 @@
                 <label for="type" class="col-form-label">{{ help.type.title }}</label>
                 <select class="form-control{% if validationErrors.type.count %} is-invalid{% endif %}" id="type" name="type" aria-describedby="typeDesc">
                     {% for allowedType in allowedAdminTypes %}
-                    <option value="{{ allowedType }}"{% ifequal adminaccount.typeStr allowedType %} selected{% endifequal %}>{% sk_admintypename allowedType %}</option>
+                    <option value="{{ allowedType }}"{% ifequal adminaccount.typeStr allowedType %} selected="selected"{% endifequal %}>{% sk_admintypename allowedType %}</option>
                     {% endfor %}
                 </select>
                 {% if validationErrors.type.count %}<div class="invlid-feedback"><small>{{ validationErrors.type.0 }}</small></div>{% endif %}
@@ -61,9 +61,9 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="assocdomains" class="col-form-label">{{ help.assocdomains.title }}</label>
-                <select class="form-control{% if validationErrors.assocdomains.count %} is-invalid{% endif %} select2" id="assocdomains" name="assocdomains" multiple{% if not domains.size %} disabled{% endif %}>
+                <select class="form-control{% if validationErrors.assocdomains.count %} is-invalid{% endif %} select2" id="assocdomains" name="assocdomains" multiple{% if not domains.size %} disabled="disabled"{% endif %}>
                     {% for domain in domains %}
-                    <option value="{{ domain.id }}"{% if domain.id in adminaccount.domains %} selected{% endif %}>{{ domain.name }}</option>
+                    <option value="{{ domain.id }}"{% if domain.id in adminaccount.domains %} selected="selected"{% endif %}>{{ domain.name }}</option>
                     {% endfor %}
                 </select>
                 {% if validationErrors.assocdomains.count %}<div class="invlid-feedback"><small>{{ validationErrors.assocdomains.0 }}</small></div>{% endif %}

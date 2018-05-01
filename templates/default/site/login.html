@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="{{ c_langselect_lang }}">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ c_langselect_lang }}" xml:lang="{{ c_langselect_lang }}">
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
 
         <title>Skaffari - {{ _("Login") }}</title>
 
-        <link href="/css/style.css" rel="stylesheet">
+        <link href="/css/style.css" rel="stylesheet"/>
     </head>
 
     <body>
@@ -23,12 +23,12 @@
                                 <label class="sr-only" for="username">{{ _("Username") }}</label>
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-user fa-fw"></i></span></div>
-                                    <input type="text" class="form-control" id="username" name="username" value="{{ username }}" placeholder='{{ _("Username") }}' required>
+                                    <input type="text" class="form-control" id="username" name="username" value="{{ username }}" placeholder='{{ _("Username") }}' required="required" />
                                 </div>
                                 <label class="sr-only" for="password">{{ _("Password") }}</label>
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-key fa-fw"></i></span></div>
-                                    <input type="password" class="form-control" id="password" name="password" placeholder='{{ _("Password") }}' required>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder='{{ _("Password") }}' required="required" />
                                 </div>
                                 <button type="submit" name="submit" value="Submit" class="btn btn-primary btn-block" id="submitSetupForm"><i class="fas fa-sign-in-alt"></i> {{ _("Login") }}</button>
                             </form>
@@ -42,7 +42,7 @@
                 <div class="col col-md-6 col-lg-4 col-xl-4">
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <button type="button" class="close" data-dismiss="alert" aria-label="{{ _("Close") }}">
-                            <span aria-hidden="true">&times;</span>
+                            <span aria-hidden="true">&#xD7;</span>
                         </button>
                         {{ error_msg }}
                     </div>
