@@ -594,7 +594,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
         const dbid_t aceEmailId = insertVirtual(idnEmailId, 0, emailAce, username, username, 1, sqlError);
         if (aceEmailId == 0) {
             e.setSqlError(sqlError, c->translate("Account", "ACE email address for new user account could not be created in the database."));
-            qCCritical(SK_ACCOUNT, "%s failed to insert ACE email address %s for new user account %s into the database: %", uniStr, qUtf8Printable(emailAce), aunStr, qUtf8Printable(sqlError.text()));
+            qCCritical(SK_ACCOUNT, "%s failed to insert ACE email address %s for new user account %s into the database: %s", uniStr, qUtf8Printable(emailAce), aunStr, qUtf8Printable(sqlError.text()));
             removeVirtual(username);
             removeAccountByID(id);
             return a;
@@ -926,7 +926,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError &e) const
 
     if (Q_UNLIKELY(!q.exec())) {
         e.setSqlError(q.lastError(), c->translate("Account", "Number of user accounts in the domain and domain quota used could not be updated in the database."));
-        qCWarning(SK_ACCOUNT, "%s failed to update count of domain accounts and used quota for domain ID %lu after deleting account %s: %s", uniStr, d->domainId, aniStr, qUtf8Printable(q.lastError().text()));
+        qCWarning(SK_ACCOUNT, "%s failed to update count of domain accounts and used quota for domain ID %u after deleting account %s: %s", uniStr, d->domainId, aniStr, qUtf8Printable(q.lastError().text()));
     }
 
     qCInfo(SK_ACCOUNT, "%s deleted account %s.", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(nameIdString()));
@@ -1088,14 +1088,14 @@ Account Account::get(Cutelyst::Context *c, SkaffariError &e, dbid_t id)
 
     if (Q_UNLIKELY(!q.exec())) {
         e.setSqlError(q.lastError(), c->translate("Account", "User account data could not be queried from the database."));
-        qCCritical(SK_ACCOUNT, "%s failed to query data for user account with ID %lu from the database: %s", qUtf8Printable(AdminAccount::getUserNameIdString(c)), id, qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_ACCOUNT, "%s failed to query data for user account with ID %u from the database: %s", qUtf8Printable(AdminAccount::getUserNameIdString(c)), id, qUtf8Printable(q.lastError().text()));
         return a;
     }
 
     if (Q_UNLIKELY(!q.next())) {
         e.setErrorType(SkaffariError::NotFound);
-        e.setErrorText(c->translate("Account", "Can not find account with database ID %lu.").arg(id));
-        qCWarning(SK_ACCOUNT, "%s can not find user account with ID %lu in the database.", qUtf8Printable(AdminAccount::getUserNameIdString(c)), id);
+        e.setErrorText(c->translate("Account", "Can not find account with database ID %1.").arg(id));
+        qCWarning(SK_ACCOUNT, "%s can not find user account with ID %u in the database.", qUtf8Printable(AdminAccount::getUserNameIdString(c)), id);
         return a;
     }
 
@@ -1662,7 +1662,7 @@ QString Account::updateEmail(Cutelyst::Context *c, SkaffariError &e, const QVari
     if (d->addresses.contains(address)) {
         e.setErrorType(SkaffariError::InputError);
         e.setErrorText(c->translate("Account", "The email address %1 is already part of this account.").arg(address));
-        qCWarning(SK_ACCOUNT, "%s failed to update email address for account %s: address % is alread part of the account.", uniStr, aniStr, qUtf8Printable(address));
+        qCWarning(SK_ACCOUNT, "%s failed to update email address for account %s: address %s is alread part of the account.", uniStr, aniStr, qUtf8Printable(address));
         return ret;
     }
 

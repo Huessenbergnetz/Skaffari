@@ -271,7 +271,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
     if (Q_UNLIKELY(q.next())) {
         error.setErrorType(SkaffariError::InputError);
         error.setErrorText(c->translate("AdminAccount", "This administrator user name is already in use."));
-        qCWarning(SK_ADMIN, "%s: username is already in use by ID %lu.", err, q.value(0).value<dbid_t>());
+        qCWarning(SK_ADMIN, "%s: username is already in use by ID %u.", err, q.value(0).value<dbid_t>());
         return aa;
     }
 
@@ -445,14 +445,14 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError &e, dbid_t id
 
     if (Q_UNLIKELY(!q.exec())) {
         e.setSqlError(q.lastError(), c->translate("AdminAccount", "Failed to query administrator account with ID %1 from database.").arg(id));
-        qCCritical(SK_ADMIN, "%s failed to query admin account with ID %lu from database: %s", uniStr, id, qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_ADMIN, "%s failed to query admin account with ID %u from database: %s", uniStr, id, qUtf8Printable(q.lastError().text()));
         return acc;
     }
 
     if (Q_UNLIKELY(!q.next())) {
         e.setErrorType(SkaffariError::NotFound);
         e.setErrorText(c->translate("AdminAccount", "Can not find administrator account with database ID %1.").arg(id));
-        qCWarning(SK_ADMIN, "%s failed to find admin account with database ID %lu.", uniStr, id);
+        qCWarning(SK_ADMIN, "%s failed to find admin account with database ID %u.", uniStr, id);
         return acc;
     }
 
@@ -470,7 +470,7 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError &e, dbid_t id
 
         if (Q_UNLIKELY(!q2.exec())) {
             e.setSqlError(q2.lastError(), c->translate("AdminAccount", "Failed to query domain IDs from database this domain manager is responsible for."));
-            qCCritical(SK_ADMIN, "%s failed to query domain IDs admin %s (ID: %lu) is responsible for: %s", uniStr, qUtf8Printable(_username), id, qUtf8Printable(q2.lastError().text()));
+            qCCritical(SK_ADMIN, "%s failed to query domain IDs admin %s (ID: %u) is responsible for: %s", uniStr, qUtf8Printable(_username), id, qUtf8Printable(q2.lastError().text()));
             return acc;
         }
 
