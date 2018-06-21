@@ -155,6 +155,14 @@ protected:
      * If ConsoleOutput has been constructed with \a quiet = \c false, this will do nothing.
      */
     void printTable(std::initializer_list<std::pair<QString, QString>> table, const QString &header = QString()) const;
+    /*!
+     * \brief Prints the content of \a table in an ASCII table to stdout, together with the \a header.
+     *
+     * The first part in the \a table pair will be the label, the second will be the value.
+     *
+     * If ConsoleOutput has been constructed with \a quiet = \c false, this will do nothing.
+     */
+    void printTable(const std::vector<std::pair<QString,QString>> &table, const QString &header = QString()) const;
 
     /*!
      * \brief Reads a string from stdin.

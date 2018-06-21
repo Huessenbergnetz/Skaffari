@@ -248,7 +248,53 @@ void ConsoleOutput::printTable(std::initializer_list<std::pair<QString, QString>
     }
 }
 
+void ConsoleOutput::printTable(const std::vector<std::pair<QString, QString>> &table, const QString &header) const
+{
+    if (!m_quiet) {
+        if (table.size() == 0) {
+            return;
+        }
 
+        int maxLabelLength = 0;
+        int maxValueLength = 0;
+
+        for (const std::pair<QString,QString> &col : table) {
+            if (maxLabelLength < col.first.length()) {
+                maxLabelLength = col.first.length();
+            }
+            if (maxValueLength < col.second.length()) {
+                maxValueLength = col.second.length();
+            }
+        }
+
+        maxLabelLength += 5;
+        maxValueLength += 5;
+
+        int fullLength = maxLabelLength + maxValueLength;
+        if ((fullLength % 2) > 0) {
+            fullLength++;
+        }
+
+        QString devider(QLatin1Char('+'));
+        for (int i = 0; i < fullLength; ++i) {
+            devider.append(QLatin1Char('-'));
+        }
+        devider.append(QLatin1Char('+'));
+        printf("%s\n", devider.toUtf8().constData());
+
+        if (!header.isEmpty()) {
+            int centerHeader = fullLength / 2 + header.length() / 2;
+            printf("|%*s%*s\n", centerHeader, qUtf8Printable(header), fullLength-centerHeader+1, "|");
+            printf("%s\n", qUtf8Printable(devider));
+        }
+
+        for (const std::pair<QString,QString> &col : table) {
+            printf("| %-*s| %-*s|\n", maxLabelLength-1, qUtf8Printable(col.first), maxValueLength-1, qUtf8Printable(col.second));
+        }
+
+        printf("%s\n", qUtf8Printable(devider));
+    }
+}
 
 
 QString ConsoleOutput::readString(const QString &name, const QString &defaultVal, const QStringList &desc, const QStringList acceptableInput) const
