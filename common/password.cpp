@@ -159,7 +159,59 @@ bool Password::check(const QByteArray &savedPw)
     return ret;
 }
 
+QString Password::methodToString(Method method)
+{
+    switch(method) {
+    case PlainText:
+        return tr("Clear text");
+    case Crypt:
+        return QStringLiteral("Crypt");
+    case MySQL:
+        return QStringLiteral("MySQL");
+    case MD5:
+        return QStringLiteral("MD5");
+    case SHA1:
+        return QStringLiteral("SHA1");
+    default:
+        return QString();
+    }
+}
 
+QString Password::methodToString(quint8 method)
+{
+    return Password::methodToString(static_cast<Password::Method>(method));
+}
+
+QString Password::algorithmToString(Algorithm algorithm)
+{
+    switch(algorithm) {
+    case Default:
+        return tr("Default");
+    case CryptDES:
+        return QStringLiteral("DES");
+    case CryptMD5:
+        return QStringLiteral("MD5");
+    case CryptSHA256:
+        return QStringLiteral("SHA256");
+    case CryptSHA512:
+        return QStringLiteral("SHA512");
+    case CryptBcrypt:
+        return QStringLiteral("Bcrypt");
+    case MySQLNew:
+        //: new MySQL password encryption algorithm
+        return tr("MySQL new");
+    case MySQLOld:
+        //: old MySQL password encryption algorithm
+        return tr("MySQL old");
+    default:
+        return QString();
+    }
+}
+
+QString Password::algorithmToString(quint8 algorithm)
+{
+    return Password::algorithmToString(static_cast<Password::Algorithm>(algorithm));
+}
 
 QByteArray Password::requestSalt(quint16 length, const QByteArray allowedChars)
 {

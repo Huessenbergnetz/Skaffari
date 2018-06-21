@@ -21,6 +21,7 @@
 
 #include <QString>
 #include <QLoggingCategory>
+#include <QCoreApplication>
 
 Q_DECLARE_LOGGING_CATEGORY(SK_PASSWORD)
 
@@ -36,6 +37,7 @@ Q_DECLARE_LOGGING_CATEGORY(SK_PASSWORD)
 class Password
 {
     Q_GADGET
+    Q_DECLARE_TR_FUNCTIONS(Password)
 public:
     /*!
      * \brief Different methods for password hashing.
@@ -95,6 +97,26 @@ public:
      * \return          True if both passwords are equal.
      */
     bool check(const QByteArray &savedPw);
+
+    /*!
+     * \brief Returns the human readable string of the encryption \a method.
+     */
+    static QString methodToString(Method method);
+
+    /*!
+     * \brief Returns the human readable string of the encryption \a method.
+     */
+    static QString methodToString(quint8 method);
+
+    /*!
+     * \brief Return the human readable string of the encryption \a algorithm.
+     */
+    static QString algorithmToString(Algorithm algorithm);
+
+    /*!
+     * \brief Return the human readable string of the encryption \a algorithm.
+     */
+    static QString algorithmToString(quint8 algorithm);
 
 private:
     QString m_password;
