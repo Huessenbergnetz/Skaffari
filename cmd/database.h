@@ -131,6 +131,16 @@ public:
      */
     void saveOptions(const QVariantHash &options);
 
+    /*!
+     * \brief Returns \c true if the database is empty
+     */
+    bool empty() const;
+
+    /*!
+     * \brief Drops all tables and views from the database and returns \c true on success.
+     */
+    bool clear() const;
+
 private:
     QSqlDatabase m_db;
     QString m_conName;

@@ -469,3 +469,31 @@ void Database::saveOptions(const QVariantHash &options)
         }
     }
 }
+
+bool Database::empty() const
+{
+    return m_db.tables(QSql::Tables).empty() && m_db.tables(QSql::Views).empty();
+}
+
+bool Database::clear() const
+{
+    if (!empty()) {
+        QSqlQuery q(m_db);
+
+        const QStringList tables = m_db.tables(QSql::Tables);
+        for (const QString &table : tables) {
+            if (!q.exec(QStringLiteral("DROP TABLE %1").arg(table))) {
+                return false;
+            }
+        }
+
+        const QStringList views = m_db.tables(QSql::Views);
+        for (const QString &view : views) {
+            if (!q.exec(QStringLiteral("DROP VIEW %1").arg(view))) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
