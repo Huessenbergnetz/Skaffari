@@ -1,6 +1,6 @@
 /*
  * Skaffari - a mail account administration web interface based on Cutelyst
- * Copyright (C) 2017 Matthias Fehring <kontakt@buschmann23.de>
+ * Copyright (C) 2017-2018 Matthias Fehring <mf@huessenbergnetz.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -51,7 +51,10 @@ int main(int argc, char *argv[])
     QCommandLineOption setup(QStringLiteral("setup"), QCoreApplication::translate("main", "Create new Skaffari setup."));
     parser.addOption(setup);
 
-    QCommandLineOption import(QStringLiteral("import-web-cyradm"), QCoreApplication::translate("main", "Import web-cyradm configuration and database."), QStringLiteral("web-cyradm conf file"));
+    QCommandLineOption importSetup(QStringLiteral("import-setup"), QCoreApplication::translate("main", "Import Skaffari setup from ini file."), QCoreApplication::translate("main", "path to ini file to import"));
+    parser.addOption(importSetup);
+
+    QCommandLineOption import(QStringLiteral("import-web-cyradm"), QCoreApplication::translate("main", "Import web-cyradm configuration and database."), QCoreApplication::translate("main", "path to web-cyradm config file"));
     parser.addOption(import);
 
     QCommandLineOption test(QStringList({QStringLiteral("test"), QStringLiteral("t")}), QCoreApplication::translate("main", "Test the Skaffari settings."));
@@ -73,6 +76,10 @@ int main(int argc, char *argv[])
 
         Setup s(parser.value(iniPath));
         return s.exec();
+
+    } else if (parser.isSet(importSetup)) {
+
+
 
     } else if (parser.isSet(import)) {
 
