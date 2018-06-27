@@ -17,6 +17,9 @@
  */
 
 #include "consoleoutput.h"
+#include "../common/config.h"
+#include "../common/password.h"
+#include "imap.h"
 #include <cstdio>
 #include <iostream>
 #include <string>
@@ -25,6 +28,7 @@
 #include <QSqlError>
 #include <QStringList>
 #include <QFileInfo>
+#include <QSettings>
 
 ConsoleOutput::ConsoleOutput(bool quiet) :
     m_quiet(quiet)
@@ -517,4 +521,192 @@ QString ConsoleOutput::readFilePath(const QString &name, const QString &defaultV
     }
 
     return ret;
+}
+
+QString ConsoleOutput::qtCryptoHashEnumToString(QCryptographicHash::Algorithm algo) const
+{
+    switch (algo) {
+    case QCryptographicHash::Sha224:
+        return QStringLiteral("SHA2-224");
+    case QCryptographicHash::Sha256:
+        return QStringLiteral("SHA2-256");
+    case QCryptographicHash::Sha384:
+        return QStringLiteral("SHA2-384");
+    case QCryptographicHash::Sha512:
+        return QStringLiteral("SHA2-512");
+    case QCryptographicHash::Sha3_224:
+        return QStringLiteral("SHA3-224");
+    case QCryptographicHash::Sha3_256:
+        return QStringLiteral("SHA3-256");
+    case QCryptographicHash::Sha3_384:
+        return QStringLiteral("SHA3-384");
+    case QCryptographicHash::Sha3_512:
+        return QStringLiteral("SHA3-512");
+    default:
+        return tr("invalid algorithm");
+    }
+}
+
+void ConsoleOutput::printDatabaseSettings(const QVariantHash &s) const
+{
+    std::vector<std::pair<QString,QString>> t;
+    t.push_back(std::make_pair(tr("Type"), s.value(QStringLiteral("type"), QStringLiteral("QMYSQL")).toString()));
+    const QString host = s.value(QStringLiteral("host"), QStringLiteral("localhost")).toString();
+    if (host.startsWith(QLatin1Char('/'))) {
+        t.push_back(std::make_pair(tr("Socket"), host));
+    } else {
+        t.push_back(std::make_pair(tr("Host"), host));
+        t.push_back(std::make_pair(tr("Port"), s.value(QStringLiteral("port"), 3306).toString()));
+    }
+    t.push_back(std::make_pair(tr("Name"), s.value(QStringLiteral("name")).toString()));
+    t.push_back(std::make_pair(tr("User"), s.value(QStringLiteral("user")).toString()));
+    const QString pw = s.value(QStringLiteral("password")).toString();
+    if (!pw.isEmpty()) {
+        t.push_back(std::make_pair(tr("Password"), QStringLiteral("*********")));
+    }
+    printTable(t, tr("Database settings"));
+}
+
+void ConsoleOutput::printDatabaseSettings(QSettings &s) const
+{
+    QVariantHash h;
+    s.beginGroup(QStringLiteral("Database"));
+    for (const QString &key : s.childKeys()) {
+        h.insert(key, s.value(key));
+    }
+    s.endGroup();
+}
+
+void ConsoleOutput::printAdminSettings(const QVariantHash &s) const
+{
+    std::vector<std::pair<QString,QString>> t;
+    t.push_back(std::make_pair(tr("Password hashing algorithm"), qtCryptoHashEnumToString(static_cast<QCryptographicHash::Algorithm>(s.value(QStringLiteral("pwalgorithm"), SK_DEF_ADM_PWALGORITHM).toInt()))));
+    t.push_back(std::make_pair(tr("Password hashing rounds"), s.value(QStringLiteral("pwrounds"), SK_DEF_ADM_PWROUNDS).toString()));
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
+    t.push_back(std::make_pair(tr("Password quality threshold"), s.value(QStringLiteral("pwthreshold"), SK_DEF_ADM_PWTHRESHOLD).toString()));
+    t.push_back(std::make_pair(tr("Password quality settings file"), s.value(QStringLiteral("pwsettingsfile")).toString()));
+#else
+    t.push_back(std::make_pair(tr("Password minimum length"), s.value(QStringLiteral("pwminlength"), SK_DEF_ADM_PWMINLENGTH).toString()));
+#endif
+    printTable(t, tr("Administrator settings"));
+}
+
+void ConsoleOutput::printAdminSettings(QSettings &s) const
+{
+    QVariantHash h;
+    s.beginGroup(QStringLiteral("Admins"));
+    for (const QString &key : s.childKeys()) {
+        h.insert(key, s.value(key));
+    }
+    s.endGroup();
+}
+
+void ConsoleOutput::printAccountSettings(const QVariantHash &s) const
+{
+    std::vector<std::pair<QString,QString>> t;
+    const Password::Method method = static_cast<Password::Method>(s.value(QStringLiteral("pwmethod"), SK_DEF_ACC_PWMETHOD).value<quint8>());
+    t.push_back(std::make_pair(tr("Password encryption method"), Password::methodToString(method)));
+    if (method == Password::Crypt || method == Password::MySQL) {
+        const Password::Algorithm algo = static_cast<Password::Algorithm>(s.value(QStringLiteral("pwalgorithm"), SK_DEF_ACC_PWALGORITHM).value<quint8>());
+        t.push_back(std::make_pair(tr("Password hashing algorithm"), Password::algorithmToString(algo)));
+        if (method == Password::Crypt && (algo == Password::CryptBcrypt || algo == Password::CryptSHA256 || algo == Password::CryptSHA512)) {
+            t.push_back(std::make_pair(tr("Password hashing rounds"), s.value(QStringLiteral("pwrounds"), SK_DEF_ACC_PWROUNDS).toString()));
+        }
+    }
+#ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
+    t.push_back(std::make_pair(tr("Password quality threshold"), s.value(QStringLiteral("pwthreshold"), SK_DEF_ACC_PWTHRESHOLD).toString()));
+    t.push_back(std::make_pair(tr("Password quality settings file"), s.value(QStringLiteral("pwsettingsfile")).toString()));
+#else
+    t.push_back(std::make_pair(tr("Password minimum length"), s.value(QStringLiteral("pwminlength"), SK_DEF_ACC_PWMINLENGTH).toString()));
+#endif
+    printTable(t, tr("User account settings"));
+}
+
+void ConsoleOutput::printAccountSettings(QSettings &s) const
+{
+    QVariantHash h;
+    s.beginGroup(QStringLiteral("Accounts"));
+    for (const QString &key : s.childKeys()) {
+        h.insert(key, s.value(key));
+    }
+    s.endGroup();
+}
+
+void ConsoleOutput::printImapSettings(const QVariantHash &s) const
+{
+    std::vector<std::pair<QString,QString>> t;
+    t.push_back(std::make_pair(tr("Host"), s.value(QStringLiteral("host"), QStringLiteral("localhost")).toString()));
+    t.push_back(std::make_pair(tr("Port"), s.value(QStringLiteral("port"), 143).toString()));
+    t.push_back(std::make_pair(tr("Protocol"), Imap::networkProtocolToString(s.value(QStringLiteral("protocol"), SK_DEF_IMAP_PROTOCOL).value<quint8>())));
+    t.push_back(std::make_pair(tr("Encryption"), Imap::encryptionTypeToString(s.value(QStringLiteral("encryption"), SK_DEF_IMAP_ENCRYPTION).value<quint8>())));
+    const QString peerName = s.value(QStringLiteral("peername")).toString();
+    if (!peerName.isEmpty()) {
+        t.push_back(std::make_pair(tr("Peer name"), peerName));
+    }
+    t.push_back(std::make_pair(tr("Authentication mechanism"), Imap::authMechToString(s.value(QStringLiteral("authmech"), SK_DEF_IMAP_AUTHMECH).value<quint8>())));
+    t.push_back(std::make_pair(tr("Admin user"), s.value(QStringLiteral("user")).toString()));
+    t.push_back(std::make_pair(tr("Password"), QStringLiteral("******")));
+    t.push_back(std::make_pair(tr("Unix hierarchy seperator"), s.value(QStringLiteral("unixhierarchysep"), SK_DEF_IMAP_UNIXHIERARCHYSEP).toBool() ? tr("enabled") : tr("disabled")));
+    t.push_back(std::make_pair(tr("Domain as prefix"), s.value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool() ? tr("enabled") : tr("disabled")));
+    t.push_back(std::make_pair(tr("Fully qualified user name"), s.value(QStringLiteral("fqun"), SK_DEF_IMAP_FQUN).toBool() ? tr("enabled") : tr("disabled")));
+    QString cm;
+    switch(s.value(QStringLiteral("createmailbox"), SK_DEF_IMAP_CREATEMAILBOX).toInt()) {
+    case 0:
+        cm = tr("all by IMAP server");
+        break;
+    case 1:
+        cm = tr("login after creation");
+        break;
+    case 2:
+        cm = tr("only set quota");
+        break;
+    case 3:
+        cm = tr("all by Skaffari");
+        break;
+    default:
+        cm = tr("invalid value");
+        break;
+    }
+    t.push_back(std::make_pair(tr("Create mailbox"), cm));
+    printTable(t, tr("IMAP settings"));
+}
+
+void ConsoleOutput::printImapSettings(QSettings &s) const
+{
+    QVariantHash h;
+    s.beginGroup(QStringLiteral("IMAP"));
+    for (const QString &key : s.childKeys()) {
+        h.insert(key, s.value(key));
+    }
+    s.endGroup();
+}
+
+void ConsoleOutput::printSkaffariSettings(const QVariantHash &s) const
+{
+    std::vector<std::pair<QString,QString>> t;
+    QString lb = s.value(QStringLiteral("logging_backend"), QStringLiteral("stdout")).toString();
+#ifdef WITH_SYSTEMD
+    const QStringList supportedLoggingBackends{QStringLiteral("syslog"), QStringLiteral("stdout"), QStringLiteral("journald")};
+#else
+    const QStringList supportedLoggingBackends{QStringLiteral("syslog"), QStringLiteral("stdout")};
+#endif
+    if (!supportedLoggingBackends.contains(lb)) {
+        lb = QStringLiteral("stdout");
+    }
+    t.push_back(std::make_pair(tr("Logging backend"), lb));
+    const bool useMemcached =  s.value(QStringLiteral("usememcached"), false).toBool();
+    t.push_back(std::make_pair(tr("Memcached"), useMemcached ? tr("enabled") : tr("disabled")));
+    const bool useMemcachedSession = s.value(QStringLiteral("usememcachedsession"), false).toBool();
+    t.push_back(std::make_pair(tr("Memcached session"), useMemcached && useMemcachedSession ? tr("enabled") : tr("disabled")));
+    printTable(t, tr("Skaffari Settings"));
+}
+
+void ConsoleOutput::printSkaffariSettings(QSettings &s) const
+{
+    QVariantHash h;
+    s.beginGroup(QStringLiteral("Skaffari"));
+    for (const QString &key : s.childKeys()) {
+        h.insert(key, s.value(key));
+    }
+    s.endGroup();
 }

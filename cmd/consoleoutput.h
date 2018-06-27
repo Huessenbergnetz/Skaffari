@@ -21,11 +21,13 @@
 
 #include <QString>
 #include <QCoreApplication>
+#include <QCryptographicHash>
 
 class QSqlDatabase;
 class QSqlQuery;
 class QSqlError;
 class QStringList;
+class QSettings;
 
 /*!
  * \ingroup skaffaricmd
@@ -210,7 +212,65 @@ protected:
      */
     bool readBool(const QString &name, bool defaultVal, const QStringList &desc = QStringList()) const;
 
+    /*!
+     * \brief Reads an absolute file path from stdin and checks if the file exists and is readable.
+     * \param name          the name of the value to read
+     * \param defaultVal    the default value that will be used if the user only hits enter
+     * \param desc          description for the value to read
+     * \param canBeEmpty    set to \c true if the value can be an empty string
+     * \return              the entered file path
+     */
     QString readFilePath(const QString &name, const QString &defaultVal, const QStringList &desc = QStringList(), bool canBeEmpty = false) const;
+
+    /*!
+     * \brief Returns a human readable string of the QCryptographicHash::Algorithm.
+     */
+    QString qtCryptoHashEnumToString(QCryptographicHash::Algorithm algo) const;
+
+    /*!
+     * \brief Prints a table containing database settings to stdout.
+     */
+    void printDatabaseSettings(const QVariantHash &s) const;
+    /*!
+     * \brief Prints a table containing database settings to stdout.
+     */
+    void printDatabaseSettings(QSettings &s) const;
+
+    /*!
+     * \brief Prints a table containing admin account settings to stdout.
+     */
+    void printAdminSettings(const QVariantHash &s) const;
+    /*!
+     * \brief Prints a table containing admin account settings to stdout.
+     */
+    void printAdminSettings(QSettings &s) const;
+
+    /*!
+     * \brief Prints a table containing user account settings to stdout.
+     */
+    void printAccountSettings(const QVariantHash &s) const;
+    /*!
+     * \brief Prints a table containing user account settings to stdout.
+     */
+    void printAccountSettings(QSettings &s) const;
+
+    /*!
+     * \brief Prints a table containing IMAP server settings to stdout.
+     */
+    void printImapSettings(const QVariantHash &s) const;
+    /*!
+     * \brief Prints a table containing IMAP server settings to stdout.
+     */
+    void printImapSettings(QSettings &s) const;
+
+    /*!
+     * \brief Prints a table containing general Skaffari settings to stdout.
+     */
+    void printSkaffariSettings(const QVariantHash &s) const;
+    /*!
+     * \brief Prints a table containing general Skaffari settings to stdout.
+     */
+    void printSkaffariSettings(QSettings &s) const;
 
 private:
     bool m_quiet = false;
