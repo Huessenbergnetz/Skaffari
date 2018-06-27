@@ -232,8 +232,8 @@ QVariantHash ConfigInput::askPamPwConfig(const QVariantHash &defaults) const
                                             QString(),
                                             tr("Supported algorithms:"),
                                             tr("0: default - points to MySQL new"),
-                                            tr("6: MySQL new"),
-                                            tr("7: MySQL old")
+                                            tr("32: MySQL new"),
+                                            tr("33: MySQL old")
                                         });
 
         algo = static_cast<Password::Algorithm>(readChar(tr("Encryption algorithm"),

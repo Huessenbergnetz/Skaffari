@@ -61,8 +61,8 @@ public:
         CryptSHA256     = 3,    /**< SHA256-based encryption of the crypt(3) function. */
         CryptSHA512     = 4,    /**< SHA512-based encryption of the crypt(3) function. */
         CryptBcrypt     = 5,    /**< OpenBSD-style Blowfish-based (bcrypt) encryption of the crypt(3) function. This is not available on every platform/distribution. */
-        MySQLNew        = 6,    /**< New hashing algorithm of the MySQL PASSWORD() function. */
-        MySQLOld        = 7     /**< Old hashing algorithm of the MySQL PASSWORD() function. */
+        MySQLNew        = 32,   /**< New hashing algorithm of the MySQL PASSWORD() function. */
+        MySQLOld        = 33    /**< Old hashing algorithm of the MySQL PASSWORD() function. */
     };
     Q_ENUM(Algorithm)
 
