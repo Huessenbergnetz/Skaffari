@@ -99,6 +99,7 @@ target_compile_definitions(skaffari
         QT_NO_URL_CAST_FROM_STRING
         QT_NO_CAST_FROM_BYTEARRAY
         QT_USE_QSTRINGBUILDER
+        QT_SHA3_KECCAK_COMPAT
 )
 
 target_compile_options(skaffari
