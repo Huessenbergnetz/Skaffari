@@ -36,13 +36,6 @@ ConsoleOutput::ConsoleOutput(bool quiet) :
 
 }
 
-
-ConsoleOutput::~ConsoleOutput()
-{
-
-}
-
-
 int ConsoleOutput::error(const QString &message, int code) const
 {
     printError(message);
@@ -59,42 +52,35 @@ int ConsoleOutput::configError(const QString &message) const
     return error(message, 2);
 }
 
-
 int ConsoleOutput::dbError(const QString &message) const
 {
     return error(message, 3);
 }
-
 
 int ConsoleOutput::dbError(const QSqlDatabase &db) const
 {
     return dbError(db.lastError().text());
 }
 
-
 int ConsoleOutput::dbError(const QSqlQuery &q) const
 {
     return dbError(q.lastError().text());
 }
-
 
 int ConsoleOutput::dbError(const QSqlError &e) const
 {
     return dbError(e.text());
 }
 
-
 int ConsoleOutput::fileError(const QString &message) const
 {
     return error(message, 4);
 }
 
-
 int ConsoleOutput::imapError(const QString &message) const
 {
     return error(message, 5);
 }
-
 
 void ConsoleOutput::printStatus(const QString &status) const
 {
@@ -102,7 +88,6 @@ void ConsoleOutput::printStatus(const QString &status) const
         printf("%-100s", status.toUtf8().constData());
     }
 }
-
 
 void ConsoleOutput::printDone(const QString &done) const
 {
@@ -115,7 +100,6 @@ void ConsoleOutput::printDone(const QString &done) const
     }
 }
 
-
 void ConsoleOutput::printFailed(const QString &failed) const
 {
     if (!m_quiet) {
@@ -127,14 +111,12 @@ void ConsoleOutput::printFailed(const QString &failed) const
     }
 }
 
-
 void ConsoleOutput::printError(const QString &error) const
 {
     if (!m_quiet) {
         printf("\x1b[33m%s\x1b[0m\n", error.toUtf8().constData());
     }
 }
-
 
 void ConsoleOutput::printError(const QStringList &errors) const
 {
@@ -147,7 +129,6 @@ void ConsoleOutput::printError(const QStringList &errors) const
     }
 }
 
-
 void ConsoleOutput::printMessage(const QString &message) const
 {
     if (!m_quiet) {
@@ -155,14 +136,12 @@ void ConsoleOutput::printMessage(const QString &message) const
     }
 }
 
-
 void ConsoleOutput::printSuccess(const QString &message) const
 {
     if (!m_quiet) {
         printf("\x1b[32m%s\x1b[0m\n", message.toUtf8().constData());
     }
 }
-
 
 void ConsoleOutput::printDesc(const QString &desc) const
 {
@@ -191,7 +170,6 @@ void ConsoleOutput::printDesc(const QString &desc) const
     }
 }
 
-
 void ConsoleOutput::printDesc(const QStringList &descList) const
 {
     if (!m_quiet) {
@@ -202,7 +180,6 @@ void ConsoleOutput::printDesc(const QStringList &descList) const
         }
     }
 }
-
 
 void ConsoleOutput::printTable(std::initializer_list<std::pair<QString, QString> > table, const QString &header) const
 {
@@ -300,7 +277,6 @@ void ConsoleOutput::printTable(const std::vector<std::pair<QString, QString>> &t
     }
 }
 
-
 QString ConsoleOutput::readString(const QString &name, const QString &defaultVal, const QStringList &desc, const QStringList acceptableInput) const
 {
     QString inputVal;
@@ -343,7 +319,6 @@ QString ConsoleOutput::readString(const QString &name, const QString &defaultVal
     return inputVal;
 }
 
-
 quint16 ConsoleOutput::readPort(const QString &name, quint16 defaultVal, const QStringList &desc) const
 {
     quint16 inputVal = 0;
@@ -367,7 +342,6 @@ quint16 ConsoleOutput::readPort(const QString &name, quint16 defaultVal, const Q
 
     return inputVal;
 }
-
 
 quint8 ConsoleOutput::readChar(const QString &name, quint8 defaultVal, const QStringList &desc, const QList<quint8> acceptableInput) const
 {
@@ -415,7 +389,6 @@ quint8 ConsoleOutput::readChar(const QString &name, quint8 defaultVal, const QSt
     return inputVal;
 }
 
-
 quint32 ConsoleOutput::readInt(const QString &name, quint32 defaultVal, const QStringList &desc) const
 {
     quint32 inputVal = 0;
@@ -438,7 +411,6 @@ quint32 ConsoleOutput::readInt(const QString &name, quint32 defaultVal, const QS
 
     return inputVal;
 }
-
 
 bool ConsoleOutput::readBool(const QString &name, bool defaultVal, const QStringList &desc) const
 {

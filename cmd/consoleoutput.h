@@ -43,11 +43,6 @@ public:
      */
     explicit ConsoleOutput(bool quiet = false);
 
-    /*!
-     * \brief Deconstructs the ConsoleOutput object.
-     */
-    ~ConsoleOutput();
-
 protected:
     /*!
      * \brief Prints \a message to stdout and returns \a code.
