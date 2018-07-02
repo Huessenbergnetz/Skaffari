@@ -50,4 +50,20 @@ skaffari_test(testsimpleaccount "" "" "")
 skaffari_test(testsimpleadmin "" "" "")
 skaffari_test(testsimpledomain "" "" "")
 
+# ConfigChecker test
+add_executable(testconfigchecker_exec
+    testconfigchecker.cpp
+    ../cmd/configchecker.h
+    ../cmd/configchecker.cpp
+    ../cmd/configfile.h
+    ../cmd/configfile.cpp
+    ../cmd/consoleoutput.h
+    ../cmd/consoleoutput.cpp
+    ../cmd/imap.h
+    ../cmd/imap.cpp
+    ../common/config.h)
+add_test(NAME testconfigchecker COMMAND testconfigchecker_exec)
+target_link_libraries(testconfigchecker_exec Qt5::Test Qt5::Network Qt5::Sql Cutelyst::Utils::Validator skaffari)
+target_include_directories(testconfigchecker_exec PRIVATE ${Cutelyst2Qt5_INCLUDE_DIR})
+
 skaffari_app_test(testcmdsetup "" "" "")
