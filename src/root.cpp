@@ -24,6 +24,7 @@
 #include "objects/skaffarierror.h"
 #include "objects/adminaccount.h"
 #include "../common/config.h"
+#include "../common/global.h"
 
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/StatusMessage>
@@ -40,7 +41,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 
-#include "../common/global.h"
+#include <unicode/uversion.h>
 
 using namespace Cutelyst;
 
@@ -138,7 +139,7 @@ void Root::about(Context *c)
     description.push_back(c->translate("Root", "By the way, Skaffari is the Old High German word for steward."));
 
     std::vector<QVariantMap> coreComponents;
-    coreComponents.reserve(5);
+    coreComponents.reserve(SkaffariConfig::useMemcached() ? 6 : 5);
     coreComponents.push_back(QVariantMap({
                                              {QStringLiteral("name"), QStringLiteral("Skaffari")},
                                              {QStringLiteral("version"), QStringLiteral(SKAFFARI_VERSION)},
@@ -159,6 +160,15 @@ void Root::about(Context *c)
                                              {QStringLiteral("licenseUrl"), QStringLiteral("https://github.com/cutelyst/cutelyst/blob/master/COPYING")}
                                          }));
     coreComponents.push_back(QVariantMap({
+                                             {QStringLiteral("name"), QStringLiteral("Grantlee")},
+                                             {QStringLiteral("version"), QStringLiteral(GRANTLEE_VERSION)},
+                                             {QStringLiteral("url"), QStringLiteral("http://www.grantlee.org")},
+                                             {QStringLiteral("author"), QStringLiteral("Stephen Kelly")},
+                                             {QStringLiteral("authorUrl"), QStringLiteral("https://steveire.wordpress.com/")},
+                                             {QStringLiteral("license"), QStringLiteral("GNU Lesser General Public License 2.1")},
+                                             {QStringLiteral("licenseUrl"), QStringLiteral("https://github.com/steveire/grantlee/blob/master/COPYING.LIB")}
+                                         }));
+    coreComponents.push_back(QVariantMap({
                                              {QStringLiteral("name"), QStringLiteral("Qt")},
                                              {QStringLiteral("version"), QString::fromLatin1(qVersion())},
                                              {QStringLiteral("url"), QStringLiteral("https://www.qt.io/")},
@@ -168,13 +178,13 @@ void Root::about(Context *c)
                                              {QStringLiteral("licenseUrl"), QStringLiteral("https://doc.qt.io/qt-5.6/lgpl.html")}
                                          }));
     coreComponents.push_back(QVariantMap({
-                                             {QStringLiteral("name"), QStringLiteral("Grantlee")},
-                                             {QStringLiteral("version"), QStringLiteral(GRANTLEE_VERSION)},
-                                             {QStringLiteral("url"), QStringLiteral("http://www.grantlee.org")},
-                                             {QStringLiteral("author"), QStringLiteral("Stephen Kelly")},
-                                             {QStringLiteral("authorUrl"), QStringLiteral("https://steveire.wordpress.com/")},
-                                             {QStringLiteral("license"), QStringLiteral("GNU Lesser General Public License 2.1")},
-                                             {QStringLiteral("licenseUrl"), QStringLiteral("https://github.com/steveire/grantlee/blob/master/COPYING.LIB")}
+                                             {QStringLiteral("name"), QStringLiteral("ICU")},
+                                             {QStringLiteral("version"), getICUversion()},
+                                             {QStringLiteral("url"), QStringLiteral("http://site.icu-project.org/")},
+                                             {QStringLiteral("author"), QStringLiteral("ICU Project")},
+                                             {QStringLiteral("authorUrl"), QStringLiteral("http://site.icu-project.org/")},
+                                             {QStringLiteral("license"), QStringLiteral("Unicode License")},
+                                             {QStringLiteral("licenseUrl"), QStringLiteral("http://source.icu-project.org/repos/icu/icu/tags/latest/LICENSE")}
                                          }));
 
     if (SkaffariConfig::useMemcached()) {
@@ -187,8 +197,6 @@ void Root::about(Context *c)
                                                  {QStringLiteral("license"), QStringLiteral("BSD License")},
                                                  {QStringLiteral("licenseUrl"), QStringLiteral("http://libmemcached.org/License.html")}
                                              }));
-    } else {
-        coreComponents.shrink_to_fit();
     }
 
     QFile tmplMetadataFile(SkaffariConfig::tmplBasePath() + QLatin1String("/metadata.json"));
@@ -315,6 +323,13 @@ bool Root::Auto(Context* c)
              });
 
     return true;
+}
+
+QString Root::getICUversion() const
+{
+    UVersionInfo uver;
+    u_getVersion(uver);
+    return QStringLiteral("%1.%2.%3").arg(uver[0]).arg(uver[1]).arg(uver[2]);
 }
 
 #include "moc_root.cpp"

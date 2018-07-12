@@ -57,6 +57,8 @@ private:
 
     C_ATTR(Auto, :Private)
     bool Auto(Context *c);
+
+    QString getICUversion() const;
 };
 
 #endif //ROOT_H
