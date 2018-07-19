@@ -20,6 +20,7 @@
 #define ROOT_H
 
 #include <Cutelyst/Controller>
+#include <map>
 
 using namespace Cutelyst;
 class SkaffariEngine;
@@ -58,7 +59,28 @@ private:
     C_ATTR(Auto, :Private)
     bool Auto(Context *c);
 
+    /*!
+     * \brief Returns the version string of the ICU library in use.
+     */
     QString getICUversion() const;
+
+    /*!
+     * \brief Creates a new map containing information about used core components.
+     * \param name          Name of the component.
+     * \param version       Version of the component.
+     * \param url           URL to the component's website.
+     * \param author        Name of the component's author.
+     * \param authorUrl     URL to the website of the component's author.
+     * \param license       Name of the license of the component.
+     * \param licenseUrl    URL to the component's license text.
+     */
+    std::map<QString,QString> createCoreComponentInfo(const QString &name,
+                                                  const QString &version,
+                                                  const QString &url,
+                                                  const QString &author,
+                                                  const QString &authorUrl,
+                                                  const QString &license,
+                                                  const QString &licenseUrl) const;
 };
 
 #endif //ROOT_H
