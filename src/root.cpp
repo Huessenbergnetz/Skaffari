@@ -159,7 +159,7 @@ void Root::about(Context *c)
                                                      QStringLiteral("https://www.cutelyst.org"),
                                                      QStringLiteral("Daniel Nicoletti"),
                                                      QStringLiteral("https://dantti.wordpress.com"),
-                                                     QStringLiteral("GNU Lesser General Public LIcense 2.1"),
+                                                     QStringLiteral("GNU Lesser General Public License 2.1"),
                                                      QStringLiteral("https://github.com/cutelyst/cutelyst/blob/master/COPYING")));
 
     coreComponents.push_back(createCoreComponentInfo(QStringLiteral("Grantlee"),
