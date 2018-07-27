@@ -339,9 +339,12 @@ void CmdSetupTest::doTest_data()
     int port = 44819;
 
     for (int _admPwAlgo : {3,4,5,6,7,8,9,10}) {
+        const int dbPort = port++;
+        const int imapPort = port++;
+        const int sievePort = port++;
         QTest::newRow(QStringLiteral("test-%1").arg(++testNo, 3, 10, QLatin1Char('0')).toUtf8().constData())
                 << QStringLiteral("QMYSQL")             // db type
-                << port++                               // db port
+                << dbPort                               // db port
                 << QStringLiteral("maildb")             // db name
                 << QStringLiteral("skaffari")           // db user
                 << QStringLiteral("LaN4TEsaLk2d")       // db pass
@@ -354,8 +357,8 @@ void CmdSetupTest::doTest_data()
                 << 0                                    // account password algo (not needed for plain text)
                 << 0                                    // account password iterations (not needed for plain text)
                 << 30                                   // account password threshold
-                << port++                               // imap port
-                << port++                               // sieve port
+                << imapPort                             // imap port
+                << sievePort                            // sieve port
                 << QStringLiteral("cyrus")              // imap admin user
                 << QStringLiteral("BLeon8WD70d7")       // imap admin password
                 << 0                                    // imap transport encryption (0: unsecured)
@@ -368,9 +371,12 @@ void CmdSetupTest::doTest_data()
     }
 
     for (int _createMailboxes : {1,2,3}) {
+        const int dbPort = port++;
+        const int imapPort = port++;
+        const int sievePort = port++;
         QTest::newRow(QStringLiteral("test-%1").arg(++testNo, 3, 10, QLatin1Char('0')).toUtf8().constData())
                 << QStringLiteral("QMYSQL")             // db type
-                << port++                               // db port
+                << dbPort                               // db port
                 << QStringLiteral("maildb")             // db name
                 << QStringLiteral("skaffari")           // db user
                 << QStringLiteral("LaN4TEsaLk2d")       // db pass
@@ -383,8 +389,8 @@ void CmdSetupTest::doTest_data()
                 << 0                                    // account password algo (not needed for plain text)
                 << 0                                    // account password iterations (not needed for plain text)
                 << 30                                   // account password threshold
-                << port++                               // imap port
-                << port++                               // sieve port
+                << imapPort                             // imap port
+                << sievePort                            // sieve port
                 << QStringLiteral("cyrus")              // imap admin user
                 << QStringLiteral("BLeon8WD70d7")       // imap admin password
                 << 0                                    // imap transport encryption (0: unsecured)
@@ -398,9 +404,12 @@ void CmdSetupTest::doTest_data()
 
     for (bool _domainAsPrefix : {false,true}) {
         for (bool _fqun : {false,true}) {
+            const int dbPort = port++;
+            const int imapPort = port++;
+            const int sievePort = port++;
             QTest::newRow(QStringLiteral("test-%1").arg(++testNo, 3, 10, QLatin1Char('0')).toUtf8().constData())
                     << QStringLiteral("QMYSQL")             // db type
-                    << port++                               // db port
+                    << dbPort                               // db port
                     << QStringLiteral("maildb")             // db name
                     << QStringLiteral("skaffari")           // db user
                     << QStringLiteral("LaN4TEsaLk2d")       // db pass
@@ -413,8 +422,8 @@ void CmdSetupTest::doTest_data()
                     << 0                                    // account password algo (not needed for plain text)
                     << 0                                    // account password iterations (not needed for plain text)
                     << 30                                   // account password threshold
-                    << port++                               // imap port
-                    << port++                               // sieve port
+                    << imapPort                             // imap port
+                    << sievePort                            // sieve port
                     << QStringLiteral("cyrus")              // imap admin user
                     << QStringLiteral("BLeon8WD70d7")       // imap admin password
                     << 0                                    // imap transport encryption (0: unsecured)
@@ -428,9 +437,12 @@ void CmdSetupTest::doTest_data()
     }
 
     for (int _authMech : {0,1,2,3}) {
+        const int dbPort = port++;
+        const int imapPort = port++;
+        const int sievePort = port++;
         QTest::newRow(QStringLiteral("test-%1").arg(++testNo, 3, 10, QLatin1Char('0')).toUtf8().constData())
                 << QStringLiteral("QMYSQL")             // db type
-                << port++                               // db port
+                << dbPort                               // db port
                 << QStringLiteral("maildb")             // db name
                 << QStringLiteral("skaffari")           // db user
                 << QStringLiteral("LaN4TEsaLk2d")       // db pass
@@ -443,8 +455,8 @@ void CmdSetupTest::doTest_data()
                 << 0                                    // account password algo (not needed for plain text)
                 << 0                                    // account password iterations (not needed for plain text)
                 << 30                                   // account password threshold
-                << port++                               // imap port
-                << port++                               // sieve port
+                << imapPort                             // imap port
+                << sievePort                            // sieve port
                 << QStringLiteral("cyrus")              // imap admin user
                 << QStringLiteral("BLeon8WD70d7")       // imap admin password
                 << 0                                    // imap transport encryption (0: unsecured)
