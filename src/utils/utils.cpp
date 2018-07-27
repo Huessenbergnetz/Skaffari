@@ -19,11 +19,13 @@
 #include "utils.h"
 #include <Cutelyst/Context>
 #include <Cutelyst/Request>
+#include <Cutelyst/Response>
 #include <Cutelyst/Plugins/Session/Session>
 #include <QTimeZone>
 #include <QLocale>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
+#include <QJsonObject>
 #include <cmath>
 #include <limits>
 
@@ -108,4 +110,11 @@ bool Utils::checkCheckbox(const Cutelyst::ParamsMultiMap &params, const QString 
     }
 
     return ret;
+}
+
+void Utils::ajaxPostOnly(Cutelyst::Context *c, QJsonObject &json)
+{
+    json.insert(QStringLiteral("error_msg"), c->translate("Skaffari::Utils", "For AJAX requests, this route is only available via POST requests."));
+    c->response()->setStatus(Cutelyst::Response::MethodNotAllowed);
+    c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
 }

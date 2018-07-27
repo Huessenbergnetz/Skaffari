@@ -27,6 +27,8 @@ namespace Cutelyst {
 class Context;
 }
 
+class QJsonObject;
+
 /*!
  * \ingroup skaffaricore
  * \brief Small helper methods.
@@ -75,6 +77,18 @@ public:
      * \li true
      */
     static bool checkCheckbox(const Cutelyst::ParamsMultiMap &params, const QString &field);
+
+    /*!
+     * \brief Sets the Response of the Context \a c to the status 405 and adds a error message.
+     *
+     * The HTTP status code of the Respsonse will be set to 405 (Method Not Allowed) and the JSON
+     * object to respond will contain a key named \a error_msg that will contain an human readable
+     * error message string. This will also set the Repsonse Header \a Allow to \c POST.
+     *
+     * \param c     Pointer to the current context.
+     * \param json  Reference to a JSON object that will be part of the response.
+     */
+    static void ajaxPostOnly(Cutelyst::Context *c, QJsonObject &json);
 
 private:
     // prevent construction
