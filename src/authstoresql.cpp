@@ -46,18 +46,18 @@ AuthenticationUser AuthStoreSql::findUser(Context *c, const ParamsMultiMap &user
     if (Q_LIKELY(q.exec())) {
         if (Q_LIKELY(q.next())) {
             user.setId(q.value(0));
-            user.insert(QStringLiteral("username"), q.value(1));
-            user.insert(QStringLiteral("password"), q.value(2));
-            user.insert(QStringLiteral("type"), q.value(3));
-            user.insert(QStringLiteral("created_at"), q.value(4));
-            user.insert(QStringLiteral("updated_at"), q.value(5));
-            user.insert(QStringLiteral("valid_until"), q.value(6));
-            user.insert(QStringLiteral("pwd_expire"), q.value(7));
-            user.insert(QStringLiteral("style"), q.value(8));
-            user.insert(QStringLiteral("maxdisplay"), q.value(9));
-            user.insert(QStringLiteral("warnlevel"), q.value(10));
-            user.insert(QStringLiteral("lang"), q.value(11));
-            user.insert(QStringLiteral("tz"), q.value(12));
+            user.insert(QStringLiteral("username"),     q.value(1));
+            user.insert(QStringLiteral("password"),     q.value(2));
+            user.insert(QStringLiteral("type"),         q.value(3));
+            user.insert(QStringLiteral("created_at"),   q.value(4));
+            user.insert(QStringLiteral("updated_at"),   q.value(5));
+            user.insert(QStringLiteral("valid_until"),  q.value(6));
+            user.insert(QStringLiteral("pwd_expire"),   q.value(7));
+            user.insert(QStringLiteral("style"),        q.value(8));
+            user.insert(QStringLiteral("maxdisplay"),   q.value(9));
+            user.insert(QStringLiteral("warnlevel"),    q.value(10));
+            user.insert(QStringLiteral("lang"),         q.value(11));
+            user.insert(QStringLiteral("tz"),           q.value(12));
         } else {
             qCWarning(SK_AUTHSTORE, "Can not find user \"%s\" in the database.", qUtf8Printable(username));
         }

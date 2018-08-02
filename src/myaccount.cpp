@@ -104,12 +104,12 @@ void MyAccount::index(Context *c)
         help.insert(QStringLiteral("tz"), HelpEntry(c->translate("MyAccount", "Time zone"), c->translate("MyAccount", "Select your time zone to enter and display date and time values appropriately.")));
 
         c->stash({
-                     {QStringLiteral("template"), QStringLiteral("myaccount/index.html")},
-                     {QStringLiteral("site_title"), c->translate("MyAccount", "My account")},
-                     {QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac)},
-                     {QStringLiteral("langs"), QVariant::fromValue<QVector<Language>>(Language::supportedLangs(c))},
-                     {QStringLiteral("timezones"), QVariant::fromValue<QStringList>(tzIds)},
-                     {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)}
+                     {QStringLiteral("template"),       QStringLiteral("myaccount/index.html")},
+                     {QStringLiteral("site_title"),     c->translate("MyAccount", "My account")},
+                     {QStringLiteral("adminaccount"),   QVariant::fromValue<AdminAccount>(aac)},
+                     {QStringLiteral("langs"),          QVariant::fromValue<QVector<Language>>(Language::supportedLangs(c))},
+                     {QStringLiteral("timezones"),      QVariant::fromValue<QStringList>(tzIds)},
+                     {QStringLiteral("help"),           QVariant::fromValue<HelpHash>(help)}
                  });
 
     } else {

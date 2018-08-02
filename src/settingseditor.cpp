@@ -78,8 +78,10 @@ void SettingsEditor::index(Context *c)
 
         ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
         if (vr) {
-            vr.addValue(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), static_cast<quota_size_t>(vr.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA)).value<quota_size_t>() / Q_UINT64_C(1024)));
-            vr.addValue(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), static_cast<quota_size_t>(vr.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA)).value<quota_size_t>() / Q_UINT64_C(1024)));
+            vr.addValue(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA),
+                        static_cast<quota_size_t>(vr.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA)).value<quota_size_t>() / Q_UINT64_C(1024)));
+            vr.addValue(QStringLiteral(SK_CONF_KEY_DEF_QUOTA),
+                        static_cast<quota_size_t>(vr.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA)).value<quota_size_t>() / Q_UINT64_C(1024)));
             SkaffariConfig::saveSettingsToDB(vr.values());
             c->setStash(QStringLiteral("status_msg"), c->translate("SettingsEditor", "Settings successfully saved."));
             settings = SkaffariConfig::getSettingsFromDB();
@@ -104,11 +106,11 @@ void SettingsEditor::index(Context *c)
 
     c->stash(settings);
     c->stash({
-                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)},
-                 {QStringLiteral("timezones"), QVariant::fromValue<QList<QByteArray>>(QTimeZone::availableTimeZoneIds())},
-                 {QStringLiteral("langs"), QVariant::fromValue<QVector<Language>>(Language::supportedLangs(c))},
+                 {QStringLiteral("help"),       QVariant::fromValue<HelpHash>(help)},
+                 {QStringLiteral("timezones"),  QVariant::fromValue<QList<QByteArray>>(QTimeZone::availableTimeZoneIds())},
+                 {QStringLiteral("langs"),      QVariant::fromValue<QVector<Language>>(Language::supportedLangs(c))},
                  {QStringLiteral("site_title"), c->translate("SettingsEditor", "Settings")},
-                 {QStringLiteral("template"), QStringLiteral("settings/index.html")}
+                 {QStringLiteral("template"),   QStringLiteral("settings/index.html")}
              });
 }
 

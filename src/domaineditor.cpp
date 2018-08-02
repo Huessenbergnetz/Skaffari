@@ -64,17 +64,14 @@ DomainEditor::~DomainEditor()
 void DomainEditor::index(Context *c)
 {
     SkaffariError e(c);
-    auto doms = Domain::list(c, e, Authentication::user(c));
-
-    c->stash({
-                 {QStringLiteral("domains"), QVariant::fromValue<std::vector<Domain>>(doms)},
-                 {QStringLiteral("template"), QStringLiteral("domain/index.html")},
-                 {QStringLiteral("site_title"), c->translate("DomainEditor", "Domains")}
-             });
-
+    const auto doms = Domain::list(c, e, Authentication::user(c));
     if (e.type() != SkaffariError::NoError) {
         c->setStash(QStringLiteral("error_msg"), e.errorText());
     }
+
+    c->setStash(QStringLiteral("domains"), QVariant::fromValue<std::vector<Domain>>(doms));
+    c->setStash(QStringLiteral("template"), QStringLiteral("domain/index.html"));
+    c->setStash(QStringLiteral("site_title"), c->translate("DomainEditor", "Domains"));
 }
 
 void DomainEditor::base(Context* c, const QString &id)
@@ -172,12 +169,10 @@ void DomainEditor::edit(Context *c)
         c->setStash(QStringLiteral("error_msg"), e.errorText());
     }
 
-    c->stash({
-                 {QStringLiteral("template"), QStringLiteral("domain/edit.html")},
-                 {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Edit")},
-                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)},
-                 {QStringLiteral("domains"), QVariant::fromValue<std::vector<SimpleDomain>>(doms)}
-             });
+    c->setStash(QStringLiteral("template"), QStringLiteral("domain/edit.html"));
+    c->setStash(QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Edit"));
+    c->setStash(QStringLiteral("help"), QVariant::fromValue<HelpHash>(help));
+    c->setStash(QStringLiteral("domains"), QVariant::fromValue<std::vector<SimpleDomain>>(doms));
 }
 
 #define SK_DOM_FILTER_COOKIE_ACCOUNTS_PER_PAGE 0
@@ -204,18 +199,18 @@ void DomainEditor::accounts(Context* c)
     QString accountsPerPage, currentPage, sortBy, sortOrder, searchRole, searchString;
 
     if (cookieDataList.empty()) {
-        accountsPerPage = p.value(QStringLiteral("accountsPerPage"), Session::value(c, QStringLiteral("maxdisplay"), 25).toString());
-        currentPage = p.value(QStringLiteral("currentPage"), QStringLiteral("1"));
-        sortBy = p.value(QStringLiteral("sortBy"), QStringLiteral("username"));
-        sortOrder = p.value(QStringLiteral("sortOrder"), QStringLiteral("ASC"));
-        searchRole = p.value(QStringLiteral("searchRole"), QStringLiteral("username"));
-        searchString = p.value(QStringLiteral("searchString"));
+        accountsPerPage     = p.value(QStringLiteral("accountsPerPage"), Session::value(c, QStringLiteral("maxdisplay"), 25).toString());
+        currentPage         = p.value(QStringLiteral("currentPage"), QStringLiteral("1"));
+        sortBy              = p.value(QStringLiteral("sortBy"), QStringLiteral("username"));
+        sortOrder           = p.value(QStringLiteral("sortOrder"), QStringLiteral("ASC"));
+        searchRole          = p.value(QStringLiteral("searchRole"), QStringLiteral("username"));
+        searchString        = p.value(QStringLiteral("searchString"));
     } else {
-        accountsPerPage = p.value(QStringLiteral("accountsPerPage"), cookieDataList.at(SK_DOM_FILTER_COOKIE_ACCOUNTS_PER_PAGE));
-        currentPage = p.value(QStringLiteral("currentPage"), cookieDataList.at(SK_DOM_FILTER_COOKIE_CURRENT_PAGE));
-        sortBy = p.value(QStringLiteral("sortBy"), cookieDataList.at(SK_DOM_FILTER_COOKIE_SORT_BY));
-        sortOrder = p.value(QStringLiteral("sortOrder"), cookieDataList.at(SK_DOM_FILTER_COOKIE_SORT_ORDER));
-        searchRole = p.value(QStringLiteral("searchRole"), cookieDataList.at(SK_DOM_FILTER_COOKIE_SEARCH_ROLE));
+        accountsPerPage     = p.value(QStringLiteral("accountsPerPage"), cookieDataList.at(SK_DOM_FILTER_COOKIE_ACCOUNTS_PER_PAGE));
+        currentPage         = p.value(QStringLiteral("currentPage"), cookieDataList.at(SK_DOM_FILTER_COOKIE_CURRENT_PAGE));
+        sortBy              = p.value(QStringLiteral("sortBy"), cookieDataList.at(SK_DOM_FILTER_COOKIE_SORT_BY));
+        sortOrder           = p.value(QStringLiteral("sortOrder"), cookieDataList.at(SK_DOM_FILTER_COOKIE_SORT_ORDER));
+        searchRole          = p.value(QStringLiteral("searchRole"), cookieDataList.at(SK_DOM_FILTER_COOKIE_SEARCH_ROLE));
         if (p.contains(QStringLiteral("searchRole"))) {
             searchString = p.value(QStringLiteral("searchString"));
         } else {
@@ -253,7 +248,7 @@ void DomainEditor::accounts(Context* c)
         searchString.remove(QRegularExpression(QStringLiteral("[^\\w-_\\.]"), QRegularExpression::UseUnicodePropertiesOption));
     }
 
-    const bool isAjax = c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
+    const bool isAjax = Utils::isAjax(c);
     const bool loadAccounts = (!SkaffariConfig::tmplAsyncAccountList() || isAjax);
 
     SkaffariError e(c);
@@ -298,7 +293,8 @@ void DomainEditor::accounts(Context* c)
 
             QVariantList pagesList;
             const QVector<int> pages = pag.pages();
-            if (!pagesList.isEmpty()) {
+            if (!pages.isEmpty()) {
+                pagesList.reserve(pages.size());
                 for (int pageNo : pages) {
                     pagesList << pageNo;
                 }
@@ -432,6 +428,10 @@ void DomainEditor::create(Context* c)
 void DomainEditor::remove(Context* c)
 {
     const bool isAjax = Utils::isAjax(c);
+    if (Utils::ajaxPostOnly(c, isAjax)) {
+        return;
+    }
+
     QJsonObject json;
 
     if (AdminAccount::getUserType(c) >= AdminAccount::Administrator) {
@@ -477,41 +477,20 @@ void DomainEditor::remove(Context* c)
                 }
                 c->res()->setStatus(Response::BadRequest);
             }
-
-        } else {
-
-            // this is not an post request, for ajax, we will only allow post
-            if (isAjax) {
-                json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("DomainEditor", "For AJAX requests, this route is only available via POST requests.")));
-                c->response()->setStatus(Response::MethodNotAllowed);
-                c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
-            }
         }
 
     } else {
-        // userType is not 0, so we are not an administrator and are not allowed to delete a domain
-
+        // user is not an administrator and is not allowed to delete a domain
         c->res()->setStatus(Response::Forbidden);
-        if (isAjax) {
-
-            json.insert(QStringLiteral("error_msg"), c->translate("Domain", "Access denied. Only administrator users are allowed to delete domains."));
-
-        } else {
-            c->stash({
-                         {QStringLiteral("template"), QStringLiteral("403.html")},
-                         {QStringLiteral("site_title"), c->translate("Domain", "Access denied")}
-                     });
-            return;
-        }
+        c->detach(c->getAction(QStringLiteral("error")));
+        return;
     }
 
     if (isAjax) {
-        c->res()->setJsonBody(QJsonDocument(json));
+        c->res()->setJsonObjectBody(json);
     } else {
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("domain/remove.html")},
-                     {QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Remove")}
-                 });
+        c->setStash(QStringLiteral("template"), QStringLiteral("domain/remove.html"));
+        c->setStash(QStringLiteral("site_subtitle"), c->translate("DomainEditor", "Remove"));
     }
 }
 

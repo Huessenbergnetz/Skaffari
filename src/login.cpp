@@ -49,8 +49,6 @@ void Login::index(Context *c)
 
         if(!username.isEmpty() && !password.isEmpty()) {
             if (Authentication::authenticate(c, req->bodyParams())) {
-                qCInfo(SK_LOGIN, "User %s successfully logged in.", username.toUtf8().constData());
-
                 auto user = Authentication::user(c);
 
                 Session::setValue(c, QStringLiteral("maxdisplay"), user.value(QStringLiteral("maxdisplay"), SkaffariConfig::defMaxdisplay()));
@@ -66,21 +64,20 @@ void Login::index(Context *c)
                 } else {
                     c->res()->redirect(c->uriFor(QStringLiteral("/")));
                 }
+                qCInfo(SK_LOGIN, "User %s successfully logged in from IP %s", qUtf8Printable(username), qUtf8Printable(req->addressString()));
 
                 return;
             } else {
-                qCWarning(SK_LOGIN, "Bad username or password for user %s from IP %s", username.toUtf8().constData(), req->address().toString().toUtf8().constData());
+                qCWarning(SK_LOGIN, "Bad username or password for user %s from IP %s", qUtf8Printable(username), qUtf8Printable(req->addressString()));
                 c->setStash(QStringLiteral("error_msg"), c->translate("Login", "Arrrgh, bad username or password!"));
                 c->res()->setStatus(Response::Forbidden);
             }
         }
     }
 
-    c->stash({
-                 {QStringLiteral("username"), username},
-                 {QStringLiteral("no_wrapper"), QStringLiteral("1")},
-                 {QStringLiteral("template"), QStringLiteral("login.html")}
-             });
+    c->setStash(QStringLiteral("username"), username);
+    c->setStash(QStringLiteral("no_wrapper"), QStringLiteral("1"));
+    c->setStash(QStringLiteral("template"), QStringLiteral("login.html"));
 }
 
 #include "moc_login.cpp"

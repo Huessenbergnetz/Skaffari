@@ -56,40 +56,57 @@ Root::~Root()
 
 void Root::index(Context *c)
 {
-    const bool isAdmin = AdminAccount::getUserType(c) >= AdminAccount::Administrator;
-    const dbid_t adminId = AdminAccount::getUserId(c);
+    const bool      isAdmin = AdminAccount::getUserType(c) >= AdminAccount::Administrator;
+    const dbid_t    adminId = AdminAccount::getUserId(c);
 
     QSqlQuery q;
 
     if (isAdmin) {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT (SELECT COUNT(*) FROM accountuser) - 1 AS accounts, (SELECT COUNT(*) FROM adminuser) AS admins, (SELECT COUNT(*) FROM domain WHERE idn_id = 0) AS domains, (SELECT SUM(quota) FROM accountuser) AS accountquota, (SELECT SUM(domainquota) FROM domain) AS domainquota, (SELECT COUNT(*) FROM virtual WHERE alias LIKE '%@%' AND idn_id = 0) AS addresses"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT "
+                                                   "(SELECT COUNT(*) FROM accountuser) - 1 AS accounts, "
+                                                   "(SELECT COUNT(*) FROM adminuser) AS admins, "
+                                                   "(SELECT COUNT(*) FROM domain WHERE idn_id = 0) AS domains, "
+                                                   "(SELECT SUM(quota) FROM accountuser) AS accountquota, "
+                                                   "(SELECT SUM(domainquota) FROM domain) AS domainquota, "
+                                                   "(SELECT COUNT(*) FROM virtual WHERE alias LIKE '%@%' AND idn_id = 0) AS addresses"));
     } else {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT (SELECT COUNT(*) FROM accountuser au JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id) AS accounts, (SELECT COUNT(*) FROM adminuser) AS admins, (SELECT COUNT(*) FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id) AS domains, (SELECT SUM(au.quota) FROM accountuser au JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id) AS accountquota, (SELECT SUM(dom.domainquota) FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id) AS domainquota, (SELECT COUNT(*) FROM virtual vi JOIN accountuser au ON vi.username = au.username JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id AND vi.alias LIKE '%@%' AND vi.idn_id = 0) AS addresses"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT "
+                                                   "(SELECT COUNT(*) FROM accountuser au JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id) AS accounts, "
+                                                   "(SELECT COUNT(*) FROM adminuser) AS admins, "
+                                                   "(SELECT COUNT(*) FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id) AS domains, "
+                                                   "(SELECT SUM(au.quota) FROM accountuser au JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id) AS accountquota, "
+                                                   "(SELECT SUM(dom.domainquota) FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE da.admin_id = :admin_id) AS domainquota, "
+                                                   "(SELECT COUNT(*) FROM virtual vi JOIN accountuser au ON vi.username = au.username JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id AND vi.alias LIKE '%@%' AND vi.idn_id = 0) AS addresses"));
         q.bindValue(QStringLiteral(":admin_id"), adminId);
     }
 
-    dbid_t accounts = 0;
-    dbid_t admins = 0;
-    dbid_t domains = 0;
-    quota_size_t accountquota = 0;
-    quota_size_t domainquota = 0;
-    dbid_t addresses = 0;
+    dbid_t          accounts        = 0;
+    dbid_t          admins          = 0;
+    dbid_t          domains         = 0;
+    quota_size_t    accountquota    = 0;
+    quota_size_t    domainquota     = 0;
+    dbid_t          addresses       = 0;
 
     if (Q_LIKELY(q.exec())) {
         if (Q_LIKELY(q.next())) {
-            accounts = q.value(0).value<dbid_t>();
-            admins = q.value(1).value<dbid_t>();
-            domains = q.value(2).value<dbid_t>();
-            accountquota = q.value(3).value<quota_size_t>();
-            domainquota = q.value(4).value<quota_size_t>();
-            addresses = q.value(5).value<dbid_t>();
+            accounts        = q.value(0).value<dbid_t>();
+            admins          = q.value(1).value<dbid_t>();
+            domains         = q.value(2).value<dbid_t>();
+            accountquota    = q.value(3).value<quota_size_t>();
+            domainquota     = q.value(4).value<quota_size_t>();
+            addresses       = q.value(5).value<dbid_t>();
         }
+    } else {
+        c->setStash(QStringLiteral("error_msg"), c->translate("Root", "Failed to query statistics from the database: %1").arg(q.lastError().text()));
     }
 
     if (isAdmin) {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id AS id, dom.domain_name AS name, dom.created_at AS created FROM domain dom WHERE dom.idn_id = 0 ORDER BY dom.created_at DESC LIMIT 5"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id AS id, dom.domain_name AS name, dom.created_at AS created FROM domain dom "
+                                                   "WHERE dom.idn_id = 0 ORDER BY dom.created_at DESC LIMIT 5"));
     } else {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id AS id, dom.domain_name AS name, dom.created_at AS created FROM domain dom JOIN domainadmin da ON dom.id = da.domain_id WHERE dom.idn_id = 0 AND da.admin_id = :admin_id ORDER BY dom.created_at DESC LIMIT 5"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT dom.id AS id, dom.domain_name AS name, dom.created_at AS created FROM domain dom "
+                                                   "JOIN domainadmin da ON dom.id = da.domain_id "
+                                                   "WHERE dom.idn_id = 0 AND da.admin_id = :admin_id ORDER BY dom.created_at DESC LIMIT 5"));
         q.bindValue(QStringLiteral(":admin_id"), adminId);
     }
 
@@ -103,9 +120,13 @@ void Root::index(Context *c)
     }
 
     if (isAdmin) {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id AS id, au.domain_id AS domainId, au.created_at AS created, au.username AS username, dom.domain_name AS domainName FROM accountuser au JOIN domain dom ON dom.id = au.domain_id ORDER BY au.created_at DESC LIMIT 5"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id AS id, au.domain_id AS domainId, au.created_at AS created, au.username AS username, dom.domain_name AS domainName "
+                                                   "FROM accountuser au JOIN domain dom ON dom.id = au.domain_id "
+                                                   "ORDER BY au.created_at DESC LIMIT 5"));
     } else {
-        q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id AS id, au.domain_id AS domainId, au.created_at AS created, au.username AS username, dom.domain_name AS domainName FROM accountuser au JOIN domain dom ON dom.id = au.domain_id JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id ORDER BY au.created_at DESC LIMIT 5"));
+        q = CPreparedSqlQueryThread(QStringLiteral("SELECT au.id AS id, au.domain_id AS domainId, au.created_at AS created, au.username AS username, dom.domain_name AS domainName "
+                                                   "FROM accountuser au JOIN domain dom ON dom.id = au.domain_id JOIN domainadmin da ON au.domain_id = da.domain_id WHERE da.admin_id = :admin_id "
+                                                   "ORDER BY au.created_at DESC LIMIT 5"));
         q.bindValue(QStringLiteral(":admin_id"), adminId);
     }
 
@@ -119,14 +140,14 @@ void Root::index(Context *c)
     }
 
     c->stash({
-                 {QStringLiteral("template"), QStringLiteral("dashboard.html")},
-                 {QStringLiteral("site_title"), c->translate("Root", "Dashboard")},
-                 {QStringLiteral("account_count"), QVariant::fromValue<dbid_t>(accounts)},
-                 {QStringLiteral("admin_count"), QVariant::fromValue<dbid_t>(admins)},
-                 {QStringLiteral("domain_count"), QVariant::fromValue<dbid_t>(domains)},
-                 {QStringLiteral("accountquota_assigned"), QVariant::fromValue<quota_size_t>(accountquota)},
-                 {QStringLiteral("domainquota_assigned"), QVariant::fromValue<quota_size_t>(domainquota)},
-                 {QStringLiteral("address_count"), QVariant::fromValue<dbid_t>(addresses)}
+                 {QStringLiteral("template"),               QStringLiteral("dashboard.html")},
+                 {QStringLiteral("site_title"),             c->translate("Root", "Dashboard")},
+                 {QStringLiteral("account_count"),          QVariant::fromValue<dbid_t>(accounts)},
+                 {QStringLiteral("admin_count"),            QVariant::fromValue<dbid_t>(admins)},
+                 {QStringLiteral("domain_count"),           QVariant::fromValue<dbid_t>(domains)},
+                 {QStringLiteral("accountquota_assigned"),  QVariant::fromValue<quota_size_t>(accountquota)},
+                 {QStringLiteral("domainquota_assigned"),   QVariant::fromValue<quota_size_t>(domainquota)},
+                 {QStringLiteral("address_count"),          QVariant::fromValue<dbid_t>(addresses)}
              });
 }
 
@@ -211,7 +232,7 @@ void Root::about(Context *c)
         if (Q_LIKELY(tmplMetadataFile.open(QIODevice::ReadOnly|QIODevice::Text))) {
             QJsonParseError jpe;
             QJsonDocument tmplMetadataJson(QJsonDocument::fromJson(tmplMetadataFile.readAll(), &jpe));
-            if (jpe.error == QJsonParseError::NoError) {
+            if (Q_LIKELY(jpe.error == QJsonParseError::NoError)) {
                 c->setStash(QStringLiteral("templatemetadata"), tmplMetadataJson.object().toVariantMap());
             } else {
                 c->setStash(QStringLiteral("error_msg"), c->translate("Root", "Failed to parse JSON from template metadata file at %1: %2").arg(tmplMetadataFile.fileName(), jpe.errorString()));
@@ -224,34 +245,28 @@ void Root::about(Context *c)
     }
 
     c->stash({
-                 {QStringLiteral("template"), QStringLiteral("about.html")},
-                 {QStringLiteral("site_title"), c->translate("Root", "About")},
-                 {QStringLiteral("core_components"), QVariant::fromValue<std::vector<std::map<QString,QString>>>(coreComponents)},
-                 {QStringLiteral("description"), QVariant::fromValue<std::vector<QString>>(description)}
+                 {QStringLiteral("template"),           QStringLiteral("about.html")},
+                 {QStringLiteral("site_title"),         c->translate("Root", "About")},
+                 {QStringLiteral("core_components"),    QVariant::fromValue<std::vector<std::map<QString,QString>>>(coreComponents)},
+                 {QStringLiteral("description"),        QVariant::fromValue<std::vector<QString>>(description)}
              });
 }
 
 void Root::defaultPage(Context *c)
 {
-    c->stash({
-                 {QStringLiteral("template"), QStringLiteral("404.html")},
-                 {QStringLiteral("site_title"), c->translate("Root", "Not found")}
-             });
     c->res()->setStatus(404);
+    c->setStash(QStringLiteral("template"),     QStringLiteral("404.html"));
+    c->setStash(QStringLiteral("site_title"),   c->translate("Root", "Not found"));
 }
 
 void Root::csrfdenied(Context *c)
 {
     c->res()->setStatus(403);
     if (Utils::isAjax(c)) {
-        c->res()->setJsonObjectBody(QJsonObject({
-                                              {QStringLiteral("error_msg"), QJsonValue(c->stash(QStringLiteral("error_msg")).toString())}
-                                          }));
+        c->res()->setJsonObjectBody({{QStringLiteral("error_msg"), QJsonValue(c->stash(QStringLiteral("error_msg")).toString())}});
     } else {
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("csrfdenied.html")},
-                     {QStringLiteral("no_wrapper"), QStringLiteral("1")}
-                 });
+        c->setStash(QStringLiteral("template"),     QStringLiteral("csrfdenied.html"));
+        c->setStash(QStringLiteral("no_wrapper"),   QStringLiteral("1"));
     }
 }
 
@@ -264,35 +279,33 @@ void Root::error(Context *c)
         switch(c->res()->status()) {
         case 404:
             error_title = c->translate("Root", "Not found");
-            error_text = c->translate("Root", "The requested resource could not be found or the requested page is not available.");
+            error_text  = c->translate("Root", "The requested resource could not be found or the requested page is not available.");
             break;
         case 403:
             error_title = c->translate("Root", "Access denied");
-            error_text = c->translate("Root", "You are not authorized to access this resource or to perform this action.");
+            error_text  = c->translate("Root", "You are not authorized to access this resource or to perform this action.");
             break;
         default:
             c->res()->setStatus(500);
             error_title = c->translate("Root", "Unknown error");
-            error_text = c->translate("Root", "Sorry but an unknown error occured while processing your request.");
+            error_text  = c->translate("Root", "Sorry but an unknown error occured while processing your request.");
             break;
         }
     } else {
         c->res()->setStatus(e.status());
         error_title = e.typeTitle(c);
-        error_text = e.errorText();
+        error_text  = e.errorText();
     }
     if (Utils::isAjax(c)) {
-        c->res()->setJsonObjectBody(QJsonObject({
-                                                    {QStringLiteral("error_msg"), QJsonValue(error_text)}
-                                                }));
+        c->res()->setJsonObjectBody({{QStringLiteral("error_msg"), QJsonValue(error_text)}});
     } else {
         const QString siteTitle = QString::number(c->res()->status()) + QLatin1String(" - ") + error_title;
         c->stash({
-                     {QStringLiteral("template"), QStringLiteral("error.html")},
-                     {QStringLiteral("site_title"), siteTitle},
-                     {QStringLiteral("error_title"), error_title},
-                     {QStringLiteral("error_text"), error_text},
-                     {QStringLiteral("error_code"), c->res()->status()}
+                     {QStringLiteral("template"),       QStringLiteral("error.html")},
+                     {QStringLiteral("site_title"),     siteTitle},
+                     {QStringLiteral("error_title"),    error_title},
+                     {QStringLiteral("error_text"),     error_text},
+                     {QStringLiteral("error_code"),     c->res()->status()}
                  });
     }
 }
@@ -308,9 +321,7 @@ bool Root::Auto(Context* c)
     if (Q_UNLIKELY(user.isNull())) {
         if (Utils::isAjax(c)) {
             c->res()->setStatus(Response::Unauthorized);
-            c->res()->setJsonBody(QJsonDocument(QJsonObject({
-                                                                {QStringLiteral("error_msg"), QJsonValue(c->translate("Root", "You have to login at first."))}
-                                                            })));
+            c->res()->setJsonObjectBody({{QStringLiteral("error_msg"), QJsonValue(c->translate("Root", "You have to login at first."))}});
         } else {
             c->res()->redirect(c->uriFor(QStringLiteral("/login")));
         }
@@ -320,13 +331,13 @@ bool Root::Auto(Context* c)
     StatusMessage::load(c);
 
     c->stash({
-                 {QStringLiteral("user"), QVariant::fromValue<AdminAccount>(AdminAccount(user))},
-                 {QStringLiteral("userId"), user.id()},
-                 {QStringLiteral("userType"), user.value(QStringLiteral("type"))},
-                 {QStringLiteral("userName"), user.value(QStringLiteral("username"))},
+                 {QStringLiteral("user"),           QVariant::fromValue<AdminAccount>(AdminAccount(user))},
+                 {QStringLiteral("userId"),         user.id()},
+                 {QStringLiteral("userType"),       user.value(QStringLiteral("type"))},
+                 {QStringLiteral("userName"),       user.value(QStringLiteral("username"))},
                  {QStringLiteral("userMaxDisplay"), Session::value(c, QStringLiteral("maxdisplay"), SkaffariConfig::defMaxdisplay()).value<quint8>()},
-                 {QStringLiteral("userWarnLevel"), Session::value(c, QStringLiteral("warnlevel"), SkaffariConfig::defWarnlevel()).value<quint8>()},
-                 {QStringLiteral("userTz"), Session::value(c, QStringLiteral("tz"), SkaffariConfig::defTimezone()).toByteArray()}
+                 {QStringLiteral("userWarnLevel"),  Session::value(c, QStringLiteral("warnlevel"), SkaffariConfig::defWarnlevel()).value<quint8>()},
+                 {QStringLiteral("userTz"),         Session::value(c, QStringLiteral("tz"), SkaffariConfig::defTimezone()).toByteArray()}
              });
 
     return true;
@@ -342,12 +353,12 @@ QString Root::getICUversion() const
 std::map<QString, QString> Root::createCoreComponentInfo(const QString &name, const QString &version, const QString &url, const QString &author, const QString &authorUrl, const QString &license, const QString &licenseUrl) const
 {
     return std::map<QString,QString>({
-                                     {QStringLiteral("name"),name},
-                                     {QStringLiteral("version"), version},
-                                     {QStringLiteral("url"), url},
-                                     {QStringLiteral("author"), author},
-                                     {QStringLiteral("authorUrl"), authorUrl},
-                                     {QStringLiteral("license"), license},
+                                     {QStringLiteral("name"),       name},
+                                     {QStringLiteral("version"),    version},
+                                     {QStringLiteral("url"),        url},
+                                     {QStringLiteral("author"),     author},
+                                     {QStringLiteral("authorUrl"),  authorUrl},
+                                     {QStringLiteral("license"),    license},
                                      {QStringLiteral("licenseUrl"), licenseUrl}
                 });
 }

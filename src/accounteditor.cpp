@@ -46,7 +46,6 @@
 #include <Cutelyst/Plugins/StatusMessage>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 
-#include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonValue>
@@ -78,10 +77,10 @@ void AccountEditor::base(Context* c, const QString &domainId, const QString& acc
 
 void AccountEditor::edit(Context* c)
 {
-    Account a = Account::fromStash(c);
-    Domain dom = Domain::fromStash(c);
+    auto acc = Account::fromStash(c);
+    auto dom = Domain::fromStash(c);
 
-    const quota_size_t freeQuota = (dom.domainQuota() - dom.domainQuotaUsed() + a.quota());
+    const quota_size_t freeQuota = (dom.domainQuota() - dom.domainQuotaUsed() + acc.quota());
     if (dom.domainQuota() > 0) {
         c->setStash(QStringLiteral("freeQuota"), freeQuota * Q_UINT64_C(1024));
         c->setStash(QStringLiteral("minQuota"), 1024);
@@ -95,7 +94,7 @@ void AccountEditor::edit(Context* c)
     if (req->isPost()) {
 
         c->setStash(QStringLiteral("_def_boolean"), false);
-        c->setStash(QStringLiteral("_pwq_username"), a.username());
+        c->setStash(QStringLiteral("_pwq_username"), acc.username());
         c->setStash(QStringLiteral("maxValidUntil"), dom.validUntil());
 
         static Validator v({
@@ -121,10 +120,10 @@ void AccountEditor::edit(Context* c)
         const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
         if (vr) {
             SkaffariError e(c);
-            if (a.update(c, e, &dom, vr.values())) {
-                a.toStash(c);
+            if (acc.update(c, e, &dom, vr.values())) {
+                acc.toStash(c);
                 dom.toStash(c);
-                c->setStash(QStringLiteral("status_msg"), c->translate("AccountEditor", "User account %1 successfully updated.").arg(a.username()));
+                c->setStash(QStringLiteral("status_msg"), c->translate("AccountEditor", "User account %1 successfully updated.").arg(acc.username()));
             } else {
                 c->setStash(QStringLiteral("error_msg"), e.errorText());
                 c->res()->setStatus(500);
@@ -164,7 +163,7 @@ void AccountEditor::edit(Context* c)
     const QString catchAllUser = dom.getCatchAllAccount(c, getCatchAllError);
     const QString catchAllTitle = c->translate("AccountEditor", "Catch All");
     QString catchAllHelp;
-    if (catchAllUser == a.username()) {
+    if (catchAllUser == acc.username()) {
         catchAllHelp = c->translate("AccountEditor", "If disabled, this user will not receive emails anymore that have been sent to addresses not defined for this domain. There will also be no other user that will receive emails to undefined addresses.");
     } else {
         if (catchAllUser.isEmpty()) {
@@ -177,38 +176,37 @@ void AccountEditor::edit(Context* c)
 
     ValidatorFileSize::inputPattern(c, QStringLiteral("quotaPattern"));
 
-    c->stash({
-                 {QStringLiteral("template"), QStringLiteral("account/edit.html")},
-                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)}
-             });
+    c->setStash(QStringLiteral("template"), QStringLiteral("account/edit.html"));
+    c->setStash(QStringLiteral("help"), QVariant::fromValue<HelpHash>(help));
 }
 
 void AccountEditor::remove(Context* c)
 {
-    auto a = Account::fromStash(c);
+    const bool isAjax = Utils::isAjax(c);
+    if (Utils::ajaxPostOnly(c, isAjax)) {
+        return;
+    }
+
+    auto acc = Account::fromStash(c);
     auto dom = Domain::fromStash(c);
 
-    const bool isAjax = Utils::isAjax(c);
     QJsonObject json;
 
     if (c->req()->isPost()) {
 
-        if (c->req()->bodyParam(QStringLiteral("accountName")) == a.username()) {
+        if (c->req()->bodyParam(QStringLiteral("accountName")) == acc.username()) {
 
             SkaffariError e(c);
-            if (a.remove(c, e)) {
+            if (acc.remove(c, e)) {
 
-                const QString statusMsg = c->translate("AccountEditor", "User account %1 successfully removed.").arg(a.username());
+                const QString statusMsg = c->translate("AccountEditor", "User account %1 successfully removed.").arg(acc.username());
 
                 if (isAjax) {
-                    json = QJsonObject({
-                                           {QStringLiteral("status_msg"), statusMsg},
-                                           {QStringLiteral("account_id"), static_cast<qint64>(a.id())},
-                                           {QStringLiteral("account_name"), a.username()},
-                                           {QStringLiteral("domain_id"), static_cast<qint64>(dom.id())},
-                                           {QStringLiteral("domain_name"), dom.name()}
-                                       });
-
+                    json.insert(QStringLiteral("status_msg"),   statusMsg);
+                    json.insert(QStringLiteral("account_id"),   static_cast<qint64>(acc.id()));
+                    json.insert(QStringLiteral("account_name"), acc.username());
+                    json.insert(QStringLiteral("domain_id"),    static_cast<qint64>(dom.id()));
+                    json.insert(QStringLiteral("domain_name"),  dom.name());
                 } else {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/domain/accounts"), QStringList(QString::number(dom.id())), QStringList(), StatusMessage::statusQuery(c, statusMsg)));
                 }
@@ -238,17 +236,10 @@ void AccountEditor::remove(Context* c)
                 c->setStash(QStringLiteral("error_msg"), errorMsg);
             }
         }
-    } else {
-        // this is not an post request, for ajax, we will only allow post
-        if (isAjax) {
-            json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AccountEditor", "For AJAX requests, this route is only available via POST requests.")));
-            c->response()->setStatus(Response::MethodNotAllowed);
-            c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
-        }
     }
 
     if (isAjax) {
-        c->res()->setJsonBody(QJsonDocument(json));
+        c->res()->setJsonObjectBody(json);
     } else {
         c->setStash(QStringLiteral("template"), QStringLiteral("account/remove.html"));
     }
@@ -272,10 +263,15 @@ void AccountEditor::addresses(Context *c)
 
 void AccountEditor::edit_address(Context *c, const QString &address)
 {
+    const bool isAjax = Utils::isAjax(c);
+    if (Utils::ajaxPostOnly(c, isAjax)) {
+        return;
+    }
+
     auto a = Account::fromStash(c);
 
     const QString oldAddress = QUrl::fromPercentEncoding(address.toLatin1());
-    const bool isAjax = Utils::isAjax(c);
+
     QJsonObject json;
 
     if (!a.addresses().contains(oldAddress)) {
@@ -283,13 +279,11 @@ void AccountEditor::edit_address(Context *c, const QString &address)
         const QString errorMsg = c->translate("AccountEditor", "The email address %1 is not part of the user account %2.").arg(oldAddress, a.username());
 
         if (isAjax) {
-            json.insert(QStringLiteral("error_msg"), QJsonValue(errorMsg));
-            c->res()->setJsonBody(QJsonDocument(json));
+            json.insert(QStringLiteral("error_msg"), errorMsg);
+            c->res()->setJsonObjectBody(json);
         } else {
-            c->stash({
-                         {QStringLiteral("template"), QStringLiteral("404.html")},
-                         {QStringLiteral("not_found_text"), errorMsg}
-                     });
+            c->setStash(QStringLiteral("template"), QStringLiteral("404.html"));
+            c->setStash(QStringLiteral("not_found_text"), errorMsg);
         }
 
         c->res()->setStatus(Response::NotFound);
@@ -305,10 +299,8 @@ void AccountEditor::edit_address(Context *c, const QString &address)
         if (parts.first.isEmpty() || parts.second.isEmpty()) {
             c->setStash(QStringLiteral("error_msg"), c->translate("AccountEditor", "Invalid email address."));
         } else {
-            c->stash({
-                         {QStringLiteral("localpart"), parts.first},
-                         {QStringLiteral("maildomain"), parts.second}
-                     });
+            c->setStash(QStringLiteral("localpart"), parts.first);
+            c->setStash(QStringLiteral("maildomain"), parts.second);
         }
 
         if (d.isFreeAddressEnabled()) {
@@ -344,11 +336,11 @@ void AccountEditor::edit_address(Context *c, const QString &address)
 
                 if (isAjax) {
 
-                    json.insert(QStringLiteral("domain_id"), static_cast<qint64>(d.id()));
-                    json.insert(QStringLiteral("account_id"), static_cast<qint64>(a.id()));
-                    json.insert(QStringLiteral("status_msg"), statusMsg);
-                    json.insert(QStringLiteral("old_address"), oldAddress);
-                    json.insert(QStringLiteral("new_address"), newAddress);
+                    json.insert(QStringLiteral("domain_id"),    static_cast<qint64>(d.id()));
+                    json.insert(QStringLiteral("account_id"),   static_cast<qint64>(a.id()));
+                    json.insert(QStringLiteral("status_msg"),   statusMsg);
+                    json.insert(QStringLiteral("old_address"),  oldAddress);
+                    json.insert(QStringLiteral("new_address"),  newAddress);
 
                 } else {
                     const ParamsMultiMap successQueryParams = StatusMessage::statusQuery(c, statusMsg);
@@ -371,26 +363,16 @@ void AccountEditor::edit_address(Context *c, const QString &address)
             c->res()->setStatus(Response::BadRequest);
 
             if (isAjax) {
-                json.insert(QStringLiteral("field_errors"), QJsonValue(vr.errorsJsonObject()));
+                json.insert(QStringLiteral("field_errors"), vr.errorsJsonObject());
             }
-        }
-
-    } else {
-        // this is not an post request, for ajax, we will only allow post
-        if (isAjax) {
-            json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AccountEditor", "For AJAX requests, this route is only available via POST requests.")));
-            c->response()->setStatus(Response::MethodNotAllowed);
-            c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
         }
     }
 
     if (isAjax) {
         c->res()->setJsonObjectBody(json);
     } else {
-        c->stash({
-                     {QStringLiteral("template"), QStringLiteral("account/edit_address.html")},
-                     {QStringLiteral("site_subtitle"), oldAddress}
-                 });
+        c->setStash(QStringLiteral("template"), QStringLiteral("account/edit_address.html"));
+        c->setStash(QStringLiteral("site_subtitle"), oldAddress);
     }
 }
 
@@ -398,23 +380,28 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 {
     const bool isAjax = Utils::isAjax(c);
 
+    if (Utils::ajaxPostOnly(c, isAjax)) {
+        return;
+    }
+
     const QString _address = QUrl::fromPercentEncoding(address.toLatin1());
-    auto a = Account::fromStash(c);
+    auto acc = Account::fromStash(c);
+
     QJsonObject json;
 
-    if (a.addresses().size() <= 1) {
+    if (acc.addresses().size() <= 1) {
 
         const QString errorMsg = c->translate("AccountEditor", "You can not remove the last email address for this account. Remove the entire account instead.");
 
         if (isAjax) {
 
-            json.insert(QStringLiteral("error_msg"), QJsonValue(errorMsg));
-            c->res()->setJsonBody(QJsonDocument(json));
+            json.insert(QStringLiteral("error_msg"), errorMsg);
+            c->res()->setJsonObjectBody(json);
 
         } else {
 
             c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"),
-                                               QStringList({QString::number(a.domainId()), QString::number(a.id())}),
+                                               QStringList({QString::number(acc.domainId()), QString::number(acc.id())}),
                                                QStringList(),
                                                StatusMessage::errorQuery(c, errorMsg)));
         }
@@ -424,20 +411,18 @@ void AccountEditor::remove_address(Context *c, const QString &address)
         return;
     }
 
-    if (!a.addresses().contains(_address)) {
+    if (!acc.addresses().contains(_address)) {
 
-        const QString notFoundText = c->translate("AccountEditor", "The email address to remove does not belong to the account %1.").arg(a.username());
+        const QString notFoundText = c->translate("AccountEditor", "The email address to remove does not belong to the account %1.").arg(acc.username());
 
         if (isAjax) {
 
-            json.insert(QStringLiteral("error_msg"), QJsonValue(notFoundText));
-            c->res()->setJsonBody(QJsonDocument(json));
+            json.insert(QStringLiteral("error_msg"), notFoundText);
+            c->res()->setJsonObjectBody(json);
 
         } else {
-            c->stash({
-                         {QStringLiteral("template"), QStringLiteral("404.html")},
-                         {QStringLiteral("not_found_text"), notFoundText}
-                     });
+            c->setStash(QStringLiteral("template"), QStringLiteral("404.html"));
+            c->setStash(QStringLiteral("not_found_text"), notFoundText);
         }
 
         c->res()->setStatus(Response::NotFound);
@@ -448,7 +433,8 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 
     if (Account::addressParts(_address).second == dom.name()) {
         int domainAddressCount = 0;
-        for (const QString &addr : a.addresses()) {
+        const QStringList addrs = acc.addresses();
+        for (const QString &addr : addrs) {
             if (Account::addressParts(addr).second == dom.name()) {
                 domainAddressCount++;
             }
@@ -460,13 +446,13 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 
             if (isAjax) {
 
-                json.insert(QStringLiteral("error_msg"), QJsonValue(errorMsg));
-                c->res()->setJsonBody(QJsonDocument(json));
+                json.insert(QStringLiteral("error_msg"), errorMsg);
+                c->res()->setJsonObjectBody(json);
 
             } else {
 
                 c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"),
-                                                   QStringList({QString::number(a.domainId()), QString::number(a.id())}),
+                                                   QStringList({QString::number(acc.domainId()), QString::number(acc.id())}),
                                                    QStringList(),
                                                    StatusMessage::errorQuery(c, errorMsg)));
             }
@@ -493,19 +479,19 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 
         } else {
             SkaffariError e(c);
-            if (a.removeEmail(c, e, _address)) {
+            if (acc.removeEmail(c, e, _address)) {
 
-                const QString statusMsg = c->translate("AccountEditor", "Successfully removed email address %1 from account %2.").arg(_address, a.username());
+                const QString statusMsg = c->translate("AccountEditor", "Successfully removed email address %1 from account %2.").arg(_address, acc.username());
 
                 if (isAjax) {
 
-                    json.insert(QStringLiteral("status_msg"), QJsonValue(statusMsg));
-                    json.insert(QStringLiteral("address_count"), a.addresses().size());
-                    json.insert(QStringLiteral("address"), _address);
+                    json.insert(QStringLiteral("status_msg"),       statusMsg);
+                    json.insert(QStringLiteral("address_count"),    acc.addresses().size());
+                    json.insert(QStringLiteral("address"),          _address);
 
                 } else {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"),
-                                                       QStringList({QString::number(a.domainId()), QString::number(a.id())}),
+                                                       QStringList({QString::number(acc.domainId()), QString::number(acc.id())}),
                                                        QStringList(),
                                                        StatusMessage::statusQuery(c, statusMsg)));
                     return;
@@ -523,31 +509,24 @@ void AccountEditor::remove_address(Context *c, const QString &address)
     }
 
     if (isAjax) {
-        if (!c->req()->isPost()) {
-            json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AccountEditor", "For AJAX requests, this route is only available for POST requests.")));
-            c->response()->setStatus(Response::MethodNotAllowed);
-            c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
-        }
-
-        const QJsonDocument jsonDoc(json);
-        c->response()->setJsonBody(jsonDoc);
-
-        return;
+        c->res()->setJsonObjectBody(json);
+    } else {
+        c->setStash(QStringLiteral("template"), QStringLiteral("account/remove_address.html"));
+        c->setStash(QStringLiteral("address"), address);
     }
-
-    c->stash({
-                 {QStringLiteral("template"), QStringLiteral("account/remove_address.html")},
-                 {QStringLiteral("address"), address}
-             });
 }
 
 
 void AccountEditor::add_address(Context *c)
 {
+    const bool isAjax = Utils::isAjax(c);
+    if (Utils::ajaxPostOnly(c, isAjax)) {
+        return;
+    }
+
     auto d = Domain::fromStash(c);
     auto a = Account::fromStash(c);
 
-    const bool isAjax = Utils::isAjax(c);
     QJsonObject json;
 
     if (c->req()->isPost()) {
@@ -573,11 +552,11 @@ void AccountEditor::add_address(Context *c)
 
                     c->response()->setStatus(Response::Created);
 
-                    json.insert(QStringLiteral("status_msg"), QJsonValue(statusMsg));
-                    json.insert(QStringLiteral("address"), QJsonValue(newAddress));
-                    json.insert(QStringLiteral("account_id"), QJsonValue(static_cast<qint64>(a.id())));
-                    json.insert(QStringLiteral("domain_id"), QJsonValue(static_cast<qint64>(d.id())));
-                    json.insert(QStringLiteral("address_count"), QJsonValue(a.addresses().size()));
+                    json.insert(QStringLiteral("status_msg"),       statusMsg);
+                    json.insert(QStringLiteral("address"),          newAddress);
+                    json.insert(QStringLiteral("account_id"),       static_cast<qint64>(a.id()));
+                    json.insert(QStringLiteral("domain_id"),        static_cast<qint64>(d.id()));
+                    json.insert(QStringLiteral("address_count"),    a.addresses().size());
 
                 } else {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/account/addresses"),
@@ -603,33 +582,25 @@ void AccountEditor::add_address(Context *c)
             c->res()->setStatus(Response::BadRequest);
 
             if (isAjax) {
-                json.insert(QStringLiteral("field_errors"), QJsonValue(vr.errorsJsonObject()));
+                json.insert(QStringLiteral("field_errors"), vr.errorsJsonObject());
             }
         }
     }
 
     if (isAjax) {
-        if (!c->req()->isPost()) {
-            json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AccountEditor", "For AJAX requests, this route is only available for POST requests.")));
-            c->response()->setStatus(Response::MethodNotAllowed);
-            c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
+        c->res()->setJsonObjectBody(json);
+    } else {
+        if (d.isFreeAddressEnabled()) {
+            SkaffariError sde(c);
+            c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(SimpleDomain::list(c, sde)));
+        } else if (!d.children().empty()) {
+            std::vector<SimpleDomain> maildomains = d.children();
+            maildomains.insert(maildomains.begin(), d.toSimple());
+            c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
         }
 
-        c->res()->setJsonObjectBody(json);
-
-        return;
+        c->setStash(QStringLiteral("template"), QStringLiteral("account/add_address.html"));
     }
-
-    if (d.isFreeAddressEnabled()) {
-        SkaffariError sde(c);
-        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(SimpleDomain::list(c, sde)));
-    } else if (!d.children().empty()) {
-        std::vector<SimpleDomain> maildomains = d.children();
-        maildomains.insert(maildomains.begin(), d.toSimple());
-        c->setStash(QStringLiteral("maildomains"), QVariant::fromValue<std::vector<SimpleDomain>>(maildomains));
-    }
-
-    c->setStash(QStringLiteral("template"), QStringLiteral("account/add_address.html"));
 }
 
 void AccountEditor::forwards(Context *c)
@@ -639,9 +610,13 @@ void AccountEditor::forwards(Context *c)
 
 void AccountEditor::remove_forward(Context *c, const QString &forward)
 {
-    auto a = Account::fromStash(c);
-
     const bool isAjax = Utils::isAjax(c);
+
+    if (Utils::ajaxPostOnly(c, isAjax)) {
+        return;
+    }
+
+    auto a = Account::fromStash(c);
 
     QJsonObject json;
 
@@ -649,13 +624,11 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
         const QString notFoundText = c->translate("AccountEditor", "The forward email address to remove does not belong to the account %1.").arg(a.username());
 
         if (isAjax) {
-            json.insert(QStringLiteral("error_msg"), QJsonValue(notFoundText));
+            json.insert(QStringLiteral("error_msg"), notFoundText);
             c->res()->setJsonObjectBody(json);
         } else {
-            c->stash({
-                         {QStringLiteral("template"), QStringLiteral("404.html")},
-                         {QStringLiteral("not_found_text"), notFoundText}
-                     });
+            c->setStash(QStringLiteral("template"), QStringLiteral("404.html"));
+            c->setStash(QStringLiteral("not_found_text"), notFoundText);
         }
 
         c->res()->setStatus(Response::NotFound);
@@ -668,7 +641,7 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
             const QString errorMsg = c->translate("AccountEditor", "The entered email address does not match the forward address you want to remove.");
 
             if (isAjax) {
-                json.insert(QStringLiteral("error_msg"), QJsonValue(errorMsg));
+                json.insert(QStringLiteral("error_msg"), errorMsg);
             } else {
                 c->setStash(QStringLiteral("error_msg"), errorMsg);
             }
@@ -682,12 +655,12 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
                 const QString statusMsg = c->translate("AccountEditor", "Successfully removed forward email address %1 from account %2.").arg(forward, a.username());
 
                 if (isAjax) {
-                    json.insert(QStringLiteral("status_msg"), QJsonValue(statusMsg));
-                    json.insert(QStringLiteral("forward"), QJsonValue(forward));
-                    json.insert(QStringLiteral("account_id"), QJsonValue(static_cast<qint64>(a.id())));
-                    json.insert(QStringLiteral("domain_id"), QJsonValue(static_cast<qint64>(a.domainId())));
-                    json.insert(QStringLiteral("forward_count"), QJsonValue(a.forwards().size()));
-                    json.insert(QStringLiteral("keep_local"), QJsonValue(a.keepLocal()));
+                    json.insert(QStringLiteral("status_msg"),       statusMsg);
+                    json.insert(QStringLiteral("forward"),          forward);
+                    json.insert(QStringLiteral("account_id"),       static_cast<qint64>(a.id()));
+                    json.insert(QStringLiteral("domain_id"),        static_cast<qint64>(a.domainId()));
+                    json.insert(QStringLiteral("forward_count"),    a.forwards().size());
+                    json.insert(QStringLiteral("keep_local"),       a.keepLocal());
                 } else {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/account/forwards"),
                                                        QStringList({QString::number(a.domainId()), QString::number(a.id())}),
@@ -698,7 +671,7 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
             } else {
                 c->res()->setStatus(Response::InternalServerError);
                 if (isAjax) {
-                    json.insert(QStringLiteral("error_msg"), QJsonValue(e.errorText()));
+                    json.insert(QStringLiteral("error_msg"), e.errorText());
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
                 }
@@ -707,26 +680,21 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
     }
 
     if (isAjax) {
-        if (!c->req()->isPost()) {
-            json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AccountEditor", "For AJAX requests, this route is only available for POST requests.")));
-            c->res()->setStatus(Response::MethodNotAllowed);
-            c->res()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
-        }
-
         c->res()->setJsonObjectBody(json);
-        return;
+    } else {
+        c->setStash(QStringLiteral("template"), QStringLiteral("account/remove_forward.html"));
+        c->setStash(QStringLiteral("forward"), forward);
     }
-
-    c->stash({
-                 {QStringLiteral("template"), QStringLiteral("account/remove_forward.html")},
-                 {QStringLiteral("forward"), forward}
-             });
 }
 
 void AccountEditor::add_forward(Context *c)
 {
-    auto a = Account::fromStash(c);
     const bool isAjax = Utils::isAjax(c);
+    if (Utils::ajaxPostOnly(c, isAjax)) {
+        return;
+    }
+
+    auto a = Account::fromStash(c);
     QJsonObject json;
 
     if (c->req()->isPost()) {
@@ -749,12 +717,12 @@ void AccountEditor::add_forward(Context *c)
                 if (isAjax) {
                     c->res()->setStatus(Response::Created);
 
-                    json.insert(QStringLiteral("status_msg"), QJsonValue(statusMsg));
-                    json.insert(QStringLiteral("forward"), QJsonValue(newForward));
-                    json.insert(QStringLiteral("account_id"), QJsonValue(static_cast<qint64>(a.id())));
-                    json.insert(QStringLiteral("domain_id"), QJsonValue(static_cast<qint64>(a.domainId())));
-                    json.insert(QStringLiteral("forward_count"), QJsonValue(a.forwards().size()));
-                    json.insert(QStringLiteral("keep_local"), QJsonValue(a.keepLocal()));
+                    json.insert(QStringLiteral("status_msg"),       statusMsg);
+                    json.insert(QStringLiteral("forward"),          newForward);
+                    json.insert(QStringLiteral("account_id"),       static_cast<qint64>(a.id()));
+                    json.insert(QStringLiteral("domain_id"),        static_cast<qint64>(a.domainId()));
+                    json.insert(QStringLiteral("forward_count"),    a.forwards().size());
+                    json.insert(QStringLiteral("keep_local"),       a.keepLocal());
                 } else {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/account/forwards"),
                                                        QStringList({QString::number(a.domainId()), QString::number(a.id())}),
@@ -782,22 +750,16 @@ void AccountEditor::add_forward(Context *c)
                     QJsonObject fieldErrors;
                     QHash<QString,QStringList>::const_iterator i = errors.constBegin();
                     while (i != errors.constEnd()) {
-                        fieldErrors.insert(i.key(), QJsonValue(QJsonArray::fromStringList(i.value())));
+                        fieldErrors.insert(i.key(), QJsonArray::fromStringList(i.value()));
                         ++i;
                     }
-                    json.insert(QStringLiteral("field_errors"), QJsonValue(fieldErrors));
+                    json.insert(QStringLiteral("field_errors"), fieldErrors);
                 }
             }
         }
     }
 
     if (isAjax) {
-        if (!c->req()->isPost()) {
-            json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AccountEditor", "For AJAX requests, this route is only available for POST requests.")));
-            c->response()->setStatus(Response::MethodNotAllowed);
-            c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
-        }
-
         c->res()->setJsonObjectBody(json);
         return;
     }
@@ -806,17 +768,19 @@ void AccountEditor::add_forward(Context *c)
     help.reserve(1);
     help.insert(QStringLiteral("newforward"), HelpEntry(c->translate("AccountEditor", "New forward"), c->translate("AcountEditor", "Enter a valid email address to which you want to forward emails received for account %1.").arg(a.username())));
 
-    c->stash({
-                 {QStringLiteral("template"), QStringLiteral("account/add_forward.html")},
-                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)}
-             });
+    c->setStash(QStringLiteral("template"), QStringLiteral("account/add_forward.html"));
+    c->setStash(QStringLiteral("help"), QVariant::fromValue<HelpHash>(help));
 }
 
 void AccountEditor::edit_forward(Context *c, const QString &oldForward)
 {
-    auto a = Account::fromStash(c);
-
     const bool isAjax = Utils::isAjax(c);
+
+    if (Utils::ajaxPostOnly(c, isAjax)) {
+        return;
+    }
+
+    auto a = Account::fromStash(c);
     QJsonObject json;
 
     if (c->req()->isPost()) {
@@ -838,11 +802,11 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
                 auto d = Domain::fromStash(c);
 
                 if (isAjax) {
-                    json.insert(QStringLiteral("status_msg"), QJsonValue(statusMsg));
-                    json.insert(QStringLiteral("old_forward"), QJsonValue(oldForward));
-                    json.insert(QStringLiteral("new_forward"), QJsonValue(newForward));
-                    json.insert(QStringLiteral("account_id"), QJsonValue(static_cast<qint64>(a.id())));
-                    json.insert(QStringLiteral("domain_id"), QJsonValue(static_cast<qint64>(d.id())));
+                    json.insert(QStringLiteral("status_msg"),   statusMsg);
+                    json.insert(QStringLiteral("old_forward"),  oldForward);
+                    json.insert(QStringLiteral("new_forward"),  newForward);
+                    json.insert(QStringLiteral("account_id"),   static_cast<qint64>(a.id()));
+                    json.insert(QStringLiteral("domain_id"),    static_cast<qint64>(d.id()));
                 } else {
                     c->res()->redirect(c->uriForAction(QStringLiteral("/account/forwards"),
                                                        QStringList({QString::number(d.id()), QString::number(a.id())}),
@@ -874,22 +838,16 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
                     QJsonObject fieldErrors;
                     QHash<QString,QStringList>::const_iterator i = errors.constBegin();
                     while (i != errors.constEnd()) {
-                        fieldErrors.insert(i.key(), QJsonValue(QJsonArray::fromStringList(i.value())));
+                        fieldErrors.insert(i.key(), QJsonArray::fromStringList(i.value()));
                         ++i;
                     }
-                    json.insert(QStringLiteral("field_errors"), QJsonValue(fieldErrors));
+                    json.insert(QStringLiteral("field_errors"), fieldErrors);
                 }
             }
         }
     }
 
     if (isAjax) {
-        if (!c->req()->isPost()) {
-            json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AccountEditor", "For AJAX requests, this route is only available for POST requests.")));
-            c->res()->setStatus(Response::MethodNotAllowed);
-            c->res()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
-        }
-
         c->res()->setJsonObjectBody(json);
         return;
     }
@@ -898,19 +856,21 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
     help.reserve(1);
     help.insert(QStringLiteral("newforward"), HelpEntry(c->translate("AccountEditor", "Edit forward"), c->translate("AccountEditor", "Change the forward email address to a different valid email address to which you want to forward emails received for account %1.").arg(a.username())));
 
-    c->stash({
-                 {QStringLiteral("template"), QStringLiteral("account/edit_forward.html")},
-                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)},
-                 {QStringLiteral("oldforward"), oldForward}
-             });
+    c->setStash(QStringLiteral("template"), QStringLiteral("account/edit_forward.html"));
+    c->setStash(QStringLiteral("help"), QVariant::fromValue<HelpHash>(help));
+    c->setStash(QStringLiteral("oldforward"), oldForward);
 }
 
 
 void AccountEditor::keep_local(Context *c)
 {
+    const bool isAjax = Utils::isAjax(c);
+    if (Utils::ajaxPostOnly(c, isAjax)) {
+        return;
+    }
+
     auto a = Account::fromStash(c);
 
-    const bool isAjax = Utils::isAjax(c);
     QJsonObject json;
 
     if (c->req()->isPost()) {
@@ -924,10 +884,10 @@ void AccountEditor::keep_local(Context *c)
                     : c->translate("AccountEditor", "Successfully disabled the keeping of forwarded emails in the local mailbox of account %1.").arg(a.username());
 
             if (isAjax) {
-                json.insert(QStringLiteral("status_msg"), QJsonValue(statusMsg));
-                json.insert(QStringLiteral("account_id"), QJsonValue(static_cast<qint64>(a.id())));
-                json.insert(QStringLiteral("domain_id"), QJsonValue(static_cast<qint64>(a.domainId())));
-                json.insert(QStringLiteral("keep_local"), QJsonValue(a.keepLocal()));
+                json.insert(QStringLiteral("status_msg"),   statusMsg);
+                json.insert(QStringLiteral("account_id"),   static_cast<qint64>(a.id()));
+                json.insert(QStringLiteral("domain_id"),    static_cast<qint64>(a.domainId()));
+                json.insert(QStringLiteral("keep_local"),   a.keepLocal());
             } else {
                 c->res()->redirect(c->uriForAction(QStringLiteral("/account/forwards"),
                                                    QStringList({QString::number(a.domainId()), QString::number(a.id())}),
@@ -947,19 +907,10 @@ void AccountEditor::keep_local(Context *c)
     }
 
     if (isAjax) {
-        if (!c->req()->isPost()) {
-            json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AccountEditor", "For AJAX requests, this route is only available for POST requests.")));
-            c->res()->setStatus(Response::MethodNotAllowed);
-            c->res()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
-        }
-
         c->res()->setJsonObjectBody(json);
-        return;
+    } else {
+        c->setStash(QStringLiteral("template"), QStringLiteral("account/keep_local.html"));
     }
-
-    c->stash({
-                 {QStringLiteral("template"), QStringLiteral("account/keep_local.html")}
-             });
 }
 
 
@@ -986,23 +937,21 @@ void AccountEditor::check(Context *c)
         if (isAjax) {
 
             QJsonObject result;
-            result.insert(QStringLiteral("username"), QJsonValue(a.username()));
+            result.insert(QStringLiteral("username"), a.username());
 
             if (e.type() != SkaffariError::NoError) {
-                result.insert(QStringLiteral("error_msg"), QJsonValue(e.errorText()));
+                result.insert(QStringLiteral("error_msg"), e.errorText());
                 c->response()->setStatus(Response::InternalServerError);
             } else {
                 if (!actions.empty()) {
-                    result.insert(QStringLiteral("actions"), QJsonValue(QJsonArray::fromStringList(actions)));
+                    result.insert(QStringLiteral("actions"), QJsonArray::fromStringList(actions));
                     result.insert(QStringLiteral("account"), a.toJson());
                 } else {
-                    result.insert(QStringLiteral("status_msg"), QJsonValue(c->translate("AccountEditor", "Nothing to do. Everything seems to be ok with this account.")));
+                    result.insert(QStringLiteral("status_msg"), c->translate("AccountEditor", "Nothing to do. Everything seems to be ok with this account."));
                 }
             }
 
-            QJsonDocument json(result);
-
-            c->response()->setJsonBody(json);
+            c->response()->setJsonObjectBody(result);
 
         } else {
             if (e.type() != SkaffariError::NoError) {
@@ -1015,13 +964,10 @@ void AccountEditor::check(Context *c)
         }
     } else {
         if (isAjax) {
-            QJsonObject result;
-            result.insert(QStringLiteral("username"), a.username());
-            result.insert(QStringLiteral("error_msg"), vr.errorStrings().at(0));
-
-            QJsonDocument json(result);
-
-            c->response()->setJsonBody(json);
+            c->response()->setJsonObjectBody({
+                                                 {QStringLiteral("username"), a.username()},
+                                                 {QStringLiteral("error_msg"), vr.errorStrings().at(0)}
+                                             });
         } else {
             c->setStash(QStringLiteral("template"), QStringLiteral("account/check.html"));
         }
@@ -1042,8 +988,7 @@ void AccountEditor::list(Context *c)
         o.insert(QStringLiteral("error_msg"), e.errorText());
         c->res()->setStatus(Response::InternalServerError);
     }
-    QJsonDocument json(o);
-    c->res()->setJsonBody(json);
+    c->res()->setJsonObjectBody(o);
 }
 
 #include "moc_accounteditor.cpp"

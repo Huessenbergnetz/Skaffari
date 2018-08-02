@@ -39,7 +39,6 @@
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <QVector>
 #include <QVariant>
-#include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
 
@@ -73,11 +72,9 @@ void AdminEditor::index(Context *c)
         c->setStash(QStringLiteral("error_msg"), e.errorText());
     }
 
-    c->stash({
-                 {QStringLiteral("adminaccounts"), QVariant::fromValue<std::vector<AdminAccount>>(accounts)},
-                 {QStringLiteral("template"), QStringLiteral("admin/index.html")},
-                 {QStringLiteral("site_title"), c->translate("AdminEditor", "Administrators")}
-             });
+    c->setStash(QStringLiteral("adminaccounts"), QVariant::fromValue<std::vector<AdminAccount>>(accounts));
+    c->setStash(QStringLiteral("template"), QStringLiteral("admin/index.html"));
+    c->setStash(QStringLiteral("site_title"), c->translate("AdminEditor", "Administrators"));
 }
 
 void AdminEditor::base(Context *c, const QString &id)
@@ -146,7 +143,7 @@ void AdminEditor::create(Context *c)
 
     SkaffariError e(c);
     // if access has been granted, user type is 0
-    std::vector<SimpleDomain> domains = SimpleDomain::list(c, e);
+    const std::vector<SimpleDomain> domains = SimpleDomain::list(c, e);
 
     if (e.type() != SkaffariError::NoError) {
         c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -163,11 +160,9 @@ void AdminEditor::create(Context *c)
     help.insert(QStringLiteral("type"), HelpEntry(c->translate("AdminEditor", "Type"), c->translate("AdminEditor", "An administrator has access to the whole system, while a domain manager only has access to the associated domains.")));
     help.insert(QStringLiteral("assocdomains"), HelpEntry(c->translate("AdminEditor", "Domains"), c->translate("AdminEditor", "For domain managers, select the associated domains the user is responsible for.")));
 
-    c->stash({
-                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)},
-                 {QStringLiteral("template"), QStringLiteral("admin/create.html")},
-                 {QStringLiteral("site_title"), c->translate("AdminUser", "Create administrator")}
-             });
+    c->setStash(QStringLiteral("help"), QVariant::fromValue<HelpHash>(help));
+    c->setStash(QStringLiteral("template"), QStringLiteral("admin/create.html"));
+    c->setStash(QStringLiteral("site_title"), c->translate("AdminUser", "Create administrator"));
 }
 
 void AdminEditor::edit(Context *c)
@@ -201,10 +196,8 @@ void AdminEditor::edit(Context *c)
             vr.addValue(QStringLiteral("assocdomains"), QVariant::fromValue<QStringList>(req->bodyParameters(QStringLiteral("assocdomains"))));
             SkaffariError e(c);
             if (aac.update(c, e, vr.values())) {
-                c->stash({
-                             {QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac)},
-                             {QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated administrator %1.").arg(aac.username())}
-                         });
+                c->setStash(QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac));
+                c->setStash(QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated administrator %1.").arg(aac.username()));
             } else {
                 c->setStash(QStringLiteral("error_msg"), e.errorText());
                 StatusMessage::errorQuery(c, e.errorText());
@@ -215,7 +208,7 @@ void AdminEditor::edit(Context *c)
 
     SkaffariError e(c);
     // if access has been granted, user type is 0
-    std::vector<SimpleDomain> domains = SimpleDomain::list(c, e);
+    const std::vector<SimpleDomain> domains = SimpleDomain::list(c, e);
 
     if (e.type() != SkaffariError::NoError) {
         c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -234,11 +227,9 @@ void AdminEditor::edit(Context *c)
     help.insert(QStringLiteral("type"), HelpEntry(c->translate("AdminEditor", "Type"), c->translate("AdminEditor", "An administrator has access to the whole system, while a domain manager only has access to the associated domains.")));
     help.insert(QStringLiteral("assocdomains"), HelpEntry(c->translate("AdminEditor", "Domains"), c->translate("AdminEditor", "For domain managers, select the associated domains the user is responsible for.")));
 
-    c->stash({
-                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)},
-                 {QStringLiteral("template"), QStringLiteral("admin/edit.html")},
-                 {QStringLiteral("site_subtitle"), c->translate("AdminEditor", "Edit")}
-             });
+    c->setStash(QStringLiteral("help"), QVariant::fromValue<HelpHash>(help));
+    c->setStash(QStringLiteral("template"), QStringLiteral("admin/edit.html"));
+    c->setStash(QStringLiteral("site_subtitle"), c->translate("AdminEditor", "Edit"));
 }
 
 void AdminEditor::remove(Context *c)
@@ -295,19 +286,17 @@ void AdminEditor::remove(Context *c)
     } else {
         // this is not a post request, for ajax, we will only allow post
         if (isAjax) {
-            json.insert(QStringLiteral("error_msg"), QJsonValue(c->translate("AdminEditor", "For AJAX requests, this route is only available via POST requests.")));
+            json.insert(QStringLiteral("error_msg"), c->translate("AdminEditor", "For AJAX requests, this route is only available via POST requests."));
             c->response()->setStatus(Response::MethodNotAllowed);
             c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
         }
     }
 
     if (isAjax) {
-        c->res()->setJsonBody(QJsonDocument(json));
+        c->res()->setJsonObjectBody(json);
     } else {
-        c->stash({
-                     {QStringLiteral("site_subtitle"), c->translate("AdminEditor", "Remove")},
-                     {QStringLiteral("template"), QStringLiteral("admin/remove.html")}
-                 });
+        c->setStash(QStringLiteral("site_subtitle"), c->translate("AdminEditor", "Remove"));
+        c->setStash(QStringLiteral("template"), QStringLiteral("admin/remove.html"));
     }
 }
 
