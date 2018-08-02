@@ -14,7 +14,7 @@ add_library(grantlee_skaffari MODULE
     skaffarigrantlee.cpp
 )
 
-target_include_directories(grantlee_skaffari PRIVATE ${Cutelyst2Qt5_INCLUDE_DIR})
+target_include_directories(grantlee_skaffari SYSTEM PRIVATE ${Cutelyst2Qt5_INCLUDE_DIR})
 
 target_compile_features(grantlee_skaffari
     PRIVATE
