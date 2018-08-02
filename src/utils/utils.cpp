@@ -112,9 +112,14 @@ bool Utils::checkCheckbox(const Cutelyst::ParamsMultiMap &params, const QString 
     return ret;
 }
 
-void Utils::ajaxPostOnly(Cutelyst::Context *c, QJsonObject &json)
+bool Utils::ajaxPostOnly(Cutelyst::Context *c, bool isAjax)
 {
-    json.insert(QStringLiteral("error_msg"), c->translate("Skaffari::Utils", "For AJAX requests, this route is only available via POST requests."));
-    c->response()->setStatus(Cutelyst::Response::MethodNotAllowed);
-    c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
+    if (isAjax && !c->req()->isPost()) {
+        c->response()->setStatus(Cutelyst::Response::MethodNotAllowed);
+        c->response()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
+        c->response()->setJsonObjectBody({{QStringLiteral("error_msg"), c->translate("Skaffari::Utils", "For AJAX requests, this route is only available via POST requests.")}});
+        return true;
+    } else {
+        return false;
+    }
 }

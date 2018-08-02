@@ -86,9 +86,8 @@ public:
      * error message string. This will also set the Repsonse Header \a Allow to \c POST.
      *
      * \param c     Pointer to the current context.
-     * \param json  Reference to a JSON object that will be part of the response.
      */
-    static void ajaxPostOnly(Cutelyst::Context *c, QJsonObject &json);
+    static bool ajaxPostOnly(Cutelyst::Context *c, bool isAjax);
 
 private:
     // prevent construction
