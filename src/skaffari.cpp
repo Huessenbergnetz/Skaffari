@@ -89,7 +89,7 @@ Q_LOGGING_CATEGORY(SK_CORE, "skaffari.core")
 
 using namespace Cutelyst;
 
-static QMutex mutex;
+static QMutex mutex; // clazy:exclude=non-pod-global-static
 
 bool Skaffari::isInitialized = false;
 bool Skaffari::messageHandlerInstalled = false;
@@ -160,6 +160,10 @@ void syslogMessageOutput(QtMsgType type, const QMessageLogContext &context, cons
 
 Skaffari::Skaffari(QObject *parent) : Application(parent)
 {
+    QCoreApplication::setApplicationName(QStringLiteral("Skaffari"));
+    QCoreApplication::setApplicationVersion(QStringLiteral(SKAFFARI_VERSION));
+    QCoreApplication::setOrganizationName(QStringLiteral("Huessenbergnetz"));
+    QCoreApplication::setOrganizationDomain(QStringLiteral("huessenbergnetz.de"));
 }
 
 Skaffari::~Skaffari()
@@ -189,9 +193,6 @@ bool Skaffari::init()
         }
         messageHandlerInstalled = true;
     }
-
-    QCoreApplication::setApplicationName(QStringLiteral("Skaffari"));
-    QCoreApplication::setApplicationVersion(QStringLiteral(SKAFFARI_VERSION));
 
     const auto supportedLocales = loadTranslationsFromDir(QStringLiteral("skaffari"), QStringLiteral(SKAFFARI_L10NDIR), QStringLiteral("_"));
     qCInfo(SK_CORE) << "Loaded locales:" << supportedLocales;
