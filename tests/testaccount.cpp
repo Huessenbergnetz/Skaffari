@@ -17,6 +17,9 @@
 class AccountTest : public QObject
 {
     Q_OBJECT
+public:
+    AccountTest(QObject *parent = nullptr) : QObject(parent) {}
+
 private Q_SLOTS:
     void initTestCase() {}
 

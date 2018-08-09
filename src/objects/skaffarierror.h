@@ -72,7 +72,7 @@ public:
      * \param errorText Optional QString human readable error description.
      * \param errorData Optional container for additional error data for further processing.
      */
-    SkaffariError(Cutelyst::Context *c, ErrorType type , const QString errorText = QString(), const QVariant errorData = QVariant());
+    SkaffariError(Cutelyst::Context *c, ErrorType type , const QString &errorText = QString(), const QVariant &errorData = QVariant());
 
     /*!
      * \brief Constructs a SkaffariError object using the sqlError.
@@ -85,7 +85,7 @@ public:
      * \param sqlError A QSqlError
      * \param errorText Optional custom error text for better explanation.
      */
-    SkaffariError(Cutelyst::Context *c, const QSqlError &sqlError, const QString errorText = QString());
+    SkaffariError(Cutelyst::Context *c, const QSqlError &sqlError, const QString &errorText = QString());
 
     /*!
      * \brief Constructs a SkaffariError object using the \a imapError.
@@ -98,7 +98,7 @@ public:
      * \param imapError A SkaffariIMAPError
      * \param errorText Optional custom error text for better explanation.
      */
-    SkaffariError(Cutelyst::Context *c, const SkaffariIMAPError &imapError, const QString errorText = QString());
+    SkaffariError(Cutelyst::Context *c, const SkaffariIMAPError &imapError, const QString &errorText = QString());
 
     /*!
      * \brief Constructs a copy of the error \e other, passed as the argument to this constructor.

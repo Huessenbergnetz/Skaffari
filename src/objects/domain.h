@@ -361,7 +361,7 @@ public:
      * \param sort      the sorting direction
      * \param limit     optional limit for the result, if \c 0, there will be no limit
      */
-    static std::vector<Domain> list(Cutelyst::Context *c, SkaffariError &errorData, const Cutelyst::AuthenticationUser &user, const QString orderBy = QLatin1String("domain_name"), const QString sort = QLatin1String("ASC"), quint32 limit = 0);
+    static std::vector<Domain> list(Cutelyst::Context *c, SkaffariError &errorData, const Cutelyst::AuthenticationUser &user, const QString &orderBy = QStringLiteral("domain_name"), const QString &sort = QStringLiteral("ASC"), quint32 limit = 0);
 
     /*!
      * \brief Returns \c true if \a domainName is part of the database.

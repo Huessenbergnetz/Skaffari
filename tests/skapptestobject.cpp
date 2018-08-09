@@ -181,7 +181,7 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config, const
     }
     QJsonDocument po{o};
 
-    cmd = QLatin1String("POST /v1.32/containers/create?name=") + name + QLatin1String(" HTTP/1.1\r\nHost:\r\nContent-Type: application/json\r\nContent-Length:");
+    cmd = QLatin1String("POST /v1.32/containers/create?name=") + name + QLatin1String(" HTTP/1.1\r\nHost:\r\nContent-Type: application/json\r\nContent-Length:"); // clazy:exclude=qstring-allocations
     const auto content = po.toJson(QJsonDocument::Compact);
     cmd.append(QString::number(content.length()));
     cmd.append(QLatin1String("\r\n\r\n"));
@@ -204,7 +204,7 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config, const
         return false;
     }
 
-    cmd = QLatin1String("POST /v1.32/containers/") + name + QLatin1String("/start HTTP/1.1\r\nHost:\r\n\r\n");
+    cmd = QLatin1String("POST /v1.32/containers/") + name + QLatin1String("/start HTTP/1.1\r\nHost:\r\n\r\n"); // clazy:exclude=qstring-allocations
 
     if (docker.write(cmd.toLatin1()) != cmd.length()) {
         qCritical() << "Failed to write command to docker socket.";
@@ -256,7 +256,7 @@ bool SkAppTestObject::stopContainer(const QString &name) const
         return false;
     }
 
-    QString cmd = QLatin1String("DELETE /v1.32/containers/") + name + QLatin1String("?force=true HTTP/1.1\r\nHost:\r\n\r\n");
+    QString cmd = QLatin1String("DELETE /v1.32/containers/") + name + QLatin1String("?force=true HTTP/1.1\r\nHost:\r\n\r\n"); // clazy:exclude=qstring-allocations
 
     if (docker.write(cmd.toLatin1()) != cmd.length()) {
         qCritical() << "Failed to write command to docker socket.";
@@ -286,7 +286,7 @@ bool SkAppTestObject::stopContainers() const
         return false;
     }
 
-    QString cmd = QLatin1String("GET /v1.32/containers/json?all=true&filters=");
+    QString cmd = QStringLiteral("GET /v1.32/containers/json?all=true&filters=");
     QJsonObject filters;
     QJsonArray ancestors{QJsonValue(QStringLiteral(DOCKER_IMAGE_NAME))};
     filters.insert(QStringLiteral("ancestor"), ancestors);

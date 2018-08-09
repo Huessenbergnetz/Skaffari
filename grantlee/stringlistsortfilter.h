@@ -28,7 +28,7 @@
  * This filter can be used as \c sk_stringlistsort in your Grantlee templates. It sorts a list
  * of strings accodring to the current locale.
  */
-class StringListSortFilter : public Grantlee::Filter
+class StringListSortFilter : public Grantlee::Filter // clazy:exclude=copyable-polymorphic
 {
 public:
     bool isSafe() const override { return true; }

@@ -95,7 +95,7 @@ bool SkaffariIMAP::login()
     }
 
     QVector<QByteArray> response;
-    if (Q_UNLIKELY(!checkResponse(readAll(), QLatin1String("*"), &response))) {
+    if (Q_UNLIKELY(!checkResponse(readAll(), QStringLiteral("*"), &response))) {
         return disconnectOnError();
     }
 
@@ -706,7 +706,7 @@ void SkaffariIMAP::setHost ( const QString& host )
     m_host = host;
 }
 
-void SkaffariIMAP::setPort ( const quint16& port )
+void SkaffariIMAP::setPort ( const quint16 port )
 {
     m_port = port;
 }

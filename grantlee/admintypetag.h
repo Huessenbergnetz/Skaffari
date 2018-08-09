@@ -35,12 +35,16 @@ class AdminTypeTag : public Grantlee::AbstractNodeFactory
     Q_OBJECT
 public:
     /*!
+     * \brief Constructs a new %AdminTypeTag with the given \a parent.
+     */
+    AdminTypeTag(QObject *parent = nullptr);
+    /*!
      * \brief Returns the AdminType node.
      */
     Grantlee::Node *getNode(const QString &tagContent, Grantlee::Parser *p) const override;
 };
 
-class AdminType : public Grantlee::Node
+class AdminType : public Grantlee::Node // clazy:exclude=ctor-missing-parent-argument
 {
     Q_OBJECT
 public:

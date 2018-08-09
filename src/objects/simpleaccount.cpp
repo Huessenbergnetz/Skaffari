@@ -140,7 +140,7 @@ QJsonObject SimpleAccount::toJson() const
     return o;
 }
 
-std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariError &e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId, const QString searchString)
+std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariError &e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId, const QString &searchString)
 {
     std::vector<SimpleAccount> lst;
 
@@ -212,7 +212,7 @@ std::vector<SimpleAccount> SimpleAccount::list(Cutelyst::Context *c, SkaffariErr
     return lst;
 }
 
-QJsonArray SimpleAccount::listJson(Cutelyst::Context *c, SkaffariError &e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId, const QString searchString)
+QJsonArray SimpleAccount::listJson(Cutelyst::Context *c, SkaffariError &e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId, const QString &searchString)
 {
     QJsonArray lst;
 

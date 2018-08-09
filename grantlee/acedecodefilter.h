@@ -34,7 +34,7 @@
  * <p>{{ domain|sk_acedecode }}</p>
  * \endcode
  */
-class AceDecodeFilter : public Grantlee::Filter
+class AceDecodeFilter : public Grantlee::Filter // clazy:exclude=copyable-polymorphic
 {
 public:
     /*!

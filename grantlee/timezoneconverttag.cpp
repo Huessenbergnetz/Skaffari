@@ -31,6 +31,11 @@
 
 Q_DECLARE_METATYPE(QTimeZone)
 
+TimeZoneConvertTag::TimeZoneConvertTag(QObject *parent) : Grantlee::AbstractNodeFactory(parent)
+{
+
+}
+
 Grantlee::Node *TimeZoneConvertTag::getNode(const QString &tagContent, Grantlee::Parser *p) const
 {
     QStringList parts = smartSplit(tagContent);

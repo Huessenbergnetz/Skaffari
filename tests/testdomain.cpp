@@ -8,6 +8,9 @@
 class DomainTest : public QObject
 {
     Q_OBJECT
+public:
+    DomainTest(QObject *parent = nullptr) : QObject(parent) {}
+
 private Q_SLOTS:
     void initTestCase() {}
 

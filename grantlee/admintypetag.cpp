@@ -24,6 +24,11 @@
 
 #include <QDebug>
 
+AdminTypeTag::AdminTypeTag(QObject *parent) : Grantlee::AbstractNodeFactory(parent)
+{
+
+}
+
 Grantlee::Node *AdminTypeTag::getNode(const QString &tagContent, Grantlee::Parser *p) const
 {
     QStringList parts = smartSplit(tagContent);

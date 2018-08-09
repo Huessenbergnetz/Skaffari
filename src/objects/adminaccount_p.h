@@ -61,6 +61,7 @@ public:
         updated.setTimeSpec(Qt::UTC);
         type = AdminAccountData::getUserType(user.value(QStringLiteral("type")).value<quint8>());
         const QVariantList doms = user.value(QStringLiteral("domains")).toList();
+        domains.reserve(doms.size());
         for (const QVariant &dom : doms) {
             domains << dom.value<dbid_t>();
         }

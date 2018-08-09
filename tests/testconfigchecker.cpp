@@ -7,6 +7,9 @@
 class ConfigCheckerTest : public QObject
 {
     Q_OBJECT
+public:
+    ConfigCheckerTest(QObject *parent = nullptr) : QObject(parent) {}
+
 private Q_SLOTS:
     void initTestCase();
     void init();

@@ -985,7 +985,7 @@ QStringList AdminAccount::allowedTypes(AdminAccount::AdminAccountType userType)
         for (int i = 0; i < me.keyCount(); ++i) {
             const auto type = me.value(i);
             if ((type != 0) && ((_userType == 255) || (type < _userType))) {
-                lst << QString::number(type);
+                lst << QString::number(type); // clazy:exclude=reserve-candidates
             }
         }
     }

@@ -258,7 +258,7 @@ public:
      *
      * \param port IMAP server port.
      */
-    void setPort(const quint16 &port);
+    void setPort(const quint16 port);
     /*!
      * \brief Sets the \a protocol to be used.
      *

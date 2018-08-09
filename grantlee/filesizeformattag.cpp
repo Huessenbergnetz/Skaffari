@@ -26,6 +26,11 @@
 
 #include <QLocale>
 
+FileSizeFormatTag::FileSizeFormatTag(QObject *parent) : Grantlee::AbstractNodeFactory(parent)
+{
+
+}
+
 Grantlee::Node *FileSizeFormatTag::getNode(const QString &tagContent, Grantlee::Parser *p) const
 {
     QStringList parts = smartSplit(tagContent);

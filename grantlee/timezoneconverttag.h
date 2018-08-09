@@ -33,6 +33,11 @@ class TimeZoneConvertTag : public Grantlee::AbstractNodeFactory
     Q_OBJECT
 public:
     /*!
+     * \brief Constructs a new %TimeZoneConvertTag with the given \a parent.
+     */
+    explicit TimeZoneConvertTag(QObject *parent = nullptr);
+
+    /*!
      * \brief Returns the TimeZoneConvert node.
      */
     Grantlee::Node *getNode(const QString &tagContent, Grantlee::Parser *p) const override;
@@ -60,7 +65,7 @@ public:
  * {% sk_tzc "2017-10-25T16:44:20Z" "d. MMMM yyyy" %}
  * \endcode
  */
-class TimeZoneConvert : public Grantlee::Node
+class TimeZoneConvert : public Grantlee::Node // clazy:exclude=ctor-missing-parent-argument
 {
     Q_OBJECT
 public:

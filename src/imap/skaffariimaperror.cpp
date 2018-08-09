@@ -20,7 +20,7 @@
 #include <QSharedData>
 #include <QSslError>
 
-class SkaffariIMAPError::Data : public QSharedData
+class SkaffariIMAPError::Data : public QSharedData // clazy:exclude=rule-of-three
 {
 public:
     Data(SkaffariIMAPError::ErrorType _errorType, const QString &_errorText) :
@@ -45,7 +45,7 @@ public:
     SkaffariIMAPError::ErrorType errorType = SkaffariIMAPError::NoError;
 };
 
-SkaffariIMAPError::SkaffariIMAPError(SkaffariIMAPError::ErrorType type, const QString errorText) :
+SkaffariIMAPError::SkaffariIMAPError(SkaffariIMAPError::ErrorType type, const QString &errorText) :
     d(new Data(type, errorText))
 {
 

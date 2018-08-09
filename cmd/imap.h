@@ -78,7 +78,7 @@ public:
      * \param peerName      TLS/SSL peer name
      * \param parent        parent object
      */
-    Imap(const QString &user, const QString &password, AuthMech mech, const QString &host = QStringLiteral("localhost"), quint16 port = 143, NetworkLayerProtocol protocol = QAbstractSocket::AnyIPProtocol, EncryptionType conType = StartTLS, QChar hierarchysep = QLatin1Char('.'), const QString peerName = QString(), QObject* parent = nullptr);
+    Imap(const QString &user, const QString &password, AuthMech mech, const QString &host = QStringLiteral("localhost"), quint16 port = 143, NetworkLayerProtocol protocol = QAbstractSocket::AnyIPProtocol, EncryptionType conType = StartTLS, QChar hierarchysep = QLatin1Char('.'), const QString &peerName = QString(), QObject* parent = nullptr);
     ~Imap();
 
     /*!
@@ -117,7 +117,7 @@ public:
     /*!
      * \brief Sets the \a port the IMAP server is listening on.
      */
-    void setPort(const quint16 &port);
+    void setPort(const quint16 port);
     /*!
      * \brief Sets the network layer \a protocol that should be used for the connection.
      */
@@ -171,7 +171,7 @@ public:
     QString lastError() const;
 
 private:
-    bool checkResponse(const QByteArray &data, const QString &tag = QLatin1String("."), QList<QByteArray> *response = nullptr);
+    bool checkResponse(const QByteArray &data, const QString &tag = QStringLiteral("."), QList<QByteArray> *response = nullptr);
     QString getTag();
     bool disconnectOnError(const QString &error = QString());
     bool waitForRespsonse(bool _abort = false, const QString &error = QString(), int msecs = 30000);

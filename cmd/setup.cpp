@@ -54,7 +54,8 @@ int Setup::exec() const
 
     QVariantHash dbparams;
     os.beginGroup(QStringLiteral("Database"));
-    for (const QString &key : os.childKeys()) {
+    const auto dbcks = os.childKeys();
+    for (const QString &key : dbcks) {
         dbparams.insert(key, os.value(key));
     }
     os.endGroup();
@@ -317,7 +318,8 @@ int Setup::exec() const
     QVariantHash imapParams;
 
     os.beginGroup(QStringLiteral("IMAP"));
-    for (const QString &key : os.childKeys()) {
+    const auto imapcks = os.childKeys();
+    for (const QString &key : imapcks) {
         imapParams.insert(key, os.value(key));
     }
     os.endGroup();

@@ -163,7 +163,7 @@ public:
      * \param domainId  The database ID of the domain to request accounts for. If 0 and permission is granted, all accounts will be returned.
      * \return          List of simple account objects.
      */
-    static std::vector<SimpleAccount> list(Cutelyst::Context *c, SkaffariError &e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
+    static std::vector<SimpleAccount> list(Cutelyst::Context *c, SkaffariError &e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId = 0, const QString &searchString = QString());
 
     /*!
      * \brief Returns a JSON array of accounts.
@@ -177,7 +177,7 @@ public:
      * \param domainId  The database ID of the domain to request accounts for. If 0 and permission is granted, all accounts will be returned.
      * \return          JSON array containing objects with account ID, user name and domain name.
      */
-    static QJsonArray listJson(Cutelyst::Context *c, SkaffariError &e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId = 0, const QString searchString = QString());
+    static QJsonArray listJson(Cutelyst::Context *c, SkaffariError &e, AdminAccount::AdminAccountType adminType, dbid_t adminId, dbid_t domainId = 0, const QString &searchString = QString());
 
     /*!
      * \brief Returns the account with the specified database \a id.

@@ -213,7 +213,7 @@ QString Password::algorithmToString(quint8 algorithm)
     return Password::algorithmToString(static_cast<Password::Algorithm>(algorithm));
 }
 
-QByteArray Password::requestSalt(quint16 length, const QByteArray allowedChars)
+QByteArray Password::requestSalt(quint16 length, const QByteArray &allowedChars)
 {
     QByteArray salt;
 

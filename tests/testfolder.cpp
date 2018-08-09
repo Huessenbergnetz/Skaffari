@@ -6,6 +6,9 @@
 class FolderTest : public QObject
 {
     Q_OBJECT
+public:
+    FolderTest(QObject *parent = nullptr) : QObject(parent) {}
+
 private Q_SLOTS:
     void initTestCase() {}
 

@@ -2200,7 +2200,7 @@ QString Account::addressToACE(const QString &address)
     return addressACE;
 }
 
-quint8 Account::calcStatus(const QDateTime validUntil, const QDateTime pwExpires)
+quint8 Account::calcStatus(const QDateTime &validUntil, const QDateTime &pwExpires)
 {
     quint8 _stat = 0;
 

@@ -57,7 +57,7 @@ struct ConfigValues
     quota_size_t defDomainquota = SK_DEF_DEF_DOMAINQUOTA;
     quota_size_t defQuota = SK_DEF_DEF_QUOTA;
     quint32 defMaxaccounts = SK_DEF_DEF_MAXACCOUNTS;
-    QString defLanguage = QLatin1String(SK_DEF_DEF_LANGUAGE);
+    QString defLanguage = QStringLiteral(SK_DEF_DEF_LANGUAGE);
     QByteArray defTimezone = QByteArrayLiteral(SK_DEF_DEF_TIMEZONE);
     quint8 defMaxdisplay = SK_DEF_DEF_MAXDISPLAY;
     quint8 defWarnlevel = SK_DEF_DEF_WARNLEVEL;

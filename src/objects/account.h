@@ -494,7 +494,7 @@ public:
      * \param pwExpires     password expiration date and time
      * \return              status flags as integer value
      */
-    static quint8 calcStatus(const QDateTime validUntil, const QDateTime pwExpires);
+    static quint8 calcStatus(const QDateTime &validUntil, const QDateTime &pwExpires);
 
     /*!
      * \brief Splits an email address into local and domain part.

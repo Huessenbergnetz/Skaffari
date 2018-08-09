@@ -277,7 +277,7 @@ void ConsoleOutput::printTable(const std::vector<std::pair<QString, QString>> &t
     }
 }
 
-QString ConsoleOutput::readString(const QString &name, const QString &defaultVal, const QStringList &desc, const QStringList acceptableInput) const
+QString ConsoleOutput::readString(const QString &name, const QString &defaultVal, const QStringList &desc, const QStringList &acceptableInput) const
 {
     QString inputVal;
 
@@ -343,7 +343,7 @@ quint16 ConsoleOutput::readPort(const QString &name, quint16 defaultVal, const Q
     return inputVal;
 }
 
-quint8 ConsoleOutput::readChar(const QString &name, quint8 defaultVal, const QStringList &desc, const QList<quint8> acceptableInput) const
+quint8 ConsoleOutput::readChar(const QString &name, quint8 defaultVal, const QStringList &desc, const QList<quint8> &acceptableInput) const
 {
     quint8 inputVal = 255;
 
@@ -543,7 +543,8 @@ void ConsoleOutput::printDatabaseSettings(QSettings &s) const
 {
     QVariantHash h;
     s.beginGroup(QStringLiteral("Database"));
-    for (const QString &key : s.childKeys()) {
+    const QStringList keys = s.childKeys();
+    for (const QString &key : keys) {
         h.insert(key, s.value(key));
     }
     s.endGroup();
@@ -567,7 +568,8 @@ void ConsoleOutput::printAdminSettings(QSettings &s) const
 {
     QVariantHash h;
     s.beginGroup(QStringLiteral("Admins"));
-    for (const QString &key : s.childKeys()) {
+    const QStringList keys = s.childKeys();
+    for (const QString &key : keys) {
         h.insert(key, s.value(key));
     }
     s.endGroup();
@@ -598,7 +600,8 @@ void ConsoleOutput::printAccountSettings(QSettings &s) const
 {
     QVariantHash h;
     s.beginGroup(QStringLiteral("Accounts"));
-    for (const QString &key : s.childKeys()) {
+    const QStringList keys = s.childKeys();
+    for (const QString &key : keys) {
         h.insert(key, s.value(key));
     }
     s.endGroup();
@@ -647,7 +650,8 @@ void ConsoleOutput::printImapSettings(QSettings &s) const
 {
     QVariantHash h;
     s.beginGroup(QStringLiteral("IMAP"));
-    for (const QString &key : s.childKeys()) {
+    const QStringList keys = s.childKeys();
+    for (const QString &key : keys) {
         h.insert(key, s.value(key));
     }
     s.endGroup();
@@ -677,7 +681,8 @@ void ConsoleOutput::printSkaffariSettings(QSettings &s) const
 {
     QVariantHash h;
     s.beginGroup(QStringLiteral("Skaffari"));
-    for (const QString &key : s.childKeys()) {
+    const QStringList keys = s.childKeys();
+    for (const QString &key : keys) {
         h.insert(key, s.value(key));
     }
     s.endGroup();

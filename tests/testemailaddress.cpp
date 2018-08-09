@@ -5,6 +5,9 @@
 class EmailAddressTest : public QObject
 {
     Q_OBJECT
+public:
+    EmailAddressTest(QObject *parent = nullptr) : QObject(parent) {}
+
 private Q_SLOTS:
     void initTestCase() {}
 

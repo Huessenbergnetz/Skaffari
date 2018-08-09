@@ -6,6 +6,9 @@
 class SimpleAdminTest : public QObject
 {
     Q_OBJECT
+public:
+    SimpleAdminTest(QObject *parent = nullptr) : QObject(parent) {}
+
 private Q_SLOTS:
     void initTestCase() {}
 

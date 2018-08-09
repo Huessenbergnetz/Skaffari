@@ -46,7 +46,7 @@ public:
         Unknown
     };
 
-    explicit SkaffariIMAPError(ErrorType type = NoError, const QString errorText = QString());
+    explicit SkaffariIMAPError(ErrorType type = NoError, const QString &errorText = QString());
     explicit SkaffariIMAPError(const QSslError &sslError);
     SkaffariIMAPError(const SkaffariIMAPError &other);
     SkaffariIMAPError(SkaffariIMAPError &&other) noexcept;

@@ -28,7 +28,7 @@ Imap::Imap(QObject *parent) : QSslSocket(parent)
 }
 
 
-Imap::Imap(const QString &user, const QString &password, AuthMech mech, const QString &host, quint16 port, NetworkLayerProtocol protocol, EncryptionType conType, QChar hierarchysep, const QString peerName, QObject *parent) :
+Imap::Imap(const QString &user, const QString &password, AuthMech mech, const QString &host, quint16 port, NetworkLayerProtocol protocol, EncryptionType conType, QChar hierarchysep, const QString &peerName, QObject *parent) :
     QSslSocket(parent), m_user(user), m_password(password), m_host(host), m_port(port), m_protocol(protocol), m_encType(conType), m_hierarchysep(hierarchysep), m_authMech(mech)
 {
     setPeerVerifyName(peerName);
@@ -81,7 +81,7 @@ bool Imap::login()
     }
 
     QList<QByteArray> response;
-    if (Q_UNLIKELY(!checkResponse(this->readAll(), QLatin1String("*"), &response))) {
+    if (Q_UNLIKELY(!checkResponse(this->readAll(), QStringLiteral("*"), &response))) {
         this->disconnectFromHost();
         if (state() != QSslSocket::UnconnectedState) {
             this->waitForDisconnected();
@@ -96,7 +96,7 @@ bool Imap::login()
         if (respLine.contains(QByteArrayLiteral("STARTTLS"))) {
 
             const QString tag = getTag();
-            const QString command = tag + QLatin1String(" STARTTLS\r\n");
+            const QString command = tag + QLatin1String(" STARTTLS\r\n"); // clazy:exclude=qstring-allocations
             this->write(command.toLatin1());
 
             if (Q_UNLIKELY(!this->waitForReadyRead())) {
@@ -136,7 +136,7 @@ bool Imap::login()
     if (m_authMech == CLEAR) {
 
         const QString tag2 = getTag();
-        QString cmd = tag2 + QLatin1String(" LOGIN \"") + m_user + QLatin1String("\" \"") + m_password + QLatin1String("\"\r\n");
+        QString cmd = tag2 + QLatin1String(" LOGIN \"") + m_user + QLatin1String("\" \"") + m_password + QLatin1String("\"\r\n"); // clazy:exclude=qstring-allocations
         QByteArray cmdBa = cmd.toUtf8();
         if (Q_UNLIKELY(write(cmdBa) != cmdBa.length())) {
             return disconnectOnError(tr("Failed to send %1 command to the IMAP server: %2").arg(QStringLiteral("LOGIN"), errorString()));
@@ -152,7 +152,7 @@ bool Imap::login()
 
     } else if (m_authMech == LOGIN) {
         const QString tag2 = getTag();
-        QString cmd = tag2 + QLatin1String(" AUTHENTICATE LOGIN") + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+        QString cmd = tag2 + QLatin1String(" AUTHENTICATE LOGIN") + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed); // clazy:exclude=qstring-allocations
         QByteArray cmdBa = cmd.toLatin1();
         if (Q_UNLIKELY(write(cmdBa) != cmdBa.length())) {
             return disconnectOnError(tr("Failed to send %1 command to the IMAP server: %2").arg(QStringLiteral("AUTHENTICATE LOGIN"), errorString()));
@@ -197,7 +197,7 @@ bool Imap::login()
     } else if (m_authMech == PLAIN) {
 
         const QString tag2 = getTag();
-        QString cmd = tag2 + QLatin1String(" AUTHENTICATE PLAIN") + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+        QString cmd = tag2 + QLatin1String(" AUTHENTICATE PLAIN") + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed); // clazy:exclude=qstring-allocations
         QByteArray cmdBa = cmd.toLatin1();
         if (Q_UNLIKELY(write(cmdBa) != cmdBa.length())) {
             return disconnectOnError(tr("Failed to send %1 command to the IMAP server: %2").arg(QStringLiteral("AUTHENTICATE PLAIN"), errorString()));
@@ -227,7 +227,7 @@ bool Imap::login()
     } else if (m_authMech == CRAMMD5) {
 
         const QString tag2 = getTag();
-        QString cmd = tag2 + QLatin1String(" AUTHENTICATE CRAM-MD5") + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+        QString cmd = tag2 + QLatin1String(" AUTHENTICATE CRAM-MD5") + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed); // clazy:exclude=qstring-allocations
         QByteArray cmdBa = cmd.toLatin1();
         if (Q_UNLIKELY(write(cmdBa) != cmdBa.length())) {
             return disconnectOnError(tr("Failed to send %1 command to the IMAP server: %2").arg(QStringLiteral("AUTHENTICATE CRAM-MD5"), errorString()));
@@ -315,7 +315,7 @@ bool Imap::logout()
     }
 
     const QString tag = getTag();
-    const QString command = tag + QLatin1String(" LOGOUT\r\n");
+    const QString command = tag + QLatin1String(" LOGOUT\r\n"); // clazy:exclude=qstring-allocations
     this->write(command.toLatin1());
 
     if ((this->state() == ClosingState) || (this->state() == UnconnectedState)) {
@@ -365,7 +365,7 @@ QStringList Imap::getCapabilities(bool forceReload)
 
         const QString tag = getTag();
 
-        const QString command = tag + QLatin1String(" CAPABILITY\r\n");
+        const QString command = tag + QLatin1String(" CAPABILITY\r\n"); // clazy:exclude=qstring-allocations
 
         this->write(command.toLatin1());
 
@@ -406,7 +406,7 @@ quota_pair Imap::getQuota(const QString &user)
     quota_pair quota(0, 0);
 
     const QString tag = getTag();
-    const QString command = tag + QLatin1String(" GETQUOTA user") + m_hierarchysep + user + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed);
+    const QString command = tag + QLatin1String(" GETQUOTA user") + m_hierarchysep + user + QChar(QChar::CarriageReturn) + QChar(QChar::LineFeed); // clazy:exclude=qstring-allocations
 
     this->write(command.toLatin1());
 
@@ -524,7 +524,7 @@ void Imap::setHost ( const QString& host )
 }
 
 
-void Imap::setPort ( const quint16& port )
+void Imap::setPort ( const quint16 port )
 {
     m_port = port;
 }

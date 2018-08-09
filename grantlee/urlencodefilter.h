@@ -34,7 +34,7 @@
  * {{ email_address|sk_urlencode }}
  * \endcode
  */
-class UrlEncodeFilter : public Grantlee::Filter
+class UrlEncodeFilter : public Grantlee::Filter // clazy:exclude=copyable-polymorphic
 {
 public:
     /*!

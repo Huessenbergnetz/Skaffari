@@ -33,6 +33,11 @@ class FileSizeFormatTag : public Grantlee::AbstractNodeFactory
     Q_OBJECT
 public:
     /*!
+     * \brief Constructs a new %FileSizeFormatTag object with the given \a parent.
+     */
+    explicit FileSizeFormatTag(QObject *parent = nullptr);
+
+    /*!
      * \brief Returns the FileSizeFormat node.
      */
     Grantlee::Node *getNode(const QString &tagContent, Grantlee::Parser *p) const override;
@@ -67,7 +72,7 @@ public:
  * {% sk_fsf 2048 2 2 1024 %}
  * \endcode
  */
-class FileSizeFormat : public Grantlee::Node
+class FileSizeFormat : public Grantlee::Node // clazy:exclude=ctor-missing-parent-argument
 {
     Q_OBJECT
 public:

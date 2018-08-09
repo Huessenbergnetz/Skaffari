@@ -31,7 +31,7 @@ public:
         c(_c)
     {}
 
-    Data(Cutelyst::Context *_c, SkaffariError::ErrorType _type , const QString _errorText, const QVariant _errorData) :
+    Data(Cutelyst::Context *_c, SkaffariError::ErrorType _type , const QString &_errorText, const QVariant &_errorData) :
         QSharedData(),
         c(_c),
         errorText(_errorText),
@@ -73,7 +73,7 @@ public:
         }
     }
 
-    Data(Cutelyst::Context *_c, const SkaffariIMAPError& _imapError, const QString _errorText) :
+    Data(Cutelyst::Context *_c, const SkaffariIMAPError& _imapError, const QString &_errorText) :
         QSharedData(),
         c(_c),
         imapError(_imapError),
@@ -123,19 +123,19 @@ SkaffariError::SkaffariError(Cutelyst::Context *c) :
 
 }
 
-SkaffariError::SkaffariError(Cutelyst::Context *c, SkaffariError::ErrorType type, const QString errorText, const QVariant errorData) :
+SkaffariError::SkaffariError(Cutelyst::Context *c, SkaffariError::ErrorType type, const QString &errorText, const QVariant &errorData) :
     d(new Data(c, type, errorText, errorData))
 {
 
 }
 
-SkaffariError::SkaffariError(Cutelyst::Context *c, const QSqlError& sqlError, const QString errorText) :
+SkaffariError::SkaffariError(Cutelyst::Context *c, const QSqlError& sqlError, const QString &errorText) :
     d(new Data(c, sqlError, errorText))
 {
 
 }
 
-SkaffariError::SkaffariError(Cutelyst::Context *c, const SkaffariIMAPError& imapError, const QString errorText) :
+SkaffariError::SkaffariError(Cutelyst::Context *c, const SkaffariIMAPError& imapError, const QString &errorText) :
     d(new Data(c, imapError, errorText))
 {
 

@@ -130,7 +130,7 @@ private:
      * \param allowedChars  Array of allowed characters.
      * \return              Byte array that can be used as salt.
      */
-    static QByteArray requestSalt(quint16 length, const QByteArray allowedChars = QByteArray());
+    static QByteArray requestSalt(quint16 length, const QByteArray &allowedChars = QByteArray());
 };
 
 #endif // PASSWORD_H

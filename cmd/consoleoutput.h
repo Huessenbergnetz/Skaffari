@@ -169,7 +169,7 @@ protected:
      * \param acceptableInput   optional list of acceptable input values, if input is not acceptable, input request will be retried
      * \return                  the entered input value
      */
-    QString readString(const QString &name, const QString &defaultVal, const QStringList &desc = QStringList(), const QStringList acceptableInput = QStringList()) const;
+    QString readString(const QString &name, const QString &defaultVal, const QStringList &desc = QStringList(), const QStringList &acceptableInput = QStringList()) const;
     /*!
      * \brief Reads a network port (0-65535) from stdin.
      * \param name              the name of the value to read
@@ -186,7 +186,7 @@ protected:
      * \param acceptableInput   optional list of acceptable input values, if input is not acceptable, input request will be retried
      * \return                  the entered input value
      */
-    quint8 readChar(const QString &name, quint8 defaultVal, const QStringList &desc = QStringList(), const QList<quint8> acceptableInput = QList<quint8>()) const;
+    quint8 readChar(const QString &name, quint8 defaultVal, const QStringList &desc = QStringList(), const QList<quint8> &acceptableInput = QList<quint8>()) const;
     /*!
      * \brief Reads a quint32 from stdin.
      * \param name              the name of the value to read

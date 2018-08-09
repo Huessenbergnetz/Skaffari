@@ -43,7 +43,7 @@ void Logout::index(Context *c)
 
     Session::deleteSession(c, QStringLiteral("User logged out."));
 
-    c->response()->redirect(c->uriFor(QLatin1String("/login")));
+    c->response()->redirect(c->uriFor(QStringLiteral("/login")));
 }
 
 #include "moc_logout.cpp"

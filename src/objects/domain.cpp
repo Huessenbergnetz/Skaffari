@@ -610,7 +610,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError &errorData)
     return dom;
 }
 
-std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError &errorData, const Cutelyst::AuthenticationUser &user, const QString orderBy, const QString sort, quint32 limit)
+std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError &errorData, const Cutelyst::AuthenticationUser &user, const QString &orderBy, const QString &sort, quint32 limit)
 {
     std::vector<Domain> lst;
 
