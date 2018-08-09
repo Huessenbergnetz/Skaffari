@@ -19,6 +19,7 @@ target_include_directories(grantlee_skaffari SYSTEM PRIVATE ${Cutelyst2Qt5_INCLU
 target_compile_features(grantlee_skaffari
     PRIVATE
         cxx_auto_type
+        cxx_generalized_initializers
         cxx_lambdas
         cxx_long_long_type
         cxx_nonstatic_member_init
@@ -26,7 +27,9 @@ target_compile_features(grantlee_skaffari
         cxx_override
         cxx_range_for
         cxx_right_angle_brackets
+        cxx_strong_enums
         cxx_unicode_literals
+        cxx_uniform_initialization
 )
 
 target_compile_options(grantlee_skaffari
