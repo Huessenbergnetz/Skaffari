@@ -201,6 +201,11 @@ int ConfigChecker::exec() const
     return 0;
 }
 
+QString ConfigChecker::absolutePathToConfigFile() const
+{
+    return m_confFile.absoluteFilePath();
+}
+
 int ConfigChecker::configErrorWithKey(const QString &message, const QString &key) const
 {
     //: %1 will be a sentence that will contain a description, %2 will contain the affected configuration key

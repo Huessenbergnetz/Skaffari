@@ -42,6 +42,11 @@ public:
      */
     int exec() const;
 
+    /*!
+     * \brief Returns the absolute path to the configuration file.
+     */
+    QString absolutePathToConfigFile() const;
+
 private:
     ConfigFile m_confFile; /**< Stores the absolute path to the configuration file */
 
