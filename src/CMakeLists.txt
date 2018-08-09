@@ -88,6 +88,7 @@ target_compile_features(skaffari
         cxx_range_for
         cxx_right_angle_brackets
         cxx_rvalue_references
+        cxx_unicode_literals
 )
 
 target_compile_definitions(skaffari

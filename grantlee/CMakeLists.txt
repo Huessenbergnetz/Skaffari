@@ -26,6 +26,7 @@ target_compile_features(grantlee_skaffari
         cxx_override
         cxx_range_for
         cxx_right_angle_brackets
+        cxx_unicode_literals
 )
 
 target_compile_options(grantlee_skaffari
