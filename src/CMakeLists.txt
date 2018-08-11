@@ -80,6 +80,7 @@ target_include_directories(skaffari
 target_compile_features(skaffari
     PRIVATE
         cxx_auto_type
+        cxx_defaulted_move_initializers
         cxx_generalized_initializers
         cxx_lambdas
         cxx_long_long_type
