@@ -38,7 +38,6 @@
 #include <QJsonValue>
 #include <QTimeZone>
 #include <algorithm>
-#include <vector>
 
 Q_LOGGING_CATEGORY(SK_DOMAIN, "skaffari.domain")
 
@@ -235,7 +234,7 @@ float Domain::domainQuotaUsagePercent() const
         return 0.0;
     }
 
-    return ((float)d->domainQuotaUsed / (float)d->domainQuota) * 100.0;
+    return (static_cast<float>(d->domainQuotaUsed) / static_cast<float>(d->domainQuota)) * 100.0f;
 }
 
 float Domain::accountUsagePercent() const
@@ -244,7 +243,7 @@ float Domain::accountUsagePercent() const
         return 0.0;
     }
 
-    return ((float)d->accounts / (float)d->maxAccounts) * 100.0;
+    return (static_cast<float>(d->accounts) / static_cast<float>(d->maxAccounts)) * 100.0f;
 }
 
 bool Domain::hasAccess(Cutelyst::Context *c) const
@@ -359,7 +358,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
             return dom;
         }
 
-        foldersVect.reserve(folders.size());
+        foldersVect.reserve(static_cast<std::vector<Folder>::size_type>(folders.size()));
 
         for (const QString &folder : folders) {
             const QString _folder = folder.trimmed();
@@ -517,7 +516,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError &errorData)
 
         if (Q_LIKELY(fq.exec())) {
             std::vector<Folder> defFolders;
-            defFolders.reserve(fq.size());
+            defFolders.reserve(static_cast<std::vector<Folder>::size_type>(fq.size()));
             while (fq.next()) {
                 defFolders.emplace_back(fq.value(0).value<dbid_t>(), domId, fq.value(1).toString());
             }
@@ -527,7 +526,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError &errorData)
 
             if (Q_LIKELY(aq.exec())) {
                 std::vector<SimpleAdmin> admins;
-                admins.reserve(aq.size());
+                admins.reserve(static_cast<std::vector<SimpleAdmin>::size_type>(aq.size()));
                 while (aq.next()) {
                     admins.emplace_back(aq.value(0).value<dbid_t>(), aq.value(1).toString());
                 }
@@ -1017,7 +1016,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
             qCCritical(SK_DOMAIN, "%s: can not prepare query to insert default folders into database: %s", err, qUtf8Printable(q.lastError().text()));
             return ret;
         }
-        foldersVect.reserve(folders.size());
+        foldersVect.reserve(static_cast<std::vector<Folder>::size_type>(folders.size()));
         for (const QString &folder : folders) {
             const QString &_folder = folder.trimmed();
             if (Q_LIKELY(!_folder.isEmpty())) {
