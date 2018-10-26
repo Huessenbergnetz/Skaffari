@@ -166,7 +166,7 @@ float Account::usagePercent() const
     if ((quota() == 0) && (usage() == 0)) {
         return 0;
     }
-    return ((float)usage() / (float)quota()) * (float)100;
+    return (static_cast<float>(usage()) / static_cast<float>(quota())) * 100.0f;
 }
 
 bool Account::isValid() const
@@ -988,7 +988,7 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError &e, const
         return pag;
     }
 
-    pag = Cutelyst::Pagination(foundRows, p.limit(), p.currentPage(), p.pages().size());
+    pag = Cutelyst::Pagination(static_cast<int>(foundRows), p.limit(), p.currentPage(), p.pages().size());
 
     SkaffariIMAP imap(c);
     if (!imap.login()) {
