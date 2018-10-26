@@ -1034,6 +1034,12 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
         foldersVect.shrink_to_fit();
     }
 
+    if (Q_UNLIKELY(!db.commit())) {
+        e.setSqlError(db.lastError(), c->translate("Domain", "Failed to update domain in database."));
+        qCCritical(SK_DOMAIN, "%s: can not commit database transaction: %s", err, qUtf8Printable(db.lastError().text()));
+        return ret;
+    }
+
     if (admin.type() >= AdminAccount::Administrator) {
         d->maxAccounts = maxAccounts;
         d->parent = parentDom;
