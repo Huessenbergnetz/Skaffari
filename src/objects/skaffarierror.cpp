@@ -107,10 +107,10 @@ QString SkaffariError::Data::databaseErrorText() const
     QString es;
     if (c) {
         switch(qSqlError.type()) {
-            case QSqlError::NoError: es = c->translate("SkaffariErrorData", "Database, no error occurred.");
-            case QSqlError::ConnectionError: es = c->translate("SkaffariErrorData", "Database connection error:");
-            case QSqlError::StatementError: es = c->translate("SkaffariErrorData", "SQL statement syntax error:");
-            case QSqlError::TransactionError: es = c->translate("SkaffariErrorData", "Database transaction failed error:");
+            case QSqlError::NoError: es = c->translate("SkaffariErrorData", "Database, no error occurred."); break;
+            case QSqlError::ConnectionError: es = c->translate("SkaffariErrorData", "Database connection error:"); break;
+            case QSqlError::StatementError: es = c->translate("SkaffariErrorData", "SQL statement syntax error:"); break;
+            case QSqlError::TransactionError: es = c->translate("SkaffariErrorData", "Database transaction failed error:"); break;
             default: es = c->translate("SkaffariErrorData", "Unknown database error:");
         }
     }
