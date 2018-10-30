@@ -21,15 +21,15 @@
 
 struct DockerResponse
 {
+    qint64 contentLength;
+    QVersionNumber apiVersion;
+    QDateTime date;
     QString contentType;
     QString osType;
     QString server;
     QString status;
     QByteArray data;
-    QVersionNumber apiVersion;
-    QDateTime date;
     int statusCode;
-    qint64 contentLength;
     bool dockerExperimental;
 
     static DockerResponse read(QLocalSocket &socket);
@@ -135,37 +135,20 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config, const
     }
 
     if (!containsImage) {
+        qCritical() << "Docker image not found";
         return false;
     }
 
-    QJsonObject o;
-    o.insert(QStringLiteral("Image"), QStringLiteral(DOCKER_IMAGE_NAME));
-    QJsonObject hc;
-    QJsonObject pb;
+    QJsonObject o({
+                      {QStringLiteral("Image"), QStringLiteral(DOCKER_IMAGE_NAME)}
+                  });
 
-    QJsonArray imapPortsArray;
-    QJsonObject imapHostPort{
-        {QStringLiteral("HostPort"), QString::number(imapPort)}
-    };
-    imapPortsArray.append(imapHostPort);
-    pb.insert(QStringLiteral("143/tcp"), imapPortsArray);
-
-    QJsonArray mysqlPortsArray;
-    QJsonObject mysqlHostPort{
-        {QStringLiteral("HostPort"), QString::number(mysqlPort)}
-    };
-    mysqlPortsArray.append(mysqlHostPort);
-    pb.insert(QStringLiteral("3306/tcp"), mysqlPortsArray);
-
-    QJsonArray sievePortsArry;
-    QJsonObject sieveHostPort{
-        {QStringLiteral("HostPort"), QString::number(sievePort)}
-    };
-    sievePortsArry.append(sieveHostPort);
-    pb.insert(QStringLiteral("4190/tcp"), sievePortsArry);
-
-    hc.insert(QStringLiteral("PortBindings"), pb);
-    o.insert(QStringLiteral("HostConfig"), hc);
+    QJsonObject portBindings({
+                                 {QStringLiteral("143/tcp"), QJsonArray({QJsonObject({{QStringLiteral("HostPort"), QString::number(imapPort)}})})},
+                                 {QStringLiteral("3306/tcp"), QJsonArray({QJsonObject({{QStringLiteral("HostPort"), QString::number(mysqlPort)}})})},
+                                 {QStringLiteral("4190/tcp"), QJsonArray({QJsonObject({{QStringLiteral("HostPort"), QString::number(sievePort)}})})}
+                             });
+    o.insert(QStringLiteral("HostConfig"), QJsonObject({{QStringLiteral("PortBindings"), portBindings}}));
 
     QStringList containerEnv;
     auto cit = config.constBegin();
@@ -182,7 +165,7 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config, const
     QJsonDocument po{o};
 
     cmd = QLatin1String("POST /v1.32/containers/create?name=") + name + QLatin1String(" HTTP/1.1\r\nHost:\r\nContent-Type: application/json\r\nContent-Length:"); // clazy:exclude=qstring-allocations
-    const auto content = po.toJson(QJsonDocument::Compact);
+    const QByteArray content = QJsonDocument(o).toJson(QJsonDocument::Compact);
     cmd.append(QString::number(content.length()));
     cmd.append(QLatin1String("\r\n\r\n"));
     cmd.append(content);
