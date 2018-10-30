@@ -18,20 +18,7 @@ public:
 private Q_SLOTS:
     void doTest();
     void doTest_data();
-
-    void cleanup();
-    void cleanupTestCase();
 };
-
-void CmdSetupTest::cleanupTestCase()
-{
-    QVERIFY(stopContainers());
-}
-
-void CmdSetupTest::cleanup()
-{
-    QSqlDatabase::removeDatabase(QStringLiteral(QSQLDBNAME));
-}
 
 void CmdSetupTest::doTest()
 {
@@ -225,7 +212,7 @@ void CmdSetupTest::doTest()
 
     QVERIFY(cmd.waitForOutput());
 
-    QTRY_COMPARE(cmd.state(), QProcess::NotRunning);
+    QTRY_COMPARE(cmd.state(), QProcess::NotRunning); // clazy:exclude=qstring-allocations
     QCOMPARE(cmd.exitStatus(), QProcess::NormalExit);
     QCOMPARE(cmd.exitCode(), 0);
 
