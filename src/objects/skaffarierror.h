@@ -54,7 +54,7 @@ public:
         AuthenticationError,	/**< Authentication failed */
         InputError,				/**< Input data is corrupted */
         ApplicationError,       /**< An internal error occurred */
-        AuthorizationError,      /**< Authorization for an operation failed */
+        AuthorizationError,     /**< Authorization for an operation failed */
         NotFound,               /**< The requested resource could not be found */
         UnknownError			/**< Unknown error */
     };

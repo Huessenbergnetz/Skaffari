@@ -162,7 +162,6 @@ bool SkAppTestObject::startContainer(const QMap<QString, QString> &config, const
     if (!containerEnv.empty()) {
         o.insert(QStringLiteral("Env"), QJsonArray::fromStringList(containerEnv));
     }
-    QJsonDocument po{o};
 
     cmd = QLatin1String("POST /v1.32/containers/create?name=") + name + QLatin1String(" HTTP/1.1\r\nHost:\r\nContent-Type: application/json\r\nContent-Length:"); // clazy:exclude=qstring-allocations
     const QByteArray content = QJsonDocument(o).toJson(QJsonDocument::Compact);
