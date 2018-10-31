@@ -79,15 +79,23 @@ public:
     static bool checkCheckbox(const Cutelyst::ParamsMultiMap &params, const QString &field);
 
     /*!
-     * \brief Sets the Response of the Context \a c to the status 405 and adds a error message.
+     * \brief Sets the Response of the Context \a c to the status 405 and adds an error message.
      *
      * The HTTP status code of the Respsonse will be set to 405 (Method Not Allowed) and the JSON
-     * object to respond will contain a key named \a error_msg that will contain an human readable
+     * object to respond will contain a key named \a error_msg that will contain a human readable
      * error message string. This will also set the Repsonse Header \a Allow to \c POST.
      *
      * \param c     Pointer to the current context.
      */
     static bool ajaxPostOnly(Cutelyst::Context *c, bool isAjax);
+
+    /*!
+     * \brief Converts a string \a str into a database ID of type dbid_t.
+     * \param str   Input string.
+     * \param ok    If not a \c nullptr, failure is reported by setting it to \c false and success by setting it to \c true.
+     * \return The string converted into database ID type dbid_t. Returns \c 0 if the conversion fails.
+     */
+    static dbid_t strToDbid(const QString &str, bool *ok = nullptr);
 
 private:
     // prevent construction

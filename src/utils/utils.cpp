@@ -123,3 +123,21 @@ bool Utils::ajaxPostOnly(Cutelyst::Context *c, bool isAjax)
         return false;
     }
 }
+
+dbid_t Utils::strToDbid(const QString &str, bool *ok)
+{
+    dbid_t val = 0;
+    bool _ok = true;
+    const qlonglong tmpval = str.toLongLong(&_ok);
+    if (_ok) {
+        if (Q_UNLIKELY(tmpval < static_cast<qlonglong>(std::numeric_limits<dbid_t>::min()) || tmpval > static_cast<qlonglong>(std::numeric_limits<dbid_t>::max()))) {
+            _ok = false;
+        } else {
+            val = static_cast<dbid_t>(tmpval);
+        }
+    }
+    if (ok) {
+        *ok = _ok;
+    }
+    return val;
+}
