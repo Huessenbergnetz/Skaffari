@@ -168,15 +168,15 @@ int WebCyradmImporter::exec() const
 
     const QString imapArray = vars.value(QStringLiteral("CYRUS"));
     QString imaphost = getArrayEntry(imapArray, QStringLiteral("HOST"));
-    quint16 imapport = getArrayEntry(imapArray, QStringLiteral("PORT")).toShort();
+    quint16 imapport = getArrayEntry(imapArray, QStringLiteral("PORT")).toUShort();
     QString imapuser = getArrayEntry(imapArray, QStringLiteral("ADMIN"));
     QString imappass = getArrayEntry(imapArray, QStringLiteral("PASS"));
     quint8 imapprotocol = SK_DEF_IMAP_PROTOCOL;
     quint8 imapencryption = SK_DEF_IMAP_ENCRYPTION;
     QString imappeername;
 
-    quota_size_t defaultQuota = vars.value(QStringLiteral("DEFAULT_QUOTA")).toLongLong();
-    quota_size_t defaultDomainQuota = vars.value(QStringLiteral("DEFAULT_DOMAIN_QUOTA")).toLongLong();
+    quota_size_t defaultQuota = vars.value(QStringLiteral("DEFAULT_QUOTA")).toULongLong();
+    quota_size_t defaultDomainQuota = vars.value(QStringLiteral("DEFAULT_DOMAIN_QUOTA")).toULongLong();
     QString defaultTimezone;
     quint32 defaultMaxAccounts = 1000;
 

@@ -578,8 +578,6 @@ QString Imap::encryptionTypeToString(EncryptionType type)
     case IMAPS:
         str = QStringLiteral("IMAPS");
         break;
-    default:
-        break;
     }
 
     return str;
@@ -630,8 +628,6 @@ QString Imap::authMechToString(AuthMech mechanism)
         return QStringLiteral("PLAIN");
     case CRAMMD5:
         return QStringLiteral("CRAM-MD5");
-    default:
-        return QStringLiteral("INVALID!");
     }
 }
 

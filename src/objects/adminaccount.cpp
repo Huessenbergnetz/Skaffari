@@ -417,7 +417,7 @@ std::vector<AdminAccount> AdminAccount::list(Cutelyst::Context *c, SkaffariError
         return list;
     }
 
-    list.reserve(q.size());
+    list.reserve(static_cast<std::vector<AdminAccount>::size_type>(q.size()));
 
     while (q.next()) {
         list.emplace_back(q.value(0).value<dbid_t>(),
