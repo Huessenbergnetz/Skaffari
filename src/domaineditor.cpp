@@ -76,10 +76,17 @@ void DomainEditor::index(Context *c)
 
 void DomainEditor::base(Context* c, const QString &id)
 {
-    const dbid_t domainId = SKAFFARI_STRING_TO_DBID(id);
-    if (Domain::checkAccess(c, domainId)) {
-        Domain::toStash(c, domainId);
+    bool ok = true;
+    const dbid_t domainId = Utils::strToDbid(id, &ok);
+    if (Q_LIKELY(ok)) {
+        if (Domain::checkAccess(c, domainId)) {
+            Domain::toStash(c, domainId);
+        } else {
+            c->detach(c->getAction(QStringLiteral("error")));
+        }
     } else {
+        SkaffariError e(c, SkaffariError::InputError, c->translate("DomainEditor", "Invalid domain database ID."));
+        e.toStash(c);
         c->detach(c->getAction(QStringLiteral("error")));
     }
 }
@@ -406,7 +413,7 @@ void DomainEditor::create(Context* c)
 
         SkaffariError e(c);
         AuthenticationUser user = Authentication::user(c);
-        const std::vector<SimpleDomain> doms = SimpleDomain::list(c, e, user.value(QStringLiteral("type")).value<qint16>(), user.id().value<dbid_t>(), true);
+        const std::vector<SimpleDomain> doms = SimpleDomain::list(c, e, user.value(QStringLiteral("type")).value<quint8>(), user.id().value<dbid_t>(), true);
         if (e.type() != SkaffariError::NoError) {
             c->setStash(QStringLiteral("error_msg"), e.errorText());
         }
@@ -443,27 +450,41 @@ void DomainEditor::remove(Context* c)
 
             if (dom.name() == req->bodyParam(QStringLiteral("domainName"))) {
 
-                SkaffariError e(c);
-                if (dom.remove(c, e, req->bodyParam(QStringLiteral("newParentId"), QStringLiteral("0")).toULong(), false)) {
+                bool newParentIdOk = true;
+                const dbid_t newParentId = Utils::strToDbid(req->bodyParam(QStringLiteral("newParentId"), QStringLiteral("0")), &newParentIdOk);
 
-                    const QString statusMsg = c->translate("DomainEditor", "The domain %1 has been successfully deleted.").arg(dom.name());
+                if (Q_LIKELY(newParentIdOk)) {
+                    SkaffariError e(c);
+                    if (dom.remove(c, e, newParentId, false)) {
 
-                    if (isAjax) {
-                        json.insert(QStringLiteral("status_msg"), statusMsg);
-                        json.insert(QStringLiteral("deleted_id"), static_cast<qint64>(dom.id()));
-                        json.insert(QStringLiteral("deleted_name"), dom.name());
+                        const QString statusMsg = c->translate("DomainEditor", "The domain %1 has been successfully deleted.").arg(dom.name());
+
+                        if (isAjax) {
+                            json.insert(QStringLiteral("status_msg"), statusMsg);
+                            json.insert(QStringLiteral("deleted_id"), static_cast<qint64>(dom.id()));
+                            json.insert(QStringLiteral("deleted_name"), dom.name());
+                        } else {
+                            c->res()->redirect(c->uriFor(QStringLiteral("/domain"), StatusMessage::statusQuery(c, statusMsg)));
+                        }
+
                     } else {
-                        c->res()->redirect(c->uriFor(QStringLiteral("/domain"), StatusMessage::statusQuery(c, statusMsg)));
-                    }
 
+                        if (isAjax) {
+                            json.insert(QStringLiteral("error_msg"), e.errorText());
+                        } else {
+                            c->setStash(QStringLiteral("error_msg"), e.errorText());
+                        }
+                        c->res()->setStatus(Response::InternalServerError);
+                    }
                 } else {
 
+                    const QString errorMsg = c->translate("DomainEditor", "Invalid new parent domain database ID.");
                     if (isAjax) {
-                        json.insert(QStringLiteral("error_msg"), e.errorText());
+                        json.insert(QStringLiteral("error_msg"), errorMsg);
                     } else {
-                        c->setStash(QStringLiteral("error_msg"), e.errorText());
+                        c->setStash(QStringLiteral("error_msg"), errorMsg);
                     }
-                    c->res()->setStatus(Response::InternalServerError);
+                    c->res()->setStatus(Response::BadRequest);
                 }
 
             } else {
@@ -618,7 +639,7 @@ void DomainEditor::add_account(Context* c)
                 // if the domain allows free names, we only generate a proposal starting with 0000
 
                 const QString cntStr = QString::number(dom.accounts());
-                const quint8 digits = cntStr.size();
+                const int digits = cntStr.size();
                 if (Q_LIKELY(digits < 4)) {
                     username.append(QString(4 - digits, QLatin1Char('0')));
                 }
@@ -647,9 +668,9 @@ void DomainEditor::add_account(Context* c)
                         if (Q_LIKELY(match.hasMatch())) {
 
                             const QString cntStr = match.captured(0);
-                            const quint32 currentCnt = cntStr.toULong();
-                            const quint32 nextCnt = currentCnt + 1;
-                            const quint8 digits = QString::number(nextCnt).size();
+                            const int currentCnt = cntStr.toInt();
+                            const int nextCnt = currentCnt + 1;
+                            const int digits = QString::number(nextCnt).size();
                             if (Q_LIKELY(digits < 4)) {
                                 username.append(QString(4 - digits, QLatin1Char('0')));
                             }

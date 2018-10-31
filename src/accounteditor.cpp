@@ -64,13 +64,28 @@ AccountEditor::~AccountEditor()
 
 void AccountEditor::base(Context* c, const QString &domainId, const QString& accountId)
 {
-    const dbid_t domId = SKAFFARI_STRING_TO_DBID(domainId);
-    if (Domain::checkAccess(c, domId)) {
-        Domain::toStash(c, domId);
-        if (!c->detached()) {
-            Account::toStash(c, SKAFFARI_STRING_TO_DBID(accountId));
+    bool domOk = true;
+    const dbid_t domId = Utils::strToDbid(domainId, &domOk);
+    if (Q_LIKELY(domOk)) {
+        if (Domain::checkAccess(c, domId)) {
+            Domain::toStash(c, domId);
+            if (!c->detached()) {
+                bool accOk = true;
+                const dbid_t accId = Utils::strToDbid(accountId, &accOk);
+                if (Q_LIKELY(accOk)) {
+                    Account::toStash(c, accId);
+                } else {
+                    SkaffariError e(c, SkaffariError::InputError, c->translate("AccountEditor", "Invalid account database ID."));
+                    e.toStash(c);
+                    c->detach(c->getAction(QStringLiteral("error")));
+                }
+            }
+        } else {
+            c->detach(c->getAction(QStringLiteral("error")));
         }
     } else {
+        SkaffariError e(c, SkaffariError::InputError, c->translate("AccountEditor", "Invalid domain database ID."));
+        e.toStash(c);
         c->detach(c->getAction(QStringLiteral("error")));
     }
 }
@@ -977,18 +992,22 @@ void AccountEditor::check(Context *c)
 
 void AccountEditor::list(Context *c)
 {
-    const dbid_t domainId = SKAFFARI_STRING_TO_DBID(c->req()->queryParam(QStringLiteral("domainId"), QStringLiteral("0")));
-    const QString searchString = c->req()->queryParam(QStringLiteral("searchString"));
-
-    SkaffariError e(c);
-    const QJsonArray accounts = SimpleAccount::listJson(c, e, AdminAccount::getUserType(c), AdminAccount::getUserId(c), domainId, searchString);
-    QJsonObject o;
-    o.insert(QStringLiteral("accounts"), accounts);
-    if (e.type() != SkaffariError::NoError) {
-        o.insert(QStringLiteral("error_msg"), e.errorText());
-        c->res()->setStatus(Response::InternalServerError);
+    bool ok = true;
+    const dbid_t domainId = Utils::strToDbid(c->req()->queryParam(QStringLiteral("domainId"), QStringLiteral("0")), &ok);
+    if (Q_LIKELY(ok)) {
+        const QString searchString = c->req()->queryParam(QStringLiteral("searchString"));
+        SkaffariError e(c);
+        const QJsonArray accounts = SimpleAccount::listJson(c, e, AdminAccount::getUserType(c), AdminAccount::getUserId(c), domainId, searchString);
+        QJsonObject o({{QStringLiteral("accounts"), accounts}});
+        if (e.type() != SkaffariError::NoError) {
+            o.insert(QStringLiteral("error_msg"), e.errorText());
+            c->res()->setStatus(Response::InternalServerError);
+        }
+        c->res()->setJsonObjectBody(o);
+    } else {
+        c->res()->setStatus(Response::BadRequest);
+        c->res()->setJsonObjectBody({{QStringLiteral("error_msg"), c->translate("AccountEditor", "Invalid domain database ID.")}});
     }
-    c->res()->setJsonObjectBody(o);
 }
 
 #include "moc_accounteditor.cpp"

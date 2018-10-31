@@ -79,22 +79,30 @@ void AdminEditor::index(Context *c)
 
 void AdminEditor::base(Context *c, const QString &id)
 {
-    SkaffariError e(c);
-    const AdminAccount a = AdminAccount::get(c, e, id.toULong());
-    if (!a.isValid()) {
-        if (e.type() != SkaffariError::NoError) {
-            e.toStash(c);
-        } else {
-            c->res()->setStatus(404);
-        }
-        c->detach(c->getAction(QStringLiteral("error")));
-    } else {
-        if (a.type() >= AdminAccount::getUserType(c)) {
-            c->res()->setStatus(403);
+    bool ok = true;
+    const dbid_t adminId = Utils::strToDbid(id, &ok);
+    if (Q_LIKELY(ok)) {
+        SkaffariError e(c);
+        const AdminAccount a = AdminAccount::get(c, e, adminId);
+        if (!a.isValid()) {
+            if (e.type() != SkaffariError::NoError) {
+                e.toStash(c);
+            } else {
+                c->res()->setStatus(404);
+            }
             c->detach(c->getAction(QStringLiteral("error")));
         } else {
-            AdminAccount::toStash(c, a);
+            if (a.type() >= AdminAccount::getUserType(c)) {
+                c->res()->setStatus(403);
+                c->detach(c->getAction(QStringLiteral("error")));
+            } else {
+                AdminAccount::toStash(c, a);
+            }
         }
+    } else {
+        SkaffariError e(c, SkaffariError::InputError, c->translate("AdminEditor", "Invalid administrator database ID."));
+        e.toStash(c);
+        c->detach(c->getAction(QStringLiteral("error")));
     }
 }
 
