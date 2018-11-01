@@ -46,7 +46,6 @@ Database::Database(const QString &type, const QString &host, quint16 port, const
     }
 }
 
-
 bool Database::open()
 {
     bool ret = false;
@@ -63,9 +62,10 @@ bool Database::open()
     return ret;
 }
 
-
 bool Database::open(const QString &type, const QString &host, quint16 port, const QString &name, const QString &user, const QString &password, const QString &conName)
 {
+    m_conName = conName;
+
     if (m_db.isOpen()) {
         m_db.close();
     }
@@ -89,7 +89,6 @@ bool Database::open(const QString &type, const QString &host, quint16 port, cons
     return open();
 }
 
-
 bool Database::open(const QVariantHash &params, const QString &conName)
 {
     return open(params.value(QStringLiteral("type")).toString(),
@@ -101,18 +100,16 @@ bool Database::open(const QVariantHash &params, const QString &conName)
                 conName);
 }
 
-
 QSqlError Database::lastDbError() const
 {
     return m_lastError;
 }
 
-
 QVersionNumber Database::installedVersion() const
 {
     QVersionNumber version;
 
-    QSqlQuery q;
+    QSqlQuery q(m_db);
 
     q.exec(QStringLiteral("SELECT val FROM systeminfo WHERE name = 'skaffari_db_version'"));
 
@@ -122,7 +119,6 @@ QVersionNumber Database::installedVersion() const
 
     return version;
 }
-
 
 QVersionNumber Database::sqlFilesVersion() const
 {
@@ -137,7 +133,6 @@ QVersionNumber Database::sqlFilesVersion() const
 
     return version;
 }
-
 
 bool Database::installDatabase()
 {
@@ -181,164 +176,54 @@ bool Database::setAdmin(const QString &adminUser, const QByteArray &adminPasswor
 {
     bool ret = false;
 
-    const int id = setAdminAccount(adminUser, adminPassword);
-    if (Q_UNLIKELY(id <= 0)) {
-        return ret;
+    if (Q_LIKELY(m_db.transaction())) {
+
+        QSqlQuery q(m_db);
+        if (Q_LIKELY(q.prepare(QStringLiteral("INSERT INTO adminuser (username, password, type, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")))) {
+            QDateTime current = QDateTime::currentDateTimeUtc();
+            q.addBindValue(adminUser);
+            q.addBindValue(adminPassword);
+            q.addBindValue(255);
+            q.addBindValue(current);
+            q.addBindValue(current);
+
+            if (Q_LIKELY(q.exec())) {
+                const uint id = q.lastInsertId().toUInt();
+
+                if (id > 0) {
+                    q.prepare(QStringLiteral("INSERT INTO settings (admin_id) VALUES (?)"));
+                    q.addBindValue(id);
+                    if (Q_LIKELY(q.exec())) {
+                        if (Q_LIKELY(m_db.commit())) {
+                            ret = true;
+                        } else {
+                            m_lastError = m_db.lastError();
+                            m_db.rollback();
+                        }
+
+                    } else {
+                        m_lastError = q.lastError();
+                        m_db.rollback();
+                    }
+
+                } else {
+                    m_db.rollback();
+                }
+
+            } else {
+                m_lastError = q.lastError();
+            }
+
+        } else {
+            m_lastError = q.lastError();
+        }
+
+    } else {
+        m_lastError = m_db.lastError();
     }
-
-    if (Q_UNLIKELY(!setAdminSettings(id))) {
-        rollbackAdminAccount(id);
-        return ret;
-    }
-
-//    if (Q_UNLIKELY(!setAdminDomains(id))) {
-//        rollbackAdminSettings(id);
-//        rollbackAdminAccount(id);
-//        return ret;
-//    }
-
-    ret = true;
 
     return ret;
 }
-
-
-int Database::setAdminAccount(const QString &user, const QByteArray &pass)
-{
-    int id = 0;
-
-    QSqlQuery q(m_db);
-    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO adminuser (username, password, type, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")))) {
-        m_lastError = q.lastError();
-        return id;
-    }
-
-    QDateTime current = QDateTime::currentDateTimeUtc();
-    q.addBindValue(user);
-    q.addBindValue(pass);
-    q.addBindValue(255);
-    q.addBindValue(current);
-    q.addBindValue(current);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        m_lastError = q.lastError();
-        return id;
-    }
-
-    id = q.lastInsertId().toInt();
-
-    return id;
-}
-
-
-bool Database::rollbackAdminAccount(int adminId) const
-{
-    bool ret = false;
-
-    QSqlQuery q(m_db);
-    if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM adminuser WHERE id = ?")))) {
-        return ret;
-    }
-
-    q.addBindValue(adminId);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        return ret;
-    }
-
-    ret = true;
-
-    return ret;
-}
-
-
-bool Database::setAdminSettings(int adminId)
-{
-    bool ret = false;
-
-    QSqlQuery q(m_db);
-    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO settings (admin_id) VALUES (?)")))) {
-        m_lastError = q.lastError();
-        return ret;
-    }
-
-    q.addBindValue(adminId);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        m_lastError = q.lastError();
-        return ret;
-    }
-
-    ret = true;
-
-    return ret;
-}
-
-
-bool Database::rollbackAdminSettings(int adminId) const
-{
-    bool ret = false;
-
-    QSqlQuery q(m_db);
-    if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM settings WHERE admin_id = ?")))) {
-        return ret;
-    }
-
-    q.addBindValue(adminId);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        return ret;
-    }
-
-    ret = true;
-
-    return ret;
-}
-
-
-bool Database::setAdminDomains(int adminId)
-{
-    bool ret = false;
-
-    QSqlQuery q(m_db);
-    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO domainadmin (domain_id, admin_id) VALUES (0, ?)")))) {
-        m_lastError = q.lastError();
-        return ret;
-    }
-
-    q.addBindValue(adminId);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        m_lastError = q.lastError();
-        return ret;
-    }
-
-    ret = true;
-
-    return ret;
-}
-
-
-bool Database::rollbackAdminDomains(int adminId) const
-{
-    bool ret = false;
-
-    QSqlQuery q(m_db);
-    if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM domainadmin WHERE admin_id = ?")))) {
-        return ret;
-    }
-
-    q.addBindValue(adminId);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        return ret;
-    }
-
-    ret = true;
-
-    return ret;
-}
-
 
 uint Database::checkAdmin() const
 {
@@ -355,7 +240,6 @@ uint Database::checkAdmin() const
     return adminCount;
 }
 
-
 bool Database::setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusPassword)
 {
     bool ret = false;
@@ -366,7 +250,7 @@ bool Database::setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusP
         return ret;
     }
 
-    QDateTime current = QDateTime::currentDateTimeUtc();
+    const QDateTime current = QDateTime::currentDateTimeUtc();
 
     q.addBindValue(cyrusAdmin);
     q.addBindValue(0);
@@ -381,7 +265,6 @@ bool Database::setCryusAdmin(const QString &cyrusAdmin, const QByteArray &cyrusP
 
     return ret;
 }
-
 
 QString Database::checkCyrusAdmin() const
 {
@@ -398,7 +281,6 @@ QString Database::checkCyrusAdmin() const
     return admin;
 }
 
-
 QFileInfoList Database::getSqlFiles() const
 {
     QFileInfoList fil;
@@ -410,23 +292,10 @@ QFileInfoList Database::getSqlFiles() const
     return fil;
 }
 
-
-
 QSqlDatabase Database::getDb() const
 {
     return m_db;
 }
-
-
-void Database::deleteAll()
-{
-    QSqlQuery q(m_db);
-    const QStringList tables = m_db.tables();
-    for (const QString &table : tables) {
-        q.exec(QStringLiteral("DROP TABLE %1").arg(table));
-    }
-}
-
 
 QVariantHash Database::loadOptions()
 {

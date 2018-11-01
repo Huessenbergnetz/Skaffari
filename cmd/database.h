@@ -119,7 +119,6 @@ public:
      * \brief Returns the internal QSqlDatabase object.
      */
     QSqlDatabase getDb() const;
-    void deleteAll();
 
     /*!
      * \brief Returns the options and values from the \a options table.
@@ -146,15 +145,6 @@ private:
     QString m_conName;
 
     QFileInfoList getSqlFiles() const;
-
-    int setAdminAccount(const QString &user, const QByteArray &pass);
-    bool rollbackAdminAccount(int adminId) const;
-
-    bool setAdminSettings(int adminId);
-    bool rollbackAdminSettings(int adminId) const;
-
-    bool setAdminDomains(int adminId);
-    bool rollbackAdminDomains(int adminId) const;
 
     QSqlError m_lastError;
 };

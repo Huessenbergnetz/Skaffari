@@ -321,8 +321,8 @@ int WebCyradmImporter::exec() const
 
     bool sdbaccess = false;
     QString sdbtype, sdbhost, sdbname, sdbuser, sdbpass;
-    quint16 sdbport;
-    Database sdb;
+    quint16 sdbport = 3306;
+    Database sdb; // skaffari database
     while (!sdbaccess) {
         QVariantHash dbconf = askDatabaseConfig({
                                                     {QStringLiteral("type"), QStringLiteral("QMYSQL")},
@@ -437,7 +437,7 @@ int WebCyradmImporter::exec() const
         return 99;
     }
 
-    sdb.deleteAll();
+    sdb.clear();
 
     printStatus(tr("Performing database installation"));
     if (!sdb.installDatabase()) {
@@ -875,9 +875,6 @@ int WebCyradmImporter::exec() const
     case QSettings::FormatError:
         printFailed();
         return configError(tr("Failed to write configuration to file."));
-    default:
-        printFailed();
-        return error(tr("Unknown error occurred while writing configuration to file."));
     }
 
     printSuccess(tr("Successfully configured Skaffari and imported web-cyradm data."));
