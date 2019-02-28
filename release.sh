@@ -42,7 +42,7 @@ cp CMakeLists.txt ${DIR}/templates
 for TMPL in default
 do
     pushd $TMPL
-    npm run prod
+    npm6 run prod
     pushd static
     find $PWD -type f -name "*.css" -o -type f -name "*.js" -o -type f -name "*.json" | parallel compasset
     popd
