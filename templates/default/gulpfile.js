@@ -40,7 +40,7 @@ elixir(function(mix) {
         'defaulttmpl.js'
     ], 'static/js/scripts.js');
 
-    mix.copy('node_modules/@fortawesome/fontawesome-free-webfonts/webfonts', 'static/fonts');
+    mix.copy('node_modules/@fortawesome/fontawesome-free/webfonts', 'static/fonts');
 
     mix.copy('l10n/*.json', 'static/i18n')
 });
