@@ -8,7 +8,8 @@ templates/*/static/css
 templates/*/static/js
 templates/*/static/fonts
 templates/*/static/i18n
-templates/*/gulp
+templates/*/package-lock.json
+templates/*/mix-manifest.json
 CMakeLists.txt.user
 *.qm
 *.pyc
