@@ -1,6 +1,6 @@
 /*
  * Skaffari - a mail account administration web interface based on Cutelyst
- * Copyright (C) 2017-2018 Matthias Fehring <mf@huessenbergnetz.de>
+ * Copyright (C) 2017-2019 Matthias Fehring <mf@huessenbergnetz.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -56,17 +56,6 @@ public:
      * \return human readable formatted data size string.
      */
     static QString humanBinarySize(Cutelyst::Context *c, quota_size_t sizeInByte);
-
-    /*!
-     * \brief Returns \c true if the current request is made via AJAX.
-     *
-     * The request will be considered as AJAX request if the \a Accept HTTP header
-     * contains \c application/json.
-     *
-     * \param c Pointer to the current context.
-     * \return  \c true if the request is made via AJAX.
-     */
-    static bool isAjax(Cutelyst::Context *c);
 
     /*!
      * \brief Returns \c true if \a params contains the \a field with with a specific value.

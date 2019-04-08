@@ -255,7 +255,7 @@ void DomainEditor::accounts(Context* c)
         searchString.remove(QRegularExpression(QStringLiteral("[^\\w-_\\.]"), QRegularExpression::UseUnicodePropertiesOption));
     }
 
-    const bool isAjax = Utils::isAjax(c);
+    const bool isAjax = c->req()->xhr();
     const bool loadAccounts = (!SkaffariConfig::tmplAsyncAccountList() || isAjax);
 
     SkaffariError e(c);
@@ -434,7 +434,8 @@ void DomainEditor::create(Context* c)
 
 void DomainEditor::remove(Context* c)
 {
-    const bool isAjax = Utils::isAjax(c);
+    auto req = c->req();
+    const bool isAjax = req->xhr();
     if (Utils::ajaxPostOnly(c, isAjax)) {
         return;
     }
@@ -442,8 +443,6 @@ void DomainEditor::remove(Context* c)
     QJsonObject json;
 
     if (AdminAccount::getUserType(c) >= AdminAccount::Administrator) {
-
-        auto req = c->req();
 
         if (req->isPost()) {
             auto dom = Domain::fromStash(c);

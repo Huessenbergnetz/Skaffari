@@ -244,7 +244,7 @@ void AdminEditor::remove(Context *c)
 {
     auto req = c->req();
 
-    const auto isAjax = Utils::isAjax(c);
+    const auto isAjax = req->xhr();
     QJsonObject json;
 
     if (req->isPost()) {

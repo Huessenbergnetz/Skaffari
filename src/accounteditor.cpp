@@ -197,7 +197,7 @@ void AccountEditor::edit(Context* c)
 
 void AccountEditor::remove(Context* c)
 {
-    const bool isAjax = Utils::isAjax(c);
+    const bool isAjax = c->req()->xhr();
     if (Utils::ajaxPostOnly(c, isAjax)) {
         return;
     }
@@ -278,7 +278,7 @@ void AccountEditor::addresses(Context *c)
 
 void AccountEditor::edit_address(Context *c, const QString &address)
 {
-    const bool isAjax = Utils::isAjax(c);
+    const bool isAjax = c->req()->xhr();
     if (Utils::ajaxPostOnly(c, isAjax)) {
         return;
     }
@@ -393,7 +393,7 @@ void AccountEditor::edit_address(Context *c, const QString &address)
 
 void AccountEditor::remove_address(Context *c, const QString &address)
 {
-    const bool isAjax = Utils::isAjax(c);
+    const bool isAjax = c->req()->xhr();
 
     if (Utils::ajaxPostOnly(c, isAjax)) {
         return;
@@ -534,7 +534,7 @@ void AccountEditor::remove_address(Context *c, const QString &address)
 
 void AccountEditor::add_address(Context *c)
 {
-    const bool isAjax = Utils::isAjax(c);
+    const bool isAjax = c->req()->xhr();
     if (Utils::ajaxPostOnly(c, isAjax)) {
         return;
     }
@@ -625,7 +625,7 @@ void AccountEditor::forwards(Context *c)
 
 void AccountEditor::remove_forward(Context *c, const QString &forward)
 {
-    const bool isAjax = Utils::isAjax(c);
+    const bool isAjax = c->req()->xhr();
 
     if (Utils::ajaxPostOnly(c, isAjax)) {
         return;
@@ -704,7 +704,7 @@ void AccountEditor::remove_forward(Context *c, const QString &forward)
 
 void AccountEditor::add_forward(Context *c)
 {
-    const bool isAjax = Utils::isAjax(c);
+    const bool isAjax = c->req()->xhr();
     if (Utils::ajaxPostOnly(c, isAjax)) {
         return;
     }
@@ -789,7 +789,7 @@ void AccountEditor::add_forward(Context *c)
 
 void AccountEditor::edit_forward(Context *c, const QString &oldForward)
 {
-    const bool isAjax = Utils::isAjax(c);
+    const bool isAjax = c->req()->xhr();
 
     if (Utils::ajaxPostOnly(c, isAjax)) {
         return;
@@ -879,7 +879,7 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
 
 void AccountEditor::keep_local(Context *c)
 {
-    const bool isAjax = Utils::isAjax(c);
+    const bool isAjax = c->req()->xhr();
     if (Utils::ajaxPostOnly(c, isAjax)) {
         return;
     }
@@ -931,8 +931,7 @@ void AccountEditor::keep_local(Context *c)
 
 void AccountEditor::check(Context *c)
 {
-    const bool isAjax = Utils::isAjax(c);
-
+    const bool isAjax = c->req()->xhr();
     static Validator v({
                            new ValidatorBoolean(QStringLiteral("checkChildAddresses"))
                        });

@@ -262,7 +262,7 @@ void Root::defaultPage(Context *c)
 void Root::csrfdenied(Context *c)
 {
     c->res()->setStatus(403);
-    if (Utils::isAjax(c)) {
+    if (c->req()->xhr()) {
         c->res()->setJsonObjectBody({{QStringLiteral("error_msg"), QJsonValue(c->stash(QStringLiteral("error_msg")).toString())}});
     } else {
         c->setStash(QStringLiteral("template"),     QStringLiteral("csrfdenied.html"));
@@ -296,7 +296,7 @@ void Root::error(Context *c)
         error_title = e.typeTitle(c);
         error_text  = e.errorText();
     }
-    if (Utils::isAjax(c)) {
+    if (c->req()->xhr()) {
         c->res()->setJsonObjectBody({{QStringLiteral("error_msg"), QJsonValue(error_text)}});
     } else {
         const QString siteTitle = QString::number(c->res()->status()) + QLatin1String(" - ") + error_title;
@@ -319,7 +319,7 @@ bool Root::Auto(Context* c)
     }
 
     if (Q_UNLIKELY(user.isNull())) {
-        if (Utils::isAjax(c)) {
+        if (c->req()->xhr()) {
             c->res()->setStatus(Response::Unauthorized);
             c->res()->setJsonObjectBody({{QStringLiteral("error_msg"), QJsonValue(c->translate("Root", "You have to login at first."))}});
         } else {

@@ -1,6 +1,6 @@
 /*
  * Skaffari - a mail account administration web interface based on Cutelyst
- * Copyright (C) 2017-2018 Matthias Fehring <mf@huessenbergnetz.de>
+ * Copyright (C) 2017-2019 Matthias Fehring <mf@huessenbergnetz.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -93,11 +93,6 @@ QString Utils::humanBinarySize(Cutelyst::Context *c, quota_size_t sizeInByte)
 #endif
 
     return sizeStr;
-}
-
-bool Utils::isAjax(Cutelyst::Context *c)
-{
-    return c->req()->header(QStringLiteral("Accept")).contains(QLatin1String("application/json"), Qt::CaseInsensitive);
 }
 
 bool Utils::checkCheckbox(const Cutelyst::ParamsMultiMap &params, const QString &field)
