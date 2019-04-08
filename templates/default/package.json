@@ -21,6 +21,7 @@
     "popper.js": "1.14.7",
     "queuejax": "1.5.2",
     "select2": "4.0.5",
+    "select2-theme-bootstrap4": "0.2.0-beta.3",
     "stupid-table-plugin": "1.1.3"
   }
 }
