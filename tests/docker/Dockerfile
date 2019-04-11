@@ -1,4 +1,4 @@
-FROM opensuse:latest
+FROM opensuse/leap:42.3
 
 WORKDIR /init
 
