@@ -241,7 +241,7 @@ TAB_SIZE               = 4
 ALIASES                = tmplexamplelink{1}="<A HREF='https://github.com/Huessenbergnetz/Skaffari/blob/master/templates/default/site/\1'>Example from the Default template</A>" \
                          tmplexamplelink{2}="<A HREF='https://github.com/Huessenbergnetz/Skaffari/blob/master/templates/default/site/\1'>\2</A>" \
                          tmplpagegeneral{6}="<table><tr><th>Route</th><td>\1</td></tr><tr><th>AJAX support</th><td>\2</td></tr><tr><th>POST support</th><td>\3</td></tr><tr><th>Example</th><td>\tmplexamplelink{\4}</td></tr><tr><th>Controller</th><td>\5</td></tr><tr><th>Method</th><td>\link \5::\6() \6</td></tr></table>" \
-                         cationchainstart{2}="<table><tr><th>Chained</th><td>/</td></tr><tr><th>PathPart</th><td>\1</td></tr><tr><th>CaptureArgs</th><td>\2</td></tr></table>" \
+                         cactionchainstart{2}="<table><tr><th>Chained</th><td>/</td></tr><tr><th>PathPart</th><td>\1</td></tr><tr><th>CaptureArgs</th><td>\2</td></tr></table>" \
                          cactionchain{3}="<table><tr><th>Chained</th><td>\link \1() \1 \endlink</td></tr><tr><th>PathPart</th><td>\2</td></tr><tr><th>CaptureArgs</th><td>\3</td></tr></table>" \
                          cactionchainend{6}="<table><tr><th>Chained</th><td>\link \1() \1 \endlink</td></tr><tr><th>PathPart</th><td>\2</td></tr><tr><th>Args</th><td>\3</td></tr><tr><th>Route</th><td>\4</td></tr><tr><th>Template</th><td>\5</td></tr><tr><th>AJAX support</th><td>\6</td></table>" \
                          clocalaction{4}="<table><tr><th>Args</th><td>\1</td></tr><tr><th>Route</th><td>\2</td></tr><tr><th>Template</th><td>\3</td></tr><tr><th>AJAX support</th><td>\4</td></tr></table>"

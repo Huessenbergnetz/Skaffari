@@ -83,7 +83,7 @@ public:
      * If access is granted, the requested Domain and Account objects are put into
      * the stash as \a domain and \a account.
      *
-     * \cationchainstart{account,2}
+     * \cactionchainstart{account,2}
      *
      * \param c         pointer to the current context
      * \param domainId  database ID of the Domain, has to be convertible into a dbid_t
