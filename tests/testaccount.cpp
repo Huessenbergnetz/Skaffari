@@ -5,14 +5,14 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-#define _INIT_ID 1
-#define _INIT_DOMAINID 1
-#define _INIT_USERNAME "test"
-#define _INIT_QUOTA 102400
-#define _INIT_USAGE 10240
-#define _INIT_KEEPLOCAL true
-#define _INIT_CATCHALL false
-#define _INIT_STATUS 0
+#define TA_INIT_ID 1
+#define TA_INIT_DOMAINID 1
+#define TA_INIT_USERNAME "test"
+#define TA_INIT_QUOTA 102400
+#define TA_INIT_USAGE 10240
+#define TA_INIT_KEEPLOCAL true
+#define TA_INIT_CATCHALL false
+#define TA_INIT_STATUS 0
 
 class AccountTest : public QObject
 {
@@ -66,7 +66,7 @@ void AccountTest::isValid()
 
 void AccountTest::constructor()
 {
-    acc = Account(_INIT_ID, _INIT_DOMAINID, QStringLiteral(_INIT_USERNAME), true, true, true, true, QStringList(QStringLiteral("test@example.com")),  QStringList(QStringLiteral("test@example2.com")), _INIT_QUOTA, _INIT_USAGE, baseDate.addYears(-1), baseDate, baseDate.addYears(1), baseDate.addDays(182), _INIT_KEEPLOCAL, _INIT_CATCHALL, _INIT_STATUS);
+    acc = Account(TA_INIT_ID, TA_INIT_DOMAINID, QStringLiteral(TA_INIT_USERNAME), true, true, true, true, QStringList(QStringLiteral("test@example.com")),  QStringList(QStringLiteral("test@example2.com")), TA_INIT_QUOTA, TA_INIT_USAGE, baseDate.addYears(-1), baseDate, baseDate.addYears(1), baseDate.addDays(182), TA_INIT_KEEPLOCAL, TA_INIT_CATCHALL, TA_INIT_STATUS);
     QVERIFY(acc.isValid());
 }
 
@@ -77,17 +77,17 @@ void AccountTest::nameIdString()
 
 void AccountTest::id()
 {
-    QCOMPARE(acc.id(), _INIT_ID);
+    QCOMPARE(acc.id(), TA_INIT_ID);
 }
 
 void AccountTest::domainId()
 {
-    QCOMPARE(acc.domainId(), _INIT_DOMAINID);
+    QCOMPARE(acc.domainId(), TA_INIT_DOMAINID);
 }
 
 void AccountTest::username()
 {
-    QCOMPARE(acc.username(), QStringLiteral(_INIT_USERNAME));
+    QCOMPARE(acc.username(), QStringLiteral(TA_INIT_USERNAME));
 }
 
 void AccountTest::isImapEnabled()
@@ -122,12 +122,12 @@ void AccountTest::forwards()
 
 void AccountTest::quota()
 {
-    QCOMPARE(acc.quota(), _INIT_QUOTA);
+    QCOMPARE(acc.quota(), TA_INIT_QUOTA);
 }
 
 void AccountTest::usage()
 {
-    QCOMPARE(acc.usage(), _INIT_USAGE);
+    QCOMPARE(acc.usage(), TA_INIT_USAGE);
 }
 
 void AccountTest::usagePercent()
@@ -157,12 +157,12 @@ void AccountTest::passwordExpires()
 
 void AccountTest::keepLocal()
 {
-    QCOMPARE(acc.keepLocal(), _INIT_KEEPLOCAL);
+    QCOMPARE(acc.keepLocal(), TA_INIT_KEEPLOCAL);
 }
 
 void AccountTest::catchAll()
 {
-    QCOMPARE(acc.catchAll(), _INIT_CATCHALL);
+    QCOMPARE(acc.catchAll(), TA_INIT_CATCHALL);
 }
 
 void AccountTest::passwordExpired()
@@ -177,7 +177,7 @@ void AccountTest::expired()
 
 void AccountTest::status()
 {
-    QCOMPARE(acc.status(), _INIT_STATUS);
+    QCOMPARE(acc.status(), TA_INIT_STATUS);
 }
 
 void AccountTest::calcStatus()
