@@ -48,7 +48,7 @@ public:
     /*!
      * \brief Destroys the application instance.
      */
-    ~Skaffari();
+    ~Skaffari() override;
 
     /*!
      * \brief Initializes the application and returns \c true on success.

@@ -12,7 +12,7 @@ class SkAppTestObject : public QObject
     Q_OBJECT
 public:
     explicit SkAppTestObject(QObject *parent = nullptr);
-    ~SkAppTestObject();
+    ~SkAppTestObject() override;
 
 protected:
     bool startContainer(const QMap<QString,QString> &config, const QString &name, int mysqlPort, int imapPort, int sievePort) const;
