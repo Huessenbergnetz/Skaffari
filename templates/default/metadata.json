@@ -10,12 +10,12 @@
     "components": [
         {
             "name": "jQuery",
-            "version": "3.3.1",
+            "version": "3.4.1",
             "url": "https://jquery.com",
             "author": "jQuery Team",
             "authorUrl": "https://js.foundation/",
             "license": "MIT License",
-            "licenseUrl": "https://github.com/jquery/jquery/blob/3.3.1/LICENSE.txt"
+            "licenseUrl": "https://github.com/jquery/jquery/blob/3.4.1/LICENSE.txt"
         },
         {
             "name": "Popper.js",
