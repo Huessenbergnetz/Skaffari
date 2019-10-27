@@ -1,0 +1,9 @@
+[wsgi]
+processes=1
+threads=1
+socket_timeout=4
+chown_socket=@SKAFFARI_SOCKET_USER@:@SKAFFARI_SOCKET_GROUP@
+socket_access=ug
+
+[Rules]
+*debug=false

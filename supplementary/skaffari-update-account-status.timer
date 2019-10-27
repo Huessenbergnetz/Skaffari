@@ -1,0 +1,7 @@
+[Unit] 
+Description=Runs the Skaffari account status updater every half hour
+
+[Timer]
+OnBootSec=15m
+OnUnitActiveSec=30m
+Persistent=false

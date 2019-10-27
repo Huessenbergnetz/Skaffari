@@ -42,7 +42,7 @@ cp CMakeLists.txt ${DIR}/templates
 for TMPL in default
 do
     pushd $TMPL
-    npm6 run prod
+    npm run prod
     pushd static
     find $PWD -type f -name "*.css" -o -type f -name "*.js" -o -type f -name "*.json" | parallel compasset
     popd
@@ -57,7 +57,7 @@ done
 
 popd
 
-for SRCDIR in common cmd sql src doc l10n grantlee
+for SRCDIR in common cmd sql src doc l10n grantlee supplementary tests
 do
     cp -r $SRCDIR $DIR
 done

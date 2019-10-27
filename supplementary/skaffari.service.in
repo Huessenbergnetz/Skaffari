@@ -1,0 +1,19 @@
+[Unit]
+Description=Email account management web interface
+Documentation=man:skaffaricmd(8) man:skaffari.ini(5)
+After=network.target
+After=mysql.service cyrus-imapd.service postfix.service
+Before=httpd.service nginx.service lighttpd.service
+
+[Service]
+Type=notify
+Environment="QT_LOGGING_CONF=@SKAFFARI_INI_FILE@"
+PIDFile=@SKAFFARI_PID_FILE@
+ExecStartPre=@SKAFFARI_CMD_PATH@ -t -i @SKAFFARI_INI_FILE@
+ExecStart=@CUTELYST_WSGI_EXECUTABLE@ -M -a @SKAFFARI_APP_FILE@ --ini @SKAFFARI_INI_FILE@ --pidfile /run/skaffari/skaffari.pid --uid @SKAFFARI_USER@ --gid @SKAFFARI_GROUP@ --fastcgi-socket /run/skaffari/skaffari.sock
+ExecStop=@CUTELYST_WSGI_EXECUTABLE@ --stop /run/skaffari/skaffari.pid
+NotifyAccess=all
+RuntimeDirectory=skaffari
+
+[Install]
+WantedBy=multi-user.target

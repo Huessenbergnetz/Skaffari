@@ -1,0 +1,10 @@
+[Unit]
+Description=Update the status column for all user accounts
+Documentation=man:skaffaricmd(8) man:skaffari.ini(5) man:skaffari(8)
+After=mysql.service
+
+[Service]
+Type=oneshot
+ExecStart=@SKAFFARI_CMD_PATH@ --update-account-status -i @SKAFFARI_INI_FILE@
+User=@SKAFFARI_USER@
+Group=@SKAFFARI_GROUP@

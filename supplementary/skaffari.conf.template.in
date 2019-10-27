@@ -1,0 +1,50 @@
+<VirtualHost *:80>
+    ServerAdmin webmaster@skaffari.example.org
+    ServerName skaffari.example.org
+
+    ProxyFCGIBackendType GENERIC
+
+    ProxyPass / unix:@SKAFFARI_SOCKET_FILE@|fcgi://skaffari/
+
+    FileETag MTime Size
+
+    <IfModule mod_deflate.c>
+        AddOutputFilterByType DEFLATE text/html text/plain text/xml
+    </IfModule>
+
+    <IfModule mod_expires.c>
+        ExpiresActive On
+        ExpiresByType text/css "now plus 1 month"
+        ExpiresByType application/javascript "now plus 1 month"
+        ExpiresByType application/x-javascript "now plus 1 month"
+        ExpiresByType text/javascript "now plus 1 month"
+        ExpiresByType application/font-woff "now plus 1 month"
+        ExpiresByType application/x-font-woff "now plus 1 month"
+    </IfModule>
+
+    <IfModule mod_alias.c>
+        Alias /css @TEMPLATES_INSTALL_DIR@/default/static/css
+        <Location /css>
+            ProxyPass !
+            Require all granted
+        </Location>
+
+        Alias /js @TEMPLATES_INSTALL_DIR@/default/static/js
+        <Location /js>
+            ProxyPass !
+            Require all granted
+        </Location>
+
+        Alias /i18n @TEMPLATES_INSTALL_DIR@/default/static/i18n
+        <Location /i18n>
+            ProxyPass !
+            Require all granted
+        </Location>
+
+        Alias /fonts @TEMPLATES_INSTALL_DIR@/default/static/fonts
+        <Location /fonts>
+            ProxyPass !
+            Require all granted
+        </Location>
+    </IfModule>
+</VirtualHost>
