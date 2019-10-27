@@ -162,7 +162,7 @@ bool Database::installDatabase()
         const QString sql = in.readAll();
         if (Q_UNLIKELY(!q.exec(sql))) {
             m_lastError = q.lastError();
-            m_lastError.setDriverText(tr("Failed to apply SQL statements from %1. Aborting.").arg(fi.absoluteFilePath()));
+            m_lastError = QSqlError(tr("Failed to apply SQL statements from %1. Aborting.").arg(fi.absoluteFilePath()), q.lastError().databaseText(), q.lastError().type());
             return success;
         }
     }
