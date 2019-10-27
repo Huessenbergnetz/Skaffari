@@ -21,7 +21,7 @@ private Q_SLOTS:
 
 void SimpleAdminTest::doTest()
 {
-    QFETCH(int, id);
+    QFETCH(dbid_t, id);
     QFETCH(QString, name);
     QFETCH(bool, valid);
 
@@ -34,13 +34,13 @@ void SimpleAdminTest::doTest()
 
 void SimpleAdminTest::doTest_data()
 {
-    QTest::addColumn<int>("id");
+    QTest::addColumn<dbid_t>("id");
     QTest::addColumn<QString>("name");
     QTest::addColumn<bool>("valid");
 
-    QTest::newRow("test-00") << 1 << QStringLiteral("admin") << true;
-    QTest::newRow("test-01") << 0 << QStringLiteral("admin") << false;
-    QTest::newRow("test-02") << 1 << QString() << false;
+    QTest::newRow("test-00") << static_cast<dbid_t>(1) << QStringLiteral("admin") << true;
+    QTest::newRow("test-01") << static_cast<dbid_t>(0) << QStringLiteral("admin") << false;
+    QTest::newRow("test-02") << static_cast<dbid_t>(1) << QString() << false;
 }
 
 void SimpleAdminTest::datastream()

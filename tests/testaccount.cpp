@@ -5,14 +5,14 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-#define TA_INIT_ID 1
-#define TA_INIT_DOMAINID 1
+#define TA_INIT_ID static_cast<dbid_t>(1)
+#define TA_INIT_DOMAINID static_cast<dbid_t>(1)
 #define TA_INIT_USERNAME "test"
-#define TA_INIT_QUOTA 102400
-#define TA_INIT_USAGE 10240
+#define TA_INIT_QUOTA static_cast<quota_size_t>(102400)
+#define TA_INIT_USAGE static_cast<quota_size_t>(10240)
 #define TA_INIT_KEEPLOCAL true
 #define TA_INIT_CATCHALL false
-#define TA_INIT_STATUS 0
+#define TA_INIT_STATUS static_cast<quint8>(0)
 
 class AccountTest : public QObject
 {
@@ -132,7 +132,7 @@ void AccountTest::usage()
 
 void AccountTest::usagePercent()
 {
-    QCOMPARE(acc.usagePercent(), 10.0);
+    QCOMPARE(acc.usagePercent(), 10.0f);
 }
 
 void AccountTest::created()
@@ -186,7 +186,7 @@ void AccountTest::calcStatus()
     QFETCH(QDateTime, pwdExpires);
     QFETCH(int, result);
 
-    QCOMPARE(Account::calcStatus(validUntil, pwdExpires), result);
+    QCOMPARE(static_cast<int>(Account::calcStatus(validUntil, pwdExpires)), result);
 }
 
 void AccountTest::calcStatus_data()

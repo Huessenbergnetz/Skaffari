@@ -75,7 +75,7 @@ void AdminAccountTest::isValid()
 
 void AdminAccountTest::id()
 {
-    QCOMPARE(m_acc.id(), 123);
+    QCOMPARE(m_acc.id(), static_cast<dbid_t>(123));
 }
 
 void AdminAccountTest::username()
@@ -95,7 +95,7 @@ void AdminAccountTest::type()
 
 void AdminAccountTest::typeInt()
 {
-    QCOMPARE(m_acc.typeInt(), 127);
+    QCOMPARE(m_acc.typeInt(), static_cast<quint8>(127));
 }
 
 void AdminAccountTest::typeStr()
@@ -130,12 +130,12 @@ void AdminAccountTest::updated()
 
 void AdminAccountTest::warnLevel()
 {
-    QCOMPARE(m_acc.warnLevel(), 85);
+    QCOMPARE(m_acc.warnLevel(), static_cast<quint8>(85));
 }
 
 void AdminAccountTest::maxDisplay()
 {
-    QCOMPARE(m_acc.maxDisplay(), 50);
+    QCOMPARE(m_acc.maxDisplay(), static_cast<quint8>(50));
 }
 
 void AdminAccountTest::nameIdString()

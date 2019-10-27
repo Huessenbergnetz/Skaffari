@@ -21,7 +21,7 @@ private Q_SLOTS:
 
 void SimpleDomainTest::doTest()
 {
-    QFETCH(int, id);
+    QFETCH(dbid_t, id);
     QFETCH(QString, name);
     QFETCH(QString, nameId);
     QFETCH(bool, valid);
@@ -36,14 +36,14 @@ void SimpleDomainTest::doTest()
 
 void SimpleDomainTest::doTest_data()
 {
-    QTest::addColumn<int>("id");
+    QTest::addColumn<dbid_t>("id");
     QTest::addColumn<QString>("name");
     QTest::addColumn<QString>("nameId");
     QTest::addColumn<bool>("valid");
 
-    QTest::newRow("test-00") << 1 << QStringLiteral("example.com") << QStringLiteral("example.com (ID: 1)") << true;
-    QTest::newRow("test-01") << 0 << QStringLiteral("example.com") << QStringLiteral("example.com (ID: 0)") << false;
-    QTest::newRow("test-02") << 1 << QString() << QStringLiteral(" (ID: 1)") << false;
+    QTest::newRow("test-00") << static_cast<dbid_t>(1) << QStringLiteral("example.com") << QStringLiteral("example.com (ID: 1)") << true;
+    QTest::newRow("test-01") << static_cast<dbid_t>(0) << QStringLiteral("example.com") << QStringLiteral("example.com (ID: 0)") << false;
+    QTest::newRow("test-02") << static_cast<dbid_t>(1) << QString() << QStringLiteral(" (ID: 1)") << false;
 }
 
 void SimpleDomainTest::datastream()

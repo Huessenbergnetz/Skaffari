@@ -19,8 +19,8 @@ private Q_SLOTS:
 
 void EmailAddressTest::doTest()
 {
-    QFETCH(int, id);
-    QFETCH(int, aceId);
+    QFETCH(dbid_t, id);
+    QFETCH(dbid_t, aceId);
     QFETCH(QString, address);
     QFETCH(QString, full);
     QFETCH(QString, local);
@@ -41,8 +41,8 @@ void EmailAddressTest::doTest()
 
 void EmailAddressTest::doTest_data()
 {
-    QTest::addColumn<int>("id");
-    QTest::addColumn<int>("aceId");
+    QTest::addColumn<dbid_t>("id");
+    QTest::addColumn<dbid_t>("aceId");
     QTest::addColumn<QString>("address");
     QTest::addColumn<QString>("full");
     QTest::addColumn<QString>("local");
@@ -50,12 +50,12 @@ void EmailAddressTest::doTest_data()
     QTest::addColumn<bool>("isIdn");
     QTest::addColumn<bool>("isValid");
 
-    QTest::newRow("test-00") << 1 << 0 << QStringLiteral("test@example.com") << QStringLiteral("test@example.com") << QStringLiteral("test") << QStringLiteral("example.com") << false << true;
-    QTest::newRow("test-01") << 0 << 0 << QStringLiteral("test@example.com") << QStringLiteral("test@example.com") << QStringLiteral("test") << QStringLiteral("example.com") << false << false;
-    QTest::newRow("test-02") << 1 << 1 << QStringLiteral("test@example.com") << QStringLiteral("test@example.com") << QStringLiteral("test") << QStringLiteral("example.com") << true << true;
-    QTest::newRow("test-03") << 1 << 0 << QStringLiteral("@example.com") << QStringLiteral("@") << QString() << QString() << false << false;
-    QTest::newRow("test-04") << 1 << 0 << QStringLiteral("test@") << QStringLiteral("@") << QString() << QString() << false << false;
-    QTest::newRow("test-05") << 1 << 0 << QStringLiteral("test") << QStringLiteral("@") << QString() << QString() << false << false;
+    QTest::newRow("test-00") << static_cast<dbid_t>(1) << static_cast<dbid_t>(0) << QStringLiteral("test@example.com") << QStringLiteral("test@example.com") << QStringLiteral("test") << QStringLiteral("example.com") << false << true;
+    QTest::newRow("test-01") << static_cast<dbid_t>(0) << static_cast<dbid_t>(0) << QStringLiteral("test@example.com") << QStringLiteral("test@example.com") << QStringLiteral("test") << QStringLiteral("example.com") << false << false;
+    QTest::newRow("test-02") << static_cast<dbid_t>(1) << static_cast<dbid_t>(1) << QStringLiteral("test@example.com") << QStringLiteral("test@example.com") << QStringLiteral("test") << QStringLiteral("example.com") << true << true;
+    QTest::newRow("test-03") << static_cast<dbid_t>(1) << static_cast<dbid_t>(0) << QStringLiteral("@example.com") << QStringLiteral("@") << QString() << QString() << false << false;
+    QTest::newRow("test-04") << static_cast<dbid_t>(1) << static_cast<dbid_t>(0) << QStringLiteral("test@") << QStringLiteral("@") << QString() << QString() << false << false;
+    QTest::newRow("test-05") << static_cast<dbid_t>(1) << static_cast<dbid_t>(0) << QStringLiteral("test") << QStringLiteral("@") << QString() << QString() << false << false;
 }
 
 QTEST_MAIN(EmailAddressTest)
