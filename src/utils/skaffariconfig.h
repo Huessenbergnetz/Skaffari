@@ -44,8 +44,6 @@ Q_DECLARE_LOGGING_CATEGORY(SK_CONFIG)
 #define SK_CONF_KEY_DEF_HOSTMASTER_ACC "default_hostmaster_account"
 #define SK_CONF_KEY_DEF_WEBMASTER_ACC "default_webmaster_account"
 
-class QSqlQuery;
-
 /*!
  * \ingroup skaffaricore
  * \brief Static interface to access Skaffari and template settings in read only mode.
@@ -432,7 +430,6 @@ public:
     static bool useMemcachedSession();
 
 private:
-//    static QVariant loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal = QVariant());
     template< typename T >
     static T getDbOption(const QString &option, const T &defVal);
     template< typename T >
