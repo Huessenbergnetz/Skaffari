@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS folder (
   id int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
   domain_id int unsigned NOT NULL,
   name varchar(255) NOT NULL,
-  special_use text CHARACTER SET latin1,
+  special_use tinyint unsigned NOT NULL,
   KEY idx_folder_domain_id (domain_id),
   FOREIGN KEY domain_to_folder (domain_id) REFERENCES domain(id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
