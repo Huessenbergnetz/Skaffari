@@ -70,11 +70,6 @@ public:
     static void load(const QVariantMap &general, const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &imap, const QVariantMap &tmpl);
 
     /*!
-     * \brief Loads specific settings from the database options table.
-     */
-    static void loadSettingsFromDB();
-
-    /*!
      * \brief Saves specific settings into the database options table.
      *
      * \par Currently supported keys
@@ -257,6 +252,9 @@ public:
     static SimpleAccount defNocAccount();
     /*!
      * \brief The default account for the security role address.
+     *
+     * \par Database options table key
+     * default_security_account
      */
     static SimpleAccount defSecurityAccount();
     /*!
@@ -434,9 +432,13 @@ public:
     static bool useMemcachedSession();
 
 private:
-    static QVariant loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal = QVariant());
-    static SimpleAccount loadDefaultAccount(const QString &optionName);
-    static SimpleAccount loadDefaultAccount(dbid_t accountId);
+//    static QVariant loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal = QVariant());
+    template< typename T >
+    static T getDbOption(const QString &option, const T &defVal);
+    template< typename T >
+    static bool setDbOption(const QString &option, const T &value);
+    static SimpleAccount getDefaultAccount(const QString &optionName);
+    static bool setDefaultAccount(const QString &option, dbid_t accountId);
 
     // prevent construction
     SkaffariConfig();

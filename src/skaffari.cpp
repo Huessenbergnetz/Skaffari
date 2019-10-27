@@ -263,8 +263,6 @@ bool Skaffari::init()
             return false;
         }
 
-        SkaffariConfig::loadSettingsFromDB();
-
         QSqlDatabase::removeDatabase(Sql::databaseNameThread());
 
         isInitialized = true;

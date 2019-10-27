@@ -19,6 +19,7 @@
 #include "skaffariconfig.h"
 #include "../common/config.h"
 #include <Cutelyst/Plugins/Utils/Sql>
+#include <Cutelyst/Plugins/Memcached/Memcached>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QGlobalStatic>
@@ -28,6 +29,9 @@
 #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
 #include <pwquality.h>
 #endif
+
+#define MEMC_CONFIG_GROUP_KEY "options"
+#define MEMC_CONFIG_STORAGE_DURATION 7200
 
 Q_LOGGING_CATEGORY(SK_CONFIG, "skaffari.config")
 
@@ -53,20 +57,6 @@ struct ConfigValues
 #else
     quint8 SkaffariConfig::m_admPwMinlength = SK_DEF_ADM_PWMINLENGTH;
 #endif
-
-    quota_size_t defDomainquota = SK_DEF_DEF_DOMAINQUOTA;
-    quota_size_t defQuota = SK_DEF_DEF_QUOTA;
-    quint32 defMaxaccounts = SK_DEF_DEF_MAXACCOUNTS;
-    QString defLanguage = QStringLiteral(SK_DEF_DEF_LANGUAGE);
-    QByteArray defTimezone = QByteArrayLiteral(SK_DEF_DEF_TIMEZONE);
-    quint8 defMaxdisplay = SK_DEF_DEF_MAXDISPLAY;
-    quint8 defWarnlevel = SK_DEF_DEF_WARNLEVEL;
-    SimpleAccount defAbuseAccount;
-    SimpleAccount defNocAccount;
-    SimpleAccount defPostmasterAccount;
-    SimpleAccount defHostmasterAccount;
-    SimpleAccount defWebmasterAccount;
-    SimpleAccount defSecurityAccount;
 
     QString imapHost;
     QString imapUser;
@@ -133,62 +123,25 @@ void SkaffariConfig::load(const QVariantMap &general, const QVariantMap &account
     cfg->tmplAsyncAccountList = tmpl.value(QStringLiteral("asyncaccountlist"), SK_DEF_TMPL_ASYNCACCOUNTLIST).toBool();
 }
 
-void SkaffariConfig::loadSettingsFromDB()
-{
-    QWriteLocker locker(&cfg->lock);
-
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT option_value FROM options WHERE option_name = :option_name"));
-
-    cfg->defDomainquota = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), SK_DEF_DEF_DOMAINQUOTA).value<quota_size_t>();
-    cfg->defQuota = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_QUOTA), SK_DEF_DEF_QUOTA).value<quota_size_t>();
-    cfg->defMaxaccounts = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), SK_DEF_DEF_MAXACCOUNTS).value<quint32>();
-    cfg->defLanguage = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), QLatin1String(SK_DEF_DEF_LANGUAGE)).toString();
-    cfg->defTimezone = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QLatin1String(SK_DEF_DEF_TIMEZONE)).toByteArray();
-    cfg->defMaxdisplay = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), SK_DEF_DEF_MAXDISPLAY).value<quint8>();
-    cfg->defWarnlevel = loadDbOption(q, QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), SK_DEF_DEF_WARNLEVEL).value<quint8>();
-
-    cfg->defAbuseAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC));
-    cfg->defNocAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC));
-    cfg->defSecurityAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC));
-    cfg->defPostmasterAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC));
-    cfg->defHostmasterAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC));
-    cfg->defWebmasterAccount = loadDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC));
-}
-
 void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
 {
     QWriteLocker locker(&cfg->lock);
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO options (option_name, option_value) "
-                                                         "VALUES (:option_name, :option_value) "
-                                                         "ON DUPLICATE KEY UPDATE "
-                                                         "option_value = :option_value"));
-    if (!options.empty()) {
-        auto i = options.constBegin();
-        while (i != options.constEnd()) {
-            q.bindValue(QStringLiteral(":option_name"), i.key());
-            q.bindValue(QStringLiteral(":option_value"), i.value());
-            if (Q_UNLIKELY(!q.exec())) {
-                qCWarning(SK_CONFIG, "Failed to save value %s for option %s in database: %s", qUtf8Printable(i.value().toString()), qUtf8Printable(i.key()), qUtf8Printable(q.lastError().text()));
-            }
-            ++i;
-        }
-    }
+    setDbOption<quota_size_t>(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), options.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), static_cast<quota_size_t>(SK_DEF_DEF_DOMAINQUOTA)).value<quota_size_t>());
+    setDbOption<quota_size_t>(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), options.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), static_cast<quota_size_t>(SK_DEF_DEF_QUOTA)).value<quota_size_t>());
+    setDbOption<quint32>(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), static_cast<quota_size_t>(SK_DEF_DEF_MAXACCOUNTS)).value<quint32>());
+    setDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), options.value(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), QStringLiteral(SK_DEF_DEF_LANGUAGE)).toString());
+    setDbOption<QByteArray>(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), options.value(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QByteArrayLiteral(SK_DEF_DEF_TIMEZONE)).toByteArray());
+    setDbOption<quint8>(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), static_cast<quint8>(SK_DEF_DEF_MAXDISPLAY)).value<quint8>());
+    setDbOption<quint8>(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), options.value(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), static_cast<quint8>(SK_DEF_DEF_WARNLEVEL)).value<quint8>());
 
-    cfg->defDomainquota = options.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), cfg->defDomainquota).value<quota_size_t>();
-    cfg->defQuota = options.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), cfg->defQuota).value<quota_size_t>();
-    cfg->defMaxaccounts = options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), cfg->defMaxaccounts).value<quint32>();
-    cfg->defLanguage = options.value(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), cfg->defLanguage).toString();
-    cfg->defTimezone = options.value(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), cfg->defTimezone).toByteArray();
-    cfg->defMaxdisplay = options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), cfg->defMaxdisplay).value<quint8>();
-    cfg->defWarnlevel = options.value(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), cfg->defWarnlevel).value<quint8>();
 
-    cfg->defAbuseAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), cfg->defAbuseAccount.id()).value<dbid_t>());
-    cfg->defNocAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), cfg->defNocAccount.id()).value<dbid_t>());
-    cfg->defSecurityAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), cfg->defSecurityAccount.id()).value<dbid_t>());
-    cfg->defPostmasterAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), cfg->defPostmasterAccount.id()).value<dbid_t>());
-    cfg->defHostmasterAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), cfg->defHostmasterAccount.id()).value<dbid_t>());
-    cfg->defWebmasterAccount = loadDefaultAccount(options.value(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), cfg->defWebmasterAccount.id()).value<dbid_t>());
+    setDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), options.value(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), 0).value<dbid_t>());
+    setDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), options.value(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), 0).value<dbid_t>());
+    setDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), options.value(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), 0).value<dbid_t>());
+    setDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), options.value(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), 0).value<dbid_t>());
+    setDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), options.value(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), 0).value<dbid_t>());
+    setDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), options.value(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), 0).value<dbid_t>());
 }
 
 QVariantHash SkaffariConfig::getSettingsFromDB()
@@ -197,20 +150,20 @@ QVariantHash SkaffariConfig::getSettingsFromDB()
     QVariantHash s;
     s.reserve(13);
 
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), cfg->defDomainquota);
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), cfg->defQuota);
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), cfg->defMaxaccounts);
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), cfg->defLanguage);
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), cfg->defTimezone);
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), cfg->defMaxdisplay);
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), cfg->defWarnlevel);
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), defDomainquota());
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), defQuota());
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), defMaxaccounts());
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), defLanguage());
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), defTimezone());
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), defMaxdisplay());
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), defWarnlevel());
 
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), QVariant::fromValue<SimpleAccount>(cfg->defAbuseAccount));
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), QVariant::fromValue<SimpleAccount>(cfg->defNocAccount));
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), QVariant::fromValue<SimpleAccount>(cfg->defSecurityAccount));
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), QVariant::fromValue<SimpleAccount>(cfg->defPostmasterAccount));
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), QVariant::fromValue<SimpleAccount>(cfg->defHostmasterAccount));
-    s.insert(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), QVariant::fromValue<SimpleAccount>(cfg->defWebmasterAccount));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), QVariant::fromValue<SimpleAccount>(defAbuseAccount()));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), QVariant::fromValue<SimpleAccount>(defNocAccount()));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), QVariant::fromValue<SimpleAccount>(defSecurityAccount()));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), QVariant::fromValue<SimpleAccount>(defPostmasterAccount()));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), QVariant::fromValue<SimpleAccount>(defHostmasterAccount()));
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), QVariant::fromValue<SimpleAccount>(defWebmasterAccount()));
 
     return s;
 }
@@ -282,18 +235,19 @@ QString SkaffariConfig::admPwSettingsFile() { QReadLocker locker(&cfg->lock); re
 int SkaffariConfig::admPwThreshold() { QReadLocker locker(&cfg->lock); return cfg->admPwThreshold; }
 #endif
 
-quota_size_t SkaffariConfig::defDomainquota() { QReadLocker locker(&cfg->lock); return cfg->defDomainquota; }
-quota_size_t SkaffariConfig::defQuota() { QReadLocker locker(&cfg->lock); return cfg->defQuota; }
-quint32 SkaffariConfig::defMaxaccounts() { QReadLocker locker(&cfg->lock); return cfg->defMaxaccounts; }
-QString SkaffariConfig::defLanguage() { QReadLocker locker(&cfg->lock); return cfg->defLanguage; }
-QByteArray SkaffariConfig::defTimezone() { QReadLocker locker(&cfg->lock); return cfg->defTimezone; }
-quint8 SkaffariConfig::defMaxdisplay() { QReadLocker locker(&cfg->lock); return cfg->defMaxdisplay; }
-quint8 SkaffariConfig::defWarnlevel() { QReadLocker locker(&cfg->lock); return cfg->defWarnlevel; }
-SimpleAccount SkaffariConfig::defAbuseAccount() { QReadLocker locker(&cfg->lock); return cfg->defAbuseAccount; }
-SimpleAccount SkaffariConfig::defNocAccount() { QReadLocker locker(&cfg->lock); return cfg->defNocAccount; }
-SimpleAccount SkaffariConfig::defPostmasterAccount() { QReadLocker locker(&cfg->lock); return cfg->defPostmasterAccount; }
-SimpleAccount SkaffariConfig::defHostmasterAccount() { QReadLocker locker(&cfg->lock); return cfg->defHostmasterAccount; }
-SimpleAccount SkaffariConfig::defWebmasterAccount() { QReadLocker locker(&cfg->lock);  return cfg->defWebmasterAccount; }
+quota_size_t SkaffariConfig::defDomainquota() { QReadLocker locker(&cfg->lock); return getDbOption<quota_size_t>(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), static_cast<quota_size_t>(SK_DEF_DEF_DOMAINQUOTA)); }
+quota_size_t SkaffariConfig::defQuota() { QReadLocker locker(&cfg->lock); return getDbOption<quota_size_t>(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), static_cast<quota_size_t>(SK_DEF_DEF_QUOTA)); }
+quint32 SkaffariConfig::defMaxaccounts() { QReadLocker locker(&cfg->lock); return getDbOption<quint32>(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), static_cast<quint32>(SK_DEF_DEF_MAXACCOUNTS)); }
+QString SkaffariConfig::defLanguage() { QReadLocker locker(&cfg->lock); return getDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), QStringLiteral(SK_DEF_DEF_LANGUAGE)); }
+QByteArray SkaffariConfig::defTimezone() { QReadLocker locker(&cfg->lock); return getDbOption<QByteArray>(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QByteArrayLiteral(SK_DEF_DEF_TIMEZONE)); }
+quint8 SkaffariConfig::defMaxdisplay() { QReadLocker locker(&cfg->lock); return getDbOption<quint8>(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), static_cast<quint8>(SK_DEF_DEF_MAXDISPLAY)); }
+quint8 SkaffariConfig::defWarnlevel() { QReadLocker locker(&cfg->lock); return getDbOption<quint8>(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), static_cast<quint8>(SK_DEF_DEF_WARNLEVEL)); }
+SimpleAccount SkaffariConfig::defAbuseAccount() { QReadLocker locker(&cfg->lock); return getDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC)); }
+SimpleAccount SkaffariConfig::defNocAccount() { QReadLocker locker(&cfg->lock); return getDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC)); }
+SimpleAccount SkaffariConfig::defSecurityAccount() { QReadLocker locker(&cfg->lock); return getDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC)); }
+SimpleAccount SkaffariConfig::defPostmasterAccount() { QReadLocker locker(&cfg->lock); return getDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC)); }
+SimpleAccount SkaffariConfig::defHostmasterAccount() { QReadLocker locker(&cfg->lock); return getDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC)); }
+SimpleAccount SkaffariConfig::defWebmasterAccount() { QReadLocker locker(&cfg->lock);  return getDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC)); }
 
 QString SkaffariConfig::imapHost() { QReadLocker locker(&cfg->lock); return cfg->imapHost; }
 quint16 SkaffariConfig::imapPort() { QReadLocker locker(&cfg->lock); return cfg->imapPort; }
@@ -310,29 +264,76 @@ SkaffariIMAP::AuthMech SkaffariConfig::imapAuthmech() { QReadLocker locker(&cfg-
 
 bool SkaffariConfig::tmplAsyncAccountList() { QReadLocker locker(&cfg->lock); return cfg->tmplAsyncAccountList; }
 
-QVariant SkaffariConfig::loadDbOption(QSqlQuery &query, const QString &option, const QVariant &defVal)
+template< typename T >
+T SkaffariConfig::getDbOption(const QString &option, const T &defVal)
 {
-    QVariant var;
+    T retVal = defVal;
 
-    query.bindValue(QStringLiteral(":option_name"), option);
-
-    if (Q_LIKELY(query.exec())) {
-        if (query.next()) {
-            var.setValue(query.value(0));
-        } else {
-            qCWarning(SK_CONFIG, "Can not find option %s in database, using default value %s.", qUtf8Printable(option), qUtf8Printable(defVal.toString()));
-            var.setValue(defVal);
+    if (cfg->useMemcached) {
+        Cutelyst::Memcached::MemcachedReturnType rt;
+        retVal = Cutelyst::Memcached::getByKey<T>(QStringLiteral(MEMC_CONFIG_GROUP_KEY), option, nullptr, &rt);
+        if (rt == Cutelyst::Memcached::Success) {
+            return retVal;
         }
-    } else {
-        qCWarning(SK_CONFIG, "Failed to query option %s from database, using default value %s: %s", qUtf8Printable(option), qUtf8Printable(defVal.toString()), qUtf8Printable(query.lastError().text()));
     }
 
-    return var;
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT option_value FROM options WHERE option_name = :option_name"));
+    q.bindValue(QStringLiteral(":option_name"), option);
+
+    if (Q_LIKELY(q.exec())) {
+        if (q.next()) {
+            retVal = q.value(0).value<T>();
+        } else {
+            return defVal;
+        }
+    } else {
+        qCCritical(SK_CONFIG, "Failed to query option %s from database, using default: %s", qUtf8Printable(option), qUtf8Printable(q.lastError().text()));
+    }
+
+    if (cfg->useMemcached) {
+        Cutelyst::Memcached::setByKey<T>(QStringLiteral(MEMC_CONFIG_GROUP_KEY), option, retVal, MEMC_CONFIG_STORAGE_DURATION);
+    }
+
+    return retVal;
 }
 
-SimpleAccount SkaffariConfig::loadDefaultAccount(const QString &optionName)
+template< typename T >
+bool SkaffariConfig::setDbOption(const QString &option, const T &value)
+{
+    bool rv = false;
+
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO options (option_name, option_value) "
+                                                         "VALUES (:option_name, :option_value) "
+                                                         "ON DUPLICATE KEY UPDATE "
+                                                         "option_value = :option_value"));
+    q.bindValue(QStringLiteral(":option_name"), option);
+    q.bindValue(QStringLiteral(":option_value"), QVariant::fromValue<T>(value));
+
+    if (Q_UNLIKELY(!q.exec())) {
+        qCCritical(SK_CONFIG) << "Failed to save value" << value << "for option" << option << "in database:" << q.lastError().text();
+        return rv;
+    }
+
+    rv = true;
+
+    if (cfg->useMemcached) {
+        Cutelyst::Memcached::setByKey<T>(QStringLiteral(MEMC_CONFIG_GROUP_KEY), option, value, MEMC_CONFIG_STORAGE_DURATION);
+    }
+
+    return rv;
+}
+
+SimpleAccount SkaffariConfig::getDefaultAccount(const QString &optionName)
 {
     SimpleAccount acc;
+
+    if (cfg->useMemcached) {
+        Cutelyst::Memcached::MemcachedReturnType rt;
+        acc = Cutelyst::Memcached::getByKey<SimpleAccount>(QStringLiteral(MEMC_CONFIG_GROUP_KEY), optionName, nullptr, &rt);
+        if (rt == Cutelyst::Memcached::Success) {
+            return acc;
+        }
+    }
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username, d.domain_name FROM accountuser a LEFT JOIN options op ON op.option_value = a.id LEFT JOIN domain d ON a.domain_id = d.id WHERE op.option_name = :option_name"));
     q.bindValue(QStringLiteral(":option_name"), optionName);
@@ -340,31 +341,65 @@ SimpleAccount SkaffariConfig::loadDefaultAccount(const QString &optionName)
     if (Q_LIKELY(q.exec())) {
         if (q.next()) {
             acc = SimpleAccount(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
+        } else {
+            return acc;
         }
     } else {
-        qCWarning(SK_CONFIG, "Failed to query database for %s: %s", qUtf8Printable(optionName), qUtf8Printable(q.lastError().text()));
+        qCCritical(SK_CONFIG, "Failed to query database for %s: %s", qUtf8Printable(optionName), qUtf8Printable(q.lastError().text()));
+    }
+
+    if (cfg->useMemcached) {
+        Cutelyst::Memcached::setByKey<SimpleAccount>(QStringLiteral(MEMC_CONFIG_GROUP_KEY), optionName, acc, MEMC_CONFIG_STORAGE_DURATION);
     }
 
     return acc;
 }
 
-
-SimpleAccount SkaffariConfig::loadDefaultAccount(dbid_t accountId)
+bool SkaffariConfig::setDefaultAccount(const QString &option, dbid_t accountId)
 {
-    SimpleAccount acc;
+    bool rv = false;
 
     if (accountId > 0) {
-        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username, d.domain_name FROM accountuser a LEFT JOIN domain d ON a.domain_id = d.id WHERE a.id = :id"));
-        q.bindValue(QStringLiteral(":id"), accountId);
-
-        if (Q_LIKELY(q.exec())) {
-            if (q.next()) {
-                acc = SimpleAccount(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
-            }
-        } else {
-            qCWarning(SK_CONFIG, "Failed to query database for accountID %u: %s", accountId, qUtf8Printable(q.lastError().text()));
+        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO options (option_name, option_value) "
+                                                             "VALUES (:option_name, :option_value) "
+                                                             "ON DUPLICATE KEY UPDATE "
+                                                             "option_value = :option_value"));
+        q.bindValue(QStringLiteral(":option_name"), option);
+        q.bindValue(QStringLiteral(":option_value"), accountId);
+        if (Q_UNLIKELY(!q.exec())) {
+            qCCritical(SK_CONFIG) << "Failed to save value" << accountId << "for option" << option << "in database:" << q.lastError().text();
+            return rv;
+        }
+    } else {
+        QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("DELETE FROM options WHERE option_name = :option_name"));
+        q.bindValue(QStringLiteral(":option_name"), option);
+        if (Q_UNLIKELY(!q.exec())) {
+            qCCritical(SK_CONFIG, "Failed to remove option %s from database: %s", qUtf8Printable(option), qUtf8Printable(q.lastError().text()));
+            return rv;
         }
     }
 
-    return acc;
+    if (cfg->useMemcached) {
+        if (accountId > 0) {
+            SimpleAccount a;
+            QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username, d.domain_name FROM accountuser a LEFT JOIN domain d ON a.domain_id = d.id WHERE a.id = :id"));
+            q.bindValue(QStringLiteral(":id"), accountId);
+
+            if (Q_LIKELY(q.exec())) {
+                if (q.next()) {
+                    a = SimpleAccount(q.value(0).value<dbid_t>(), q.value(1).toString(), q.value(2).toString());
+                }
+            } else {
+                qCCritical(SK_SIMPLEACCOUNT, "Failed to query account with ID %u from database: %s", accountId, qUtf8Printable(q.lastError().text()));
+            }
+
+            if (a.isValid()) {
+                Cutelyst::Memcached::setByKey<SimpleAccount>(QStringLiteral(MEMC_CONFIG_GROUP_KEY), option, a, MEMC_CONFIG_STORAGE_DURATION);
+            }
+        } else {
+            Cutelyst::Memcached::removeByKey(QStringLiteral(MEMC_CONFIG_GROUP_KEY), option);
+        }
+    }
+
+    return rv;
 }
