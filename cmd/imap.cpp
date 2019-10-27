@@ -628,6 +628,9 @@ QString Imap::authMechToString(AuthMech mechanism)
         return QStringLiteral("PLAIN");
     case CRAMMD5:
         return QStringLiteral("CRAM-MD5");
+    default:
+        Q_UNREACHABLE();
+        break;
     }
 }
 
@@ -640,7 +643,6 @@ QString Imap::lastError() const
 {
     return m_lastError;
 }
-
 
 QString Imap::getTag()
 {
