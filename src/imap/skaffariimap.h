@@ -82,6 +82,18 @@ public:
         CRAMMD5     = 3     /**< Uses SASL CRAM-MD5 (<a href="https://tools.ietf.org/html/rfc2195">RFC2195</a>) */
     };
 
+    enum SpecialUse : quint8 {
+        None                    = 0,
+        All                     = 1,
+        Archive                 = 2,
+        Drafts                  = 3,
+        Flagged                 = 4,
+        Junk                    = 5,
+        Sent                    = 6,
+        Trash                   = 7,
+        SkaffariOtherFolders    = 255
+    };
+
     /*!
      * \brief Constructs a new SkaffariIMAP object.
      *
@@ -351,7 +363,6 @@ private:
     bool waitForResponse(bool disConn = false, const QString &error = QString(), int msecs = 30000);
 
     static QStringList m_capabilities;
-    static const QString m_allAcl;
 
     QString m_user;
     QString m_password;

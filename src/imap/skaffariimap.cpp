@@ -30,7 +30,6 @@
 Q_LOGGING_CATEGORY(SK_IMAP, "skaffari.imap")
 
 QStringList SkaffariIMAP::m_capabilities = QStringList();
-const QString SkaffariIMAP::m_allAcl = QStringLiteral("lrswipkxtecda");
 
 SkaffariIMAP::SkaffariIMAP(Cutelyst::Context *context, QObject *parent) :
     QSslSocket(parent),
@@ -541,7 +540,7 @@ bool SkaffariIMAP::setAcl(const QString &mailbox, const QString &user, const QSt
     setNoError();
     QString _acl;
     if (acl.isEmpty()) {
-        _acl = m_allAcl;
+        _acl = QStringLiteral("lrswipkxtecda");
     }
 
     const QString tag = getTag();
@@ -678,7 +677,7 @@ bool SkaffariIMAP::checkResponse(const QByteArray &data, const QString &tag, QVe
             response->swap(trimmedList);
         }
     } else if (status.startsWith(QByteArrayLiteral("BAD"))) {
-        m_imapError = SkaffariIMAPError(SkaffariIMAPError::BadResponse, m_c->translate("SkaffariIMAP", "We received a BAD response from the IMAP server: %1").arg(QString::fromLatin1(status.mid(4))));;
+        m_imapError = SkaffariIMAPError(SkaffariIMAPError::BadResponse, m_c->translate("SkaffariIMAP", "We received a BAD response from the IMAP server: %1").arg(QString::fromLatin1(status.mid(4))));
         qCCritical(SK_IMAP) << "We received a BAD response from the IMAP server:" << QString::fromLatin1(status.mid(4));
     } else if (status.startsWith(QByteArrayLiteral("NO"))) {
         m_imapError = SkaffariIMAPError(SkaffariIMAPError::NoResponse, m_c->translate("SkaffariIMAP", "We received a NO response from the IMAP server: %1").arg(QString::fromLatin1(status.mid(3))));
