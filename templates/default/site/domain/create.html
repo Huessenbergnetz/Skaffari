@@ -44,13 +44,6 @@
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                <label class="col-form-label" for="folders">{{ help.folders.title }}</label>
-                <input type="text" id="folders" name="folders" class="form-control" value="{{ folders }}" placeholder="{{ _("e.g. Trash,Spam,Drafts,Sent Messages") }}" aria-describedby="foldersDesc">
-                {% if validationErrors.folders.count %}<div class="invalid-feedback"><small>{{ validationErrors.folders.0 }}</small></div>{% endif %}
-                <small id="foldersDesc" class="form-text text-muted">{{ help.folders.text }}</small>
-            </div>
-
-            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="parent">{{ help.parent.title }}</label>
                 <select id="parent" name="parent" class="form-control{% if validationErrors.parent.count %} is-invalid{% endif %} select2" aria-describedby="parentDesc">
                     <option value="0"{% if domain.parent.id == 0 %} selected="selected"{% endif %}>{% i18nc "parent domain" "none" %}</option>
@@ -182,6 +175,137 @@
                 {% if validationErrors.webmasterAccount.count %}<div class="invalid-feedback"><small>{{ validationErrors.webmasterAccount.0 }}</small></div>{% endif %}
                 <small id="webmasterAccountDesc" class="form-text text-muted">{{ help.webmasterAccount.text }}</small>
             </div>
+
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>{{ _("Default folders") }}</legend>
+        <div class="row">
+
+            {% with "sentFolder" as id %}
+            {% with help.sentFolder.title as label %}
+            {% with help.sentFolder.text as helpText %}
+            {% with validationErrors.sentFolder.count as errorCount %}
+            {% with validationErrors.sentFolder.0 as errorText %}
+            {% with sentFolder as value %}
+            {% i18nc_var "Placeholder for default sent folder input field" "Sent messages" as sentFolderPlaceholder %}
+            {% with sentFolderPlaceholder as placeholder %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+
+
+            {% with "draftsFolder" as id %}
+            {% with help.draftsFolder.title as label %}
+            {% with help.draftsFolder.text as helpText %}
+            {% with validationErrors.draftsFolder.count as errorCount %}
+            {% with validationErrors.draftsFolder.0 as errorText %}
+            {% with draftsFolder as value %}
+            {% i18nc_var "Placeholder for default drafts folder input field" "Drafts" as draftsFolderPlaceholder %}
+            {% with draftsFolderPlaceholder as placeholder %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+
+
+            {% with "trashFolder" as id %}
+            {% with help.trashFolder.title as label %}
+            {% with help.trashFolder.text as helpText %}
+            {% with validationErrors.trashFolder.count as errorCount %}
+            {% with validationErrors.trashFolder.0 as errorText %}
+            {% with trashFolder as value %}
+            {% i18nc_var "Placeholder for default trash folder input field" "Trash" as trashFolderPlaceholder %}
+            {% with trashFolderPlaceholder as placeholder %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+
+
+            {% with "junkFolder" as id %}
+            {% with help.junkFolder.title as label %}
+            {% with help.junkFolder.text as helpText %}
+            {% with validationErrors.junkFolder.count as errorCount %}
+            {% with validationErrors.junkFolder.0 as errorText %}
+            {% with junkFolder as value %}
+            {% i18nc_var "Placeholder for default junk folder input field" "Junk" as junkFolderPlaceholder %}
+            {% with junkFolderPlaceholder as placeholder %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+
+
+            {% with "archiveFolder" as id %}
+            {% with help.archiveFolder.title as label %}
+            {% with help.archiveFolder.text as helpText %}
+            {% with validationErrors.archiveFolder.count as errorCount %}
+            {% with validationErrors.archiveFolder.0 as errorText %}
+            {% with archiveFolder as value %}
+            {% i18nc_var "Placeholder for default archive folder input field" "Archive" as archiveFolderPlaceholder %}
+            {% with archiveFolderPlaceholder as placeholder %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+
+
+            {% with "otherFolders" as id %}
+            {% with help.otherFolders.title as label %}
+            {% with help.otherFolders.text as helpText %}
+            {% with validationErrors.otherFolders.count as errorCount %}
+            {% with validationErrors.otherFolders.0 as errorText %}
+            {% with otherFolders as value %}
+            {% i18nc_var "Placeholder for other default folder input fields" "Templates" as otherFoldersPlaceholder %}
+            {% with otherFoldersPlaceholder as placeholder %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
 
         </div>
     </fieldset>
