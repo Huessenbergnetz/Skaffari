@@ -135,7 +135,7 @@
             {% with help.sentFolder.text as helpText %}
             {% with validationErrors.sentFolder.count as errorCount %}
             {% with validationErrors.sentFolder.0 as errorText %}
-            {% with domain.sentFolder.name as value %}
+            {% with sentFolder|default_if_none:domain.sentFolder.name as value %}
             {% i18nc_var "Placeholder for default sent folder input field" "Sent messages" as sentFolderPlaceholder %}
             {% with sentFolderPlaceholder as placeholder %}
 
@@ -156,7 +156,7 @@
             {% with help.draftsFolder.text as helpText %}
             {% with validationErrors.draftsFolder.count as errorCount %}
             {% with validationErrors.draftsFolder.0 as errorText %}
-            {% with domain.draftsFolder.name as value %}
+            {% with draftsFolder|default_if_none:domain.draftsFolder.name as value %}
             {% i18nc_var "Placeholder for default drafts folder input field" "Drafts" as draftsFolderPlaceholder %}
             {% with draftsFolderPlaceholder as placeholder %}
 
@@ -177,7 +177,7 @@
             {% with help.trashFolder.text as helpText %}
             {% with validationErrors.trashFolder.count as errorCount %}
             {% with validationErrors.trashFolder.0 as errorText %}
-            {% with domain.trashFolder.name as value %}
+            {% with trashFolder|default_if_none:domain.trashFolder.name as value %}
             {% i18nc_var "Placeholder for default trash folder input field" "Trash" as trashFolderPlaceholder %}
             {% with trashFolderPlaceholder as placeholder %}
 
@@ -198,7 +198,7 @@
             {% with help.junkFolder.text as helpText %}
             {% with validationErrors.junkFolder.count as errorCount %}
             {% with validationErrors.junkFolder.0 as errorText %}
-            {% with domain.junkFolder.name as value %}
+            {% with junkFolder|default_if_none:domain.junkFolder.name as value %}
             {% i18nc_var "Placeholder for default junk folder input field" "Junk" as junkFolderPlaceholder %}
             {% with junkFolderPlaceholder as placeholder %}
 
@@ -219,7 +219,7 @@
             {% with help.archiveFolder.text as helpText %}
             {% with validationErrors.archiveFolder.count as errorCount %}
             {% with validationErrors.archiveFolder.0 as errorText %}
-            {% with domain.archiveFolder.name as value %}
+            {% with archiveFolder|default_if_none:domain.archiveFolder.name as value %}
             {% i18nc_var "Placeholder for default archive folder input field" "Archive" as archiveFolderPlaceholder %}
             {% with archiveFolderPlaceholder as placeholder %}
 
@@ -240,7 +240,7 @@
             {% with help.otherFolders.text as helpText %}
             {% with validationErrors.otherFolders.count as errorCount %}
             {% with validationErrors.otherFolders.0 as errorText %}
-            {% with domain.otherFolders.name as value %}
+            {% with otherFolders|default_if_none:domain.otherFolders.name as value %}
             {% i18nc_var "Placeholder for other default folder input fields" "Templates" as otherFoldersPlaceholder %}
             {% with otherFoldersPlaceholder as placeholder %}
 
