@@ -165,7 +165,6 @@ void DomainEditor::edit(Context *c)
     help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Default quota"), c->translate("DomainEditor", "Default storage quota for new user accounts in this domain. You can use the multipliers K, Kib, M, MiB, G, GiB, etc.")));
 
 
-    help.insert(QStringLiteral("folders"), HelpEntry(c->translate("DomainEditor", "Default folders"), c->translate("DomainEditor", "Comma-separated list of folder names that are automatically created for new user accounts in this domain.")));
     help.insert(QStringLiteral("parent"), HelpEntry(c->translate("DomainEditor", "Parent domain"), c->translate("DomainEditor", "If you set a parent domain for this domain, new accounts in the parent domain automatically create email addresses for the child domain.")));
     help.insert(QStringLiteral("children"), HelpEntry(c->translate("DomainEditor", "Child domains"), c->translate("DomainEditor", "List of child domains of this domain. New accounts in this domain will automatically get email addresses for the child domains.")));
     help.insert(QStringLiteral("transport"), HelpEntry(c->translate("DomainEditor", "Transport"), c->translate("DomainEditor", "The transport mechanism for received emails for this domain. Defaults to Cyrus.")));
@@ -410,7 +409,6 @@ void DomainEditor::create(Context* c)
         help.insert(QStringLiteral("domainQuota"), HelpEntry(c->translate("DomainEditor", "Domain quota"), c->translate("DomainEditor", "Total storage quota for all user accounts belonging to this domain. If the domain quota is set (not 0), each user account in the domain must have set its own quota. Set it to 0 to disable the domain quota. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.")));
         help.insert(QStringLiteral("quota"), HelpEntry(c->translate("DomainEditor", "Default quota"), c->translate("DomainEditor", "Default storage quota for new user accounts in this domain. You can use the multipliers K, Kib, M, MiB, G, GiB, etc.")));
 
-        help.insert(QStringLiteral("folders"), HelpEntry(c->translate("DomainEditor", "Standard folders"), c->translate("DomainEditor", "Comma-separated list of folder names that are automatically created for new user accounts in this domain.")));
         help.insert(QStringLiteral("parent"), HelpEntry(c->translate("DomainEditor", "Parent domain"), c->translate("DomainEditor", "If you set a parent domain for this domain, new accounts in the parent domain automatically create email addresses for the child domain.")));
         help.insert(QStringLiteral("transport"), HelpEntry(c->translate("DomainEditor", "Transport"), c->translate("DomainEditor", "The transport mechanism for received emails for this domain. Defaults to Cyrus.")));
         help.insert(QStringLiteral("freeNames"), HelpEntry(c->translate("DomainEditor", "Allow free names"), c->translate("DomainEditor", "If enabled, account user names for this domain can be freely selected (if not in use already).")));
