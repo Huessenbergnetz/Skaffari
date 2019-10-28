@@ -395,7 +395,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
         return aa;
     }
 
-    aa = AdminAccount(id, username, type, domIds, QString::fromLatin1(SkaffariConfig::defTimezone()), SkaffariConfig::defLanguage(), QStringLiteral("default"), SkaffariConfig::defMaxdisplay(), SkaffariConfig::defWarnlevel(), currentUtc, currentUtc);
+    aa = AdminAccount(id, username, type, domIds, SkaffariConfig::defTimezone(), SkaffariConfig::defLanguage(), QStringLiteral("default"), SkaffariConfig::defMaxdisplay(), SkaffariConfig::defWarnlevel(), currentUtc, currentUtc);
 
     qCInfo(SK_ADMIN, "%s created new admin acccount %s of type %s.", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(aa.nameIdString()), AdminAccount::staticMetaObject.enumerator(AdminAccount::staticMetaObject.indexOfEnumerator("AdminAccountType")).valueToKey(type));
     qCDebug(SK_ADMIN) << aa;
