@@ -78,10 +78,15 @@ void SettingsEditor::index(Context *c)
 
         ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
         if (vr) {
+            vr.addValue(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), c->req()->bodyParam(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE)));
             vr.addValue(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA),
                         static_cast<quota_size_t>(vr.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA)).value<quota_size_t>() / Q_UINT64_C(1024)));
             vr.addValue(QStringLiteral(SK_CONF_KEY_DEF_QUOTA),
                         static_cast<quota_size_t>(vr.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA)).value<quota_size_t>() / Q_UINT64_C(1024)));
+            for (const QString &folder : {QStringLiteral(SK_CONF_KEY_DEF_FOLDER_SENT), QStringLiteral(SK_CONF_KEY_DEF_FOLDER_DRAFTS), QStringLiteral(SK_CONF_KEY_DEF_FOLDER_TRASH),
+                                          QStringLiteral(SK_CONF_KEY_DEF_FOLDER_JUNK), QStringLiteral(SK_CONF_KEY_DEF_FOLDER_ARCHIVE), QStringLiteral(SK_CONF_KEY_DEF_FOLDER_OTHERS)}) {
+                vr.addValue(folder, c->req()->bodyParam(folder));
+            }
             SkaffariConfig::saveSettingsToDB(vr.values());
             c->setStash(QStringLiteral("status_msg"), c->translate("SettingsEditor", "Settings successfully saved."));
             settings = SkaffariConfig::getSettingsFromDB();
@@ -104,10 +109,26 @@ void SettingsEditor::index(Context *c)
     help.insert(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), HelpEntry(c->translate("SettingsEditor", "Hostmaster account"), c->translate("SettingsEditor", "Used as default account for hostmaster role email address when creating new domains.")));
     help.insert(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), HelpEntry(c->translate("SettingsEditor", "Webmaster account"), c->translate("SettingsEditor", "Used as default account for webmaster role email address when creating new domains.")));
 
+    help.insert(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_SENT), HelpEntry(c->translate("SettingsEditor", "Sent messages"), c->translate("SettingsEditor", "Folder for sent messages.")));
+    help.insert(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_DRAFTS), HelpEntry(c->translate("SettingsEditor", "Drafts"), c->translate("SettingsEditor", "Folder for message drafts.")));
+    help.insert(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_TRASH), HelpEntry(c->translate("SettingsEditor", "Trash"), c->translate("SettingsEditor", "Folder for deleted messages.")));
+    help.insert(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_JUNK), HelpEntry(c->translate("SettingsEditor", "Junk"), c->translate("SettingsEditor", "Folder for junk messages aka. spam.")));
+    help.insert(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_ARCHIVE), HelpEntry(c->translate("SettingsEditor", "Archive"), c->translate("SettingsEditor", "Folder to archive messages.")));
+    help.insert(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_OTHERS), HelpEntry(c->translate("SettingsEditor", "Additional folders"), c->translate("SettingsEditor", "Comma-separated list of additional folders.")));
+
+    static QStringList tzs = ([]() -> QStringList {
+                                  QStringList _tzs;
+                                  _tzs.reserve(QTimeZone::availableTimeZoneIds().size());
+                                  for (const QByteArray &tz : QTimeZone::availableTimeZoneIds()) {
+                                      _tzs.push_back(QString::fromLatin1(tz));
+                                  }
+                                  return _tzs;
+                              }());
+
     c->stash(settings);
     c->stash({
                  {QStringLiteral("help"),       QVariant::fromValue<HelpHash>(help)},
-                 {QStringLiteral("timezones"),  QVariant::fromValue<QList<QByteArray>>(QTimeZone::availableTimeZoneIds())},
+                 {QStringLiteral("timezones"),  QVariant::fromValue<QStringList>(tzs)},
                  {QStringLiteral("langs"),      QVariant::fromValue<QVector<Language>>(Language::supportedLangs(c))},
                  {QStringLiteral("site_title"), c->translate("SettingsEditor", "Settings")},
                  {QStringLiteral("template"),   QStringLiteral("settings/index.html")}

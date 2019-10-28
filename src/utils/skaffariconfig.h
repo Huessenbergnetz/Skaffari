@@ -43,6 +43,12 @@ Q_DECLARE_LOGGING_CATEGORY(SK_CONFIG)
 #define SK_CONF_KEY_DEF_POSTMASTER_ACC "default_postmaster_account"
 #define SK_CONF_KEY_DEF_HOSTMASTER_ACC "default_hostmaster_account"
 #define SK_CONF_KEY_DEF_WEBMASTER_ACC "default_webmaster_account"
+#define SK_CONF_KEY_DEF_FOLDER_SENT "default_sent_folder"
+#define SK_CONF_KEY_DEF_FOLDER_DRAFTS "default_drafts_folder"
+#define SK_CONF_KEY_DEF_FOLDER_TRASH "default_trash_folder"
+#define SK_CONF_KEY_DEF_FOLDER_JUNK "default_junk_folder"
+#define SK_CONF_KEY_DEF_FOLDER_ARCHIVE "default_archive_folder"
+#define SK_CONF_KEY_DEF_FOLDER_OTHERS "default_other_folders"
 
 /*!
  * \ingroup skaffaricore
@@ -219,7 +225,7 @@ public:
      * \par Database options table key
      * default_timezone
      */
-    static QByteArray defTimezone();
+    static QString defTimezone();
     /*!
      * \brief The default maximum display value for paginated lists.
      *
@@ -276,7 +282,48 @@ public:
      * default_webmaster_account
      */
     static SimpleAccount defWebmasterAccount();
-
+    /*!
+     * \brief The default folder for sent messages.
+     *
+     * \par Database options table key
+     * default_sent_folder
+     */
+    static QString defFolderSent();
+    /*!
+     * \brief The default folder for draft messages.
+     *
+     * \par Database options table key
+     * default_drafts_folder
+     */
+    static QString defFolderDrafts();
+    /*!
+     * \brief The default folder for deleted messages.
+     *
+     * \par Database options table key
+     * default_trash_folder
+     */
+    static QString defFolderTrash();
+    /*!
+     * \brief The default folder for junk/spam messages.
+     *
+     * \par Database options table key
+     * default_junk_folder
+     */
+    static QString defFolderJunk();
+    /*!
+     * \brief The default folder for archived messages.
+     *
+     * \par Database options table key
+     * default_archive_folder
+     */
+    static QString defFolderArchive();
+    /*!
+     * \brief The other default folders.
+     *
+     * \par Database options table key
+     * default_other_folders
+     */
+    static QString defFolderOthers();
     /*!
      * \brief IMAP server address.
      *

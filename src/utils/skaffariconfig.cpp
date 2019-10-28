@@ -131,9 +131,16 @@ void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
     setDbOption<quota_size_t>(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), options.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), static_cast<quota_size_t>(SK_DEF_DEF_QUOTA)).value<quota_size_t>());
     setDbOption<quint32>(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), static_cast<quota_size_t>(SK_DEF_DEF_MAXACCOUNTS)).value<quint32>());
     setDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), options.value(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), QStringLiteral(SK_DEF_DEF_LANGUAGE)).toString());
-    setDbOption<QByteArray>(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), options.value(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QByteArrayLiteral(SK_DEF_DEF_TIMEZONE)).toByteArray());
+    setDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), options.value(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QStringLiteral(SK_DEF_DEF_TIMEZONE)).toString());
     setDbOption<quint8>(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), options.value(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), static_cast<quint8>(SK_DEF_DEF_MAXDISPLAY)).value<quint8>());
     setDbOption<quint8>(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), options.value(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), static_cast<quint8>(SK_DEF_DEF_WARNLEVEL)).value<quint8>());
+
+    setDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_SENT), options.value(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_SENT)).toString());
+    setDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_DRAFTS), options.value(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_DRAFTS)).toString());
+    setDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_TRASH), options.value(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_TRASH)).toString());
+    setDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_JUNK), options.value(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_JUNK)).toString());
+    setDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_ARCHIVE), options.value(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_ARCHIVE)).toString());
+    setDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_OTHERS), options.value(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_OTHERS)).toString());
 
 
     setDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), options.value(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), 0).value<dbid_t>());
@@ -148,7 +155,7 @@ QVariantHash SkaffariConfig::getSettingsFromDB()
 {
     QReadLocker locker(&cfg->lock);
     QVariantHash s;
-    s.reserve(13);
+    s.reserve(19);
 
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA), defDomainquota());
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), defQuota());
@@ -157,6 +164,13 @@ QVariantHash SkaffariConfig::getSettingsFromDB()
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), defTimezone());
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), defMaxdisplay());
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), defWarnlevel());
+
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_SENT), defFolderSent());
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_DRAFTS), defFolderDrafts());
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_TRASH), defFolderTrash());
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_JUNK), defFolderJunk());
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_ARCHIVE), defFolderArchive());
+    s.insert(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_OTHERS), defFolderOthers());
 
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), QVariant::fromValue<SimpleAccount>(defAbuseAccount()));
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), QVariant::fromValue<SimpleAccount>(defNocAccount()));
@@ -239,15 +253,23 @@ quota_size_t SkaffariConfig::defDomainquota() { QReadLocker locker(&cfg->lock); 
 quota_size_t SkaffariConfig::defQuota() { QReadLocker locker(&cfg->lock); return getDbOption<quota_size_t>(QStringLiteral(SK_CONF_KEY_DEF_QUOTA), static_cast<quota_size_t>(SK_DEF_DEF_QUOTA)); }
 quint32 SkaffariConfig::defMaxaccounts() { QReadLocker locker(&cfg->lock); return getDbOption<quint32>(QStringLiteral(SK_CONF_KEY_DEF_MAXACCOUNTS), static_cast<quint32>(SK_DEF_DEF_MAXACCOUNTS)); }
 QString SkaffariConfig::defLanguage() { QReadLocker locker(&cfg->lock); return getDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), QStringLiteral(SK_DEF_DEF_LANGUAGE)); }
-QByteArray SkaffariConfig::defTimezone() { QReadLocker locker(&cfg->lock); return getDbOption<QByteArray>(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QByteArrayLiteral(SK_DEF_DEF_TIMEZONE)); }
+QString SkaffariConfig::defTimezone() { QReadLocker locker(&cfg->lock); return getDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), QStringLiteral(SK_DEF_DEF_TIMEZONE)); }
 quint8 SkaffariConfig::defMaxdisplay() { QReadLocker locker(&cfg->lock); return getDbOption<quint8>(QStringLiteral(SK_CONF_KEY_DEF_MAXDISPLAY), static_cast<quint8>(SK_DEF_DEF_MAXDISPLAY)); }
 quint8 SkaffariConfig::defWarnlevel() { QReadLocker locker(&cfg->lock); return getDbOption<quint8>(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), static_cast<quint8>(SK_DEF_DEF_WARNLEVEL)); }
+
 SimpleAccount SkaffariConfig::defAbuseAccount() { QReadLocker locker(&cfg->lock); return getDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC)); }
 SimpleAccount SkaffariConfig::defNocAccount() { QReadLocker locker(&cfg->lock); return getDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC)); }
 SimpleAccount SkaffariConfig::defSecurityAccount() { QReadLocker locker(&cfg->lock); return getDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC)); }
 SimpleAccount SkaffariConfig::defPostmasterAccount() { QReadLocker locker(&cfg->lock); return getDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC)); }
 SimpleAccount SkaffariConfig::defHostmasterAccount() { QReadLocker locker(&cfg->lock); return getDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC)); }
 SimpleAccount SkaffariConfig::defWebmasterAccount() { QReadLocker locker(&cfg->lock);  return getDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC)); }
+
+QString SkaffariConfig::defFolderSent() { QReadLocker locker(&cfg->lock); return getDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_SENT), QString()); }
+QString SkaffariConfig::defFolderDrafts() { QReadLocker locker(&cfg->lock); return getDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_DRAFTS), QString()); }
+QString SkaffariConfig::defFolderTrash() { QReadLocker locker(&cfg->lock); return getDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_TRASH), QString()); }
+QString SkaffariConfig::defFolderJunk() { QReadLocker locker(&cfg->lock); return getDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_JUNK), QString()); }
+QString SkaffariConfig::defFolderArchive() { QReadLocker locker(&cfg->lock); return getDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_ARCHIVE), QString()); }
+QString SkaffariConfig::defFolderOthers() { QReadLocker locker(&cfg->lock); return getDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_OTHERS), QString()); }
 
 QString SkaffariConfig::imapHost() { QReadLocker locker(&cfg->lock); return cfg->imapHost; }
 quint16 SkaffariConfig::imapPort() { QReadLocker locker(&cfg->lock); return cfg->imapPort; }

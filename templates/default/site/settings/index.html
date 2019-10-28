@@ -153,6 +153,135 @@
                 </div>
             </fieldset>
 
+            <fieldset>
+                <legend>{{ _("Default folders") }}</legend>
+                <div class="row">
+                    {% with "default_sent_folder" as id %}
+                    {% with help.default_sent_folder.title as label %}
+                    {% with help.default_sent_folder.text as helpText %}
+                    {% with validationErrors.default_sent_folder.count as errorCount %}
+                    {% with validationErrors.default_sent_folder.0 as errorText %}
+                    {% with default_sent_folder as value %}
+                    {% i18nc_var "Placeholder for default sent folder input field" "Sent messages" as sentFolderPlaceholder %}
+                    {% with sentFolderPlaceholder as placeholder %}
+
+                    {% include "inc/forms/inputfield.html" %}
+
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+
+
+
+                    {% with "default_drafts_folder" as id %}
+                    {% with help.default_drafts_folder.title as label %}
+                    {% with help.default_drafts_folder.text as helpText %}
+                    {% with validationErrors.default_drafts_folder.count as errorCount %}
+                    {% with validationErrors.default_drafts_folder.0 as errorText %}
+                    {% with default_drafts_folder as value %}
+                    {% i18nc_var "Placeholder for default drafts folder input field" "Drafts" as draftsFolderPlaceholder %}
+                    {% with draftsFolderPlaceholder as placeholder %}
+
+                    {% include "inc/forms/inputfield.html" %}
+
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+
+
+
+                    {% with "default_trash_folder" as id %}
+                    {% with help.default_trash_folder.title as label %}
+                    {% with help.default_trash_folder.text as helpText %}
+                    {% with validationErrors.default_trash_folder.count as errorCount %}
+                    {% with validationErrors.default_trash_folder.0 as errorText %}
+                    {% with default_trash_folder as value %}
+                    {% i18nc_var "Placeholder for default trash folder input field" "Trash" as trashFolderPlaceholder %}
+                    {% with trashFolderPlaceholder as placeholder %}
+
+                    {% include "inc/forms/inputfield.html" %}
+
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+
+
+
+                    {% with "default_junk_folder" as id %}
+                    {% with help.default_junk_folder.title as label %}
+                    {% with help.default_junk_folder.text as helpText %}
+                    {% with validationErrors.default_junk_folder.count as errorCount %}
+                    {% with validationErrors.default_junk_folder.0 as errorText %}
+                    {% with default_junk_folder as value %}
+                    {% i18nc_var "Placeholder for default junk folder input field" "Junk" as junkFolderPlaceholder %}
+                    {% with junkFolderPlaceholder as placeholder %}
+
+                    {% include "inc/forms/inputfield.html" %}
+
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+
+
+
+                    {% with "default_archive_folder" as id %}
+                    {% with help.default_archive_folder.title as label %}
+                    {% with help.default_archive_folder.text as helpText %}
+                    {% with validationErrors.default_archive_folder.count as errorCount %}
+                    {% with validationErrors.default_archive_folder.0 as errorText %}
+                    {% with default_archive_folder as value %}
+                    {% i18nc_var "Placeholder for default archive folder input field" "Archive" as archiveFolderPlaceholder %}
+                    {% with archiveFolderPlaceholder as placeholder %}
+
+                    {% include "inc/forms/inputfield.html" %}
+
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+
+
+
+                    {% with "default_other_folders" as id %}
+                    {% with help.default_other_folders.title as label %}
+                    {% with help.default_other_folders.text as helpText %}
+                    {% with validationErrors.default_other_folders.count as errorCount %}
+                    {% with validationErrors.default_other_folders.0 as errorText %}
+                    {% with default_other_folders as value %}
+                    {% i18nc_var "Placeholder for other default folder input fields" "Templates" as otherFoldersPlaceholder %}
+                    {% with otherFoldersPlaceholder as placeholder %}
+
+                    {% include "inc/forms/inputfield.html" %}
+
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                </div>
+            </fieldset>
+
         </div>
     </div>
 
