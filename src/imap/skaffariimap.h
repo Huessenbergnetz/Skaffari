@@ -205,14 +205,36 @@ public:
     bool deleteMailbox(const QString &user);
 
     /*!
-     * \brief Creates a new \a folder in the current user's mailbox.
+     * \brief Creates a new \a folder in the mailbox of \a user.
      *
      * If folder creation failed, lastError() will provide further information.
      *
-     * \param folder    Name of the new folder. Can be UTF-8 an will be automatically converted into UTF-7-IMAP.
+     * \param user      Name of the user to create the folder for.
+     * \param folder    Name of the new folder. Can be UTF-8 and will be automatically converted into UTF-7-IMAP.
      * \return True on success.
      */
-    bool createFolder(const QString &folder);
+    bool createFolder(const QString &user, const QString &folder, SpecialUse specialUse = None);
+
+    /*!
+     * \brief Subscribes the currently logged in user to \a folder.
+     *
+     * If \a folder is empty, the user will be subscribed to INBOX.
+     *
+     * \param folder    The folder to subscribe the user to.
+     * \return \c true on success, otherwise \c false.
+     */
+    bool subscribeFolder(const QString &folder = QString());
+
+    /*!
+     * \brief Sets the \a specialUse flag for a \a folder.
+     *
+     * This works only for folders of the currently logged in user.
+     *
+     * \param folder        Name of the folder.
+     * \param specialUse    Special use flag to set.
+     * \return \c true on success, otherwise \c false.
+     */
+    bool setSpecialUse(const QString &folder, SpecialUse specialUse = None);
 
     /*!
      * \brief Sets the \a acl for the \a user on the \a mailbox.

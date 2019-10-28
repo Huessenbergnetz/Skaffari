@@ -526,9 +526,96 @@ bool SkaffariIMAP::deleteMailbox(const QString &user)
     return checkResponse(readAll(), tag);
 }
 
-bool SkaffariIMAP::createFolder(const QString &folder)
+bool SkaffariIMAP::createFolder(const QString &user, const QString &folder, SpecialUse specialUse)
 {
     Q_ASSERT_X(!folder.isEmpty(), "create folder", "empty folder name");
+    Q_ASSERT_X(!user.isEmpty(), "create folder", "empty user name");
+
+    setNoError();
+
+    const QString _user = user.trimmed();
+    if (Q_UNLIKELY(_user.isEmpty())) {
+        m_imapError = SkaffariIMAPError(SkaffariIMAPError::InternalError, m_c->translate("SkaffariIMAP", "Can not create new folder for empty user name."));
+        return false;
+    }
+
+    const QString _folder = toUTF7Imap(folder.trimmed());
+
+    if (Q_UNLIKELY(_folder.isEmpty())) {
+        m_imapError = SkaffariIMAPError(SkaffariIMAPError::InternalError, m_c->translate("SkaffariIMAP", "Failed to convert folder name into UTF-7-IMAP."));
+        return false;
+    }
+
+    const QString tag1 = getTag();
+    QString command1 = QLatin1String("CREATE \"user") + m_hierarchysep + _user + m_hierarchysep + _folder + QLatin1Char('"');
+
+    if (hasCapability(QStringLiteral("CREATE-SPECIAL-USE"))) {
+        switch (specialUse) {
+        case Archive:
+            command1 += QLatin1String(" (USE (\\Archive))");
+            break;
+        case Drafts:
+            command1 += QLatin1String(" (USE (\\Drafts))");
+            break;
+        case Junk:
+            command1 += QLatin1String(" (USE (\\Junk))");
+            break;
+        case Sent:
+            command1 += QLatin1String(" (USE (\\Sent))");
+            break;
+        case Trash:
+            command1 += QLatin1String(" (USE (\\Trash))");
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (Q_UNLIKELY(!sendCommand(tag1, command1))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return false;
+    }
+
+    return checkResponse(readAll(), tag1);
+}
+
+bool SkaffariIMAP::subscribeFolder(const QString &folder)
+{
+    setNoError();
+
+    const QString tag = getTag();
+    QString command;
+
+    if (folder.isEmpty()) {
+        command = QStringLiteral("SUBSCRIBE INBOX");
+    } else {
+        const QString _folder = toUTF7Imap(folder.trimmed());
+
+        if (Q_UNLIKELY(_folder.isEmpty())) {
+            m_imapError = SkaffariIMAPError(SkaffariIMAPError::InternalError, m_c->translate("SkaffariIMAP", "Failed to convert folder name into UTF-7-IMAP."));
+            return false;
+        }
+
+        command = QLatin1String("SUBSCRIBE \"INBOX") + m_hierarchysep + _folder + QLatin1Char('"');
+    }
+
+    if (Q_UNLIKELY(!sendCommand(tag, command))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return false;
+    }
+
+    return checkResponse(readAll(), tag);
+}
+
+bool SkaffariIMAP::setSpecialUse(const QString &folder, SpecialUse specialUse)
+{
+    Q_ASSERT_X(!folder.isEmpty(), "set special use", "empty folder name");
 
     setNoError();
 
@@ -539,10 +626,32 @@ bool SkaffariIMAP::createFolder(const QString &folder)
         return false;
     }
 
-    const QString tag1 = getTag();
-    const QString command1 = QLatin1String("CREATE \"INBOX") + m_hierarchysep + _folder + QLatin1Char('"');
+    const QString tag = getTag();
 
-    if (Q_UNLIKELY(!sendCommand(tag1, command1))) {
+    QString command = QLatin1String("SETMETADATA \"INBOX") + m_hierarchysep + _folder + QLatin1String("\" (/private/specialuse ");
+
+    switch (specialUse) {
+    case Archive:
+        command += QLatin1String("\"\\\\Archive\")");
+        break;
+    case Drafts:
+        command += QLatin1String("\"\\\\Drafts\")");
+        break;
+    case Junk:
+        command += QLatin1String("\"\\\\Junk\")");
+        break;
+    case Sent:
+        command += QLatin1String("\"\\\\Sent\")");
+        break;
+    case Trash:
+        command += QLatin1String("\"\\\\Trash\")");
+        break;
+    default:
+        command += QLatin1String("NIL)");
+        break;
+    }
+
+    if (Q_UNLIKELY(!sendCommand(tag, command))) {
         return false;
     }
 
@@ -550,22 +659,7 @@ bool SkaffariIMAP::createFolder(const QString &folder)
         return false;
     }
 
-    if (Q_UNLIKELY(!checkResponse(readAll(), tag1))) {
-        return false;
-    }
-
-    const QString tag2 = getTag();
-    const QString command2 = QLatin1String("SUBSCRIBE \"INBOX") + m_hierarchysep + _folder + QLatin1Char('"');
-
-    if (Q_UNLIKELY(!sendCommand(tag2, command2))) {
-        return false;
-    }
-
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    return checkResponse(readAll(), tag2);
+    return checkResponse(readAll(), tag);
 }
 
 bool SkaffariIMAP::setAcl(const QString &mailbox, const QString &user, const QString &acl)
@@ -779,7 +873,8 @@ QString SkaffariIMAP::toUTF7Imap(const QString &str)
     const QByteArray utf8 = str.toUtf8();
 
     char *out;
-    out = (char *) malloc(sizeof(char) * utf8.size() * 3);
+//    out = (char *) malloc(sizeof(char) * utf8.size() * 3);
+    out = static_cast<char*>(malloc(sizeof(char) * static_cast<std::size_t>(utf8.size()) * 3));
 
     int32_t size = ucnv_convert("imap-mailbox-name", "utf-8", out, utf8.size() * 3, utf8.constData(), utf8.size(), &uec);
 
@@ -806,7 +901,8 @@ QString SkaffariIMAP::fromUTF7Imap(const QByteArray &ba)
 
     UErrorCode uec = U_ZERO_ERROR;
     char *out;
-    out = (char *) malloc(sizeof(char) * (ba.size() + 1));
+//    out = (char *) malloc(sizeof(char) * (ba.size() + 1));
+    out = static_cast<char*>(malloc(sizeof(char) * static_cast<std::size_t>(ba.size() + 1)));
 
     int32_t size = ucnv_convert("utf-8", "imap-mailbox-name", out, ba.size() + 1, ba.constData(), ba.size(), &uec);
 

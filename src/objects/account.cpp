@@ -557,6 +557,8 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
 
     const quint8 accountStatus = Account::calcStatus(validUntil, pwExpires);
 
+    QMap<SkaffariIMAP::SpecialUse,QString> folders;
+
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, imap, pop, sieve, smtpauth, quota, created_at, updated_at, valid_until, pwd_expire, status) "
                                          "VALUES (:domain_id, :username, :password, :imap, :pop, :sieve, :smtpauth, :quota, :created_at, :updated_at, :valid_until, :pwd_expire, :status)"));
 
@@ -759,41 +761,65 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
                     // but base functionality is given, so we only log errors
                     mailboxCreated = true;
 
-                    if(Q_LIKELY(imap.setAcl(username, SkaffariConfig::imapUser()))) {
+                    if (Q_UNLIKELY(!imap.setQuota(username, quota))) {
+                        qCWarning(SK_ACCOUNT) << "Failed to set IMAP quota for new mailbox" << username;
+                    }
 
-                        if (Q_UNLIKELY(!imap.setQuota(username, quota))) {
-                            qCWarning(SK_ACCOUNT) << "Failed to set IMAP quota for new mailbox" << username;
+                    const QString sentFolder = p.value(QStringLiteral("sentFolder")).toString().trimmed();
+                    if (!sentFolder.isEmpty()) {
+                        if (Q_UNLIKELY(!imap.createFolder(username, sentFolder, SkaffariIMAP::Sent))) {
+                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP sent folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(sentFolder), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                        } else {
+                            folders.insert(SkaffariIMAP::Sent, sentFolder);
                         }
+                    }
 
-                        if (Q_UNLIKELY(!imap.deleteAcl(username, SkaffariConfig::imapUser()))) {
-                            qCWarning(SK_ACCOUNT) << "Failed to revoke ACLs for IMAP admin on new mailbox" << username;
+                    const QString trashFolder = p.value(QStringLiteral("trashFolder")).toString().trimmed();
+                    if (!trashFolder.isEmpty()) {
+                        if (Q_UNLIKELY(!imap.createFolder(username, trashFolder, SkaffariIMAP::Trash))) {
+                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP trash folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(trashFolder), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                        } else {
+                            folders.insert(SkaffariIMAP::Trash, trashFolder);
                         }
+                    }
 
-                    } else {
-                        qCWarning(SK_ACCOUNT) << "Failed to set ACL for IMAP admin on new mailbox" << username;
+                    const QString draftsFolder = p.value(QStringLiteral("draftsFolder")).toString().trimmed();
+                    if (!draftsFolder.isEmpty()) {
+                        if (Q_UNLIKELY(!imap.createFolder(username, draftsFolder, SkaffariIMAP::Drafts))) {
+                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP drafts folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(draftsFolder), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                        } else {
+                            folders.insert(SkaffariIMAP::Drafts, draftsFolder);
+                        }
+                    }
+
+                    const QString junkFolder = p.value(QStringLiteral("junkFolder")).toString().trimmed();
+                    if (!junkFolder.isEmpty()) {
+                        if (Q_UNLIKELY(!imap.createFolder(username, junkFolder, SkaffariIMAP::Junk))) {
+                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP junk folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(junkFolder), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                        } else {
+                            folders.insert(SkaffariIMAP::Junk, junkFolder);
+                        }
+                    }
+
+                    const QString archiveFolder = p.value(QStringLiteral("archiveFolder")).toString().trimmed();
+                    if (!archiveFolder.isEmpty()) {
+                        if (Q_UNLIKELY(!imap.createFolder(username, archiveFolder, SkaffariIMAP::Archive))) {
+                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP archive folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(archiveFolder), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                        } else {
+                            folders.insert(SkaffariIMAP::Archive, archiveFolder);
+                        }
+                    }
+
+                    const QStringList otherFolders = p.value(QStringLiteral("otherFolders")).toString().trimmed().split(QLatin1Char(','));
+                    for (const QString &otherFolder : otherFolders) {
+                        if (Q_UNLIKELY(!imap.createFolder(username, otherFolder))) {
+                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(otherFolder), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                        } else {
+                            folders.insert(SkaffariIMAP::None, otherFolder);
+                        }
                     }
 
                     imap.logout();
-
-                    if (!d.folders().empty()) {
-
-                        imap.setUser(username);
-                        imap.setPassword(password);
-
-                        if (Q_LIKELY(imap.login())) {
-
-                            for (const Folder &folder : d.folders()) {
-                                if (Q_UNLIKELY(!imap.createFolder(folder.getName()))) {
-                                    qCWarning(SK_ACCOUNT, "%s failed to create default IMAP folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(folder.getName()), aunStr, qUtf8Printable(imap.lastError().errorText()));
-                                }
-                            }
-
-                            imap.logout();
-
-                        } else {
-                            qCWarning(SK_ACCOUNT, "%s failed to log %s into new account to create default folders: %s", uniStr, aunStr, qUtf8Printable(imap.lastError().errorText()));
-                        }
-                    }
 
                 } else {
                     e.setImapError(imap.lastError(), c->translate("Account", "Creating a new IMAP mailbox failed."));
@@ -827,6 +853,38 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
 
     if (SkaffariConfig::useMemcached()) {
         Cutelyst::Memcached::set(MEMC_QUOTA_KEY + QString::number(id), QByteArray::number(0), MEMC_QUOTA_EXP);
+    }
+
+    // now lets subscribe the new user to its folders
+    // and set special use flags if CREATE-SPECIAL-USE is not available
+    if (createMailbox == CreateBySkaffari) {
+        SkaffariIMAP imap(c);
+        imap.setUser(username);
+        imap.setPassword(password);
+
+        if (Q_LIKELY(imap.login())) {
+
+            if (Q_UNLIKELY(!imap.subscribeFolder())) {
+                qCWarning(SK_ACCOUNT, "%s failed to subscribe newly created user \"%s\" to its INBOX: %s", uniStr, aunStr, qUtf8Printable(imap.lastError().errorText()));
+            }
+
+            for (const QString &f : folders.values()) {
+                if (Q_UNLIKELY(!imap.subscribeFolder(f))) {
+                    qCWarning(SK_ACCOUNT, "%s failed to subscribe newly created user \"%s\" to folder \"%s\": %s", uniStr, aunStr, qUtf8Printable(f), qUtf8Printable(imap.lastError().errorText()));
+                }
+            }
+
+            if (!imap.hasCapability(QStringLiteral("CREATE-SPECIAL-USE")) && imap.hasCapability(QStringLiteral("SPECIAL-USE")) && imap.hasCapability(QStringLiteral("METADATA"))) {
+                for (auto i = folders.constBegin(); i != folders.constEnd(); ++i) {
+                    if (Q_UNLIKELY(!imap.setSpecialUse(i.value(), i.key()))) {
+                        qCWarning(SK_ACCOUNT, "%s failed to set special use flag %u on folder \"%s\" for newly created user \"%s\": %s", uniStr, static_cast<uint>(i.key()), qUtf8Printable(i.value()), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                    }
+                }
+            }
+
+        } else {
+            qCWarning(SK_ACCOUNT, "%s failed to login newly created user \"%s\" to subscribe to folders: %s", uniStr, aunStr, qUtf8Printable(imap.lastError().errorText()));
+        }
     }
 
     qCInfo(SK_ACCOUNT, "%s created new account %s in domain %s", uniStr, qUtf8Printable(a.nameIdString()), qUtf8Printable(d.nameIdString()));
@@ -1308,7 +1366,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError &e, Domain *dom, const 
 
             if (Q_UNLIKELY(!q.exec())) {
                 e.setSqlError(q.lastError(), c->translate("Account", "Existing catch-all address could not be deleted from the database."));
-                qCWarning(SK_ACCOUNT, "%s failed to delete existing catch-all address of domain %s while updating account %s: %s", uniStr, dniStr, aniStr, qUtf8Printable(q.lastError().text()));;
+                qCWarning(SK_ACCOUNT, "%s failed to delete existing catch-all address of domain %s while updating account %s: %s", uniStr, dniStr, aniStr, qUtf8Printable(q.lastError().text()));
             }
 
             QSqlError sqlError;
@@ -2309,7 +2367,7 @@ bool AccountData::canAddAddress(Cutelyst::Context *c, SkaffariError &e, const Do
 QDebug operator<<(QDebug dbg, const Account &account)
 {
     QDebugStateSaver saver(dbg);
-    Q_UNUSED(saver);
+    Q_UNUSED(saver)
     dbg.nospace() << "Account(";
     dbg << "ID: " << account.id();
     dbg << ", Username: " << account.username();
