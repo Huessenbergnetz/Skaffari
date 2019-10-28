@@ -378,6 +378,11 @@ QStringList SkaffariIMAP::getCapabilities(bool forceReload)
     return SkaffariIMAP::m_capabilities;
 }
 
+bool SkaffariIMAP::hasCapability(const QString &capability, bool forceReload)
+{
+    return SkaffariIMAP::getCapabilities(forceReload).contains(capability, Qt::CaseInsensitive);
+}
+
 quota_pair SkaffariIMAP::getQuota(const QString &user)
 {
     quota_pair quota(0, 0);

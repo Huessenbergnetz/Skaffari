@@ -149,6 +149,18 @@ public:
     QStringList getCapabilities(bool forceReload = false);
 
     /*!
+     * \brief Returns \c true if \a capability is available.
+     *
+     * If capabilities are empty or \a forceReload is set to \c true, getCapabilities()
+     * will be used to request the capabilities from the server.
+     *
+     * \param capability    The capability to check for.
+     * \param forceReload   Set to \c true to force a reload and don’t use the cached values.
+     * \return \c true if the \a capability is available, otherwise \c false
+     */
+    bool hasCapability(const QString &capability, bool forceReload = false);
+
+    /*!
      * \brief Requests the quota values for \a user.
      *
      * If both quota values are \c 0, lastError() might provide further information about occurred errors,
