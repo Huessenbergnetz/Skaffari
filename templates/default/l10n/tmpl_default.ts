@@ -152,10 +152,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete admin</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Are you sure you want to delete this administrator?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -265,10 +261,6 @@
     </message>
     <message>
         <source>Create new domain</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>e.g. Trash,Spam,Drafts,Sent Messages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -629,20 +621,58 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Domain manager</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Administrator</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>User name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>none</source>
         <comment>parent domain</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>My acount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>My account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default folders</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sent messages</source>
+        <comment>Placeholder for default sent folder input field</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drafts</source>
+        <comment>Placeholder for default drafts folder input field</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trash</source>
+        <comment>Placeholder for default trash folder input field</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Junk</source>
+        <comment>Placeholder for default junk folder input field</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Templates</source>
+        <comment>Placeholder for other default folder input fields</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error code:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Archive</source>
+        <comment>Placeholder for default archive folder input field</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>

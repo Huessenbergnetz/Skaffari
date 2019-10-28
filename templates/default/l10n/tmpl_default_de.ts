@@ -150,10 +150,6 @@
         <translation>Admin-Aktionen</translation>
     </message>
     <message>
-        <source>Delete admin</source>
-        <translation>Administrator löschen</translation>
-    </message>
-    <message>
         <source>Are you sure you want to delete this administrator?</source>
         <translation>Wollen Sie diesen Administrator wirklich löschen?</translation>
     </message>
@@ -264,10 +260,6 @@
     <message>
         <source>Create new domain</source>
         <translation>Neue Domäne erstellen</translation>
-    </message>
-    <message>
-        <source>e.g. Trash,Spam,Drafts,Sent Messages</source>
-        <translation>bspw. Papierkorb,Spam,Entwürfe,Versandte Nachrichten</translation>
     </message>
     <message>
         <source>unlimited</source>
@@ -624,14 +616,6 @@
         <translation>CSRF-Schutzprüfung fehlgeschlagen. Bitte prüfen Sie Ihre Cookie-Einstellungen.</translation>
     </message>
     <message>
-        <source>Domain manager</source>
-        <translation>Domänenverwalter</translation>
-    </message>
-    <message>
-        <source>Administrator</source>
-        <translation>Administrator</translation>
-    </message>
-    <message>
         <source>User name</source>
         <translation>Benutzername</translation>
     </message>
@@ -639,6 +623,52 @@
         <source>none</source>
         <comment>parent domain</comment>
         <translation>Keine</translation>
+    </message>
+    <message>
+        <source>My acount</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>My account</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Default folders</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Sent messages</source>
+        <comment>Placeholder for default sent folder input field</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Drafts</source>
+        <comment>Placeholder for default drafts folder input field</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Trash</source>
+        <comment>Placeholder for default trash folder input field</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Junk</source>
+        <comment>Placeholder for default junk folder input field</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Templates</source>
+        <comment>Placeholder for other default folder input fields</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Error code:</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Archive</source>
+        <comment>Placeholder for default archive folder input field</comment>
+        <translation type="unfinished"/>
     </message>
 </context>
 </TS>
