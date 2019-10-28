@@ -73,7 +73,6 @@ pkg_check_modules(ICU REQUIRED icu-uc)
 
 target_include_directories(skaffari
     SYSTEM PRIVATE
-        ${Cutelyst2Qt5_INCLUDE_DIR}
         ${ICU_INCLUDE_DIRS}
 )
 
