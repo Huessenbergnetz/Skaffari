@@ -1,0 +1,6 @@
+<div class="form-group {{ cols|default:"col-12 col-sm-12 col-md-6 col-lg-4" }}">
+    <label class="col-form-label" for="{{ id }}">{{ label }}</label>
+    <input type="{{ type|default:"text" }}" id="{{ id }}" name="{{ name|default:id }}" class="form-control{% if errorCount %} is-invalid{% endif %}" value="{{ value }}" placeholder="{{ placeholder }}" aria-describedby="{{ id }}Desc" />
+    {% if errorCount %}<div class="invalid-feedback"><small>{{ errorText }}</small></div>{% endif %}
+    <small id="{{ id }}Desc" class="form-text text-muted">{{ helpText }}</small>
+</div>
