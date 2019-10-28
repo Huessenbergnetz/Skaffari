@@ -102,34 +102,45 @@ void DomainEditor::edit(Context *c)
 
         c->setStash(QStringLiteral("_def_boolean"), false);
 
+        static QString forbiddenFolderChars = SkaffariConfig::imapUnixhierarchysep() ? QStringLiteral("%*#/") : QStringLiteral("%*#.");
+
         ValidatorResult vr;
         if (user.type() >= AdminAccount::Administrator) {
 
             static Validator v({
-                            new ValidatorIn(QStringLiteral("transport"), QStringList({QStringLiteral("cyrus"), QStringLiteral("lmtp"), QStringLiteral("smtp"), QStringLiteral("uucp")})),
-                            new ValidatorMin(QStringLiteral("maxAccounts"), QMetaType::UInt, 0),
-                            new ValidatorBoolean(QStringLiteral("freeNames"), ValidatorMessages(), QStringLiteral("_def_boolean")),
-                            new ValidatorBoolean(QStringLiteral("freeAddress"), ValidatorMessages(), QStringLiteral("_def_boolean")),
-                            new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, 0, std::numeric_limits<quota_size_t>::max()),
-                            new ValidatorFileSize(QStringLiteral("domainQuota"), ValidatorFileSize::ForceBinary, 0, std::numeric_limits<quota_size_t>::max()),
-                            new SkValidatorDomainExists(QStringLiteral("parent"))
-                        });
+                                   new ValidatorIn(QStringLiteral("transport"), QStringList({QStringLiteral("cyrus"), QStringLiteral("lmtp"), QStringLiteral("smtp"), QStringLiteral("uucp")})),
+                                   new ValidatorMin(QStringLiteral("maxAccounts"), QMetaType::UInt, 0),
+                                   new ValidatorBoolean(QStringLiteral("freeNames"), ValidatorMessages(), QStringLiteral("_def_boolean")),
+                                   new ValidatorBoolean(QStringLiteral("freeAddress"), ValidatorMessages(), QStringLiteral("_def_boolean")),
+                                   new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, 0, std::numeric_limits<quota_size_t>::max()),
+                                   new ValidatorFileSize(QStringLiteral("domainQuota"), ValidatorFileSize::ForceBinary, 0, std::numeric_limits<quota_size_t>::max()),
+                                   new SkValidatorDomainExists(QStringLiteral("parent")),
+                                   new ValidatorCharNotAllowed(QStringLiteral("sentFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("draftsFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("trashFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("junkFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("archiveFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("otherFolders"), forbiddenFolderChars)
+                               });
 
             vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
 
         } else {
 
             static Validator v({
-                            new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, QVariant(), std::numeric_limits<quota_size_t>::max())
+                                   new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, QVariant(), std::numeric_limits<quota_size_t>::max()),
+                                   new ValidatorCharNotAllowed(QStringLiteral("sentFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("draftsFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("trashFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("junkFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("archiveFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("otherFolders"), forbiddenFolderChars)
                         });
 
             vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
         }
 
         if (vr) {
-            for (const QString &folderType : DEFAULT_FOLDER_TYPES) {
-                vr.addValue(folderType, req->bodyParam(folderType));
-            }
             SkaffariError e(c);
             if (dom.update(c, vr.values(), e)) {
                 dom.toStash(c);
@@ -352,6 +363,8 @@ void DomainEditor::create(Context* c)
 
             c->setStash(QStringLiteral("_def_boolean"), false);
 
+            static QString forbiddenFolderChars = SkaffariConfig::imapUnixhierarchysep() ? QStringLiteral("%*#/") : QStringLiteral("%*#.");
+
             static Validator v({
                                    new ValidatorRequiredIfStash(QStringLiteral("prefix"), QStringLiteral("domainAsPrefix"), QVariantList({QVariant::fromValue<bool>(false)})),
                                    new ValidatorAlphaDash(QStringLiteral("prefix"), true),
@@ -370,13 +383,16 @@ void DomainEditor::create(Context* c)
                                    new SkValidatorAccountExists(QStringLiteral("nocAccount")),
                                    new SkValidatorAccountExists(QStringLiteral("postmasterAccount")),
                                    new SkValidatorAccountExists(QStringLiteral("hostmasterAccount")),
-                                   new SkValidatorAccountExists(QStringLiteral("webmasterAccount"))
+                                   new SkValidatorAccountExists(QStringLiteral("webmasterAccount")),
+                                   new ValidatorCharNotAllowed(QStringLiteral("sentFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("draftsFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("trashFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("junkFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("archiveFolder"), forbiddenFolderChars),
+                                   new ValidatorCharNotAllowed(QStringLiteral("otherFolders"), forbiddenFolderChars)
                                });
 
             ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
-            for (const QString &folderType : DEFAULT_FOLDER_TYPES) {
-                vr.addValue(folderType, r->bodyParam(folderType));
-            }
             const auto params = vr.values();
             if (vr) {
                 SkaffariError e(c);
@@ -556,6 +572,8 @@ void DomainEditor::add_account(Context* c)
                      {QStringLiteral("_max_valid_until"), dom.validUntil()}
                  });
 
+        static QString forbiddenFolderChars = SkaffariConfig::imapUnixhierarchysep() ? QStringLiteral("%*#/") : QStringLiteral("%*#.");
+
         static Validator v({
                                new ValidatorRequired(QStringLiteral("username")),
                                new ValidatorAlphaDash(QStringLiteral("username")),
@@ -578,7 +596,13 @@ void DomainEditor::add_account(Context* c)
                                new ValidatorBoolean(QStringLiteral("sieve")),
                                new ValidatorBoolean(QStringLiteral("smtpauth")),
                                new ValidatorBoolean(QStringLiteral("catchall")),
-                               new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, QStringLiteral("_minQuota"), QStringLiteral("_freeQuota"))
+                               new ValidatorFileSize(QStringLiteral("quota"), ValidatorFileSize::ForceBinary, QStringLiteral("_minQuota"), QStringLiteral("_freeQuota")),
+                               new ValidatorCharNotAllowed(QStringLiteral("sentFolder"), forbiddenFolderChars),
+                               new ValidatorCharNotAllowed(QStringLiteral("draftsFolder"), forbiddenFolderChars),
+                               new ValidatorCharNotAllowed(QStringLiteral("trashFolder"), forbiddenFolderChars),
+                               new ValidatorCharNotAllowed(QStringLiteral("junkFolder"), forbiddenFolderChars),
+                               new ValidatorCharNotAllowed(QStringLiteral("archiveFolder"), forbiddenFolderChars),
+                               new ValidatorCharNotAllowed(QStringLiteral("otherFolders"), forbiddenFolderChars)
                            });
 
         const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
@@ -758,6 +782,13 @@ void DomainEditor::add_account(Context* c)
     help.insert(QStringLiteral("sieve"), HelpEntry(c->translate("DomainEditor", "Sieve Access"), c->translate("DomainEditor", "If enabled, the user of this account can manage own Sieve scripts on the server.")));
     help.insert(QStringLiteral("smtpauth"), HelpEntry(c->translate("DomainEditor", "SMTP Access"), c->translate("DomainEditor", "If enabled, the user of this account can send emails via this server through the SMTP protocol.")));
     help.insert(QStringLiteral("children"), HelpEntry(c->translate("DomainEditor", "Child domains"), c->translate("DomainEditor", "For all selected child domains there will be email addresses created with the same local part if not already existing.")));
+
+    help.insert(QStringLiteral("sentFolder"), HelpEntry(c->translate("DomainEditor", "Sent messages"), c->translate("DomainEditor", "Folder for sent messages.")));
+    help.insert(QStringLiteral("draftsFolder"), HelpEntry(c->translate("DomainEditor", "Drafts"), c->translate("DomainEditor", "Folder for message drafts.")));
+    help.insert(QStringLiteral("trashFolder"), HelpEntry(c->translate("DomainEditor", "Trash"), c->translate("DomainEditor", "Folder for deleted messages.")));
+    help.insert(QStringLiteral("junkFolder"), HelpEntry(c->translate("DomainEditor", "Junk"), c->translate("DomainEditor", "Folder for junk messages aka. spam.")));
+    help.insert(QStringLiteral("archiveFolder"), HelpEntry(c->translate("DomainEditor", "Archive"), c->translate("DomainEditor", "Folder to archive messages.")));
+    help.insert(QStringLiteral("otherFolders"), HelpEntry(c->translate("DomainEditor", "Additional folders"), c->translate("DomainEditor", "Comma-separated list of additional folders.")));
 
     SkaffariError getCatchAllUserError(c);
     const QString catchAllUser = dom.getCatchAllAccount(c, getCatchAllUserError);

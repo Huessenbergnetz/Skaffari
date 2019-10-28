@@ -33,6 +33,7 @@
 #include <Cutelyst/Plugins/Utils/validatorbetween.h>
 #include <Cutelyst/Plugins/Utils/validatormin.h>
 #include <Cutelyst/Plugins/Utils/validatorfilesize.h>
+#include <Cutelyst/Plugins/Utils/validatorcharnotallowed.h>
 #include <limits>
 
 SettingsEditor::SettingsEditor(QObject *parent) : Controller(parent)
@@ -61,6 +62,9 @@ void SettingsEditor::index(Context *c)
     QVariantHash settings = SkaffariConfig::getSettingsFromDB();
 
     if (c->req()->isPost()) {
+
+        static QString forbiddenFolderChars = SkaffariConfig::imapUnixhierarchysep() ? QStringLiteral("%*#/") : QStringLiteral("%*#.");
+
         static Validator v({
                                new ValidatorIn(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), Language::supportedLangsList()),
                                new ValidatorBetween(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), QMetaType::UShort, 0, 100),
@@ -73,7 +77,13 @@ void SettingsEditor::index(Context *c)
                                new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC)),
                                new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC)),
                                new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC)),
-                               new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC))
+                               new SkValidatorAccountExists(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC)),
+                               new ValidatorCharNotAllowed(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_SENT), forbiddenFolderChars),
+                               new ValidatorCharNotAllowed(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_DRAFTS), forbiddenFolderChars),
+                               new ValidatorCharNotAllowed(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_TRASH), forbiddenFolderChars),
+                               new ValidatorCharNotAllowed(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_JUNK), forbiddenFolderChars),
+                               new ValidatorCharNotAllowed(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_ARCHIVE), forbiddenFolderChars),
+                               new ValidatorCharNotAllowed(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_OTHERS), forbiddenFolderChars)
                            });
 
         ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
@@ -83,10 +93,6 @@ void SettingsEditor::index(Context *c)
                         static_cast<quota_size_t>(vr.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA)).value<quota_size_t>() / Q_UINT64_C(1024)));
             vr.addValue(QStringLiteral(SK_CONF_KEY_DEF_QUOTA),
                         static_cast<quota_size_t>(vr.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA)).value<quota_size_t>() / Q_UINT64_C(1024)));
-            for (const QString &folder : {QStringLiteral(SK_CONF_KEY_DEF_FOLDER_SENT), QStringLiteral(SK_CONF_KEY_DEF_FOLDER_DRAFTS), QStringLiteral(SK_CONF_KEY_DEF_FOLDER_TRASH),
-                                          QStringLiteral(SK_CONF_KEY_DEF_FOLDER_JUNK), QStringLiteral(SK_CONF_KEY_DEF_FOLDER_ARCHIVE), QStringLiteral(SK_CONF_KEY_DEF_FOLDER_OTHERS)}) {
-                vr.addValue(folder, c->req()->bodyParam(folder));
-            }
             SkaffariConfig::saveSettingsToDB(vr.values());
             c->setStash(QStringLiteral("status_msg"), c->translate("SettingsEditor", "Settings successfully saved."));
             settings = SkaffariConfig::getSettingsFromDB();
