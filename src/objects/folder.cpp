@@ -28,11 +28,12 @@ class Folder::Data : public QSharedData
 public:
     Data() : QSharedData() {}
 
-    Data(dbid_t _id, dbid_t _domainId, const QString &_name) :
+    Data(dbid_t _id, dbid_t _domainId, const QString &_name, const SkaffariIMAP::SpecialUse _specialUse) :
         QSharedData(),
         name(_name),
         id(_id),
-        domainId(_domainId)
+        domainId(_domainId),
+        specialUse(_specialUse)
     {}
 
     ~Data() {}
@@ -40,6 +41,7 @@ public:
     QString name;
     dbid_t id = 0;
     dbid_t domainId = 0;
+    SkaffariIMAP::SpecialUse specialUse = SkaffariIMAP::None;
 };
 
 Folder::Folder() :
@@ -48,8 +50,8 @@ Folder::Folder() :
 
 }
 
-Folder::Folder(dbid_t id, dbid_t domainId, const QString &name) :
-    d(new Data(id, domainId, name))
+Folder::Folder(dbid_t id, dbid_t domainId, const QString &name, SkaffariIMAP::SpecialUse specialUse) :
+    d(new Data(id, domainId, name, specialUse))
 {
 
 }
@@ -103,30 +105,50 @@ QString Folder::getName() const
     return d->name;
 }
 
+SkaffariIMAP::SpecialUse Folder::getSpecialUse() const
+{
+    return d->specialUse;
+}
+
+bool Folder::operator==(const Folder &other) const
+{
+    return (d->id == other.d->id && d->domainId == other.d->domainId && d->name == other.d->name && d->specialUse == other.d->specialUse);
+}
+
+bool Folder::operator!=(const Folder &other) const
+{
+    return (d->id != other.d->id || d->domainId != other.d->domainId || d->name != other.d->name || d->specialUse != other.d->specialUse);
+}
+
 QDebug operator<<(QDebug dbg, const Folder &folder)
 {
     QDebugStateSaver saver(dbg);
-    Q_UNUSED(saver);
+    Q_UNUSED(saver)
     dbg.nospace() << "Folder(";
     dbg << "ID: " << folder.getId();
     dbg << ", Domain ID: " << folder.getDomainId();
     dbg << ", Name: " << folder.getName();
+    dbg << ", Special Use: " << folder.getSpecialUse();
     dbg << ')';
     return dbg.maybeSpace();
 }
 
 QDataStream &operator<<(QDataStream &stream, const Folder &folder)
 {
-    stream << folder.getName() << folder.getId() << folder.getDomainId();
+    stream << folder.getName() << folder.getId() << folder.getDomainId() << static_cast<quint8>(folder.getSpecialUse());
 
     return stream;
 }
 
 QDataStream &operator>>(QDataStream &stream, Folder &folder)
 {
+    quint8 specialUse;
+
     stream >> folder.d->name;
     stream >> folder.d->id;
     stream >> folder.d->domainId;
+    stream >> specialUse;
 
+    folder.d->specialUse = static_cast<SkaffariIMAP::SpecialUse>(specialUse);
     return stream;
 }

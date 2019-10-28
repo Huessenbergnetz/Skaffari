@@ -28,6 +28,8 @@ private Q_SLOTS:
     void domainQuotaUsed();
     void isFreeNamesEnabled();
     void isFreeAddressEnabled();
+    void folders();
+    void folder();
     void accounts();
     void created();
     void updated();
@@ -44,6 +46,9 @@ private Q_SLOTS:
 
 private:
     Domain m_dom;
+    std::vector<Folder> m_folders;
+    Folder m_trashFolder;
+    Folder m_junkFolder;
 };
 
 void DomainTest::isValid()
@@ -64,12 +69,15 @@ void DomainTest::constructor()
         SimpleAdmin(2, QStringLiteral("admin2"))
     };
 
-    std::vector<Folder> folders{
-        Folder(20, 12, QStringLiteral("Trash")),
-        Folder(21, 21, QStringLiteral("Spam"))
+    m_trashFolder = Folder(20, 12, QStringLiteral("Trash"), SkaffariIMAP::Trash);
+    m_junkFolder = Folder(21, 21, QStringLiteral("Spam"), SkaffariIMAP::Junk);
+
+    m_folders = std::vector<Folder>{
+        m_trashFolder,
+        m_junkFolder
     };
 
-    m_dom = Domain(12, 5, QStringLiteral("example.com"), QStringLiteral("xmp"), QStringLiteral("cyrus"), 1610612736, 1000, 1610612736000, 161061273600, true, false, 100, QDateTime(QDate(2018, 3, 28), QTime(16, 0)), QDateTime(QDate(2018, 3, 28), QTime(17, 0)), QDateTime(QDate(2118, 3, 28), QTime(16, 0)), SimpleDomain(10, QStringLiteral("example.de")), std::vector<SimpleDomain>(), admins, folders);
+    m_dom = Domain(12, 5, QStringLiteral("example.com"), QStringLiteral("xmp"), QStringLiteral("cyrus"), 1610612736, 1000, 1610612736000, 161061273600, true, false, 100, QDateTime(QDate(2018, 3, 28), QTime(16, 0)), QDateTime(QDate(2018, 3, 28), QTime(17, 0)), QDateTime(QDate(2118, 3, 28), QTime(16, 0)), SimpleDomain(10, QStringLiteral("example.de")), std::vector<SimpleDomain>(), admins, m_folders);
     QVERIFY(m_dom);
 }
 
@@ -80,7 +88,7 @@ void DomainTest::nameIdString()
 
 void DomainTest::id()
 {
-    QCOMPARE(m_dom.id(), 12);
+    QCOMPARE(m_dom.id(), static_cast<dbid_t>(12));
 }
 
 void DomainTest::name()
@@ -100,24 +108,24 @@ void DomainTest::transport()
 
 void DomainTest::quota()
 {
-    QCOMPARE(m_dom.quota(), 1610612736);
+    QCOMPARE(m_dom.quota(), static_cast<quota_size_t>(1610612736));
 }
 
 void DomainTest::maxAccounts()
 {
-    QCOMPARE(m_dom.maxAccounts(), 1000);
+    QCOMPARE(m_dom.maxAccounts(), static_cast<dbid_t>(1000));
 }
 
 void DomainTest::domainQuota()
 {
-    QCOMPARE(m_dom.domainQuota(), 1610612736000);
+    QCOMPARE(m_dom.domainQuota(), static_cast<quota_size_t>(1610612736000));
 }
 
 void DomainTest::domainQuotaUsed()
 {
-    QCOMPARE(m_dom.domainQuotaUsed(), 161061273600);
+    QCOMPARE(m_dom.domainQuotaUsed(), static_cast<quota_size_t>(161061273600));
     m_dom.setDomainQuotaUsed(80530636800);
-    QCOMPARE(m_dom.domainQuotaUsed(), 80530636800);
+    QCOMPARE(m_dom.domainQuotaUsed(), static_cast<quota_size_t>(80530636800));
     m_dom.setDomainQuotaUsed(161061273600);
 }
 
@@ -131,9 +139,20 @@ void DomainTest::isFreeAddressEnabled()
     QCOMPARE(m_dom.isFreeAddressEnabled(), false);
 }
 
+void DomainTest::folders()
+{
+    QCOMPARE(m_dom.folders(), m_folders);
+}
+
+void DomainTest::folder()
+{
+    QCOMPARE(m_dom.folder(SkaffariIMAP::Junk), m_junkFolder);
+    QCOMPARE(m_dom.folder(SkaffariIMAP::Sent), Folder());
+}
+
 void DomainTest::accounts()
 {
-    QCOMPARE(m_dom.accounts(), 100);
+    QCOMPARE(m_dom.accounts(), static_cast<dbid_t>(100));
 }
 
 void DomainTest::created()
@@ -158,7 +177,7 @@ void DomainTest::aceName()
 
 void DomainTest::aceId()
 {
-    QCOMPARE(m_dom.aceId(), 5);
+    QCOMPARE(m_dom.aceId(), static_cast<dbid_t>(5));
 }
 
 void DomainTest::isIdn()
@@ -176,12 +195,12 @@ void DomainTest::toSimple()
 
 void DomainTest::domainQuotaUsagePercent()
 {
-    QCOMPARE(m_dom.domainQuotaUsagePercent(), 10.0);
+    QCOMPARE(m_dom.domainQuotaUsagePercent(), 10.0f);
 }
 
 void DomainTest::accountUsagePercent()
 {
-    QCOMPARE(m_dom.accountUsagePercent(), 10.0);
+    QCOMPARE(m_dom.accountUsagePercent(), 10.0f);
 }
 
 void DomainTest::dataStream()
@@ -194,9 +213,9 @@ void DomainTest::dataStream()
     admins.emplace_back(SimpleAdmin(1, QStringLiteral("admin")));
 
     std::vector<Folder> folders;
-    folders.emplace_back(Folder(1, 12, QStringLiteral("Papierkorb")));
-    folders.emplace_back(Folder(2, 12, QStringLiteral("Vorlagen")));
-    folders.emplace_back(Folder(3, 12, QStringLiteral("Versandte Nachrichten")));
+    folders.emplace_back(Folder(1, 12, QStringLiteral("Papierkorb"), SkaffariIMAP::Trash));
+    folders.emplace_back(Folder(2, 12, QStringLiteral("Vorlagen"), SkaffariIMAP::SkaffariOtherFolders));
+    folders.emplace_back(Folder(3, 12, QStringLiteral("Versandte Nachrichten"), SkaffariIMAP::Sent));
 
     Domain d1(12, 0, QStringLiteral("example.com"), QStringLiteral("xmp"), QStringLiteral("cyrus"), 1610612736, 1000, 1610612736000, 161061273600, true, false, 100, QDateTime(QDate(2018, 3, 28), QTime(16, 0)), QDateTime(QDate(2018, 3, 28), QTime(17, 0)), QDateTime(QDate(2118, 3, 28), QTime(16, 0)), SimpleDomain(13, QStringLiteral("example.net")), children, admins, folders);
 
@@ -245,6 +264,7 @@ void DomainTest::dataStream()
         QCOMPARE(d1.folders().at(i).getId(), d2.folders().at(i).getId());
         QCOMPARE(d1.folders().at(i).getDomainId(), d2.folders().at(i).getDomainId());
         QCOMPARE(d1.folders().at(i).getName(), d2.folders().at(i).getName());
+        QCOMPARE(d1.folders().at(i).getSpecialUse(), d2.folders().at(i).getSpecialUse());
     }
 }
 

@@ -22,6 +22,7 @@
 #include <QSharedDataPointer>
 #include <grantlee5/grantlee/metatype.h>
 #include "../../common/global.h"
+#include "../imap/skaffariimap.h"
 
 /*!
  * \ingroup skaffaricore
@@ -41,7 +42,7 @@ public:
      * \param domainId  Database ID of the domain the folder belongs to.
      * \param name      Name of the folder.
      */
-    Folder(dbid_t id, dbid_t domainId, const QString &name);
+    Folder(dbid_t id, dbid_t domainId, const QString &name, SkaffariIMAP::SpecialUse specialUse);
 
     /*!
      * \brief Constructs a copy of \a other.
@@ -87,6 +88,15 @@ public:
      * \brief Returns the name of the folder.
      */
     QString getName() const;
+
+    /*!
+     * \brief Returns the special use flag of the folder.
+     */
+    SkaffariIMAP::SpecialUse getSpecialUse() const;
+
+    bool operator==(const Folder &other) const;
+
+    bool operator!=(const Folder &other) const;
 
 private:
     class Data;

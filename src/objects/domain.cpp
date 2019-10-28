@@ -22,6 +22,7 @@
 #include "adminaccount.h"
 #include "../utils/utils.h"
 #include "../utils/skaffariconfig.h"
+#include "../../common/global.h"
 #include <Cutelyst/ParamsMultiMap>
 #include <Cutelyst/Response>
 #include <Cutelyst/Context>
@@ -178,6 +179,20 @@ std::vector<Folder> Domain::folders() const
     return d->folders;
 }
 
+Folder Domain::folder(SkaffariIMAP::SpecialUse specialUse) const
+{
+    Folder f;
+    const auto folders = d->folders;
+    for (const Folder &folder : folders) {
+        if (folder.getSpecialUse() == specialUse) {
+            f = folder;
+            break;
+        }
+    }
+
+    return f;
+}
+
 quint32 Domain::accounts() const
 {
     return d->accounts;
@@ -292,7 +307,6 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     const quint32 maxAccounts = params.value(QStringLiteral("maxAccounts")).value<quint32>();
     const bool freeNames = params.value(QStringLiteral("freeNames")).toBool();
     const bool freeAddress = params.value(QStringLiteral("freeAddress")).toBool();
-    const QStringList folders = params.value(QStringLiteral("folders")).toString().trimmed().split(QLatin1Char(','), QString::SkipEmptyParts);
     const QString transport = params.value(QStringLiteral("transport"), QStringLiteral("cyrus")).toString();
     const dbid_t parentId = params.value(QStringLiteral("parent")).value<dbid_t>();
     const QDateTime defDateTime(QDate(2999, 12, 31), QTime(0, 0), QTimeZone::utc());
@@ -350,24 +364,39 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     const dbid_t domainId = q.lastInsertId().value<dbid_t>();
 
     std::vector<Folder> foldersVect;
-    if (!folders.empty()) {
-        if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)")))) {
-            errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to insert default folders for new domain into database."));
-            qCCritical(SK_DOMAIN, "%s: can not prepare database query to insert default folders for new domain: %s", err, qUtf8Printable(q.lastError().text()));
-            db.rollback();
-            return dom;
-        }
 
-        foldersVect.reserve(static_cast<std::vector<Folder>::size_type>(folders.size()));
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO folder (domain_id, name, special_use) VALUES (:domain_id, :name, :special_use)")))) {
+        errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to insert default folders for new domain into database."));
+        qCCritical(SK_DOMAIN, "%s: can not prepare database query to insert default folders for new domain: %s", err, qUtf8Printable(q.lastError().text()));
+        db.rollback();
+        return dom;
+    }
 
-        for (const QString &folder : folders) {
-            const QString _folder = folder.trimmed();
-            if (Q_LIKELY(!_folder.isEmpty())) {
+    for (const QString &folderType : DEFAULT_FOLDER_TYPES) {
+        const QString folderName = params.value(folderType).toString().trimmed();
+        if (!folderName.isEmpty()) {
+            SkaffariIMAP::SpecialUse specialUse = SkaffariIMAP::None;
+            if (folderType == QLatin1String("sentFolder")) {
+                specialUse = SkaffariIMAP::Sent;
+            } else if (folderType == QLatin1String("draftsFolder")) {
+                specialUse = SkaffariIMAP::Drafts;
+            } else if (folderType == QLatin1String("trashFolder")) {
+                specialUse = SkaffariIMAP::Trash;
+            } else if (folderType == QLatin1String("junkFolder")) {
+                specialUse = SkaffariIMAP::Junk;
+            } else if (folderType == QLatin1String("archiveFolder")) {
+                specialUse = SkaffariIMAP::Archive;
+            } else if (folderType == QLatin1String("otherFolders")) {
+                specialUse = SkaffariIMAP::SkaffariOtherFolders;
+            }
+
+            if (specialUse != SkaffariIMAP::None) {
                 q.bindValue(QStringLiteral(":domain_id"), domainId);
-                q.bindValue(QStringLiteral(":name"), folder);
+                q.bindValue(QStringLiteral(":name"), folderName);
+                q.bindValue(QStringLiteral(":special_use"), static_cast<quint8>(specialUse));
                 if (Q_LIKELY(q.exec())) {
                     const dbid_t folderId = q.lastInsertId().value<dbid_t>();
-                    foldersVect.emplace_back(folderId, domainId, folder);
+                    foldersVect.emplace_back(folderId, domainId, folderName, specialUse);
                 } else {
                     errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to insert default folders for new domain into database."));
                     qCCritical(SK_DOMAIN, "%s: can not execute database query to insert default folder for new domain: %s", err, qUtf8Printable(q.lastError().text()));
@@ -511,14 +540,14 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError &errorData)
 
     if (Q_LIKELY(q.exec() && q.next())) {
 
-        QSqlQuery fq = CPreparedSqlQueryThread(QStringLiteral("SELECT id, name FROM folder WHERE domain_id = :domain_id"));
+        QSqlQuery fq = CPreparedSqlQueryThread(QStringLiteral("SELECT id, name, special_use FROM folder WHERE domain_id = :domain_id"));
         fq.bindValue(QStringLiteral(":domain_id"), domId);
 
         if (Q_LIKELY(fq.exec())) {
             std::vector<Folder> defFolders;
             defFolders.reserve(static_cast<std::vector<Folder>::size_type>(fq.size()));
             while (fq.next()) {
-                defFolders.emplace_back(fq.value(0).value<dbid_t>(), domId, fq.value(1).toString());
+                defFolders.emplace_back(fq.value(0).value<dbid_t>(), domId, fq.value(1).toString(), static_cast<SkaffariIMAP::SpecialUse>(static_cast<quint8>(fq.value(2).toUInt())));
             }
 
             QSqlQuery aq = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username FROM domainadmin da JOIN adminuser a ON a.id = da.admin_id WHERE da.domain_id = :domain_id"));
@@ -911,7 +940,6 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
 
     QSqlQuery q(db);
 
-    const QStringList folders = p.value(QStringLiteral("folders")).toString().trimmed().split(QLatin1Char(','), QString::SkipEmptyParts);
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
     const quota_size_t quota = p.value(QStringLiteral("quota")).value<quota_size_t>() / Q_UINT64_C(1024);
     std::vector<Folder> foldersVect;
@@ -996,41 +1024,71 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
         return ret;
     }
 
-    if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM folder WHERE domain_id = :domain_id")))) {
-        e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
-        qCCritical(SK_DOMAIN, "%s: can not prepare query to delete current default folders from database: %s", err, qUtf8Printable(q.lastError().text()));
-        return ret;
-    }
-
-    q.bindValue(QStringLiteral(":domain_id"), d->id);
-
-    if (Q_UNLIKELY(!q.exec())) {
-        e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
-        qCCritical(SK_DOMAIN, "%s: can not execute query to delete current default folders from database: %s", err, qUtf8Printable(q.lastError().text()));
-        return ret;
-    }
-
-    if (!folders.empty()) {
-        if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO folder (domain_id, name) VALUES (:domain_id, :name)")))) {
-            e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
-            qCCritical(SK_DOMAIN, "%s: can not prepare query to insert default folders into database: %s", err, qUtf8Printable(q.lastError().text()));
-            return ret;
+    for (const QString &folderType : DEFAULT_FOLDER_TYPES) {
+        const QString folderName = p.value(folderType).toString().trimmed();
+        SkaffariIMAP::SpecialUse specialUse = SkaffariIMAP::None;
+        if (folderType == QLatin1String("sentFolder")) {
+            specialUse = SkaffariIMAP::Sent;
+        } else if (folderType == QLatin1String("draftsFolder")) {
+            specialUse = SkaffariIMAP::Drafts;
+        } else if (folderType == QLatin1String("trashFolder")) {
+            specialUse = SkaffariIMAP::Trash;
+        } else if (folderType == QLatin1String("junkFolder")) {
+            specialUse = SkaffariIMAP::Junk;
+        } else if (folderType == QLatin1String("archiveFolder")) {
+            specialUse = SkaffariIMAP::Archive;
+        } else if (folderType == QLatin1String("otherFolders")) {
+            specialUse = SkaffariIMAP::SkaffariOtherFolders;
         }
-        foldersVect.reserve(static_cast<std::vector<Folder>::size_type>(folders.size()));
-        for (const QString &folder : folders) {
-            const QString &_folder = folder.trimmed();
-            if (Q_LIKELY(!_folder.isEmpty())) {
-                q.bindValue(QStringLiteral(":domain_id"), d->id);
-                q.bindValue(QStringLiteral(":name"), _folder);
-                if (Q_UNLIKELY(!q.exec())) {
-                    e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
-                    qCCritical(SK_DOMAIN, "%s: can not execute query to insert default folders into database: %s", err, qUtf8Printable(q.lastError().text()));
-                    return ret;
-                }
-                foldersVect.emplace_back(q.lastInsertId().value<dbid_t>(), d->id, _folder);
+        Folder oldFolder = folder(specialUse);
+        // folder name has changed
+        if (oldFolder.getSpecialUse() != SkaffariIMAP::None && !folderName.isEmpty() && specialUse != SkaffariIMAP::None && oldFolder.getSpecialUse() == specialUse && oldFolder.getName() != folderName) {
+            if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE folder SET name = :name WHERE id = :id")))) {
+                e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+                qCCritical(SK_DOMAIN, "%s: can not prepare query to update default folders in database: %s", err, qUtf8Printable(q.lastError().text()));
+                return ret;
             }
+            q.bindValue(QStringLiteral(":name"), folderName);
+            q.bindValue(QStringLiteral(":id"), oldFolder.getId());
+            if (Q_UNLIKELY(!q.exec())) {
+                e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+                qCCritical(SK_DOMAIN, "%s: can not execute query to update default folders in database: %s", err, qUtf8Printable(q.lastError().text()));
+                return ret;
+            }
+            foldersVect.emplace_back(oldFolder.getId(), d->id, folderName, specialUse);
+        // the folder should be removed
+        } else if (oldFolder.getSpecialUse() != SkaffariIMAP::None && folderName.isEmpty() && specialUse != SkaffariIMAP::None && oldFolder.getSpecialUse() == specialUse) {
+            if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM folder WHERE id = :id")))) {
+                e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+                qCCritical(SK_DOMAIN, "%s: can not prepare query to delete default folder from database: %s", err, qUtf8Printable(q.lastError().text()));
+                return ret;
+            }
+            q.bindValue(QStringLiteral(":id"), oldFolder.getId());
+            if (Q_UNLIKELY(!q.exec())) {
+                e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+                qCCritical(SK_DOMAIN, "%s: can not execute query to delete default folder from database: %s", err, qUtf8Printable(q.lastError().text()));
+                return ret;
+            }
+        // the folder should be created
+        } else if (oldFolder.getSpecialUse() == SkaffariIMAP::None && !folderName.isEmpty() && specialUse != SkaffariIMAP::None) {
+            if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO folder (domain_id, name, special_use) VALUES (:domain_id, :name, :special_use)")))) {
+                e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+                qCCritical(SK_DOMAIN, "%s: can not prepare query to insert default folder into database: %s", err, qUtf8Printable(q.lastError().text()));
+                return ret;
+            }
+            q.bindValue(QStringLiteral(":domain_id"), d->id);
+            q.bindValue(QStringLiteral(":name"), folderName);
+            q.bindValue(QStringLiteral(":special_use"), static_cast<quint8>(specialUse));
+            if (Q_UNLIKELY(!q.exec())) {
+                e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
+                qCCritical(SK_DOMAIN, "%s: can not execute query to insert default folder into database: %s", err, qUtf8Printable(q.lastError().text()));
+                return ret;
+            }
+            foldersVect.emplace_back(q.lastInsertId().value<dbid_t>(), d->id, folderName, specialUse);
+        // nothing has changed, only add it to the list of folders
+        } else if (specialUse != SkaffariIMAP::None && !folderName.isEmpty() && oldFolder.getSpecialUse() == specialUse && oldFolder.getName() == folderName) {
+            foldersVect.push_back(oldFolder);
         }
-        foldersVect.shrink_to_fit();
     }
 
     if (Q_UNLIKELY(!db.commit())) {
@@ -1152,7 +1210,7 @@ QString Domain::getCatchAllAccount(Cutelyst::Context *c, SkaffariError &e) const
 QDebug operator<<(QDebug dbg, const Domain &domain)
 {
     QDebugStateSaver saver(dbg);
-    Q_UNUSED(saver);
+    Q_UNUSED(saver)
     dbg.nospace() << "Domain(";
     dbg << "ID: " << domain.id();
     dbg << ", Name: " << domain.name();

@@ -41,7 +41,7 @@ typedef quint32 dbid_t;
  * \brief Holds information about available and used mailbox storage quota.
  *
  * The first value stores the used quota in KiB, the second value stores the
- * total quota in KiB.
+ * quota limit in KiB.
  */
 typedef std::pair<quota_size_t,quota_size_t> quota_pair;
 
@@ -54,5 +54,7 @@ typedef std::pair<quota_size_t,quota_size_t> quota_pair;
 #ifndef SKAFFARI_STRING_TO_DBID
 # define SKAFFARI_STRING_TO_DBID(str) str.toULong()
 #endif
+
+#define DEFAULT_FOLDER_TYPES {QStringLiteral("sentFolder"), QStringLiteral("draftsFolder"), QStringLiteral("trashFolder"), QStringLiteral("junkFolder"), QStringLiteral("archiveFolder"), QStringLiteral("otherFolders")}
 
 #endif // SKAFFARIGLOBAL_H

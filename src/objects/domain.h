@@ -220,6 +220,11 @@ public:
     std::vector<Folder> folders() const;
 
     /*!
+     * \brief Returns the folder for the \a specialUse.
+     */
+    Folder folder(SkaffariIMAP::SpecialUse specialUse) const;
+
+    /*!
      * \brief Returns the number of accounts in this domain.
      */
     quint32 accounts() const;
@@ -501,6 +506,18 @@ if (property == QLatin1String("id")) {
     return QVariant(object.accountUsagePercent());
 } else if (property == QLatin1String("isIdn")) {
     return QVariant(object.isIdn());
+} else if (property == QLatin1String("draftsFolder")) {
+    return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::Drafts));
+} else if (property == QLatin1String("junkFolder")) {
+    return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::Junk));
+} else if (property == QLatin1String("sentFolder")) {
+    return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::Sent));
+} else if (property == QLatin1String("trashFolder")) {
+    return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::Trash));
+} else if (property == QLatin1String("archiveFolder")) {
+    return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::Archive));
+} else if (property == QLatin1String("otherFolders")) {
+    return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::SkaffariOtherFolders));
 }
 return QVariant();
 GRANTLEE_END_LOOKUP
