@@ -41,6 +41,135 @@
     </message>
 </context>
 <context>
+    <name>ConfigChecker</name>
+    <message>
+        <source>Checking configuration file %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Configuration file %1 does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not read configuration from %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Empty database type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for database type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Empty database host name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database socket file does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database socket file is not readable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database socket file is not writable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database host is not a valid domain name or IP address.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database port is not valid.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Empty database name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Empty database user name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for the administrator password hashing algorithm.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>For security reasons please use at least 1000 rounds for the administrator passwords.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for the administrator password quality threshold.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for the administrator password minimum length.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for the account password encryption method.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for the account password encryption algorithm.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for the account password hashing algorithm.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for the account password hashing rounds.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for the account password quality threshold.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IMAP host is not a valid domain name or IP address.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IMAP port is not valid.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IMAP network protocol is not valid.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IMAP connection encryption type is not valid.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IMAP authentication mechanism is not valid.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Empty IMAP administrator user name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Empty IMAP administrator password.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for IMAP mailbox creation strategy.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 Configuration key: %2</source>
+        <comment>configuration error with key</comment>
+        <extracomment>%1 will be a sentence that will contain a description, %2 will contain the affected configuration key</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ConfigFile</name>
     <message>
         <source>Checking configuration file</source>
@@ -352,14 +481,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>6: MySQL new</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>7: MySQL old</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Crypt(3) with bcrypt supports an iteration count to increase the time cost for creating the derived key. The iteration count passed to the crypt function is the base-2 logarithm of the actual iteration count. Supported values are between 4 and 31.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -369,6 +490,30 @@
     </message>
     <message>
         <source>Encryption rounds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Authentication mechanism</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The authentication mechanism used by your IMAP server. Skaffari has not negotiated the available mechanisms with your IMAP server. As the administrator, you should know for yourself which mechanisms are supported by your server.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mechanisms supported by Skaffari:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>0: Clear Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>32: MySQL new</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>33: MySQL old</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -410,6 +555,158 @@
     </message>
     <message>
         <source>File %1 is not readable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>invalid algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Socket</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password hashing algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password hashing rounds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password quality threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password quality settings file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password minimum length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Administrator settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password encryption method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User account settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Protocol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Encryption</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Peer name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Authentication mechanism</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Admin user</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unix hierarchy seperator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain as prefix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fully qualified user name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>all by IMAP server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>login after creation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>only set quota</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>all by Skaffari</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>invalid value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create mailbox</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IMAP settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Logging backend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Memcached</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Memcached session</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Skaffari Settings</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -503,19 +800,63 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Failed to send login command to the IMAP server: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connection to the IMAP server timed out while waiting for a response to the login command.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Connection to the IMAP server timed out while waiting for disconnection.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Connection to the IMAP server timed out.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to send %1 command to the IMAP server: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to the IMAP server timed out while waiting for a response to %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid response from the IMAP server to %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to send user name to IMAP server: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to the IMAP server timed out while waiting for a response to the sent user name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid response from the IMAP server to the sent user name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to send password to IMAP server: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to the IMAP server timed out while waiting for a response to the sent password.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to send authentication credentials to the IMAP server: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to the IMAP server timed out while waiting for a response after sending authentication credentials.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid challenge format for CRAM-MD5 authentication mechanism.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to send challenge response for CRAM-MD5 to the IMAP server: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to the IMAP server timed out while waiting for a response to the CRAM-MD5 challenge response.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -743,6 +1084,242 @@ status for not finding any IMAP admin users</extracomment>
     </message>
     <message>
         <source>Connection to your IMAP server as administrator is used to perform tasks like setting quotas and creating/deleting mailboxes and folders. The user account has to be defined as administrator in the imapd.conf file in the admins: key.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Checking administrator password quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Checking administrator password length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Encrypting administrator password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to encrypt administrator password. Encrypted password was empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Checking IMAP administrator password quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Checking IMAP administrator password length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Encrypting IMAP administrator password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Authentication</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SetupImporter</name>
+    <message>
+        <source>Start importing configuration.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not read configuration from %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The configuration file %1 already exists. Would you like to overwrite it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not open configuration file %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Establishing database connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The database is not empty. Do you want to continue and drop all tables and views?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dropping all tables and views from the database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Performing database installation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for admin password encryption algorithm. Configuration key: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for admin password quality threshold. Configuration key: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for admin password minimum length. Configuration key: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Checking administrator user name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid administrator user name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Checking administrator password quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The administrator password does not comply with the security requirements.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Encrypting administrator password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to encrypt administrator password. Encrypted password was empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Creating new administrator account in database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for account password encryption emthod. Configuration key: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for account password quality threshold. Configuration key: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>INvalid value for account password minimum length. Configuration key: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password encryption method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for account password encryption algorithm. Configuration key: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password encryption algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password encryption round</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password quality threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password quality configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password minimum length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Accounts settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>do not create</source>
+        <extracomment>do not create mailboxes by Skaffari</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>login after creation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>only set quota</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>create by Skaffari</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid value for IMAP mailbox creation strategy. Configuration key: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Protocol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Encryption</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Authentication</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Peer name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unix hierarchy seperator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain as prefix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fully qualified username</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create mailbox</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IMAP settings</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1205,10 +1782,6 @@ status for not finding any IMAP admin users</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Unknown error occurred while writing configuration to file.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Importing administrator accounts</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1252,6 +1825,18 @@ status for not finding any IMAP admin users</extracomment>
     </message>
     <message>
         <source>Checks and updates the status column of every account.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import Skaffari setup from ini file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>path to ini file to import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>path to web-cyradm config file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

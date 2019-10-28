@@ -4,14 +4,6 @@
 <context>
     <name>Account</name>
     <message>
-        <source>Not found</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There is no account with database ID %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The email address has not been changed.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -132,10 +124,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>User account could not be removed as a catch-all account for this domain.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Could not retrieve a list of all mailboxes from the IMAP server.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -239,11 +227,35 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Can not convert email address %1 into a ACE string.</source>
+        <source>Cannot retrieve current list of email addresses for user account %1 from the database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Cannot retrieve current list of email addresses for user account %1 from the database.</source>
+        <source>ACE email address for new user account could not be created in the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not set relationship between ACE and IDN representation of email address of new user account in database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not find account with database ID %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User account could not be removed as catch-all account for this domain.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User account could not be completeley removed as catch-all account for this domain.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can not remove the last email address for this account. Remove the entire account instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can not remove the last email address that matches the domain this account belongs to.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -259,10 +271,7 @@
     </message>
     <message>
         <source>Valid until</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future.</source>
+        <extracomment>%1 will be the string of a date and time</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -306,10 +315,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>For AJAX requests, this route is only available for POST requests.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>You can not remove the last email address for this account. Remove the entire account instead.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -339,10 +344,12 @@
     </message>
     <message>
         <source>You must set a storage quota for this account that does not exceed %1. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.</source>
+        <extracomment>%1 will be something like 1.5 GB</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>You can optionally set a storage quota for this account that does not exceed %1. To disable the storage quota, set it to 0. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.</source>
+        <extracomment>%1 will be something like 1.5 TiB</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -375,10 +382,6 @@
     </message>
     <message>
         <source>Failed to remove account %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>For AJAX requests, this route is only available via POST requests.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -460,6 +463,23 @@
             <numerusform></numerusform>
         </translation>
     </message>
+    <message>
+        <source>Invalid account database ID.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid domain database ID.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M/d/yyyy h:mm ap</source>
+        <extracomment>format for date and time as shown in the help text for the valid until input field, it is important that the year part has 4 digits</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future. The latest date and time until which this account can be valid is %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AcountEditor</name>
@@ -472,10 +492,6 @@
     <name>AdminAccount</name>
     <message>
         <source>Failed to query list of admins from database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -519,35 +535,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Failed to delete administrator settings from database for administrator %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Failed to delete administrator %1 from database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to create administrator account in database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to revert administrator account changes in database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to insert administrator settings into database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to revert administrator settings in database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to insert domain manager to domain connection into database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There is no administrator account with database ID %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -559,15 +547,59 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Failed to delete connections between domain manager %1 and associated domains from the database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to revert domain manager to domain connections in database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>%1 is not a valid IANA time zone ID.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid administrator type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You are not allowed to create users of type %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Faild to insert new administrator data into the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You are not allowed to set the type of this account to %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You are not allowed to change this administrator account.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is not a valid locale code.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You are not allowed to remove accounts of type %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to query count of super users to check if this is the last super user account.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can not remove the last super user.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Super user</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Administrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain manager</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disabled account</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -614,10 +646,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Access denied</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Confirm the password by entering it again.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -635,10 +663,6 @@
     </message>
     <message>
         <source>For AJAX requests, this route is only available via POST requests.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You are not authorized to access this resource or to perform this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -695,6 +719,10 @@
             <numerusform></numerusform>
         </translation>
     </message>
+    <message>
+        <source>Invalid administrator database ID.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AdminUser</name>
@@ -706,39 +734,11 @@
 <context>
     <name>Domain</name>
     <message>
-        <source>Access denied</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The domain with ID %1 could not be found in the database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Failed to remove domain default folders from database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to remove domain %1 from database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to update domain %1 in database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>You are not authorized to update this domain.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Not found</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There is no domain with database ID %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You are not authorized to access this resource or to perform this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -758,15 +758,79 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Access denied. Only administrator users are allowed to delete domains.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to remove domain to domain manager connections from database.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Failed to get database IDs of the accounts for this domain.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to insert new domain into database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to create new domain in database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to insert default folders for new domain into database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to insert ACE version of new domain into database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to update ACE id of new domain in database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to insert role account email addresses into databaes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not find parent domain with ID %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to query parent domain from database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to query child domains from the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to query responsible administrators from the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to query default folders from the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to query domain list from database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to remove domain from database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to rmove ACE email addresses from the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to remove ACE email addresses from the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to remove ACE domain name from the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to update domain in database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to update default folders in database.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -915,10 +979,7 @@
     </message>
     <message>
         <source>Valid until</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future.</source>
+        <extracomment>%1 will be the string of a date and time</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -975,10 +1036,6 @@
     </message>
     <message>
         <source>Total storage quota for all user accounts belonging to this domain. If the domain quota is set (not 0), each user account in the domain must have set its own quota. Set it to 0 to disable the domain quota. You can use the multipliers K, KiB, M, MiB, G, GiB, etc.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The current number of user accounts in this domain and the maximum allowed number of user accounts in this domain.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1062,10 +1119,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>For AJAX requests, this route is only available via POST requests.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>There is not enough free quota on this domain. Please lower the quota for the new account to a maximum of %1.</source>
         <extracomment>%1 will be the free domain quota as string like 1.5 GiB</extracomment>
         <translation type="unfinished"></translation>
@@ -1134,6 +1187,102 @@
             <numerusform></numerusform>
             <numerusform></numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Invalid domain database ID.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The current number of user accounts in this domain and the maximum allowed number of user accounts in this domain. Settings this to 0 disabled the limit.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default folders</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sent messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folder for sent messages.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drafts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folder for message drafts.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folder for deleted messages.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Junk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folder for junk messages aka. spam.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comma-separated list of additional folders.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid new parent domain database ID.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M/d/yyyy h:mm ap</source>
+        <extracomment>format for date and time as shown in the help text for the valid until input field, it is important that the year part has 4 digits</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future. The latest date and time until which this account can be valid is %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Archive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folder to archive messages.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Additional folders</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>EmailAddress</name>
+    <message>
+        <source>Failed to query the list of email addresses for account %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not find email address with database ID %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to query email address with ID %1 from the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not find email address %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to query email address %1 from the database.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1272,6 +1421,30 @@
         <source>You have to login at first.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Failed to query statistics from the database: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The requested resource could not be found or the requested page is not available.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Access denied</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You are not authorized to access this resource or to perform this action.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry but an unknown error occured while processing your request.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsEditor</name>
@@ -1388,11 +1561,51 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>You are not authorized to access this resource or to perform this action.</source>
+        <source>Sent messages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Access denied</source>
+        <source>Folder for sent messages.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drafts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folder for message drafts.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folder for deleted messages.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Junk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folder for junk messages aka. spam.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Archive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folder to archive messages.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Additional folders</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comma-separated list of additional folders.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1404,6 +1617,10 @@
     </message>
     <message>
         <source>Failed to query account from database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not find account with database ID %1.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1488,6 +1705,13 @@
     </message>
 </context>
 <context>
+    <name>Skaffari::Utils</name>
+    <message>
+        <source>For AJAX requests, this route is only available via POST requests.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SkaffariError</name>
     <message>
         <source>IMAP error:</source>
@@ -1515,6 +1739,46 @@
     </message>
     <message>
         <source>No error occurred, everything is fine.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Authorization error:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IMAP error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Configuration error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Empty database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Access denied</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid input data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Internal server error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unkown Error</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1581,6 +1845,26 @@
     </message>
     <message>
         <source>We received a NO response from the IMAP server: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid response from the IMAP server to %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid challenge format for CRAM-MD5 authentication mechanism.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to send challenge response for CRAM-MD5 to the IMAP server: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Authentication mechanism is not supported by Skaffari.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection to the IMAP server timed out.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
