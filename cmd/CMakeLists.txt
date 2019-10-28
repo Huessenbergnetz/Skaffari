@@ -21,13 +21,17 @@ add_executable(skaffaricmd
     accountstatusupdater.h
     configfile.cpp
     configfile.h
+    configchecker.cpp
+    configchecker.h
+    setupimporter.cpp
+    setupimporter.h
 )
-
-target_include_directories(skaffaricmd PRIVATE ${Cutelyst2Qt5_INCLUDE_DIR})
 
 target_compile_features(skaffaricmd
     PRIVATE
         cxx_auto_type
+        cxx_defaulted_move_initializers
+        cxx_generalized_initializers
         cxx_lambdas
         cxx_long_long_type
         cxx_nonstatic_member_init
@@ -35,6 +39,9 @@ target_compile_features(skaffaricmd
         cxx_override
         cxx_range_for
         cxx_right_angle_brackets
+        cxx_strong_enums
+        cxx_unicode_literals
+        cxx_uniform_initialization
 )
 
 target_compile_options(skaffaricmd
@@ -57,6 +64,7 @@ target_compile_definitions(skaffaricmd
         QT_NO_URL_CAST_FROM_STRING
         QT_NO_CAST_FROM_BYTEARRAY
         QT_USE_QSTRINGBUILDER
+        QT_SHA3_KECCAK_COMPAT
 )
 
 target_link_libraries(skaffaricmd
@@ -69,5 +77,10 @@ target_link_libraries(skaffaricmd
         Cutelyst::Utils::Validator
         crypt
 )
+
+pkg_check_modules(SYSTEMD QUIET libsystemd)
+if (SYSTEMD_FOUND)
+    target_compile_definitions(skaffaricmd PRIVATE WITH_SYSTEMD)
+endif(SYSTEMD_FOUND)
 
 install(TARGETS skaffaricmd DESTINATION ${CMAKE_INSTALL_BINDIR})
