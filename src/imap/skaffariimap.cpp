@@ -26,6 +26,7 @@
 #include <QSslError>
 #include <Cutelyst/Context>
 #include <QMessageAuthenticationCode>
+#include <QSysInfo>
 
 Q_LOGGING_CATEGORY(SK_IMAP, "skaffari.imap")
 
@@ -274,6 +275,33 @@ bool SkaffariIMAP::login()
                 if (SkaffariIMAP::m_capabilities.empty()) {
                     logout();
                     return false;
+                }
+            }
+        }
+    }
+
+    if (hasCapability(QStringLiteral("ID"))) {
+        const QString tag = getTag();
+        QString os = QSysInfo::productType();
+        QString osVersion = QSysInfo::productVersion();
+        if (os == QLatin1String("unknown")) {
+            os = QSysInfo::kernelType();
+            osVersion = QSysInfo::kernelVersion();
+        } else {
+            os = QSysInfo::prettyProductName();
+        }
+
+        const QString cmd = QStringLiteral("ID (\"name\" \"%1\" \"version\" \"%2\" \"os\" \"%3\" \"os-version\" \"%4\")").arg(QCoreApplication::applicationName(), QCoreApplication::applicationVersion(), os, osVersion);
+
+        if (Q_LIKELY(sendCommand(tag, cmd))) {
+            if (Q_LIKELY(waitForResponse())) {
+                QVector<QByteArray> response;
+                if (Q_LIKELY(checkResponse(readAll(), tag, &response))) {
+                    if (Q_LIKELY(!response.empty())) {
+                        // 7 is the length of "* ID (" + 1
+                        const QString respString = QString::fromLatin1(response.first().mid(7));
+                        qCDebug(SK_IMAP, "IMAP server ID response: %s", qUtf8Printable(respString));
+                    }
                 }
             }
         }
