@@ -232,14 +232,14 @@ public:
      * \par Database options table key
      * default_maxdisplay
      */
-    static quint8 defMaxdisplay();
+    static quint32 defMaxdisplay();
     /*!
      * \brief The default warn level for quota and account limits.
      *
      * \par Database options table key
      * default_warnlevel
      */
-    static quint8 defWarnlevel();
+    static quint32 defWarnlevel();
     /*!
      * \brief The default account for the abuse role address.
      *
