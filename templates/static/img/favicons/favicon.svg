@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg viewBox="0 0 16.933333 16.933333" xmlns:cc="http://creativecommons.org/ns#" id="svg8" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:dc="http://purl.org/dc/elements/1.1/" inkscape:version="0.92.4 (5da689c313, 2019-01-14)" sodipodi:docname="favicon.svg" height="64" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" width="64" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd">
+  <defs id="defs2">
+    <linearGradient id="linearGradient826" inkscape:collect="always">
+      <stop stop-color="#006232" id="stop830" offset="0" stop-opacity="1"/>
+      <stop stop-color="#00ffd7" id="stop832" offset="1" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient fx="8.3635168" r="8.4666662" fy="288.52753" gradientUnits="userSpaceOnUse" gradientTransform="matrix(6.0047015,-7.2516171,3.5718714,2.9576881,-1072.7379,-503.92476)" id="radialGradient835" xlink:href="#linearGradient826" inkscape:collect="always" cx="8.3635168" cy="288.52753"/>
+  </defs>
+  <sodipodi:namedview inkscape:current-layer="layer1" units="px" inkscape:window-y="0" showgrid="false" inkscape:window-width="1920" inkscape:cx="31.26863" bordercolor="#666666" inkscape:cy="113.49199" inkscape:window-height="1051" inkscape:pageopacity="0.0" inkscape:window-x="0" pagecolor="#ffffff" inkscape:pageshadow="2" inkscape:document-units="mm" id="base" inkscape:window-maximized="1" inkscape:zoom="1.979899" borderopacity="1.0"/>
+  <metadata id="metadata5">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <dc:title/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g inkscape:groupmode="layer" inkscape:label="Ebene 1" id="layer1" transform="translate(0,-280.06667)">
+    <rect fill="#ffffff" id="rect10" stroke-width="29.41134834" height="30.869631" x="4.4099469" opacity="1" stroke-linecap="square" width="36.883194" y="235.66165"/>
+    <rect fill="url(#radialGradient835)" id="rect12" stroke-width="11.67392159" height="16.933332" x="0" opacity="1" stroke-linecap="square" width="16.933332" y="280.06668"/>
+    <text letter-spacing="0px" line-height="12.07319832px" font-variant="normal" x="8.5198994" word-spacing="0px" font-stretch="normal" font-weight="normal" xml:space="preserve" font-family="'Alte Schwabacher'" stroke-width="0.48292792px" font-size="14.16588688px" -inkscape-font-specification="'Alte Schwabacher'" y="293.54099" text-align="center" fill="#ffffff" text-anchor="middle" font-style="normal" id="text839">
+      <tspan sodipodi:role="line" fill="#ffffff" id="tspan837" stroke-width="0.48292792px" x="8.5198994" y="293.54099">S</tspan>
+    </text>
+  </g>
+</svg>

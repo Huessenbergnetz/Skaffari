@@ -26,6 +26,7 @@ set(SKAFFARI_APP_FILE "${CMAKE_INSTALL_LIBDIR}/cutelyst${Cutelyst2Qt5_VERSION_MA
 set(APPDIR "${CMAKE_INSTALL_DATADIR}/skaffari")
 set(CMAKE_INSTALL_LOCALEDIR "${APPDIR}/l10n" CACHE PATH "Directory to install core translations")
 set(TEMPLATES_INSTALL_DIR "${APPDIR}/templates" CACHE PATH "Directory to install templates")
+set(SKAFFARI_STATIC_INSTALL_DIR "${APPDIR}/static" CACHE PATH "Directory to install general static template files")
 set(CMAKE_INSTALL_SYSCONFDIR "/etc" CACHE PATH "Directory to install configuration files")
 set(SKAFFARI_INI_FILE "${CMAKE_INSTALL_SYSCONFDIR}/skaffari.ini")
 set(SQL_INSTALL_DIR "${APPDIR}/sql" CACHE PATH "Directory to install SQL files")

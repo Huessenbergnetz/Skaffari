@@ -3,6 +3,8 @@ docs/
 *.kdev4
 *~
 .directory
+templates/static/favicon.ico
+templates/static/img/favicons/*.png
 templates/*/node_modules
 templates/*/static/css
 templates/*/static/js

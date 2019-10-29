@@ -39,6 +39,8 @@ mkdir ${DIR}/templates
 pushd templates
 cp CMakeLists.txt ${DIR}/templates
 
+cp -r static ${DIR}/templates
+
 for TMPL in default
 do
     pushd $TMPL
