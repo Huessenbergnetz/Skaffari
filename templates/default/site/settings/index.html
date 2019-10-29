@@ -13,7 +13,7 @@
         <div class="tab-pane fade show active" id="defaults" role="tabpanel" aria-labelledby="defaultsTab">
 
             <fieldset>
-                <legend>{{ _("Default values") }}</legend>
+                <legend>{{ _("Admin accounts") }}</legend>
                 <div class="row">
 
                     <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
@@ -54,6 +54,13 @@
                         {% if validationErrors.default_maxdisplay.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_maxdisplay.0 }}</small></div>{% endif %}
                         <small id="default_maxdisplayDesc" class="form-text text-muted">{{ help.default_maxdisplay.text }}</small>
                     </div>
+
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>{{ _("Domains") }}</legend>
+                <div class="row">
 
                     <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                         <label for="default_maxaccounts" class="col-form-label">{{ help.default_maxaccounts.title }}</label>
@@ -155,6 +162,7 @@
 
             <fieldset>
                 <legend>{{ _("Default folders") }}</legend>
+                <p class="form-text text-muted">{{ _("The folders defined here are used when creating new domains, but can be changed there at any time.") }}</p>
                 <div class="row">
                     {% with "default_sent_folder" as id %}
                     {% with help.default_sent_folder.title as label %}
@@ -162,7 +170,7 @@
                     {% with validationErrors.default_sent_folder.count as errorCount %}
                     {% with validationErrors.default_sent_folder.0 as errorText %}
                     {% with default_sent_folder as value %}
-                    {% i18nc_var "Placeholder for default sent folder input field" "Sent messages" as sentFolderPlaceholder %}
+                    {% i18nc_var "Placeholder for default sent folder input field" "e.g. Sent messages" as sentFolderPlaceholder %}
                     {% with sentFolderPlaceholder as placeholder %}
 
                     {% include "inc/forms/inputfield.html" %}
@@ -183,7 +191,7 @@
                     {% with validationErrors.default_drafts_folder.count as errorCount %}
                     {% with validationErrors.default_drafts_folder.0 as errorText %}
                     {% with default_drafts_folder as value %}
-                    {% i18nc_var "Placeholder for default drafts folder input field" "Drafts" as draftsFolderPlaceholder %}
+                    {% i18nc_var "Placeholder for default drafts folder input field" "e.g. Drafts" as draftsFolderPlaceholder %}
                     {% with draftsFolderPlaceholder as placeholder %}
 
                     {% include "inc/forms/inputfield.html" %}
@@ -204,7 +212,7 @@
                     {% with validationErrors.default_trash_folder.count as errorCount %}
                     {% with validationErrors.default_trash_folder.0 as errorText %}
                     {% with default_trash_folder as value %}
-                    {% i18nc_var "Placeholder for default trash folder input field" "Trash" as trashFolderPlaceholder %}
+                    {% i18nc_var "Placeholder for default trash folder input field" "e.g. Trash" as trashFolderPlaceholder %}
                     {% with trashFolderPlaceholder as placeholder %}
 
                     {% include "inc/forms/inputfield.html" %}
@@ -225,7 +233,7 @@
                     {% with validationErrors.default_junk_folder.count as errorCount %}
                     {% with validationErrors.default_junk_folder.0 as errorText %}
                     {% with default_junk_folder as value %}
-                    {% i18nc_var "Placeholder for default junk folder input field" "Junk" as junkFolderPlaceholder %}
+                    {% i18nc_var "Placeholder for default junk folder input field" "e.g. Junk" as junkFolderPlaceholder %}
                     {% with junkFolderPlaceholder as placeholder %}
 
                     {% include "inc/forms/inputfield.html" %}
@@ -246,7 +254,7 @@
                     {% with validationErrors.default_archive_folder.count as errorCount %}
                     {% with validationErrors.default_archive_folder.0 as errorText %}
                     {% with default_archive_folder as value %}
-                    {% i18nc_var "Placeholder for default archive folder input field" "Archive" as archiveFolderPlaceholder %}
+                    {% i18nc_var "Placeholder for default archive folder input field" "e.g. Archive" as archiveFolderPlaceholder %}
                     {% with archiveFolderPlaceholder as placeholder %}
 
                     {% include "inc/forms/inputfield.html" %}
@@ -267,7 +275,7 @@
                     {% with validationErrors.default_other_folders.count as errorCount %}
                     {% with validationErrors.default_other_folders.0 as errorText %}
                     {% with default_other_folders as value %}
-                    {% i18nc_var "Placeholder for other default folder input fields" "Templates" as otherFoldersPlaceholder %}
+                    {% i18nc_var "Placeholder for other default folder input fields" "e.g. Templates,Invoices" as otherFoldersPlaceholder %}
                     {% with otherFoldersPlaceholder as placeholder %}
 
                     {% include "inc/forms/inputfield.html" %}
