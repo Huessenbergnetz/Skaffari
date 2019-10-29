@@ -6,13 +6,25 @@
 
         <title>{{ site_title }}{% if site_subtitle %} - {{ site_subtitle }}{% endif %} - Skaffari</title>
 
+        <link rel="shortcut icon" type="image/vnd.microsoft.icon" href="/favicon.ico"/>
+        <link rel="icon" type="image/svg+xml" href="/img/favicons/favicon.svg"/>
+        <link rel="icon" type="image/vnd.microsoft.icon" sizes="16x16 32x32 48x48" href="/favicon.ico"/>
+        {% for size in "512,384,256,192,144,96,72,48,36,32,16"|sk_split %}
+        <link rel="icon" type="image/png" sizes="{{ size }}x{{ size }}" href="/img/favicons/favicon-{{ size }}.png"/>
+        {% endfor %}
+        {% for size in "180,152,144,120,114,76,72,60,57"|sk_split %}
+        <link rel="apple-touch-icon" type="image/png" sizes="{{ size }}x{{ size }}" href="/img/favicons/apple-touch-icon-{{ size }}x{{ size }}.png"/>
+        {% endfor %}
 
         <link href="/css/style.css" rel="stylesheet"/>
     </head>
 
     <body>
         <nav class="navbar fixed-top navbar-expand-md navbar-dark bg-dark">
-            <a class="navbar-brand" href="/">Skaffari</a>
+            <a class="navbar-brand" href="/">
+                <img src="/img/favicons/favicon.svg" widht="30" height="30" class="d-inline-block align-top" alt="Logo"/>
+                Skaffari
+            </a>
 
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="{{ _("Toggle navigation") }}">
                 <span class="navbar-toggler-icon"></span>
