@@ -71,7 +71,7 @@ void MyAccount::index(Context *c)
             static Validator v({
                                    new ValidatorConfirmed(QStringLiteral("password")),
                        #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
-                                   new ValidatorPwQuality(QStringLiteral("password"), SkaffariConfig::admPwThreshold(), SkaffariConfig::admPwSettingsFile(), QStringLiteral("userName")),
+                                   new ValidatorPwQuality(QStringLiteral("password"), SkaffariConfig::admPwThreshold(), SkaffariConfig::admPwSettingsFile(), QStringLiteral("userName"), QStringLiteral("oldpassword")),
                        #else
                                    new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),
                        #endif
@@ -81,11 +81,18 @@ void MyAccount::index(Context *c)
                                    new ValidatorIn(QStringLiteral("tz"), tzIds)
                                });
 
-            const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
+            ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
             if (vr) {
+                vr.addValue(QStringLiteral("oldpassword"), req->bodyParam(QStringLiteral("oldpassword")));
                 SkaffariError e(c);
                 if (aac.updateOwn(c, e, vr.values())) {
-                    c->setStash(QStringLiteral("status_msg"), c->translate("MyAccount", "Your account has been updated."));
+                    // TODO: this is a bit hacky unless cutelyst does not support updating the authenticated user, currently the check for an old password will
+                    // fail after changing the password as the previous password is still in the session
+                    if (vr.value(QStringLiteral("password")).toString().isEmpty()) {
+                        c->setStash(QStringLiteral("status_msg"), c->translate("MyAccount", "Your account has been updated."));
+                    } else {
+                        c->setStash(QStringLiteral("status_msg"), c->translate("MyAccount", "Your account and password have been updated. Please logout and use your new password to login again."));
+                    }
                 } else {
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
                 }
@@ -96,6 +103,7 @@ void MyAccount::index(Context *c)
         help.reserve(8);
         help.insert(QStringLiteral("created"), HelpEntry(c->translate("MyAccount", "Created"), c->translate("MyAccount", "Date and time your account was created.")));
         help.insert(QStringLiteral("updated"), HelpEntry(c->translate("MyAccount", "Updated"), c->translate("MyAccount", "Date and time your account was last updated.")));
+        help.insert(QStringLiteral("oldpassword"), HelpEntry(c->translate("MyAccount", "Current password"), c->translate("MyAccount", "Please enter your current password if you want to change your password.")));
         help.insert(QStringLiteral("password"), HelpEntry(c->translate("MyAccount", "New password"), c->translate("MyAccount", "Enter a new password with a minimum length of %n character(s) or leave the field blank to avoid changing the password.", "", SkaffariConfig::accPwMinlength())));
         help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("MyAccount", "Confirm new password"), c->translate("MyAccount", "Confirm your new password by entering it again.")));
         help.insert(QStringLiteral("maxdisplay"), HelpEntry(c->translate("MyAccount", "Max display"), c->translate("MyAccount", "Set the number of results you want to load in paginated lists like the account list (minimum 15, maximum 255)")));

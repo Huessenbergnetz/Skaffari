@@ -675,14 +675,27 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError &e, const QVari
     const QByteArray errBa = errStr.toUtf8();
     const char *err = errBa.constData();
 
-    if (d->id != Cutelyst::Authentication::user(c).id().value<dbid_t>()) {
+    Cutelyst::AuthenticationUser user = Cutelyst::Authentication::user(c);
+
+    if (d->id != user.id().value<dbid_t>()) {
         e.setErrorType(SkaffariError::AuthorizationError);
         e.setErrorText(c->translate("AdminAccount", "You are not allowed to change this administrator account."));
         qCWarning(SK_ADMIN, "%s: access denied.", err);
         return ret;
     }
 
+    const QString oldpassword = p.value(QStringLiteral("oldpassword")).toString();
     const QString password = p.value(QStringLiteral("password")).toString();
+
+    if (!password.isEmpty()) {
+        if (!Cutelyst::CredentialPassword::validatePassword(oldpassword.toUtf8(), user.value(QStringLiteral("password")).toString().toUtf8())) {
+            e.setErrorType(SkaffariError::AuthorizationError);
+            e.setErrorText(c->translate("AdminAccount", "The current password is not valid."));
+            qCWarning(SK_ADMIN, "%s: invalid current password.", err);
+            return ret;
+        }
+    }
+
     const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
     const QString tz = p.value(QStringLiteral("tz"), d->tz).toString();
     const QString langCode = p.value(QStringLiteral("lang"), d->lang).toString();

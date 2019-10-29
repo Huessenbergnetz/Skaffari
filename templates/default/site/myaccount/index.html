@@ -28,6 +28,13 @@
         <div class="row">
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label for="oldpassword" class="col-form-label">{{ help.oldpassword.title }}</label>
+                <input type="password" id="oldpassword" name="oldpassword" class="form-control{% if validationErrors.oldpassword.count %} is-invalid{% endif %}" placeholder="{{ help.oldpassword.title }}" aria-describedby="oldpasswordDesc" autocomplete="current-password"{% if not adminaccount.isValid %} required="required"{% endif %} />
+                {% if validationErrors.oldpassword.count %}<div class="invalid-feedback"><small>{{ validationErrors.oldpassword.0 }}</small></div>{% endif %}
+                <small id="oldpasswordDesc" class="form-text text-muted">{{ help.oldpassword.text }}</small>
+            </div>
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="password" class="col-form-label">{{ help.password.title }}</label>
                 <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ help.password.title }}" aria-describedby="passwordDesc" autocomplete="new-password"{% if not adminaccount.isValid %} required="required"{% endif %} />
                 {% if validationErrors.password.count %}<div class="invalid-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
@@ -36,7 +43,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="password_confirmation" class="col-form-label">{{ help.password_confirmation.title }}</label>
-                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ help.password_confirmation.title }}" aria-describedby="passwordConfirmDesc"{% if not adminaccount.isValid %} required="required"{% endif %} />
+                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ help.password_confirmation.title }}" aria-describedby="passwordConfirmDesc" autocomplete="new-password"{% if not adminaccount.isValid %} required="required"{% endif %} />
                 <small id="passwordConfirmDesc" class="form-text text-muted">{{ help.password_confirmation.text }}</small>
             </div>
 
