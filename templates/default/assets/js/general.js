@@ -155,7 +155,7 @@ Skaffari.DefaultTmpl.csrfSafeMethod = function(method) {
 }
 
 Skaffari.DefaultTmpl.init = function() {
-    $.fn.select2.defaults.set("theme", "bootstrap");
+    $.fn.select2.defaults.set("theme", "bootstrap4");
     $('.select2').select2();
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {
