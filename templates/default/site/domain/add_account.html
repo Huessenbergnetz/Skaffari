@@ -65,14 +65,14 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="password">{{ help.password.title }}</label>
-                <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ help.password.title }}" aria-describedby="passwordDesc" required="required" />
+                <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ help.password.title }}" aria-describedby="passwordDesc" required="required" autocomplete="new-password" />
                 {% if validationErrors.password.count %}<div class="invalid-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
                 <small id="passwordDesc" class="form-text text-muted">{{ help.password.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="password_confirmation">{{ help.password_confirmation.title }}</label>
-                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ help.password_confirmation.title }}" aria-describedby="passwordConfirmationDesc" required="required" />
+                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ help.password_confirmation.title }}" aria-describedby="passwordConfirmationDesc" required="required" autocomplete="new-password" />
                 <small id="passwordConfirmationDesc" class="form-text text-muted">{{ help.password_confirmation.text }}</small>
             </div>
 
