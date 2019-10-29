@@ -24,6 +24,7 @@
 #include "urlencodefilter.h"
 #include "acedecodefilter.h"
 #include "stringlistsortfilter.h"
+#include "splitfilter.h"
 
 SkaffariGrantlee::SkaffariGrantlee(QObject *parent) : QObject(parent)
 {
@@ -33,7 +34,7 @@ SkaffariGrantlee::SkaffariGrantlee(QObject *parent) : QObject(parent)
 
 QHash<QString, Grantlee::AbstractNodeFactory *> SkaffariGrantlee::nodeFactories(const QString &name)
 {
-    Q_UNUSED(name);
+    Q_UNUSED(name)
 
     QHash<QString, Grantlee::AbstractNodeFactory *> ret;
 
@@ -47,13 +48,14 @@ QHash<QString, Grantlee::AbstractNodeFactory *> SkaffariGrantlee::nodeFactories(
 
 QHash<QString, Grantlee::Filter *> SkaffariGrantlee::filters(const QString &name)
 {
-    Q_UNUSED(name);
+    Q_UNUSED(name)
 
     QHash<QString, Grantlee::Filter *> ret;
 
     ret.insert(QStringLiteral("sk_urlencode"), new UrlEncodeFilter());
     ret.insert(QStringLiteral("sk_acedecode"), new AceDecodeFilter());
     ret.insert(QStringLiteral("sk_stringlistsort"), new StringListSortFilter());
+    ret.insert(QStringLiteral("sk_split"), new SplitFilter());
 
     return ret;
 }
