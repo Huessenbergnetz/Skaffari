@@ -1,5 +1,11 @@
 <div class="row">
-    <div class="col"><h2><i class="fas fa-sliders-h"></i> {{ _("Settings") }}</h2></div>
+    <div class="col-12 col-sm-9">
+        <h2><i class="fas fa-sliders-h"></i> {{ _("Settings") }}</h2>
+    </div>
+    <div class="col-12 col-sm-3">
+        <a class="btn btn-outline-primary float-sm-right d-none d-sm-block" href="/settings/add_autoconfig_server" role="button"><i class="fas fa-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add server") }}</span></a>
+        <a class="btn btn-outline-primary btn-block d-block d-sm-none" href="/settings/add_autoconfig_server" role="button"><i class="fas fa-plus"></i> {{ _("Add server") }}</a>
+    </div>
 </div>
 
 <div class="row">
@@ -37,7 +43,7 @@
                 <tr>
                     <td>
                         <div class="btn-group">
-                            <a href="#" class="btn btn-sm btn-light" title='{{ edtAcsTxt }}' role="button"><i class="fas fa-edit fa-fw"></i></a>
+                            <a href="/settings/edit_autoconfig_server/{{ server.id }}" class="btn btn-sm btn-light" title='{{ edtAcsTxt }}' role="button"><i class="fas fa-edit fa-fw"></i></a>
                             <button type="button" class="btn btn-sm btn-light dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="sr-only">{{ togDrpTxt }}</span>
                             </button>

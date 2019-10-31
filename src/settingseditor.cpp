@@ -213,6 +213,7 @@ void SettingsEditor::add_autoconfig_server(Context *c)
             AutoconfigServer s = AutoconfigServer::create(c, 0, vr.values(), e);
             if (Q_LIKELY(e.type() == SkaffariError::NoError)) {
                 c->res()->redirect(c->uriForAction(QStringLiteral("/settings/autoconfig"), QStringList(), QStringList(), StatusMessage::statusQuery(c, c->translate("SettingsEditor", "Successfully added new global autoconfig server “%1” (ID: %2).").arg(s.hostname(), QString::number(s.id())))));
+                return;
             } else {
                 c->setStash(QStringLiteral("error_msg"), e.errorText());
             }
@@ -231,6 +232,67 @@ void SettingsEditor::add_autoconfig_server(Context *c)
     c->stash({
                  {QStringLiteral("site_title"), c->translate("SettingsEditor", "Add global autoconfig server")},
                  {QStringLiteral("template"),   QStringLiteral("settings/add_autoconfig_server.html")}
+             });
+}
+
+void SettingsEditor::edit_autoconfig_server(Context *c, const QString &id)
+{
+    bool ok = true;
+    const dbid_t serverId = Utils::strToDbid(id, &ok);
+    if (Q_UNLIKELY(!ok)) {
+        SkaffariError e(c, SkaffariError::InputError, c->translate("SettingsEditor", "Invalid autoconfig server ID."));
+        e.toStash(c);
+        c->detach(c->getAction(QStringLiteral("error")));
+        return;
+    }
+
+    SkaffariError e(c);
+    AutoconfigServer server = AutoconfigServer::get(c, 0, serverId, e);
+    if (e.type() != SkaffariError::NoError) {
+        e.toStash(c);
+        c->detach(c->getAction(QStringLiteral("error")));
+        return;
+    }
+
+    if (c->req()->isPost()) {
+        static Validator v({
+                               new ValidatorRequired(QStringLiteral("type")),
+                               new ValidatorBetween(QStringLiteral("type"), QMetaType::Char, static_cast<qint8>(AutoconfigServer::Imap), static_cast<qint8>(AutoconfigServer::Smtp)),
+                               new ValidatorRequired(QStringLiteral("hostname")),
+                               new ValidatorDomain(QStringLiteral("hostname")),
+                               new ValidatorRequired(QStringLiteral("port")),
+                               new ValidatorBetween(QStringLiteral("port"), QMetaType::UShort, 0, 65535),
+                               new ValidatorRequired(QStringLiteral("socketType")),
+                               new ValidatorBetween(QStringLiteral("socketType"), QMetaType::Char, static_cast<qint8>(AutoconfigServer::Plain), static_cast<qint8>(AutoconfigServer::Ssl)),
+                               new ValidatorRequired(QStringLiteral("authentication")),
+                               new ValidatorBetween(QStringLiteral("authentication"), QMetaType::Char, static_cast<qint8>(AutoconfigServer::Cleartext), static_cast<qint8>(AutoconfigServer::TlsClientCert)),
+                               new ValidatorBetween(QStringLiteral("sorting"), QMetaType::Char, std::numeric_limits<qint8>::min(), std::numeric_limits<qint8>::max())
+                           });
+        const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
+        if (vr) {
+            SkaffariError updateError(c);
+            if (Q_LIKELY(server.update(c, vr.values(), e))) {
+                c->res()->redirect(c->uriForAction(QStringLiteral("/settings/autoconfig"), QStringList(), QStringList(), StatusMessage::statusQuery(c, c->translate("SettingsEditor", "Successfully updated global autoconfig server “%1” (ID: %2).").arg(server.hostname(), QString::number(server.id())))));
+                return;
+            } else {
+                c->setStash(QStringLiteral("error_msg"), e.errorText());
+            }
+        }
+    }
+
+    HelpHash help;
+    help.reserve(6);
+    help.insert(QStringLiteral("type"), HelpEntry(c->translate("SettingsEditor", "Type"), c->translate("SettingsEditor", "")));
+    help.insert(QStringLiteral("hostname"), HelpEntry(c->translate("SettingsEditor", "Hostname"), c->translate("SettingsEditor", "")));
+    help.insert(QStringLiteral("port"), HelpEntry(c->translate("SettingsEditor", "Port"), c->translate("SettingsEditor", "")));
+    help.insert(QStringLiteral("socketType"), HelpEntry(c->translate("SettingsEditor", "Socket type"), c->translate("SettingsEditor", "")));
+    help.insert(QStringLiteral("authentication"), HelpEntry(c->translate("SettingsEditor", "Authentication"), c->translate("SettingsEditor", "")));
+    help.insert(QStringLiteral("sorting"), HelpEntry(c->translate("SettingsEditor", "Sorting value"), c->translate("SettingsEditor", "")));
+
+    c->stash({
+                 {QStringLiteral("server"), QVariant::fromValue<AutoconfigServer>(server)},
+                 {QStringLiteral("site_title"), c->translate("SettingsEditor", "Add global autoconfig server")},
+                 {QStringLiteral("template"),   QStringLiteral("settings/edit_autoconfig_server.html")}
              });
 }
 
