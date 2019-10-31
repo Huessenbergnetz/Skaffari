@@ -100,12 +100,13 @@ void DomainEditor::edit(Context *c)
     auto req = c->req();
     if (req->isPost()) {
 
-        c->setStash(QStringLiteral("_def_boolean"), false);
-
         static QString forbiddenFolderChars = SkaffariConfig::imapUnixhierarchysep() ? QStringLiteral("%*#/") : QStringLiteral("%*#.");
 
         ValidatorResult vr;
         if (user.type() >= AdminAccount::Administrator) {
+
+            c->setStash(QStringLiteral("_def_boolean"), false);
+            c->setStash(QStringLiteral("_def_autoconfig"), static_cast<qint8>(Domain::UseGlobalAutoconfig));
 
             static Validator v({
                                    new ValidatorIn(QStringLiteral("transport"), QStringList({QStringLiteral("cyrus"), QStringLiteral("lmtp"), QStringLiteral("smtp"), QStringLiteral("uucp")})),
@@ -120,7 +121,8 @@ void DomainEditor::edit(Context *c)
                                    new ValidatorCharNotAllowed(QStringLiteral("trashFolder"), forbiddenFolderChars),
                                    new ValidatorCharNotAllowed(QStringLiteral("junkFolder"), forbiddenFolderChars),
                                    new ValidatorCharNotAllowed(QStringLiteral("archiveFolder"), forbiddenFolderChars),
-                                   new ValidatorCharNotAllowed(QStringLiteral("otherFolders"), forbiddenFolderChars)
+                                   new ValidatorCharNotAllowed(QStringLiteral("otherFolders"), forbiddenFolderChars),
+                                   new ValidatorBetween(QStringLiteral("autoconfig"), QMetaType::Char, static_cast<qint8>(Domain::AutoconfigDisabled), static_cast<qint8>(Domain::UseCustomAutoconfig), ValidatorMessages(), QStringLiteral("_def_autoconfig")),
                                });
 
             vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
@@ -155,7 +157,7 @@ void DomainEditor::edit(Context *c)
     }
 
     HelpHash help;
-    help.reserve(12);
+    help.reserve(18);
     help.insert(QStringLiteral("prefix"), HelpEntry(c->translate("DomainEditor", "Prefix"), c->translate("DomainEditor", "The prefix might be used for automatically generated user names, especially if free names are not allowed for this domain.")));
     help.insert(QStringLiteral("created"), HelpEntry(c->translate("DomainEditor", "Created"), c->translate("DomainEditor", "Date and time this domain was created.")));
     help.insert(QStringLiteral("updated"), HelpEntry(c->translate("DomainEditor", "Updated"), c->translate("DomainEditor", "Date and time this domain was last updated.")));
@@ -188,6 +190,8 @@ void DomainEditor::edit(Context *c)
     help.insert(QStringLiteral("junkFolder"), HelpEntry(c->translate("DomainEditor", "Junk"), c->translate("DomainEditor", "Folder for junk messages aka. spam.")));
     help.insert(QStringLiteral("archiveFolder"), HelpEntry(c->translate("DomainEditor", "Archive"), c->translate("DomainEditor", "Folder to archive messages.")));
     help.insert(QStringLiteral("otherFolders"), HelpEntry(c->translate("DomainEditor", "Additional folders"), c->translate("DomainEditor", "Comma-separated list of additional folders.")));
+
+    help.insert(QStringLiteral("autoconfig"), HelpEntry(c->translate("DomainEditor", "Auto configuration"), c->translate("DomainEditor", "Specifies how to handle the automatic configuration of mail user agents for this domain.")));
 
     SkaffariError e(c);
     const std::vector<SimpleDomain> doms = SimpleDomain::list(c, e, user.type(), user.id(), true);
@@ -362,6 +366,7 @@ void DomainEditor::create(Context* c)
         if (r->isPost()) {
 
             c->setStash(QStringLiteral("_def_boolean"), false);
+            c->setStash(QStringLiteral("_def_autoconfig"), static_cast<qint8>(Domain::UseGlobalAutoconfig));
 
             static QString forbiddenFolderChars = SkaffariConfig::imapUnixhierarchysep() ? QStringLiteral("%*#/") : QStringLiteral("%*#.");
 
@@ -389,7 +394,8 @@ void DomainEditor::create(Context* c)
                                    new ValidatorCharNotAllowed(QStringLiteral("trashFolder"), forbiddenFolderChars),
                                    new ValidatorCharNotAllowed(QStringLiteral("junkFolder"), forbiddenFolderChars),
                                    new ValidatorCharNotAllowed(QStringLiteral("archiveFolder"), forbiddenFolderChars),
-                                   new ValidatorCharNotAllowed(QStringLiteral("otherFolders"), forbiddenFolderChars)
+                                   new ValidatorCharNotAllowed(QStringLiteral("otherFolders"), forbiddenFolderChars),
+                                   new ValidatorBetween(QStringLiteral("autoconfig"), QMetaType::Char, static_cast<qint8>(Domain::AutoconfigDisabled), static_cast<qint8>(Domain::UseCustomAutoconfig), ValidatorMessages(), QStringLiteral("_def_autoconfig")),
                                });
 
             ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
@@ -417,7 +423,7 @@ void DomainEditor::create(Context* c)
         }
 
         HelpHash help;
-        help.reserve(16);
+        help.reserve(22);
         help.insert(QStringLiteral("domainName"), HelpEntry(c->translate("DomainEditor", "Domain name"), c->translate("DomainEditor", "The name of the domain you want to manage emails for, like example.com. You can safely insert international domain names in UTF-8 encoding, it will be converted internally into ASCII compatible encoding.")));
         help.insert(QStringLiteral("prefix"), HelpEntry(c->translate("DomainEditor", "Prefix"), c->translate("DomainEditor", "The prefix might be used for automatically generated user names, especially if free names are not allowed for this domain.")));
         help.insert(QStringLiteral("maxAccounts"), HelpEntry(c->translate("DomainEditor", "Maximum accounts"), c->translate("DomainEditor", "Limits the maximum number of user accounts that can be created in this domain. Set the value to 0 to disable the limit.")));
@@ -443,6 +449,8 @@ void DomainEditor::create(Context* c)
         help.insert(QStringLiteral("archiveFolder"), HelpEntry(c->translate("DomainEditor", "Archive"), c->translate("DomainEditor", "Folder to archive messages.")));
         help.insert(QStringLiteral("otherFolders"), HelpEntry(c->translate("DomainEditor", "Additional folders"), c->translate("DomainEditor", "Comma-separated list of additional folders.")));
 
+        help.insert(QStringLiteral("autoconfig"), HelpEntry(c->translate("DomainEditor", "Auto configuration"), c->translate("DomainEditor", "Specifies how to handle the automatic configuration of mail user agents for this domain.")));
+
         SkaffariError e(c);
         AuthenticationUser user = Authentication::user(c);
         const std::vector<SimpleDomain> doms = SimpleDomain::list(c, e, user.value(QStringLiteral("type")).value<quint8>(), user.id().value<dbid_t>(), true);
@@ -450,7 +458,7 @@ void DomainEditor::create(Context* c)
             c->setStash(QStringLiteral("error_msg"), e.errorText());
         }
 
-        c->stash(SkaffariConfig::getSettingsFromDB());
+        c->stash(SkaffariConfig::getDefaultsSettings());
         ValidatorFileSize::inputPattern(c, QStringLiteral("quotaPattern"));
         c->stash({
                      {QStringLiteral("template"), QStringLiteral("domain/create.html")},
