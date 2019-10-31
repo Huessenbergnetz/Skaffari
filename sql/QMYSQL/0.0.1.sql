@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS domain (
   freenames tinyint(1) unsigned NOT NULL DEFAULT 0,
   freeaddress tinyint(1) unsigned NOT NULL DEFAULT 0,
   accountcount int unsigned NOT NULL DEFAULT 0,
+  autoconfig tinyint NOT NULL DEFAULT 1,
   created_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   updated_at datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   valid_until datetime NOT NULL DEFAULT '2998-12-31 00:00:00',
@@ -134,6 +135,30 @@ CREATE TABLE IF NOT EXISTS options (
   PRIMARY KEY (option_id),
   UNIQUE KEY option_name (option_name)
 ) ENGINE = InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS autoconfig_global (
+  id int unsigned NOT NULL AUTO_INCREMENT,
+  type tinyint NOT NULL,
+  hostname varchar(255) NOT NULL,
+  port smallint unsigned NOT NULL,
+  sockettype tinyint NOT NULL,
+  authentication tinyint NOT NULL,
+  sorting tinyint NOT NULL DEFAULT 0,
+  PRIMARY KEY (id)
+) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS autoconfig (
+  id int unsigned NOT NULL AUTO_INCREMENT,
+  domain_id int unsigned NOT NULL,
+  type tinyint NOT NULL,
+  hostname varchar(255) NOT NULL,
+  port smallint unsigned NOT NULL,
+  sockettype tinyint NOT NULL,
+  authentication tinyint NOT NULL,
+  sorting tinyint NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  FOREIGN KEY domain_to_autoconfig (domain_id) REFERENCES domain(id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO systeminfo (name, val) VALUES ('skaffari_db_version', '0.0.1');
 
