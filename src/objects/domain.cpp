@@ -64,11 +64,12 @@ Domain::Domain(dbid_t id,
                const QDateTime &created,
                const QDateTime &updated,
                const QDateTime &validUntil,
+               Domain::AutoconfigStrategy autoconfig,
                const SimpleDomain &parent,
                const std::vector<SimpleDomain> &children,
                const std::vector<SimpleAdmin> &admins,
                const std::vector<Folder> &folders) :
-    d(new DomainData(id, aceId, name, prefix, transport, quota, maxAccounts, domainQuota, domainQuotaUsed, freeNames, freeAddress, accounts, created, updated, validUntil, parent, children, admins, folders))
+    d(new DomainData(id, aceId, name, prefix, transport, quota, maxAccounts, domainQuota, domainQuotaUsed, freeNames, freeAddress, accounts, created, updated, validUntil, autoconfig, parent, children, admins, folders))
 {
 
 }
@@ -223,6 +224,11 @@ QDateTime Domain::validUntil() const
     return d->validUntil;
 }
 
+Domain::AutoconfigStrategy Domain::autoconfig() const
+{
+    return d->autoconfig;
+}
+
 SimpleDomain Domain::parent() const
 {
     return d->parent;
@@ -311,6 +317,8 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     const dbid_t parentId = params.value(QStringLiteral("parent")).value<dbid_t>();
     const QDateTime defDateTime(QDate(2999, 12, 31), QTime(0, 0), QTimeZone::utc());
     const QDateTime validUntil = params.value(QStringLiteral("validUntil"), defDateTime).toDateTime().toUTC();
+    const qint8 autoconfigInt = params.value(QStringLiteral("autoconfig")).value<qint8>();
+    const Domain::AutoconfigStrategy autoconfig = static_cast<Domain::AutoconfigStrategy>(autoconfigInt);
     const QDateTime currentTimeUtc = QDateTime::currentDateTimeUtc();
 
     // for logging
@@ -334,8 +342,8 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
 
     QSqlQuery q(db);
 
-    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO domain (parent_id, domain_name, prefix, maxaccounts, quota, domainquota, freenames, freeaddress, transport, created_at, updated_at, valid_until, idn_id, ace_id) "
-                                             "VALUES (:parent_id, :domain_name, :prefix, :maxaccounts, :quota, :domainquota, :freenames, :freeaddress, :transport, :created_at, :updated_at, :valid_until, 0, 0)")))) {
+    if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO domain (parent_id, domain_name, prefix, maxaccounts, quota, domainquota, freenames, freeaddress, transport, created_at, updated_at, valid_until, idn_id, ace_id, autoconfig) "
+                                             "VALUES (:parent_id, :domain_name, :prefix, :maxaccounts, :quota, :domainquota, :freenames, :freeaddress, :transport, :created_at, :updated_at, :valid_until, 0, 0, :autoconfig)")))) {
         errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to create new domain in database."));
         qCCritical(SK_DOMAIN, "%s: can not prepare database query to insert data for new domain: %s", err, qUtf8Printable(q.lastError().text()));
         return dom;
@@ -353,6 +361,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     q.bindValue(QStringLiteral(":created_at"), currentTimeUtc);
     q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
     q.bindValue(QStringLiteral(":valid_until"), validUntil);
+    q.bindValue(QStringLiteral(":autoconfig"), autoconfigInt);
 
     if (Q_UNLIKELY(!q.exec())) {
         errorData.setSqlError(q.lastError(), c->translate("Domain", "Failed to insert new domain into database."));
@@ -516,7 +525,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
         return dom;
     }
 
-    dom = Domain(domainId, domainAceId, domainName, prefix, transport, quota, maxAccounts, domainQuota, 0, freeNames, freeAddress, 0, currentTimeUtc, currentTimeUtc, validUntil, parent, std::vector<SimpleDomain>(), std::vector<SimpleAdmin>(), foldersVect);
+    dom = Domain(domainId, domainAceId, domainName, prefix, transport, quota, maxAccounts, domainQuota, 0, freeNames, freeAddress, 0, currentTimeUtc, currentTimeUtc, validUntil, autoconfig, parent, std::vector<SimpleDomain>(), std::vector<SimpleAdmin>(), foldersVect);
 
     qCInfo(SK_DOMAIN, "%s created new domain %s.", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(dom.nameIdString()));
     qCDebug(SK_DOMAIN) << dom;
@@ -535,7 +544,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError &errorData)
     const QByteArray errBa = errStr.toUtf8();
     const char *err = errBa.constData();
 
-    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT parent_id, ace_id, domain_name, prefix, transport, quota, maxaccounts, domainquota, domainquotaused, freenames, freeaddress, accountcount, created_at, updated_at, valid_until FROM domain WHERE id = :id"));
+    QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("SELECT parent_id, ace_id, domain_name, prefix, transport, quota, maxaccounts, domainquota, domainquotaused, freenames, freeaddress, accountcount, created_at, updated_at, valid_until, autoconfig FROM domain WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), domId);
 
     if (Q_LIKELY(q.exec() && q.next())) {
@@ -606,6 +615,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError &errorData)
                                  createdTime,
                                  updatedTime,
                                  validUntilTime,
+                                 static_cast<Domain::AutoconfigStrategy>(q.value(15).value<qint8>()),
                                  parentDom,
                                  children,
                                  admins,
@@ -651,7 +661,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError &errorData,
 
     QSqlQuery q(QSqlDatabase::database(Cutelyst::Sql::databaseNameThread()));
 
-    QString prepString = QStringLiteral("SELECT dom.id, dom.parent_id, dom.ace_id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.valid_until FROM domain dom");
+    QString prepString = QStringLiteral("SELECT dom.id, dom.parent_id, dom.ace_id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.valid_until, dom.autoconfig FROM domain dom");
     const bool isAdmin = AdminAccount::getUserType(user) >= AdminAccount::Administrator;
     if (isAdmin) {
         prepString.append(QStringLiteral(" WHERE dom.idn_id = 0"));
@@ -706,6 +716,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError &errorData,
                              createdTime,
                              updatedTime,
                              validUntilTime,
+                             static_cast<Domain::AutoconfigStrategy>(q.value(16).value<quint8>()),
                              parentDom,
                              std::vector<SimpleDomain>(),
                              std::vector<SimpleAdmin>(),
@@ -951,6 +962,8 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
     const bool freeAddress = p.value(QStringLiteral("freeAddress"), d->freeAddress).toBool();
     const QString transport = p.value(QStringLiteral("transport"), d->transport).toString();
     const QDateTime validUntil = p.value(QStringLiteral("validUntil"), d->validUntil).toDateTime().toUTC();
+    const qint8 autoconfigInt = p.value(QStringLiteral("autoconfig"), static_cast<qint8>(d->autoconfig)).value<qint8>();
+    const Domain::AutoconfigStrategy autoconfig = static_cast<Domain::AutoconfigStrategy>(autoconfigInt);
     SimpleDomain parentDom;
 
 
@@ -974,7 +987,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
             }
         }
 
-        if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE domain SET maxaccounts = :maxaccounts, quota = :quota, domainquota = :domainquota, freenames = :freenames, freeaddress = :freeaddress, transport = :transport, updated_at = :updated_at, parent_id = :parent_id, valid_until = :valid_until WHERE id = :id")))) {
+        if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE domain SET maxaccounts = :maxaccounts, quota = :quota, domainquota = :domainquota, freenames = :freenames, freeaddress = :freeaddress, transport = :transport, updated_at = :updated_at, parent_id = :parent_id, valid_until = :valid_until, autoconfig = :autoconfig WHERE id = :id")))) {
             e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update domain in database."));
             qCCritical(SK_DOMAIN, "%s: can not prepare query to update domain in database: %s", err, qUtf8Printable(q.lastError().text()));
             return ret;
@@ -989,6 +1002,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
         q.bindValue(QStringLiteral(":updated_at"), currentTimeUtc);
         q.bindValue(QStringLiteral(":parent_id"), parentId);
         q.bindValue(QStringLiteral(":valid_until"), validUntil);
+        q.bindValue(QStringLiteral(":autoconfig"), autoconfigInt);
         q.bindValue(QStringLiteral(":id"), d->id);
 
         if (Q_UNLIKELY(!q.exec())) {
@@ -1105,6 +1119,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
         d->freeNames = freeNames;
         d->transport = transport;
         d->validUntil = validUntil;
+        d->autoconfig = autoconfig;
     }
 
     d->quota = quota;
@@ -1318,11 +1333,19 @@ QDataStream &operator<<(QDataStream &stream, const Domain &domain)
     }
 
     stream << domain.parent();
-    stream << domain.name() << domain.prefix() << domain.transport();
-    stream << domain.created() << domain.updated() << domain.validUntil();
-    stream << domain.id() << domain.aceId();
-    stream << domain.maxAccounts() << domain.accounts();
-    stream << domain.isFreeNamesEnabled() << domain.isFreeAddressEnabled();
+    stream << domain.name();
+    stream << domain.prefix();
+    stream << domain.transport();
+    stream << domain.created();
+    stream << domain.updated();
+    stream << domain.validUntil();
+    stream << domain.id();
+    stream << domain.aceId();
+    stream << domain.maxAccounts();
+    stream << domain.accounts();
+    stream << domain.isFreeNamesEnabled();
+    stream << domain.isFreeAddressEnabled();
+    stream << static_cast<qint8>(domain.autoconfig());
 
     return stream;
 }
@@ -1379,6 +1402,9 @@ QDataStream &operator>>(QDataStream &stream, Domain &domain)
     stream >> domain.d->accounts;
     stream >> domain.d->freeNames;
     stream >> domain.d->freeAddress;
+    qint8 _autoconfig = 0;
+    stream >> _autoconfig;
+    domain.d->autoconfig = static_cast<Domain::AutoconfigStrategy>(_autoconfig);
 
     return stream;
 }

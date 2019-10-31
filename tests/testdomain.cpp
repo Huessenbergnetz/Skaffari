@@ -34,6 +34,7 @@ private Q_SLOTS:
     void created();
     void updated();
     void validUntil();
+    void autoconfig();
     void aceName();
     void aceId();
     void isIdn();
@@ -77,7 +78,7 @@ void DomainTest::constructor()
         m_junkFolder
     };
 
-    m_dom = Domain(12, 5, QStringLiteral("example.com"), QStringLiteral("xmp"), QStringLiteral("cyrus"), 1610612736, 1000, 1610612736000, 161061273600, true, false, 100, QDateTime(QDate(2018, 3, 28), QTime(16, 0)), QDateTime(QDate(2018, 3, 28), QTime(17, 0)), QDateTime(QDate(2118, 3, 28), QTime(16, 0)), SimpleDomain(10, QStringLiteral("example.de")), std::vector<SimpleDomain>(), admins, m_folders);
+    m_dom = Domain(12, 5, QStringLiteral("example.com"), QStringLiteral("xmp"), QStringLiteral("cyrus"), 1610612736, 1000, 1610612736000, 161061273600, true, false, 100, QDateTime(QDate(2018, 3, 28), QTime(16, 0)), QDateTime(QDate(2018, 3, 28), QTime(17, 0)), QDateTime(QDate(2118, 3, 28), QTime(16, 0)), Domain::UseCustomAutoconfig, SimpleDomain(10, QStringLiteral("example.de")), std::vector<SimpleDomain>(), admins, m_folders);
     QVERIFY(m_dom);
 }
 
@@ -170,6 +171,11 @@ void DomainTest::validUntil()
     QCOMPARE(m_dom.validUntil(), QDateTime(QDate(2118, 3, 28), QTime(16, 0)));
 }
 
+void DomainTest::autoconfig()
+{
+    QCOMPARE(m_dom.autoconfig(), Domain::UseCustomAutoconfig);
+}
+
 void DomainTest::aceName()
 {
     QCOMPARE(m_dom.aceName(), m_dom.name());
@@ -217,7 +223,7 @@ void DomainTest::dataStream()
     folders.emplace_back(Folder(2, 12, QStringLiteral("Vorlagen"), SkaffariIMAP::SkaffariOtherFolders));
     folders.emplace_back(Folder(3, 12, QStringLiteral("Versandte Nachrichten"), SkaffariIMAP::Sent));
 
-    Domain d1(12, 0, QStringLiteral("example.com"), QStringLiteral("xmp"), QStringLiteral("cyrus"), 1610612736, 1000, 1610612736000, 161061273600, true, false, 100, QDateTime(QDate(2018, 3, 28), QTime(16, 0)), QDateTime(QDate(2018, 3, 28), QTime(17, 0)), QDateTime(QDate(2118, 3, 28), QTime(16, 0)), SimpleDomain(13, QStringLiteral("example.net")), children, admins, folders);
+    Domain d1(12, 0, QStringLiteral("example.com"), QStringLiteral("xmp"), QStringLiteral("cyrus"), 1610612736, 1000, 1610612736000, 161061273600, true, false, 100, QDateTime(QDate(2018, 3, 28), QTime(16, 0)), QDateTime(QDate(2018, 3, 28), QTime(17, 0)), QDateTime(QDate(2118, 3, 28), QTime(16, 0)), Domain::AutoconfigDisabled, SimpleDomain(13, QStringLiteral("example.net")), children, admins, folders);
 
 
     QVERIFY(d1.isValid());
@@ -245,6 +251,7 @@ void DomainTest::dataStream()
     QCOMPARE(d1.created(), d2.created());
     QCOMPARE(d1.updated(), d2.updated());
     QCOMPARE(d1.validUntil(), d2.validUntil());
+    QCOMPARE(d1.autoconfig(), d2.autoconfig());
     QCOMPARE(d1.maxAccounts(), d2.maxAccounts());
     QCOMPARE(d1.accounts(), d2.accounts());
     QCOMPARE(d1.isFreeAddressEnabled(), d2.isFreeAddressEnabled());

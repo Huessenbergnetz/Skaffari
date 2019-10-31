@@ -53,32 +53,42 @@ class SkaffariError;
  * \brief Represents a single domain that is managed by %Skaffari.
  *
  * \par Grantlee accessors
- * Accessor                | Type                      | Method
- * ------------------------|---------------------------|-------
- * accounts                | quint32                   | accounts()
- * accountUsagePercent     | float                     | accountUsagePercent()
- * admins                  | std::vector<SimpleAdmin>  | admins()
- * children                | std::vector<SimpleDomain> | children()
- * created                 | QDateTime                 | created()
- * domainQuota             | quota_size_t              | domainQuota()
- * domainQuotaUsed         | quota_size_t              | domainQuotaUsed()
- * domainQuotaUsagePercent | float                     | domainQuotaUsagePercent()
- * id                      | dbid_t                    | id()
- * isValid                 | bool                      | isValid()
- * folders                 | std::vector<Folder>       | folders()
- * freeNames               | bool                      | isFreeNamesEnabled()
- * freeAddress             | bool                      | isFreeAddressEnabled()
- * maxAccounts             | quint32                   | maxAccounts()
- * name                    | QString                   | name()
- * parent                  | SimpleDomain              | parent()
- * prefix                  | QString                   | prefix()
- * quota                   | quota_size_t              | quota()
- * transport               | QString                   | transport()
- * updated                 | QDateTime                 | updated()
+ * Accessor                | Type                       | Method
+ * ------------------------|----------------------------|-------
+ * accounts                | quint32                    | accounts()
+ * accountUsagePercent     | float                      | accountUsagePercent()
+ * admins                  | std::vector<SimpleAdmin>   | admins()
+ * children                | std::vector<SimpleDomain>  | children()
+ * created                 | QDateTime                  | created()
+ * domainQuota             | quota_size_t               | domainQuota()
+ * domainQuotaUsed         | quota_size_t               | domainQuotaUsed()
+ * domainQuotaUsagePercent | float                      | domainQuotaUsagePercent()
+ * id                      | dbid_t                     | id()
+ * isValid                 | bool                       | isValid()
+ * folders                 | std::vector<Folder>        | folders()
+ * freeNames               | bool                       | isFreeNamesEnabled()
+ * freeAddress             | bool                       | isFreeAddressEnabled()
+ * maxAccounts             | quint32                    | maxAccounts()
+ * name                    | QString                    | name()
+ * parent                  | SimpleDomain               | parent()
+ * prefix                  | QString                    | prefix()
+ * quota                   | quota_size_t               | quota()
+ * transport               | QString                    | transport()
+ * updated                 | QDateTime                  | updated()
+ * autoconfig              | Domain::AutoconfigStrategy | autoconfig()
  */
 class Domain
 {
 public:
+    /*!
+     * \brief How to handle autoconfig for this domain.
+     */
+    enum AutoconfigStrategy : qint8 {
+        AutoconfigDisabled,     /**< Autoconfig is disabled for this domain. */
+        UseGlobalAutoconfig,    /**< Use the global servers for this domain. */
+        UseCustomAutoconfig     /**< Use custom servers for this domain. */
+    };
+
     /*!
      * \brief Constructs a new %Domain object with empty data.
      *
@@ -102,8 +112,9 @@ public:
      * \param created           date and time this domain has been created in UTC time zone
      * \param updated           date and time this domain has been updated in UTC time zone
      * \param validUntil        date and time until accounts in this domain can be valid
+     * \param autoconfig        the AutoconfigStrategy to use for this domain
      */
-    Domain(dbid_t id, dbid_t aceId, const QString &name, const QString &prefix, const QString &transport, quota_size_t quota, quint32 maxAccounts, quota_size_t domainQuota, quota_size_t domainQuotaUsed, bool freeNames, bool freeAddress, quint32 accounts, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, const SimpleDomain &parent, const std::vector<SimpleDomain> &children, const std::vector<SimpleAdmin> &admins, const std::vector<Folder> &folders);
+    Domain(dbid_t id, dbid_t aceId, const QString &name, const QString &prefix, const QString &transport, quota_size_t quota, quint32 maxAccounts, quota_size_t domainQuota, quota_size_t domainQuotaUsed, bool freeNames, bool freeAddress, quint32 accounts, const QDateTime &created, const QDateTime &updated, const QDateTime &validUntil, AutoconfigStrategy autoconfig, const SimpleDomain &parent, const std::vector<SimpleDomain> &children, const std::vector<SimpleAdmin> &admins, const std::vector<Folder> &folders);
 
     /*!
      * \brief Constructs a copy of \a other.
@@ -251,6 +262,11 @@ public:
      * \brief Returns the date and time until accounts in this domain can be valid.
      */
     QDateTime validUntil() const;
+
+    /*!
+     * \brief Returns the AutoconfigStrategy for this domain.
+     */
+    Domain::AutoconfigStrategy autoconfig() const;
 
     /*!
      * \brief Returns information about the parent domain, if any has been set.
@@ -498,6 +514,8 @@ if (property == QLatin1String("id")) {
     return QVariant(object.created());
 } else if (property == QLatin1String("updated")) {
     return QVariant(object.updated());
+} else if (property == QLatin1String("autoconfig")) {
+    return QVariant(object.autoconfig());
 } else if (property == QLatin1String("parent")) {
     return QVariant::fromValue<SimpleDomain>(object.parent());
 } else if (property == QLatin1String("children")) {
