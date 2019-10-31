@@ -66,8 +66,6 @@ void MyAccount::index(Context *c)
 
         auto req = c->req();
         if (req->isPost()) {
-            c->setStash(QStringLiteral("userName"), aac.username());
-
             static Validator v({
                                    new ValidatorConfirmed(QStringLiteral("password")),
                        #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
