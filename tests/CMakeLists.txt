@@ -72,6 +72,7 @@ skaffari_test(testfolder Qt5::Network "" "")
 skaffari_test(testsimpleaccount Cutelyst::Core "" "")
 skaffari_test(testsimpleadmin "" "" "")
 skaffari_test(testsimpledomain "" "" "")
+skaffari_test(testautoconfigserver "" "" "")
 
 # ConfigChecker test
 add_executable(testconfigchecker_exec

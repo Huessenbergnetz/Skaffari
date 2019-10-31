@@ -26,6 +26,8 @@ set (skaffari_SRCS
     objects/simpleaccount.h
     objects/emailaddress.cpp
     objects/emailaddress.h
+    objects/autoconfigserver.cpp
+    objects/autoconfigserver.h
     utils/language.cpp
     utils/language.h
     utils/utils.cpp
@@ -49,6 +51,8 @@ set (skaffari_SRCS
     logout.h
     myaccount.cpp
     myaccount.h
+    autoconfig.cpp
+    autoconfig.h
     root.cpp
     root.h
     skaffari.cpp
@@ -122,6 +126,7 @@ target_link_libraries(skaffari
         Qt5::Core
         Qt5::Network
         Qt5::Sql
+        Qt5::Xml
         Cutelyst::Core
         Cutelyst::Session
         Cutelyst::Authentication

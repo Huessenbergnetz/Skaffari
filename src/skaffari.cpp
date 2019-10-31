@@ -68,6 +68,7 @@ extern "C"
 #include "objects/helpentry.h"
 #include "objects/emailaddress.h"
 #include "objects/skaffarierror.h"
+#include "objects/autoconfigserver.h"
 
 #include "utils/language.h"
 #include "utils/skaffariconfig.h"
@@ -84,6 +85,7 @@ extern "C"
 #include "admineditor.h"
 #include "myaccount.h"
 #include "settingseditor.h"
+#include "autoconfig.h"
 
 Q_LOGGING_CATEGORY(SK_CORE, "skaffari.core")
 
@@ -214,6 +216,7 @@ bool Skaffari::init()
     Grantlee::registerMetaType<Account>();
     Grantlee::registerMetaType<HelpEntry>();
     Grantlee::registerMetaType<EmailAddress>();
+    Grantlee::registerMetaType<AutoconfigServer>();
 
     const QString tmplName = generalConfig.value(QStringLiteral("template"), QStringLiteral("default")).toString().trimmed();
 
@@ -290,6 +293,7 @@ bool Skaffari::init()
     new AdminEditor(this);
     new MyAccount(this);
     new SettingsEditor(this);
+    new Autoconfig(this);
 
     qCDebug(SK_CORE) << "Registering plugins.";
 

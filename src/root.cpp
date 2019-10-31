@@ -312,11 +312,15 @@ void Root::error(Context *c)
 
 bool Root::Auto(Context* c)
 {
-    const AuthenticationUser user = Authentication::user(c);
-
-    if (c->controller() == c->controller(QStringLiteral("Login"))) {
+    if (c->controllerName() == QLatin1String("Login")) {
         return true;
     }
+
+    if (c->controllerName() == QLatin1String("Autoconfig")) {
+        return true;
+    }
+
+    const AuthenticationUser user = Authentication::user(c);
 
     if (Q_UNLIKELY(user.isNull())) {
         if (c->req()->xhr()) {
