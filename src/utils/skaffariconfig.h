@@ -49,6 +49,10 @@ Q_DECLARE_LOGGING_CATEGORY(SK_CONFIG)
 #define SK_CONF_KEY_DEF_FOLDER_JUNK "default_junk_folder"
 #define SK_CONF_KEY_DEF_FOLDER_ARCHIVE "default_archive_folder"
 #define SK_CONF_KEY_DEF_FOLDER_OTHERS "default_other_folders"
+#define SK_CONF_KEY_AUTOCONF_ENABLED "autoconfig_enabled"
+#define SK_CONF_KEY_AUTOCONF_ID "autoconfig_id"
+#define SK_CONF_KEY_AUTOCONF_DISPLAY "autoconfig_displayname"
+#define SK_CONF_KEY_AUTOCONF_DISPLAY_SHORT "autoconfig_displayname_short"
 
 /*!
  * \ingroup skaffaricore
@@ -74,7 +78,7 @@ public:
     static void load(const QVariantMap &general, const QVariantMap &accounts, const QVariantMap &admins, const QVariantMap &imap, const QVariantMap &tmpl);
 
     /*!
-     * \brief Saves specific settings into the database options table.
+     * \brief Saves default value settings into the database options table.
      *
      * \par Currently supported keys
      * \li default_domainquota
@@ -85,10 +89,10 @@ public:
      * \li default_maxdisplay
      * \li default_warnlevel
      */
-    static void saveSettingsToDB(const QVariantHash &options);
+    static void setDefaultsSettings(const QVariantHash &options);
 
     /*!
-     * \brief Returns specific settings stored in the database.
+     * \brief Returns default value settings from the database options table.
      *
      * \par Currently supported keys
      * \li default_domainquota
@@ -99,7 +103,29 @@ public:
      * \li default_maxdisplay
      * \li default_warnlevel
      */
-    static QVariantHash getSettingsFromDB();
+    static QVariantHash getDefaultsSettings();
+
+    /*!
+     * \brief Saves autoconfig settings into the database options table.
+     *
+     * \par Currently supported keys
+     * \li autoconfig_enabled
+     * \li autoconfig_id
+     * \li autoconfig_displayname
+     * \li autoconfig_displayname_short
+     */
+    static void setAutoconfigSettings(const QVariantHash &options);
+
+    /*!
+     * \brief Returns autoconfig settings from the database options table.
+     *
+     * \par Currently supported keys
+     * \li autoconfig_enabled
+     * \li autoconfig_id
+     * \li autoconfig_displayname
+     * \li autoconfig_displayname_short
+     */
+    static QVariantHash getAutoconfigSettings();
 
     /*!
      * \brief Password encryption method for the user accounts.
@@ -475,6 +501,38 @@ public:
      * \brief Returns \c true if Memcached should be used to store session data for logged in users.
      */
     static bool useMemcachedSession();
+
+    /*!
+     * \brief Returns \c true if auto configuration support is enabled.
+     *
+     * \par Database options table key
+     * autoconfig_enabled
+     */
+    static bool autoconfigEnabled();
+
+    /*!
+     * \brief Returns the ID of the auto configuration provider.
+     *
+     * \par Database options table key
+     * autoconfig_id
+     */
+    static QString autoconfigId();
+
+    /*!
+     * \brief Returns the display name of the the auto configuration provider.
+     *
+     * \par Database options table key
+     * autoconfig_displayname
+     */
+    static QString autoconfigDisplayName();
+
+    /*!
+     * \brief Returns the display short name of the auto configuration provider.
+     *
+     * \par Database options table key
+     * autoconfig_displayname_short
+     */
+    static QString autoconfigDisplayNameShort();
 
 private:
     template< typename T >

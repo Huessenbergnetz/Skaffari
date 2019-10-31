@@ -123,7 +123,7 @@ void SkaffariConfig::load(const QVariantMap &general, const QVariantMap &account
     cfg->tmplAsyncAccountList = tmpl.value(QStringLiteral("asyncaccountlist"), SK_DEF_TMPL_ASYNCACCOUNTLIST).toBool();
 }
 
-void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
+void SkaffariConfig::setDefaultsSettings(const QVariantHash &options)
 {
     QWriteLocker locker(&cfg->lock);
 
@@ -142,7 +142,6 @@ void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
     setDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_ARCHIVE), options.value(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_ARCHIVE)).toString());
     setDbOption<QString>(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_OTHERS), options.value(QStringLiteral(SK_CONF_KEY_DEF_FOLDER_OTHERS)).toString());
 
-
     setDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), options.value(QStringLiteral(SK_CONF_KEY_DEF_ABUSE_ACC), 0).value<dbid_t>());
     setDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), options.value(QStringLiteral(SK_CONF_KEY_DEF_NOC_ACC), 0).value<dbid_t>());
     setDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), options.value(QStringLiteral(SK_CONF_KEY_DEF_SECURITY_ACC), 0).value<dbid_t>());
@@ -151,7 +150,7 @@ void SkaffariConfig::saveSettingsToDB(const QVariantHash &options)
     setDefaultAccount(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), options.value(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), 0).value<dbid_t>());
 }
 
-QVariantHash SkaffariConfig::getSettingsFromDB()
+QVariantHash SkaffariConfig::getDefaultsSettings()
 {
     QReadLocker locker(&cfg->lock);
     QVariantHash s;
@@ -178,6 +177,30 @@ QVariantHash SkaffariConfig::getSettingsFromDB()
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_POSTMASTER_ACC), QVariant::fromValue<SimpleAccount>(defPostmasterAccount()));
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_HOSTMASTER_ACC), QVariant::fromValue<SimpleAccount>(defHostmasterAccount()));
     s.insert(QStringLiteral(SK_CONF_KEY_DEF_WEBMASTER_ACC), QVariant::fromValue<SimpleAccount>(defWebmasterAccount()));
+
+    return s;
+}
+
+void SkaffariConfig::setAutoconfigSettings(const QVariantHash &options)
+{
+    QWriteLocker locker(&cfg->lock);
+
+    setDbOption<bool>(QStringLiteral(SK_CONF_KEY_AUTOCONF_ENABLED), options.value(QStringLiteral(SK_CONF_KEY_AUTOCONF_ENABLED)).toBool());
+    setDbOption<QString>(QStringLiteral(SK_CONF_KEY_AUTOCONF_ID), options.value(QStringLiteral(SK_CONF_KEY_AUTOCONF_ID)).toString());
+    setDbOption<QString>(QStringLiteral(SK_CONF_KEY_AUTOCONF_DISPLAY), options.value(QStringLiteral(SK_CONF_KEY_AUTOCONF_DISPLAY)).toString());
+    setDbOption<QString>(QStringLiteral(SK_CONF_KEY_AUTOCONF_DISPLAY_SHORT), options.value(QStringLiteral(SK_CONF_KEY_AUTOCONF_DISPLAY_SHORT)).toString());
+}
+
+QVariantHash SkaffariConfig::getAutoconfigSettings()
+{
+    QReadLocker locker(&cfg->lock);
+    QVariantHash s;
+    s.reserve(4);
+
+    s.insert(QStringLiteral(SK_CONF_KEY_AUTOCONF_ENABLED), autoconfigEnabled());
+    s.insert(QStringLiteral(SK_CONF_KEY_AUTOCONF_ID), autoconfigId());
+    s.insert(QStringLiteral(SK_CONF_KEY_AUTOCONF_DISPLAY), autoconfigDisplayName());
+    s.insert(QStringLiteral(SK_CONF_KEY_AUTOCONF_DISPLAY_SHORT), autoconfigDisplayNameShort());
 
     return s;
 }
@@ -283,6 +306,11 @@ bool SkaffariConfig::imapUnixhierarchysep() { QReadLocker locker(&cfg->lock); re
 bool SkaffariConfig::imapDomainasprefix() { QReadLocker locker(&cfg->lock); return cfg->imapDomainasprefix;}
 bool SkaffariConfig::imapFqun() { QReadLocker locker(&cfg->lock); return cfg->imapUnixhierarchysep && cfg->imapDomainasprefix && cfg->imapFqun; }
 SkaffariIMAP::AuthMech SkaffariConfig::imapAuthmech() { QReadLocker locker(&cfg->lock); return cfg->imapAuthMech; }
+
+bool SkaffariConfig::autoconfigEnabled() { QReadLocker locker(&cfg->lock); return getDbOption<bool>(QStringLiteral(SK_CONF_KEY_AUTOCONF_ENABLED), false); }
+QString SkaffariConfig::autoconfigId() { QReadLocker locker(&cfg->lock); return getDbOption<QString>(QStringLiteral(SK_CONF_KEY_AUTOCONF_ID), QString()); }
+QString SkaffariConfig::autoconfigDisplayName() { QReadLocker locker(&cfg->lock); return getDbOption<QString>(QStringLiteral(SK_CONF_KEY_AUTOCONF_DISPLAY), QString()); }
+QString SkaffariConfig::autoconfigDisplayNameShort() { QReadLocker locker(&cfg->lock); return getDbOption<QString>(QStringLiteral(SK_CONF_KEY_AUTOCONF_DISPLAY_SHORT), QString()); }
 
 bool SkaffariConfig::tmplAsyncAccountList() { QReadLocker locker(&cfg->lock); return cfg->tmplAsyncAccountList; }
 
