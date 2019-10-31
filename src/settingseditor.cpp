@@ -21,6 +21,8 @@
 #include "utils/skaffariconfig.h"
 #include "utils/language.h"
 #include "objects/helpentry.h"
+#include "objects/autoconfigserver.h"
+#include "objects/skaffarierror.h"
 #include "validators/skvalidatoraccountexists.h"
 #include "../common/global.h"
 #include <QJsonObject>
@@ -34,6 +36,11 @@
 #include <Cutelyst/Plugins/Utils/validatormin.h>
 #include <Cutelyst/Plugins/Utils/validatorfilesize.h>
 #include <Cutelyst/Plugins/Utils/validatorcharnotallowed.h>
+#include <Cutelyst/Plugins/Utils/validatorboolean.h>
+#include <Cutelyst/Plugins/Utils/validatorrequiredif.h>
+#include <Cutelyst/Plugins/Utils/validatordomain.h>
+#include <Cutelyst/Plugins/Utils/validatorrequired.h>
+#include <Cutelyst/Plugins/StatusMessage>
 #include <limits>
 
 SettingsEditor::SettingsEditor(QObject *parent) : Controller(parent)
@@ -59,7 +66,7 @@ bool SettingsEditor::Auto(Context* c)
 
 void SettingsEditor::index(Context *c)
 {
-    QVariantHash settings = SkaffariConfig::getSettingsFromDB();
+    QVariantHash settings = SkaffariConfig::getDefaultsSettings();
 
     if (c->req()->isPost()) {
 
@@ -93,14 +100,14 @@ void SettingsEditor::index(Context *c)
                         static_cast<quota_size_t>(vr.value(QStringLiteral(SK_CONF_KEY_DEF_DOMAINQUOTA)).value<quota_size_t>() / Q_UINT64_C(1024)));
             vr.addValue(QStringLiteral(SK_CONF_KEY_DEF_QUOTA),
                         static_cast<quota_size_t>(vr.value(QStringLiteral(SK_CONF_KEY_DEF_QUOTA)).value<quota_size_t>() / Q_UINT64_C(1024)));
-            SkaffariConfig::saveSettingsToDB(vr.values());
+            SkaffariConfig::setDefaultsSettings(vr.values());
             c->setStash(QStringLiteral("status_msg"), c->translate("SettingsEditor", "Settings successfully saved."));
-            settings = SkaffariConfig::getSettingsFromDB();
+            settings = SkaffariConfig::getDefaultsSettings();
         }
     }
 
     HelpHash help;
-    help.reserve(13);
+    help.reserve(19);
     help.insert(QStringLiteral(SK_CONF_KEY_DEF_LANGUAGE), HelpEntry(c->translate("SettingsEditor", "Language"), c->translate("SettingsEditor", "Default fallback language that will be used if user has no language set and if the language reported by the browser is not supported.")));
     help.insert(QStringLiteral(SK_CONF_KEY_DEF_TIMEZONE), HelpEntry(c->translate("SettingsEditor", "Time zone"), c->translate("SettingsEditor", "Default time zone as fallback that will be used to display localized dates and times if the user has not set one.")));
     help.insert(QStringLiteral(SK_CONF_KEY_DEF_WARNLEVEL), HelpEntry(c->translate("SettingsEditor", "Warn level"), c->translate("SettingsEditor", "Default warn level for account number and quota storage limits if the user has not set one.")));
@@ -138,6 +145,92 @@ void SettingsEditor::index(Context *c)
                  {QStringLiteral("langs"),      QVariant::fromValue<QVector<Language>>(Language::supportedLangs(c))},
                  {QStringLiteral("site_title"), c->translate("SettingsEditor", "Settings")},
                  {QStringLiteral("template"),   QStringLiteral("settings/index.html")}
+             });
+}
+
+void SettingsEditor::autoconfig(Context *c)
+{
+    QVariantHash settings = SkaffariConfig::getAutoconfigSettings();
+
+    if (c->req()->isPost()) {
+        static Validator v({
+                               new ValidatorBoolean(QStringLiteral(SK_CONF_KEY_AUTOCONF_ENABLED)),
+                               new ValidatorRequiredIf(QStringLiteral(SK_CONF_KEY_AUTOCONF_ID), QStringLiteral(SK_CONF_KEY_AUTOCONF_ENABLED), {QStringLiteral("1"), QStringLiteral("on"), QStringLiteral("true")}),
+                               new ValidatorDomain(QStringLiteral(SK_CONF_KEY_AUTOCONF_ID)),
+                               new ValidatorRequiredIf(QStringLiteral(SK_CONF_KEY_AUTOCONF_DISPLAY), QStringLiteral(SK_CONF_KEY_AUTOCONF_ENABLED), {QStringLiteral("1"), QStringLiteral("on"), QStringLiteral("true")}),
+                               new ValidatorRequiredIf(QStringLiteral(SK_CONF_KEY_AUTOCONF_DISPLAY_SHORT), QStringLiteral(SK_CONF_KEY_AUTOCONF_ENABLED), {QStringLiteral("1"), QStringLiteral("on"), QStringLiteral("true")})
+                           });
+
+        ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
+        if (vr) {
+            SkaffariConfig::setAutoconfigSettings(vr.values());
+            c->setStash(QStringLiteral("status_msg"), c->translate("SettingsEditor", "Settings successfully saved."));
+            settings = SkaffariConfig::getAutoconfigSettings();
+        }
+    }
+
+    HelpHash help;
+    help.reserve(4);
+    help.insert(QStringLiteral(SK_CONF_KEY_AUTOCONF_ENABLED), HelpEntry(c->translate("SettingsEditor", "Enable auto configuration"), c->translate("SettingsEditor", "If enabled, Skaffari provides access to URLs used for autoconfiguration of mail user agents.")));
+    help.insert(QStringLiteral(SK_CONF_KEY_AUTOCONF_ID), HelpEntry(c->translate("SettingsEditor", "Provider ID"), c->translate("SettingsEditor", "This should be your main domain name.")));
+    help.insert(QStringLiteral(SK_CONF_KEY_AUTOCONF_DISPLAY), HelpEntry(c->translate("SettingsEditor", "Provider display name"), c->translate("SettingsEditor", "The display name might be used by a mail user agent for automatically configured accounts.")));
+    help.insert(QStringLiteral(SK_CONF_KEY_AUTOCONF_DISPLAY_SHORT), HelpEntry(c->translate("SettingsEditor", "Provider display short name"), c->translate("SettingsEditor", "The display short name might be used by a mail user agent for automatically configured accounts.")));
+
+    SkaffariError listAutoconfigServersError(c);
+    const std::vector<AutoconfigServer> autoconfigServers = AutoconfigServer::list(c, 0, listAutoconfigServersError);
+    if (listAutoconfigServersError.type() != SkaffariError::NoError) {
+        c->setStash(QStringLiteral("error_msg"), listAutoconfigServersError.errorText());
+    }
+
+    c->stash(settings);
+    c->stash({
+                 {QStringLiteral("autoconfigServers"), QVariant::fromValue<std::vector<AutoconfigServer>>(autoconfigServers)},
+                 {QStringLiteral("help"),       QVariant::fromValue<HelpHash>(help)},
+                 {QStringLiteral("site_title"), c->translate("SettingsEditor", "Settings")},
+                 {QStringLiteral("template"),   QStringLiteral("settings/autoconfig.html")}
+             });
+}
+
+void SettingsEditor::add_autoconfig_server(Context *c)
+{
+    if (c->req()->isPost()) {
+        static Validator v({
+                               new ValidatorRequired(QStringLiteral("type")),
+                               new ValidatorBetween(QStringLiteral("type"), QMetaType::Char, static_cast<qint8>(AutoconfigServer::Imap), static_cast<qint8>(AutoconfigServer::Smtp)),
+                               new ValidatorRequired(QStringLiteral("hostname")),
+                               new ValidatorDomain(QStringLiteral("hostname")),
+                               new ValidatorRequired(QStringLiteral("port")),
+                               new ValidatorBetween(QStringLiteral("port"), QMetaType::UShort, 0, 65535),
+                               new ValidatorRequired(QStringLiteral("socketType")),
+                               new ValidatorBetween(QStringLiteral("socketType"), QMetaType::Char, static_cast<qint8>(AutoconfigServer::Plain), static_cast<qint8>(AutoconfigServer::Ssl)),
+                               new ValidatorRequired(QStringLiteral("authentication")),
+                               new ValidatorBetween(QStringLiteral("authentication"), QMetaType::Char, static_cast<qint8>(AutoconfigServer::Cleartext), static_cast<qint8>(AutoconfigServer::TlsClientCert)),
+                               new ValidatorBetween(QStringLiteral("sorting"), QMetaType::Char, std::numeric_limits<qint8>::min(), std::numeric_limits<qint8>::max())
+                           });
+        const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
+        if (vr) {
+            SkaffariError e;
+            AutoconfigServer s = AutoconfigServer::create(c, 0, vr.values(), e);
+            if (Q_LIKELY(e.type() == SkaffariError::NoError)) {
+                c->res()->redirect(c->uriForAction(QStringLiteral("/settings/autoconfig"), QStringList(), QStringList(), StatusMessage::statusQuery(c, c->translate("SettingsEditor", "Successfully added new global autoconfig server “%1” (ID: %2).").arg(s.hostname(), QString::number(s.id())))));
+            } else {
+                c->setStash(QStringLiteral("error_msg"), e.errorText());
+            }
+        }
+    }
+
+    HelpHash help;
+    help.reserve(6);
+    help.insert(QStringLiteral("type"), HelpEntry(c->translate("SettingsEditor", "Type"), c->translate("SettingsEditor", "")));
+    help.insert(QStringLiteral("hostname"), HelpEntry(c->translate("SettingsEditor", "Hostname"), c->translate("SettingsEditor", "")));
+    help.insert(QStringLiteral("port"), HelpEntry(c->translate("SettingsEditor", "Port"), c->translate("SettingsEditor", "")));
+    help.insert(QStringLiteral("socketType"), HelpEntry(c->translate("SettingsEditor", "Socket type"), c->translate("SettingsEditor", "")));
+    help.insert(QStringLiteral("authentication"), HelpEntry(c->translate("SettingsEditor", "Authentication"), c->translate("SettingsEditor", "")));
+    help.insert(QStringLiteral("sorting"), HelpEntry(c->translate("SettingsEditor", "Sorting value"), c->translate("SettingsEditor", "")));
+
+    c->stash({
+                 {QStringLiteral("site_title"), c->translate("SettingsEditor", "Add global autoconfig server")},
+                 {QStringLiteral("template"),   QStringLiteral("settings/add_autoconfig_server.html")}
              });
 }
 
