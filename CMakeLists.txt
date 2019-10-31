@@ -3,8 +3,8 @@ cmake_policy(SET CMP0048 NEW)
 
 project(skaffari VERSION 1.0.0)
 
-find_package(Qt5 5.6.0 REQUIRED COMPONENTS Core Network Sql)
-find_package(Cutelyst2Qt5 2.8.0 REQUIRED)
+find_package(Qt5 5.6.0 REQUIRED COMPONENTS Core Network Sql Xml)
+find_package(Cutelyst2Qt5 2.10.0 REQUIRED)
 find_package(Grantlee5 REQUIRED)
 find_package(PkgConfig REQUIRED)
 
