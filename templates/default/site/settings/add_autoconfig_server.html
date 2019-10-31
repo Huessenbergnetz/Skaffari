@@ -1,0 +1,135 @@
+<div class="row">
+    <div class="col"><h2><i class="fas fa-server"></i> {{ _("Add global autoconfig server") }}</h2></div>
+</div>
+
+<form id="addGlobalAutoconfigServer" method="post">
+    {% c_csrf_token %}
+    <fieldset>
+        <div class="row">
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="type">{{ help.type.title }}</label>
+                <select class="form-control{% if validationErrors.type.count %} is-invalid{% endif %}" id="type" name="type" aria-describedby="typeDesc" required="required">
+                    <option value="0"{% ifequal type 0 %} selected{% endifequal %}>IMAP</option>
+                    <option value="1"{% ifequal type 1 %} selected{% endifequal %}>POP3</option>
+                    <option value="2"{% ifequal type 2 %} selected{% endifequal %}>SMTP</option>
+                </select>
+                {% if validationErrors.type.count %}<div class="invalid-feedback"><small>{{ validationErrors.type.0 }}</small></div>{% endif %}
+                <small id="typeDesc" class="form-text text-muted">{{ help.type.text }}</small>
+            </div>
+
+            {% with "hostname" as id %}
+            {% with help.hostname.title as label %}
+            {% with help.hostname.text as helpText %}
+            {% with validationErrors.hostname.count as errorCount %}
+            {% with validationErrors.hostname.0 as errorText %}
+            {% with hostname as value %}
+            {% with "mail.example.com" as placeholder %}
+            {% with 1 as fieldrequired %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+
+
+
+            {% with "number" as fieldtype %}
+            {% with "0" as fieldmin %}
+            {% with 65535 as fieldmax %}
+            {% with 1 as fieldstep %}
+            {% with "port" as id %}
+            {% with help.port.title as label %}
+            {% with help.port.text as helpText %}
+            {% with validationErrors.port.count as errorCount %}
+            {% with validationErrors.port.0 as errorText %}
+            {% with port as value %}
+            {% with "993" as placeholder %}
+            {% with 1 as fieldrequired %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="socketType">{{ help.socketType.title }}</label>
+                <select class="form-control{% if validationErrors.socketType.count %} is-invalid{% endif %}" id="socketType" name="socketType" aria-describedby="socketTypeDesc" required="required">
+                    <option value="0"{% ifequal socketType 0 %} selected{% endifequal %}>{{ _("No encryption") }}</option>
+                    <option value="1"{% ifequal socketType 1 %} selected{% endifequal %}>STARTTLS</option>
+                    <option value="2"{% ifequal socketType 2 %} selected{% endifequal %}>SSL/TLS</option>
+                </select>
+                {% if validationErrors.socketType.count %}<div class="invalid-feedback"><small>{{ validationErrors.socketType.0 }}</small></div>{% endif %}
+                <small id="socketTypeDesc" class="form-text text-muted">{{ help.socketType.text }}</small>
+            </div>
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="authentication">{{ help.authentication.title }}</label>
+                <select class="form-control{% if validationErrors.authentication.count %} is-invalid{% endif %}" id="authentication" name="authentication" aria-describedby="authenticationDesc" required="required">
+                    <option value="0"{% ifequal authentication 0 %} selected{% endifequal %}>{{ _("Cleartext") }}</option>
+                    <option value="1"{% ifequal authentication 1 %} selected{% endifequal %}>{{ _("Encrypted") }}</option>
+                    <option value="2"{% ifequal authentication 2 %} selected{% endifequal %}>NTLM</option>
+                    <option value="3"{% ifequal authentication 3 %} selected{% endifequal %}>GSSAPI</option>
+                    <option value="4"{% ifequal authentication 4 %} selected{% endifequal %}>{{ _("Client IP address") }}</option>
+                    <option value="5"{% ifequal authentication 5 %} selected{% endifequal %}>{{ _("TLS client cert") }}</option>
+                </select>
+                {% if validationErrors.authentication.count %}<div class="invalid-feedback"><small>{{ validationErrors.authentication.0 }}</small></div>{% endif %}
+                <small id="authenticationDesc" class="form-text text-muted">{{ help.authentication.text }}</small>
+            </div>
+
+
+            {% with "number" as fieldtype %}
+            {% with "-128" as fieldmin %}
+            {% with 127 as fieldmax %}
+            {% with 1 as fieldstep %}
+            {% with "sorting" as id %}
+            {% with help.sorting.title as label %}
+            {% with help.sorting.text as helpText %}
+            {% with validationErrors.sorting.count as errorCount %}
+            {% with validationErrors.sorting.0 as errorText %}
+            {% with sorting|default_if_none:"0" as value %}
+            {% with "0" as placeholder %}
+            {% with 1 as fieldrequired %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+        </div>
+    </fieldset>
+
+    <div class="mt-1">
+        <a href="/settings/autoconfig" class="btn btn-outline-warning float-left" role="button"><i class="fas fa-times"></i> {{ _("Cancel") }}</a>
+        <button type="submit" class="btn btn-outline-primary float-right"><i class="fas fa-save"></i> {{ _("Create") }}</button>
+        <div class="clearfix"></div>
+    </div>
+</form>

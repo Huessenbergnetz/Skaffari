@@ -2,296 +2,299 @@
     <div class="col"><h2><i class="fas fa-sliders-h"></i> {{ _("Settings") }}</h2></div>
 </div>
 
+<div class="row">
+    <div class="col">
+        <ul class="nav nav-tabs mt-1" id="settingsTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" href="/settings">{{ _("Default values") }}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/settings/autoconfig">{{ _("Auto configuration") }}</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
 <form method="post">
     {% c_csrf_token %}
-    <ul class="nav nav-tabs mt-1" id="settingsTabs" role="tablist">
-        <li clas="nav-item">
-            <a class="nav-link active" id="defaultsTab" data-toggle="tab" href="#defaults" role="tab" aria-controls="defaultsTab" aria-expanded="true">{{ _("Default values") }}</a>
-        </li>
-    </ul>
-    <div class="tab-content" id="settingsTabsContent">
-        <div class="tab-pane fade show active" id="defaults" role="tabpanel" aria-labelledby="defaultsTab">
 
-            <fieldset>
-                <legend>{{ _("Admin accounts") }}</legend>
-                <div class="row">
+    <fieldset class="mt-3">
+        <legend>{{ _("Admin accounts") }}</legend>
+        <div class="row">
 
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label for="default_language" class="col-form-label">{{ help.default_language.title }}</label>
-                        <select class="form-control select2{% if validationErrors.default_language.count %} is-invalid{% endif %}" id="default_language" name="default_language" aria-describedby="default_languageDesc">
-                            {% for lng in langs %}
-                            <option value="{{ lng.code }}"{% if default_language == lng.code %} selected="selected"{% endif %}>{{ lng.name }}</option>
-                            {% endfor %}
-                        </select>
-                        {% if validationErrors.default_language.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_language.0 }}</small></div>{% endif %}
-                        <small id="default_languageDesc" class="form-text text-muted">{{ help.default_language.text }}</small>
-                    </div>
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label for="default_language" class="col-form-label">{{ help.default_language.title }}</label>
+                <select class="form-control select2{% if validationErrors.default_language.count %} is-invalid{% endif %}" id="default_language" name="default_language" aria-describedby="default_languageDesc">
+                    {% for lng in langs %}
+                    <option value="{{ lng.code }}"{% if default_language == lng.code %} selected="selected"{% endif %}>{{ lng.name }}</option>
+                    {% endfor %}
+                </select>
+                {% if validationErrors.default_language.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_language.0 }}</small></div>{% endif %}
+                <small id="default_languageDesc" class="form-text text-muted">{{ help.default_language.text }}</small>
+            </div>
 
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label for="default_timezone" class="col-form-label">{{ help.default_timezone.title }}</label>
-                        <select class="form-control select2{% if validationErrors.default_timezone.count %} is-invalid{% endif %}" id="default_timezone" name="default_timezone" aria-describedby="default_timezoneDesc">
-                            {% for tz in timezones %}
-                            <option value="{{ tz }}"{% if default_timezone == tz %} selected="selected"{% endif %}>{{ tz }}</option>
-                            {% endfor %}
-                        </select>
-                        {% if validationErrors.default_timezone.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_timezone.0 }}</small></div>{% endif %}
-                        <small id="default_timezoneDesc" class="form-text text-muted">{{ help.default_timezone.text }}</small>
-                    </div>
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label for="default_timezone" class="col-form-label">{{ help.default_timezone.title }}</label>
+                <select class="form-control select2{% if validationErrors.default_timezone.count %} is-invalid{% endif %}" id="default_timezone" name="default_timezone" aria-describedby="default_timezoneDesc">
+                    {% for tz in timezones %}
+                    <option value="{{ tz }}"{% if default_timezone == tz %} selected="selected"{% endif %}>{{ tz }}</option>
+                    {% endfor %}
+                </select>
+                {% if validationErrors.default_timezone.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_timezone.0 }}</small></div>{% endif %}
+                <small id="default_timezoneDesc" class="form-text text-muted">{{ help.default_timezone.text }}</small>
+            </div>
 
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label for="default_warnlevel" class="col-form-label">{{ help.default_warnlevel.title }}</label>
-                        <div class="input-group">
-                            <input type="number" id="default_warnlevel" name="default_warnlevel" class="form-control{% if validationErrors.default_warnlevel.count %} is-invalid{% endif %}" placeholder="{{ help.default_warnlevel.title }}" min="0" max="100" step="1" value="{{ default_warnlevel }}" aria-describedby="default_warnlevelDesc" />
-                            <div class="input-group-append"><span class="input-group-text" id="warnPerc">%</span></div>
-                        </div>
-                        {% if validationErrors.default_warnlevel.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_warnlevel.0 }}</small></div>{% endif %}
-                        <small id="default_warnlevelDesc" class="form-text text-muted">{{ help.default_warnlevel.text }}</small>
-                    </div>
-
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label for="default_maxdisplay" class="col-form-label">{{ help.default_maxdisplay.title }}</label>
-                        <input type="number" id="default_maxdisplay" name="default_maxdisplay" class="form-control{% if validationErrors.default_maxdisplay.count %} is-invalid{% endif %}" placeholder="{{ help.default_maxdisplay.title }}" min="15" max="255" step="1" value="{{ default_maxdisplay }}" aria-describedby="default_maxdisplayDesc" />
-                        {% if validationErrors.default_maxdisplay.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_maxdisplay.0 }}</small></div>{% endif %}
-                        <small id="default_maxdisplayDesc" class="form-text text-muted">{{ help.default_maxdisplay.text }}</small>
-                    </div>
-
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label for="default_warnlevel" class="col-form-label">{{ help.default_warnlevel.title }}</label>
+                <div class="input-group">
+                    <input type="number" id="default_warnlevel" name="default_warnlevel" class="form-control{% if validationErrors.default_warnlevel.count %} is-invalid{% endif %}" placeholder="{{ help.default_warnlevel.title }}" min="0" max="100" step="1" value="{{ default_warnlevel }}" aria-describedby="default_warnlevelDesc" />
+                    <div class="input-group-append"><span class="input-group-text" id="warnPerc">%</span></div>
                 </div>
-            </fieldset>
+                {% if validationErrors.default_warnlevel.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_warnlevel.0 }}</small></div>{% endif %}
+                <small id="default_warnlevelDesc" class="form-text text-muted">{{ help.default_warnlevel.text }}</small>
+            </div>
 
-            <fieldset>
-                <legend>{{ _("Domains") }}</legend>
-                <div class="row">
-
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label for="default_maxaccounts" class="col-form-label">{{ help.default_maxaccounts.title }}</label>
-                        <input type="number" id="default_maxaccounts" name="default_maxaccounts" class="form-control{% if validationErrors.default_maxaccounts.count %} is-invalid{% endif %}" placeholder="{{ help.default_maxaccounts.title }}" min="0" step="1" value="{{ default_maxaccounts }}" aria-describedby="default_maxaccountsDesc" />
-                        {% if validationErrors.default_maxaccounts.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_maxaccounts.0 }}</small></div>{% endif %}
-                        <small id="default_maxaccountsDesc" class="form-text text-muted">{{ help.default_maxaccounts.text }}</small>
-                    </div>
-
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label for="default_domainquota" class="col-form-label">{{ help.default_domainquota.title }}</label>
-                        <input type="text" id="default_domainquota" name="default_domainquota" class="form-control{% if validationErrors.default_domainquota.count %} is-invalid{% endif %}" value="{% sk_fsf default_domainquota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="default_domainquotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTtPpEe]?[Ii]?[Bb]?" />
-                        {% if validationErrors.default_domainquota.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_domainquota.0 }}</small></div>{% endif %}
-                        <small id="default_domainquotaDesc" class="form-text text-muted">{{ help.default_domainquota.text }}</small>
-                    </div>
-
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label for="default_quota" class="col-form-label">{{ help.default_quota.title }}</label>
-                        <input type="text" id="default_quota" name="default_quota" class="form-control{% if validationErrors.default_quota.count %} is-invalid{% endif %}" value="{% sk_fsf default_quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="default_quotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTtPpEe]?[Ii]?[Bb]?" />
-                        {% if validationErrors.default_quota.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_quota.0 }}</small></div>{% endif %}
-                        <small id="default_quotaDesc" class="form-text text-muted">{{ help.default_quota.text }}</small>
-                    </div>
-
-                </div>
-            </fieldset>
-
-            <fieldset>
-                <legend>{{ _("Role accounts") }}</legend>
-                <div class="row">
-                    {% i18n_var "Select an account" as s2ph %}
-
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label class="col-form-label" for="default_abuse_account">{{ help.default_abuse_account.title }}</label>
-                        <select class="form-control{% if validationErrors.default_abuse_account.count %} is-invalid{% endif %} select2-ajax-accounts" id="default_abuse_account" name="default_abuse_account" aria-describedby="default_abuse_accountDesc" data-placeholder="{{ s2ph }}">
-                            {% if default_abuse_account.id > 0 %}
-                            <option value="{{ default_abuse_account.id }}" selected="selected">{{ default_abuse_account.username }} ({{ default_abuse_account.domainname }})</option>
-                            {% endif %}
-                        </select>
-                        {% if validationErrors.default_abuse_account.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_abuse_account.0 }}</small></div>{% endif %}
-                        <small id="default_abuse_accountDesc" class="form-text text-muted">{{ help.default_abuse_account.text }}</small>
-                    </div>
-
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label class="col-form-label" for="default_noc_account">{{ help.default_noc_account.title }}</label>
-                        <select class="form-control{% if validationErrors.default_noc_account.count %} is-invalid{% endif %} select2-ajax-accounts" id="default_noc_account" name="default_noc_account" aria-describedby="default_noc_accountDesc" data-placeholder="{{ s2ph }}">
-                            {% if default_noc_account.id > 0 %}
-                            <option value="{{ default_noc_account.id }}" selected="selected">{{ default_noc_account.username }} ({{ default_noc_account.domainname }})</option>
-                            {% endif %}
-                        </select>
-                        {% if validationErrors.default_noc_account.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_noc_account.0 }}</small></div>{% endif %}
-                        <small id="default_noc_accountDesc" class="form-text text-muted">{{ help.default_noc_account.text }}</small>
-                    </div>
-
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label class="col-form-label" for="default_security_account">{{ help.default_security_account.title }}</label>
-                        <select class="form-control{% if validationErrors.default_security_account.count %} is-invalid{% endif %} select2-ajax-accounts" id="default_security_account" name="default_security_account" aria-describedby="default_security_accountDesc" data-placeholder="{{ s2ph }}">
-                            {% if default_security_account.id > 0 %}
-                            <option value="{{ default_security_account.id }}" selected="selected">{{ default_security_account.username }} ({{ default_security_account.domainname }})</option>
-                            {% endif %}
-                        </select>
-                        {% if validationErrors.default_security_account.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_security_account.0 }}</small></div>{% endif %}
-                        <small id="default_security_accountDesc" class="form-text text-muted">{{ help.default_security_account.text }}</small>
-                    </div>
-
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label class="col-form-label" for="default_postmaster_account">{{ help.default_postmaster_account.title }}</label>
-                        <select class="form-control{% if validationErrors.default_postmaster_account.count %} is-invalid{% endif %} select2-ajax-accounts" id="default_postmaster_account" name="default_postmaster_account" aria-describedby="default_postmaster_accountDesc" data-placeholder="{{ s2ph }}">
-                            {% if default_postmaster_account.id > 0 %}
-                            <option value="{{ default_postmaster_account.id }}" selected="selected">{{ default_postmaster_account.username }} ({{ default_postmaster_account.domainname }})</option>
-                            {% endif %}
-                        </select>
-                        {% if validationErrors.default_postmaster_account.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_postmaster_account.0 }}</small></div>{% endif %}
-                        <small id="default_postmaster_accountDesc" class="form-text text-muted">{{ help.default_postmaster_account.text }}</small>
-                    </div>
-
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label class="col-form-label" for="default_hostmaster_account">{{ help.default_hostmaster_account.title }}</label>
-                        <select class="form-control{% if validationErrors.default_hostmaster_account.count %} is-invalid{% endif %} select2-ajax-accounts" id="default_hostmaster_account" name="default_hostmaster_account" aria-describedby="default_hostmaster_accountDesc" data-placeholder="{{ s2ph }}">
-                            {% if default_hostmaster_account.id > 0 %}
-                            <option value="{{ default_hostmaster_account.id }}" selected="selected">{{ default_hostmaster_account.username }} ({{ default_hostmaster_account.domainname }})</option>
-                            {% endif %}
-                        </select>
-                        {% if validationErrors.default_hostmaster_account.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_hostmaster_account.0 }}</small></div>{% endif %}
-                        <small id="default_hostmaster_accountDesc" class="form-text text-muted">{{ help.default_hostmaster_account.text }}</small>
-                    </div>
-
-                    <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                        <label class="col-form-label" for="default_webmaster_account">{{ help.default_webmaster_account.title }}</label>
-                        <select class="form-control{% if validationErrors.default_webmaster_account.count %} is-invalid{% endif %} select2-ajax-accounts" id="default_webmaster_account" name="default_webmaster_account" aria-describedby="default_webmaster_accountDesc" data-placeholder="{{ s2ph }}">
-                            {% if default_webmaster_account.id > 0 %}
-                            <option value="{{ default_webmaster_account.id }}" selected="selected">{{ default_webmaster_account.username }} ({{ default_webmaster_account.domainname }})</option>
-                            {% endif %}
-                        </select>
-                        {% if validationErrors.default_webmaster_account.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_webmaster_account.0 }}</small></div>{% endif %}
-                        <small id="default_webmaster_accountDesc" class="form-text text-muted">{{ help.default_webmaster_account.text }}</small>
-                    </div>
-
-                </div>
-            </fieldset>
-
-            <fieldset>
-                <legend>{{ _("Default folders") }}</legend>
-                <p class="form-text text-muted">{{ _("The folders defined here are used when creating new domains, but can be changed there at any time.") }}</p>
-                <div class="row">
-                    {% with "default_sent_folder" as id %}
-                    {% with help.default_sent_folder.title as label %}
-                    {% with help.default_sent_folder.text as helpText %}
-                    {% with validationErrors.default_sent_folder.count as errorCount %}
-                    {% with validationErrors.default_sent_folder.0 as errorText %}
-                    {% with default_sent_folder as value %}
-                    {% i18nc_var "Placeholder for default sent folder input field" "e.g. Sent messages" as sentFolderPlaceholder %}
-                    {% with sentFolderPlaceholder as placeholder %}
-
-                    {% include "inc/forms/inputfield.html" %}
-
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-
-
-
-                    {% with "default_drafts_folder" as id %}
-                    {% with help.default_drafts_folder.title as label %}
-                    {% with help.default_drafts_folder.text as helpText %}
-                    {% with validationErrors.default_drafts_folder.count as errorCount %}
-                    {% with validationErrors.default_drafts_folder.0 as errorText %}
-                    {% with default_drafts_folder as value %}
-                    {% i18nc_var "Placeholder for default drafts folder input field" "e.g. Drafts" as draftsFolderPlaceholder %}
-                    {% with draftsFolderPlaceholder as placeholder %}
-
-                    {% include "inc/forms/inputfield.html" %}
-
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-
-
-
-                    {% with "default_trash_folder" as id %}
-                    {% with help.default_trash_folder.title as label %}
-                    {% with help.default_trash_folder.text as helpText %}
-                    {% with validationErrors.default_trash_folder.count as errorCount %}
-                    {% with validationErrors.default_trash_folder.0 as errorText %}
-                    {% with default_trash_folder as value %}
-                    {% i18nc_var "Placeholder for default trash folder input field" "e.g. Trash" as trashFolderPlaceholder %}
-                    {% with trashFolderPlaceholder as placeholder %}
-
-                    {% include "inc/forms/inputfield.html" %}
-
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-
-
-
-                    {% with "default_junk_folder" as id %}
-                    {% with help.default_junk_folder.title as label %}
-                    {% with help.default_junk_folder.text as helpText %}
-                    {% with validationErrors.default_junk_folder.count as errorCount %}
-                    {% with validationErrors.default_junk_folder.0 as errorText %}
-                    {% with default_junk_folder as value %}
-                    {% i18nc_var "Placeholder for default junk folder input field" "e.g. Junk" as junkFolderPlaceholder %}
-                    {% with junkFolderPlaceholder as placeholder %}
-
-                    {% include "inc/forms/inputfield.html" %}
-
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-
-
-
-                    {% with "default_archive_folder" as id %}
-                    {% with help.default_archive_folder.title as label %}
-                    {% with help.default_archive_folder.text as helpText %}
-                    {% with validationErrors.default_archive_folder.count as errorCount %}
-                    {% with validationErrors.default_archive_folder.0 as errorText %}
-                    {% with default_archive_folder as value %}
-                    {% i18nc_var "Placeholder for default archive folder input field" "e.g. Archive" as archiveFolderPlaceholder %}
-                    {% with archiveFolderPlaceholder as placeholder %}
-
-                    {% include "inc/forms/inputfield.html" %}
-
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-
-
-
-                    {% with "default_other_folders" as id %}
-                    {% with help.default_other_folders.title as label %}
-                    {% with help.default_other_folders.text as helpText %}
-                    {% with validationErrors.default_other_folders.count as errorCount %}
-                    {% with validationErrors.default_other_folders.0 as errorText %}
-                    {% with default_other_folders as value %}
-                    {% i18nc_var "Placeholder for other default folder input fields" "e.g. Templates,Invoices" as otherFoldersPlaceholder %}
-                    {% with otherFoldersPlaceholder as placeholder %}
-
-                    {% include "inc/forms/inputfield.html" %}
-
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                </div>
-            </fieldset>
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label for="default_maxdisplay" class="col-form-label">{{ help.default_maxdisplay.title }}</label>
+                <input type="number" id="default_maxdisplay" name="default_maxdisplay" class="form-control{% if validationErrors.default_maxdisplay.count %} is-invalid{% endif %}" placeholder="{{ help.default_maxdisplay.title }}" min="15" max="255" step="1" value="{{ default_maxdisplay }}" aria-describedby="default_maxdisplayDesc" />
+                {% if validationErrors.default_maxdisplay.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_maxdisplay.0 }}</small></div>{% endif %}
+                <small id="default_maxdisplayDesc" class="form-text text-muted">{{ help.default_maxdisplay.text }}</small>
+            </div>
 
         </div>
-    </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>{{ _("Domains") }}</legend>
+        <div class="row">
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label for="default_maxaccounts" class="col-form-label">{{ help.default_maxaccounts.title }}</label>
+                <input type="number" id="default_maxaccounts" name="default_maxaccounts" class="form-control{% if validationErrors.default_maxaccounts.count %} is-invalid{% endif %}" placeholder="{{ help.default_maxaccounts.title }}" min="0" step="1" value="{{ default_maxaccounts }}" aria-describedby="default_maxaccountsDesc" />
+                {% if validationErrors.default_maxaccounts.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_maxaccounts.0 }}</small></div>{% endif %}
+                <small id="default_maxaccountsDesc" class="form-text text-muted">{{ help.default_maxaccounts.text }}</small>
+            </div>
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label for="default_domainquota" class="col-form-label">{{ help.default_domainquota.title }}</label>
+                <input type="text" id="default_domainquota" name="default_domainquota" class="form-control{% if validationErrors.default_domainquota.count %} is-invalid{% endif %}" value="{% sk_fsf default_domainquota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="default_domainquotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTtPpEe]?[Ii]?[Bb]?" />
+                {% if validationErrors.default_domainquota.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_domainquota.0 }}</small></div>{% endif %}
+                <small id="default_domainquotaDesc" class="form-text text-muted">{{ help.default_domainquota.text }}</small>
+            </div>
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label for="default_quota" class="col-form-label">{{ help.default_quota.title }}</label>
+                <input type="text" id="default_quota" name="default_quota" class="form-control{% if validationErrors.default_quota.count %} is-invalid{% endif %}" value="{% sk_fsf default_quota 2 2 1024 %}" placeholder="{{ _("e.g. 300M") }}" aria-describedby="default_quotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTtPpEe]?[Ii]?[Bb]?" />
+                {% if validationErrors.default_quota.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_quota.0 }}</small></div>{% endif %}
+                <small id="default_quotaDesc" class="form-text text-muted">{{ help.default_quota.text }}</small>
+            </div>
+
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>{{ _("Role accounts") }}</legend>
+        <div class="row">
+            {% i18n_var "Select an account" as s2ph %}
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="default_abuse_account">{{ help.default_abuse_account.title }}</label>
+                <select class="form-control{% if validationErrors.default_abuse_account.count %} is-invalid{% endif %} select2-ajax-accounts" id="default_abuse_account" name="default_abuse_account" aria-describedby="default_abuse_accountDesc" data-placeholder="{{ s2ph }}">
+                    {% if default_abuse_account.id > 0 %}
+                    <option value="{{ default_abuse_account.id }}" selected="selected">{{ default_abuse_account.username }} ({{ default_abuse_account.domainname }})</option>
+                    {% endif %}
+                </select>
+                {% if validationErrors.default_abuse_account.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_abuse_account.0 }}</small></div>{% endif %}
+                <small id="default_abuse_accountDesc" class="form-text text-muted">{{ help.default_abuse_account.text }}</small>
+            </div>
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="default_noc_account">{{ help.default_noc_account.title }}</label>
+                <select class="form-control{% if validationErrors.default_noc_account.count %} is-invalid{% endif %} select2-ajax-accounts" id="default_noc_account" name="default_noc_account" aria-describedby="default_noc_accountDesc" data-placeholder="{{ s2ph }}">
+                    {% if default_noc_account.id > 0 %}
+                    <option value="{{ default_noc_account.id }}" selected="selected">{{ default_noc_account.username }} ({{ default_noc_account.domainname }})</option>
+                    {% endif %}
+                </select>
+                {% if validationErrors.default_noc_account.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_noc_account.0 }}</small></div>{% endif %}
+                <small id="default_noc_accountDesc" class="form-text text-muted">{{ help.default_noc_account.text }}</small>
+            </div>
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="default_security_account">{{ help.default_security_account.title }}</label>
+                <select class="form-control{% if validationErrors.default_security_account.count %} is-invalid{% endif %} select2-ajax-accounts" id="default_security_account" name="default_security_account" aria-describedby="default_security_accountDesc" data-placeholder="{{ s2ph }}">
+                    {% if default_security_account.id > 0 %}
+                    <option value="{{ default_security_account.id }}" selected="selected">{{ default_security_account.username }} ({{ default_security_account.domainname }})</option>
+                    {% endif %}
+                </select>
+                {% if validationErrors.default_security_account.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_security_account.0 }}</small></div>{% endif %}
+                <small id="default_security_accountDesc" class="form-text text-muted">{{ help.default_security_account.text }}</small>
+            </div>
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="default_postmaster_account">{{ help.default_postmaster_account.title }}</label>
+                <select class="form-control{% if validationErrors.default_postmaster_account.count %} is-invalid{% endif %} select2-ajax-accounts" id="default_postmaster_account" name="default_postmaster_account" aria-describedby="default_postmaster_accountDesc" data-placeholder="{{ s2ph }}">
+                    {% if default_postmaster_account.id > 0 %}
+                    <option value="{{ default_postmaster_account.id }}" selected="selected">{{ default_postmaster_account.username }} ({{ default_postmaster_account.domainname }})</option>
+                    {% endif %}
+                </select>
+                {% if validationErrors.default_postmaster_account.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_postmaster_account.0 }}</small></div>{% endif %}
+                <small id="default_postmaster_accountDesc" class="form-text text-muted">{{ help.default_postmaster_account.text }}</small>
+            </div>
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="default_hostmaster_account">{{ help.default_hostmaster_account.title }}</label>
+                <select class="form-control{% if validationErrors.default_hostmaster_account.count %} is-invalid{% endif %} select2-ajax-accounts" id="default_hostmaster_account" name="default_hostmaster_account" aria-describedby="default_hostmaster_accountDesc" data-placeholder="{{ s2ph }}">
+                    {% if default_hostmaster_account.id > 0 %}
+                    <option value="{{ default_hostmaster_account.id }}" selected="selected">{{ default_hostmaster_account.username }} ({{ default_hostmaster_account.domainname }})</option>
+                    {% endif %}
+                </select>
+                {% if validationErrors.default_hostmaster_account.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_hostmaster_account.0 }}</small></div>{% endif %}
+                <small id="default_hostmaster_accountDesc" class="form-text text-muted">{{ help.default_hostmaster_account.text }}</small>
+            </div>
+
+            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
+                <label class="col-form-label" for="default_webmaster_account">{{ help.default_webmaster_account.title }}</label>
+                <select class="form-control{% if validationErrors.default_webmaster_account.count %} is-invalid{% endif %} select2-ajax-accounts" id="default_webmaster_account" name="default_webmaster_account" aria-describedby="default_webmaster_accountDesc" data-placeholder="{{ s2ph }}">
+                    {% if default_webmaster_account.id > 0 %}
+                    <option value="{{ default_webmaster_account.id }}" selected="selected">{{ default_webmaster_account.username }} ({{ default_webmaster_account.domainname }})</option>
+                    {% endif %}
+                </select>
+                {% if validationErrors.default_webmaster_account.count %}<div class="invalid-feedback"><small>{{ validationErrors.default_webmaster_account.0 }}</small></div>{% endif %}
+                <small id="default_webmaster_accountDesc" class="form-text text-muted">{{ help.default_webmaster_account.text }}</small>
+            </div>
+
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>{{ _("Default folders") }}</legend>
+        <p class="form-text text-muted">{{ _("The folders defined here are used when creating new domains, but can be changed there at any time.") }}</p>
+        <div class="row">
+            {% with "default_sent_folder" as id %}
+            {% with help.default_sent_folder.title as label %}
+            {% with help.default_sent_folder.text as helpText %}
+            {% with validationErrors.default_sent_folder.count as errorCount %}
+            {% with validationErrors.default_sent_folder.0 as errorText %}
+            {% with default_sent_folder as value %}
+            {% i18nc_var "Placeholder for default sent folder input field" "e.g. Sent messages" as sentFolderPlaceholder %}
+            {% with sentFolderPlaceholder as placeholder %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+
+
+            {% with "default_drafts_folder" as id %}
+            {% with help.default_drafts_folder.title as label %}
+            {% with help.default_drafts_folder.text as helpText %}
+            {% with validationErrors.default_drafts_folder.count as errorCount %}
+            {% with validationErrors.default_drafts_folder.0 as errorText %}
+            {% with default_drafts_folder as value %}
+            {% i18nc_var "Placeholder for default drafts folder input field" "e.g. Drafts" as draftsFolderPlaceholder %}
+            {% with draftsFolderPlaceholder as placeholder %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+
+
+            {% with "default_trash_folder" as id %}
+            {% with help.default_trash_folder.title as label %}
+            {% with help.default_trash_folder.text as helpText %}
+            {% with validationErrors.default_trash_folder.count as errorCount %}
+            {% with validationErrors.default_trash_folder.0 as errorText %}
+            {% with default_trash_folder as value %}
+            {% i18nc_var "Placeholder for default trash folder input field" "e.g. Trash" as trashFolderPlaceholder %}
+            {% with trashFolderPlaceholder as placeholder %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+
+
+            {% with "default_junk_folder" as id %}
+            {% with help.default_junk_folder.title as label %}
+            {% with help.default_junk_folder.text as helpText %}
+            {% with validationErrors.default_junk_folder.count as errorCount %}
+            {% with validationErrors.default_junk_folder.0 as errorText %}
+            {% with default_junk_folder as value %}
+            {% i18nc_var "Placeholder for default junk folder input field" "e.g. Junk" as junkFolderPlaceholder %}
+            {% with junkFolderPlaceholder as placeholder %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+
+
+            {% with "default_archive_folder" as id %}
+            {% with help.default_archive_folder.title as label %}
+            {% with help.default_archive_folder.text as helpText %}
+            {% with validationErrors.default_archive_folder.count as errorCount %}
+            {% with validationErrors.default_archive_folder.0 as errorText %}
+            {% with default_archive_folder as value %}
+            {% i18nc_var "Placeholder for default archive folder input field" "e.g. Archive" as archiveFolderPlaceholder %}
+            {% with archiveFolderPlaceholder as placeholder %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+
+
+            {% with "default_other_folders" as id %}
+            {% with help.default_other_folders.title as label %}
+            {% with help.default_other_folders.text as helpText %}
+            {% with validationErrors.default_other_folders.count as errorCount %}
+            {% with validationErrors.default_other_folders.0 as errorText %}
+            {% with default_other_folders as value %}
+            {% i18nc_var "Placeholder for other default folder input fields" "e.g. Templates,Invoices" as otherFoldersPlaceholder %}
+            {% with otherFoldersPlaceholder as placeholder %}
+
+            {% include "inc/forms/inputfield.html" %}
+
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+        </div>
+    </fieldset>
 
     <div class="mt-1">
         <a href="/" class="btn btn-outline-warning float-left" role="button"><i class="fas fa-times"></i> {{ _("Cancel") }}</a>
