@@ -130,16 +130,6 @@ void Autoconfig::index(Context *c)
         providerDomains.push_back(mailDomain);
     }
 
-//    const QString imapsHostname = QStringLiteral("hbn.huessenbergnetz.de");
-//    const QString imapsPortNumber = QStringLiteral("993");
-//    const QString imapsSocketType = QStringLiteral("SSL");
-//    const QString imapsAuthentication = QStringLiteral("password-cleartext");
-
-//    const QString smtpsHostName = QStringLiteral("hbn.huessenbergnetz.de");
-//    const QString smtpsPortNumber = QStringLiteral("465");
-//    const QString smtpsSocketType = QStringLiteral("SSL");
-//    const QString smtpsAuthentication = QStringLiteral("password-cleartext");
-
     QDomDocument xml;
 
     auto root = xml.createElement(QStringLiteral("clientConfig"));
@@ -233,65 +223,8 @@ void Autoconfig::index(Context *c)
 
     }
 
-//    // START IMAPS SERVER
-
-//    auto imaps = xml.createElement(QStringLiteral("incomingServer"));
-//    imaps.setAttribute(QStringLiteral("type"), QStringLiteral("imap"));
-//    provider.appendChild(imaps);
-
-//    auto imapsHost = xml.createElement(QStringLiteral("hostname"));
-//    imaps.appendChild(imapsHost);
-//    imapsHost.appendChild(xml.createTextNode(imapsHostname));
-
-//    auto imapsPort = xml.createElement(QStringLiteral("port"));
-//    imaps.appendChild(imapsPort);
-//    imapsPort.appendChild(xml.createTextNode(imapsPortNumber));
-
-//    auto imapsSocket = xml.createElement(QStringLiteral("socketType"));
-//    imaps.appendChild(imapsSocket);
-//    imapsSocket.appendChild(xml.createTextNode(imapsSocketType));
-
-//    auto imapsAuth = xml.createElement(QStringLiteral("authentication"));
-//    imaps.appendChild(imapsAuth);
-//    imapsAuth.appendChild(xml.createTextNode(imapsAuthentication));
-
-//    auto imapsUser = xml.createElement(QStringLiteral("username"));
-//    imaps.appendChild(imapsUser);
-//    imapsUser.appendChild(xml.createTextNode(username));
-
-//    // END IMAPS SERVER
-
-//    // START SMTPS SUBMISSION
-
-//    auto smtps = xml.createElement(QStringLiteral("outgoingServer"));
-//    smtps.setAttribute(QStringLiteral("type"), QStringLiteral("smtp"));
-//    provider.appendChild(smtps);
-
-//    auto smtpsHost = xml.createElement(QStringLiteral("hostname"));
-//    smtps.appendChild(smtpsHost);
-//    smtpsHost.appendChild(xml.createTextNode(smtpsHostName));
-
-//    auto smtpsPort = xml.createElement(QStringLiteral("port"));
-//    smtps.appendChild(smtpsPort);
-//    smtpsPort.appendChild(xml.createTextNode(smtpsPortNumber));
-
-//    auto smtpsSocket = xml.createElement(QStringLiteral("socketType"));
-//    smtps.appendChild(smtpsSocket);
-//    smtpsSocket.appendChild(xml.createTextNode(smtpsSocketType));
-
-//    auto smtpsAuth = xml.createElement(QStringLiteral("authentication"));
-//    smtps.appendChild(smtpsAuth);
-//    smtpsAuth.appendChild(xml.createTextNode(smtpsAuthentication));
-
-//    auto smtpsUser = xml.createElement(QStringLiteral("username"));
-//    smtps.appendChild(smtpsUser);
-//    smtpsUser.appendChild(xml.createTextNode(username));
-
-
-//    // END SMTPS SUBMISSION
-
     c->res()->setBody(xml.toString(2));
     c->res()->setContentType(QStringLiteral("text/xml; charset=utf-8"));
-
 }
 
+#include "moc_autoconfig.cpp"
