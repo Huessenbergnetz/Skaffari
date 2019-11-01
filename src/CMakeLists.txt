@@ -53,6 +53,8 @@ set (skaffari_SRCS
     myaccount.h
     autoconfig.cpp
     autoconfig.h
+    autodiscover.cpp
+    autodiscover.h
     root.cpp
     root.h
     skaffari.cpp

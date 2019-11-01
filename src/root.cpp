@@ -320,6 +320,10 @@ bool Root::Auto(Context* c)
         return true;
     }
 
+    if (c->controllerName() == QLatin1String("Autodiscover")) {
+        return true;
+    }
+
     const AuthenticationUser user = Authentication::user(c);
 
     if (Q_UNLIKELY(user.isNull())) {

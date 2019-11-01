@@ -86,6 +86,7 @@ extern "C"
 #include "myaccount.h"
 #include "settingseditor.h"
 #include "autoconfig.h"
+#include "autodiscover.h"
 
 Q_LOGGING_CATEGORY(SK_CORE, "skaffari.core")
 
@@ -294,6 +295,7 @@ bool Skaffari::init()
     new MyAccount(this);
     new SettingsEditor(this);
     new Autoconfig(this);
+    new Autodiscover(this);
 
     qCDebug(SK_CORE) << "Registering plugins.";
 
@@ -321,6 +323,7 @@ bool Skaffari::init()
 
     auto csrf = new CSRFProtection(this);
     csrf->setDefaultDetachTo(QStringLiteral("/csrfdenied"));
+    csrf->setIgnoredNamespaces({QStringLiteral("autodiscover/autodiscover.xml")});
 
     new StatusMessage(this);
 
