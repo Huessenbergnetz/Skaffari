@@ -27,12 +27,12 @@
             <thead>
                 <tr>
                     <th>{{ _("Actions") }}</th>
-                    <th>{{ _("Type") }}</th>
+                    <th>{% i18nc "Autoconfig server type" "Type" %}</th>
                     <th>{{ _("Hostname") }}</th>
-                    <th>{{ _("Port") }}</th>
-                    <th>{{ _("Socket type") }}</th>
-                    <th>{{ _("Authentication") }}</th>
-                    <th>{{ _("Sorting value") }}</th>
+                    <th>{% i18nc "Network port" "Port" %}</th>
+                    <th>{% i18nc "Autoconfig server socket type" "Socket type" %}</th>
+                    <th>{% i18nc "Autoconfig server authentication method" "Authentication" %}</th>
+                    <th>{% i18nc "Autoconfig server sorting value" "Sorting value" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -48,15 +48,15 @@
                                 <span class="sr-only">{{ togDrpTxt }}</span>
                             </button>
                             <div class="dropdown-menu">
-                                <a href="#" class="dropdown-item text-danger"><i class="fas fa-trash fa-fw"></i> {{ delAcsTxt }}</a>
+                                <a href="/settings/remove_autoconfig_server/{{ server.id }}" class="dropdown-item text-danger"><i class="fas fa-trash fa-fw"></i> {{ delAcsTxt }}</a>
                             </div>
                         </div>
                     </td>
-                    <td>{% if server.type == 0 %}IMAP{% elif server.type == 1 %}POP3{% else %}SMTP{% endif %}</td>
+                    <td>{% with server.type as value %}{% include "inc/parts/autoconfigservertype.html" %}{% endwith %}</td>
                     <td>{{ server.hostname }}</td>
                     <td>{{ server.port }}</td>
-                    <td>{% if server.socketType == 0 %}{{ _("No encryption") }}{% elif server.socketType == 1 %}STARTTLS{% else %}SSL/TLS{% endif %}</td>
-                    <td>{{ server.authentication }}</td>
+                    <td>{% with server.socketType as value %}{% include "inc/parts/autoconfigserversockettype.html" %}{% endwith %}</td>
+                    <td>{% with server.authentication as value %}{% include "inc/parts/autoconfigserverauthentication.html" %}{% endwith %}</td>
                     <td>{{ server.sorting }}</td>
                 </tr>
                 {% endfor %}

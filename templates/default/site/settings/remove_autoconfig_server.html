@@ -9,7 +9,7 @@
                     <dt>{% i18nc "Autoconfig server type" "Type" %}</dt>
                     <dd>{% with server.type as value %}{% include "inc/parts/autoconfigservertype.html" %}{% endwith %}</dd>
 
-                    <dt>{% i18nc "Autoconfig server port" "Port" %}</dt>
+                    <dt>{% i18nc "Network port" "Port" %}</dt>
                     <dd>{{ server.port }}</dd>
 
                     <dt>{% i18nc "Autoconfig server socket type" "Socket type" %}</dt>
