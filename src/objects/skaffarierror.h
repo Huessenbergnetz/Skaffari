@@ -218,10 +218,10 @@ public:
     bool operator!=(const SkaffariError &other) const;
 
     /*!
-     * \brief Puts \a this %SkaffariError to the Cutelyst::stash().
+     * \brief Puts \a this %SkaffariError to the Cutelyst::Context::stash().
      * \sa fromStash()
      */
-    void toStash(Cutelyst::Context *c) const;
+    void toStash(Cutelyst::Context *c, bool detach = false) const;
 
     /*!
      * \brief Translates the ErrorType of \a this %SkaffariError into a human readable string.
@@ -234,6 +234,15 @@ public:
      * \sa toStash()
      */
     static SkaffariError fromStash(Cutelyst::Context *c);
+
+    /*!
+     * \brief Directly creates a new %SkaffariError and puts to the Cutelyst::Context::stash().
+     * \param c         Pointer to the current context.
+     * \param type      \link SkaffariError::ErrorType ErrorType\endlink describing this type of error.
+     * \param errorText Optional String human readable error description.
+     * \param detach    If set to \c true, the context will be detached to the error function.
+     */
+    static void toStash(Cutelyst::Context *c, ErrorType type , const QString &errorText = QString(), bool detach = true);
 
 private:
     class Data;

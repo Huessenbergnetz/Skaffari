@@ -374,10 +374,13 @@ QString SkaffariError::typeTitle(Cutelyst::Context *c) const
     return ret;
 }
 
-void SkaffariError::toStash(Cutelyst::Context *c) const
+void SkaffariError::toStash(Cutelyst::Context *c, bool detach) const
 {
     Q_ASSERT(c);
     c->setStash(QStringLiteral(STASH_KEY), QVariant::fromValue<SkaffariError>(*this));
+    if (detach) {
+        c->detach(c->getAction(QStringLiteral("error")));
+    }
 }
 
 SkaffariError SkaffariError::fromStash(Cutelyst::Context *c)
@@ -385,10 +388,16 @@ SkaffariError SkaffariError::fromStash(Cutelyst::Context *c)
     return c->stash(QStringLiteral(STASH_KEY)).value<SkaffariError>();
 }
 
+void SkaffariError::toStash(Cutelyst::Context *c, ErrorType type, const QString &errorText, bool detach)
+{
+    SkaffariError e(c, type, errorText);
+    e.toStash(c, detach);
+}
+
 QDebug operator<<(QDebug dbg, const SkaffariError &error)
 {
     QDebugStateSaver saver(dbg);
-    Q_UNUSED(saver);
+    Q_UNUSED(saver)
     dbg.nospace() << "SkaffariError(";
     dbg << "Type: " << error.type();
     dbg << ", Text: " << error.errorText();
