@@ -141,7 +141,7 @@ dbid_t Utils::strToDbid(const QString &str, bool *ok, const QString &errorMsg, C
     if (ok) {
         *ok = _ok;
     }
-    if (!errorMsg.isEmpty() && c) {
+    if (!ok && !errorMsg.isEmpty() && c) {
         SkaffariError::toStash(c, SkaffariError::InputError, errorMsg, true);
     }
     return val;
