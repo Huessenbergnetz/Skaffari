@@ -17,6 +17,7 @@
  */
 
 #include "utils.h"
+#include "../objects/skaffarierror.h"
 #include <Cutelyst/Context>
 #include <Cutelyst/Request>
 #include <Cutelyst/Response>
@@ -119,8 +120,14 @@ bool Utils::ajaxPostOnly(Cutelyst::Context *c, bool isAjax)
     }
 }
 
-dbid_t Utils::strToDbid(const QString &str, bool *ok)
+dbid_t Utils::strToDbid(const QString &str, bool *ok, const QString &errorMsg, Cutelyst::Context *c)
 {
+#ifndef QT_NO_DEBUG
+    if (!errorMsg.isEmpty() && !c) {
+        Q_ASSERT_X(false, "string to db id", "invalid context object");
+    }
+#endif
+
     dbid_t val = 0;
     bool _ok = true;
     const qlonglong tmpval = str.toLongLong(&_ok);
@@ -133,6 +140,9 @@ dbid_t Utils::strToDbid(const QString &str, bool *ok)
     }
     if (ok) {
         *ok = _ok;
+    }
+    if (!errorMsg.isEmpty() && c) {
+        SkaffariError::toStash(c, SkaffariError::InputError, errorMsg, true);
     }
     return val;
 }
