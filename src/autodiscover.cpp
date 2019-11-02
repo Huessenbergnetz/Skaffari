@@ -30,6 +30,7 @@
 #include <QDomAttr>
 #include <QDomText>
 #include <QTime>
+#include <QDateTime>
 #include <QCryptographicHash>
 
 Q_LOGGING_CATEGORY(SK_AUTODISCOVER, "skaffari.autoconfig")
@@ -43,16 +44,23 @@ Autodiscover::Autodiscover(QObject *parent)
 
 void Autodiscover::index(Context *c)
 {
+    if (!c->req()->isPost()) {
+        c->res()->setStatus(Response::MethodNotAllowed);
+        c->res()->setHeader(QStringLiteral("Allow"), QStringLiteral("POST"));
+        c->res()->setBody(c->translate("Autodiscover", "Method not allow. Use POST."));
+        return;
+    }
+
     if (!SkaffariConfig::autoconfigEnabled()) {
         setError(c, Response::NotFound, c->translate("Autodiscover", "Autodiscover is not enabled."), 601);
         return;
     }
 
-    const QString host = c->req()->uri().host();
-    if (Q_UNLIKELY(!host.startsWith(QLatin1String("autodiscover")))) {
-        setError(c, Response::Unauthorized, c->translate("Autodiscover", "Access to this URL is only allowed with the appropriate target host."), 601);
-        return;
-    }
+//    const QString host = c->req()->uri().host();
+//    if (Q_UNLIKELY(!host.startsWith(QLatin1String("autodiscover")))) {
+//        setError(c, Response::Unauthorized, c->translate("Autodiscover", "Access to this URL is only allowed with the appropriate target host."), 601);
+//        return;
+//    }
 
     QString email;
 //    const int mapiCapable = c->req()->header(QStringLiteral("X-MapiHttpCapability")).toInt();
@@ -254,9 +262,10 @@ void Autodiscover::index(Context *c)
 
 void Autodiscover::setError(Context *c, Response::HttpStatus status, const QString &msg, int errorCode)
 {
-    Q_ASSERT_X(c, "set autodiscov error", "invalid context object");
+    Q_ASSERT_X(c, "set autodiscover error", "invalid context object");
 
 //    c->res()->setStatus(status);
+    Q_UNUSED(status)
 
     QDomDocument xml;
     auto autodiscover = xml.createElement(QStringLiteral("Autodiscover"));
@@ -267,9 +276,9 @@ void Autodiscover::setError(Context *c, Response::HttpStatus status, const QStri
     autodiscover.appendChild(response);
 
     auto error = xml.createElement(QStringLiteral("Error"));
-    error.setAttribute(QStringLiteral("Time"), QTime::currentTime().toString(Qt::ISODateWithMs));
-    error.setAttribute(QStringLiteral("Id"), QString::fromLatin1(QCryptographicHash::hash(c->req()->uri().host().toUtf8(), QCryptographicHash::Md4).toHex()));
-    autodiscover.appendChild(error);
+    error.setAttribute(QStringLiteral("Time"), QDateTime::currentDateTimeUtc().time().toString(Qt::ISODateWithMs));
+    error.setAttribute(QStringLiteral("Id"), QString::fromLatin1(QCryptographicHash::hash(c->req()->uri().host().toUtf8(), QCryptographicHash::Md5).toHex()));
+    response.appendChild(error);
 
     auto code = xml.createElement(QStringLiteral("ErrorCode"));
     error.appendChild(code);
