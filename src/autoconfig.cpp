@@ -50,7 +50,7 @@ void Autoconfig::index(Context *c)
     const QString host = c->req()->uri().host();
     if (Q_UNLIKELY(!host.startsWith(QLatin1String("autoconfig")))) {
         c->res()->setBody(c->translate("Autoconfig", "Access to this URL is only allowed with the appropriate target host."));
-        c->res()->setStatus(Response::Unauthorized);
+        c->res()->setStatus(Response::Forbidden);
         return;
     }
 
@@ -76,6 +76,7 @@ void Autoconfig::index(Context *c)
     const QString username = q.next() ? q.value(0).toString() : QString();
 
     if (username.isEmpty()) {
+        qCWarning(SK_AUTOCONFIG, "Autoconfiguration requested for unknown email address %s from %s", qUtf8Printable(email), qUtf8Printable(c->req()->addressString()));
         c->res()->setBody(c->translate("Autoconfig", "Email address not found."));
         c->res()->setStatus(Response::NotFound);
         return;
