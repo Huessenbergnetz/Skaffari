@@ -296,4 +296,60 @@ void SettingsEditor::edit_autoconfig_server(Context *c, const QString &id)
              });
 }
 
+void SettingsEditor::remove_autoconfig_server(Context *c, const QString &id)
+{
+    const bool isAjax = c->req()->xhr();
+
+    if (Utils::ajaxPostOnly(c, isAjax)) {
+        return;
+    }
+
+    bool ok = true;
+    const dbid_t serverId = Utils::strToDbid(id, &ok, c->translate("SettingsEditor", "Invalid autoconfig server ID."), c);
+    if (Q_UNLIKELY(!ok)) {
+        return;
+    }
+
+    SkaffariError e(c);
+    AutoconfigServer server = AutoconfigServer::get(c, 0, serverId, e);
+    if (e.type() != SkaffariError::NoError) {
+        e.toStash(c, true);
+        return;
+    }
+
+    QJsonObject json;
+
+    if (c->req()->isPost()) {
+        if (Q_UNLIKELY(static_cast<quint32>(c->req()->bodyParam(QStringLiteral("serverId")).toUInt()) != serverId)) {
+            Utils::setError(c, json, c->translate("SettingsEditor", "Invalid autoconfig server ID."), Response::BadRequest);
+        } else {
+
+            SkaffariError removeError(c);
+            if (Q_LIKELY(server.remove(c, removeError))) {
+                const QString statusMsg = c->translate("SettingsEditor", "Successfully removed global autoconfig server “%1” (ID: %2)").arg(server.hostname(), QString::number(server.id()));
+                if (isAjax) {
+                    json.insert(QStringLiteral("status_msg"), statusMsg);
+                    json.insert(QStringLiteral("server_hostname"), server.hostname());
+                    json.insert(QStringLiteral("server_id"), static_cast<qint64>(server.id()));
+                    json.insert(QStringLiteral("server_domain_id"), 0);
+                } else {
+                    c->res()->redirect(c->uriForAction(QStringLiteral("/settings/autoconfig"), QStringList(), QStringList(), StatusMessage::statusQuery(c, statusMsg)));
+                    return;
+                }
+            } else {
+                Utils::setError(c, json, removeError);
+            }
+        }
+    }
+
+    if (isAjax) {
+        c->res()->setJsonObjectBody(json);
+    } else {
+        c->stash({
+                     {QStringLiteral("template"), QStringLiteral("settings/remove_autoconfig_server.html")},
+                     {QStringLiteral("server"), QVariant::fromValue<AutoconfigServer>(server)}
+                 });
+    }
+}
+
 #include "moc_settingseditor.cpp"

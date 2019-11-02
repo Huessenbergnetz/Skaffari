@@ -47,6 +47,9 @@ public:
     C_ATTR(edit_autoconfig_server, :Local :Args(1))
     void edit_autoconfig_server(Context *c, const QString &id);
 
+    C_ATTR(remove_autoconfig_server, :Local :Args(1))
+    void remove_autoconfig_server(Context *c, const QString &id);
+
 private:
     C_ATTR(Auto, :Private)
     bool Auto(Context *c);
