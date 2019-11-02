@@ -1,0 +1,36 @@
+<div class="row justify-content-center">
+    <div class="col-12 col-sm-12 col-md-8 col-lg-6">
+        <div class="card border-danger text-center">
+            <div class="card-body">
+                <i class="fas fa-exclamation-triangle fa-5x text-danger"></i>
+                <h2 class="card-title">{{ server.hostname }} <small class="text-muted">(ID: {{ server.id }})</small></h2>
+                <p class="card-text text-warning">{% i18n "Are you sure you want to remove this global autoconfig server?" %}</p>
+                <dl>
+                    <dt>{% i18nc "Autoconfig server type" "Type" %}</dt>
+                    <dd>{% with server.type as value %}{% include "inc/parts/autoconfigservertype.html" %}{% endwith %}</dd>
+
+                    <dt>{% i18nc "Autoconfig server port" "Port" %}</dt>
+                    <dd>{{ server.port }}</dd>
+
+                    <dt>{% i18nc "Autoconfig server socket type" "Socket type" %}</dt>
+                    <dd>{% with server.socketType as value %}{% include "inc/parts/autoconfigserversockettype.html" %}{% endwith %}</dd>
+
+                    <dt>{% i18nc "Autoconfig server authentication method" "Authentication" %}</dt>
+                    <dd>{% with server.authentication as value %}{% include "inc/parts/autoconfigserverauthentication.html" %}{% endwith %}</dd>
+
+                    <dt>{% i18nc "Autoconfig server sorting value" "Sorting value" %}</dt>
+                    <dd>{{ server.sorting }}</dd>
+                </dl>
+                <form method="post">
+                    {% c_csrf_token %}
+                    <input type="hidden" id="serverId" name="serverId" value="{{ server.id }}" required="required" />
+                    <div>
+                        <a class="btn btn-secondary" href="/account/autoconfig" role="button"><i class="fas fa-times"></i> {{ _("Cancel") }}</a>
+                        <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> {{ _("Remove") }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
