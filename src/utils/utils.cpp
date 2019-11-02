@@ -146,3 +146,20 @@ dbid_t Utils::strToDbid(const QString &str, bool *ok, const QString &errorMsg, C
     }
     return val;
 }
+
+void Utils::setError(Cutelyst::Context *c, QJsonObject &json, const QString &errorMsg, Cutelyst::Response::HttpStatus status)
+{
+    Q_ASSERT_X(c, "set error", "invalid context object");
+
+    if (c->req()->xhr()) {
+        json.insert(QStringLiteral("error_msg"), errorMsg);
+    } else {
+        c->setStash(QStringLiteral("error_msg"), errorMsg);
+    }
+    c->res()->setStatus(status);
+}
+
+void Utils::setError(Cutelyst::Context *c, QJsonObject &json, const SkaffariError &error)
+{
+    Utils::setError(c, json, error.errorText(), error.status());
+}

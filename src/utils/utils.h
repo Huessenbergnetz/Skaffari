@@ -19,15 +19,17 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include "../../common/global.h"
 #include <QDateTime>
 #include <Cutelyst/ParamsMultiMap>
-#include "../../common/global.h"
+#include <Cutelyst/Response>
 
 namespace Cutelyst {
 class Context;
 }
 
 class QJsonObject;
+class SkaffariError;
 
 /*!
  * \ingroup skaffaricore
@@ -87,6 +89,35 @@ public:
      * \return The string converted into database ID type dbid_t. Returns \c 0 if the conversion fails.
      */
     static dbid_t strToDbid(const QString &str, bool *ok = nullptr, const QString &errorMsg = QString(), Cutelyst::Context *c = nullptr);
+
+    /*!
+     * \brief Sets error data depending on request type.
+     *
+     * If Cutelyst::Request::xhr() returns \c true, the \a errorMsg will be put into
+     * the \a json object with the key “error_msg“. Otherwise it will be put into the
+     * context stash with the key “error_msg“.
+     *
+     * \param c         Pointer to the current context.
+     * \param json      JSON object used if request is xhr.
+     * \param errorMsg  The error message to set.
+     * \param status    The response status code to set.
+     */
+    static void setError(Cutelyst::Context *c, QJsonObject &json, const QString &errorMsg, Cutelyst::Response::HttpStatus status);
+
+    /*!
+     * \brief Sets \a error data depending on request type.
+     *
+     * If Cutelyst::Request::xhr() returns \c true, the SkaffariError::errorText() of \a error
+     * will be put into the \a json object with the key “error_msg“. Otherwise it will be put into the
+     * context stash with the key “error_msg“.
+     *
+     * Additionally the response status will be set to the return value of SkaffariError::status().
+     *
+     * \param c     Pointer to the current context.
+     * \param json  JSON object used if request is xhr.
+     * \param error The error object to the get text and status from.
+     */
+    static void setError(Cutelyst::Context *c, QJsonObject &json, const SkaffariError &error);
 
 private:
     // prevent construction
