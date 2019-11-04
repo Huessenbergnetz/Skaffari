@@ -2,19 +2,42 @@
 
 PRJNAME=skaffari
 
-if [ ! $1 ]
+if [ $# -lt 2 ]
+then
+    echo "Missing version and output directory"
+    exit 1
+fi
+
+VERSION=$1
+shift
+OUTPUTDIR=$1
+shift
+
+RUNNPM=1
+SIGNTARBALL=1
+
+if [ -z $VERSION ]
 then
     echo "Missing version";
     exit 1;
 fi
 
-if [ ! "$2" ]
+if [ -z $OUTPUTDIR ]
 then
     echo "Missing output directory";
     exit 2;
 fi
 
-DIR="/tmp/${PRJNAME}-${1}"
+while [ -n "$1" ]
+do
+    case $1 in
+        --no-npm) RUNNPM=0;;
+        --no-signing) SIGNTARBALL=0;;
+    esac
+    shift
+done
+
+DIR="/tmp/${PRJNAME}-${VERSION}"
 
 compasset() {
     FILE=$1
@@ -44,10 +67,13 @@ cp -r static ${DIR}/templates
 for TMPL in default
 do
     pushd $TMPL
-    npm run prod
-    pushd static
-    find $PWD -type f -name "*.css" -o -type f -name "*.js" -o -type f -name "*.json" | parallel compasset
-    popd
+    if [ $RUNNPM -gt 0 ]
+    then
+        npm run prod
+        pushd static
+        find $PWD -type f -name "*.css" -o -type f -name "*.js" -o -type f -name "*.json" | parallel compasset
+        popd
+    fi
     mkdir ${DIR}/templates/${TMPL}
     cp metadata.json ${DIR}/templates/${TMPL}
     cp CMakeLists.txt ${DIR}/templates/${TMPL}
@@ -70,14 +96,16 @@ do
 done
 
 pushd /tmp
-rm -f "${2}/${PRJNAME}-${1}.tar.xz"
-rm -f "${2}/${PRJNAME}-${1}.tar.gz"
-tar -cJf "${2}/${PRJNAME}-${1}.tar.xz" ${PRJNAME}-${1}
-tar -czf "${2}/${PRJNAME}-${1}.tar.gz" ${PRJNAME}-${1}
-rm -rf ${PRJNAME}-${1}
+rm -f "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.xz"
+rm -f "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz"
+tar -cJf "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.xz" ${PRJNAME}-${VERSION}
+tar -czf "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz" ${PRJNAME}-${VERSION}
+rm -rf ${PRJNAME}-${VERSION}
 popd
 
-gpg --armor --detach-sign --yes --default-key 3A70A936614C3258 "${2}/${PRJNAME}-${1}.tar.xz"
-gpg --armor --detach-sign --yes --default-key 3A70A936614C3258 "${2}/${PRJNAME}-${1}.tar.gz"
-
+if [ $SIGNTARBALL -gt 0 ]
+then
+    gpg --armor --detach-sign --yes --default-key 3A70A936614C3258 "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.xz"
+    gpg --armor --detach-sign --yes --default-key 3A70A936614C3258 "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz"
+fi
 exit 0
