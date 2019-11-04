@@ -222,14 +222,15 @@ void SettingsEditor::add_autoconfig_server(Context *c)
 
     HelpHash help;
     help.reserve(6);
-    help.insert(QStringLiteral("type"), HelpEntry(c->translate("SettingsEditor", "Type"), c->translate("SettingsEditor", "")));
-    help.insert(QStringLiteral("hostname"), HelpEntry(c->translate("SettingsEditor", "Hostname"), c->translate("SettingsEditor", "")));
-    help.insert(QStringLiteral("port"), HelpEntry(c->translate("SettingsEditor", "Port"), c->translate("SettingsEditor", "")));
-    help.insert(QStringLiteral("socketType"), HelpEntry(c->translate("SettingsEditor", "Socket type"), c->translate("SettingsEditor", "")));
-    help.insert(QStringLiteral("authentication"), HelpEntry(c->translate("SettingsEditor", "Authentication"), c->translate("SettingsEditor", "")));
-    help.insert(QStringLiteral("sorting"), HelpEntry(c->translate("SettingsEditor", "Sorting value"), c->translate("SettingsEditor", "")));
+    help.insert(QStringLiteral("type"), HelpEntry(c->translate("SettingsEditor", "Type"), c->translate("SettingsEditor", "The type of the server.")));
+    help.insert(QStringLiteral("hostname"), HelpEntry(c->translate("SettingsEditor", "Hostname"), c->translate("SettingsEditor", "The hostname of the server.")));
+    help.insert(QStringLiteral("port"), HelpEntry(c->translate("SettingsEditor", "Port"), c->translate("SettingsEditor", "The network port of this server.")));
+    help.insert(QStringLiteral("socketType"), HelpEntry(c->translate("SettingsEditor", "Socket type"), c->translate("SettingsEditor", "The socket type used to connect to this server.")));
+    help.insert(QStringLiteral("authentication"), HelpEntry(c->translate("SettingsEditor", "Authentication"), c->translate("SettingsEditor", "The authentication method used to connect to thsi server.")));
+    help.insert(QStringLiteral("sorting"), HelpEntry(c->translate("SettingsEditor", "Sorting value"), c->translate("SettingsEditor", "The sorting value used to sort the servers in the generated autoconfig/autodiscover file. Lower values come first.")));
 
     c->stash({
+                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)},
                  {QStringLiteral("site_title"), c->translate("SettingsEditor", "Add global autoconfig server")},
                  {QStringLiteral("template"),   QStringLiteral("settings/add_autoconfig_server.html")}
              });
@@ -282,14 +283,15 @@ void SettingsEditor::edit_autoconfig_server(Context *c, const QString &id)
 
     HelpHash help;
     help.reserve(6);
-    help.insert(QStringLiteral("type"), HelpEntry(c->translate("SettingsEditor", "Type"), c->translate("SettingsEditor", "")));
-    help.insert(QStringLiteral("hostname"), HelpEntry(c->translate("SettingsEditor", "Hostname"), c->translate("SettingsEditor", "")));
-    help.insert(QStringLiteral("port"), HelpEntry(c->translate("SettingsEditor", "Port"), c->translate("SettingsEditor", "")));
-    help.insert(QStringLiteral("socketType"), HelpEntry(c->translate("SettingsEditor", "Socket type"), c->translate("SettingsEditor", "")));
-    help.insert(QStringLiteral("authentication"), HelpEntry(c->translate("SettingsEditor", "Authentication"), c->translate("SettingsEditor", "")));
-    help.insert(QStringLiteral("sorting"), HelpEntry(c->translate("SettingsEditor", "Sorting value"), c->translate("SettingsEditor", "")));
+    help.insert(QStringLiteral("type"), HelpEntry(c->translate("SettingsEditor", "Type"), c->translate("SettingsEditor", "The type of the server.")));
+    help.insert(QStringLiteral("hostname"), HelpEntry(c->translate("SettingsEditor", "Hostname"), c->translate("SettingsEditor", "The hostname of the server.")));
+    help.insert(QStringLiteral("port"), HelpEntry(c->translate("SettingsEditor", "Port"), c->translate("SettingsEditor", "The network port of this server.")));
+    help.insert(QStringLiteral("socketType"), HelpEntry(c->translate("SettingsEditor", "Socket type"), c->translate("SettingsEditor", "The socket type used to connect to this server.")));
+    help.insert(QStringLiteral("authentication"), HelpEntry(c->translate("SettingsEditor", "Authentication"), c->translate("SettingsEditor", "The authentication method used to connect to thsi server.")));
+    help.insert(QStringLiteral("sorting"), HelpEntry(c->translate("SettingsEditor", "Sorting value"), c->translate("SettingsEditor", "The sorting value used to sort the servers in the generated autoconfig/autodiscover file. Lower values come first.")));
 
     c->stash({
+                 {QStringLiteral("help"), QVariant::fromValue<HelpHash>(help)},
                  {QStringLiteral("server"), QVariant::fromValue<AutoconfigServer>(server)},
                  {QStringLiteral("site_title"), c->translate("SettingsEditor", "Add global autoconfig server")},
                  {QStringLiteral("template"),   QStringLiteral("settings/edit_autoconfig_server.html")}
