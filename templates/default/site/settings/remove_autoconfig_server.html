@@ -25,7 +25,7 @@
                     {% c_csrf_token %}
                     <input type="hidden" id="serverId" name="serverId" value="{{ server.id }}" required="required" />
                     <div>
-                        <a class="btn btn-secondary" href="/account/autoconfig" role="button"><i class="fas fa-times"></i> {{ _("Cancel") }}</a>
+                        <a class="btn btn-secondary" href="/settings/autoconfig" role="button"><i class="fas fa-times"></i> {{ _("Cancel") }}</a>
                         <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> {{ _("Remove") }}</button>
                     </div>
                 </form>
