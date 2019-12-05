@@ -105,7 +105,7 @@ popd
 
 if [ $SIGNTARBALL -gt 0 ]
 then
-    gpg --armor --detach-sign --yes --default-key 3A70A936614C3258 "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.xz"
-    gpg --armor --detach-sign --yes --default-key 3A70A936614C3258 "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz"
+    gpg --armor --detach-sign --yes --default-key 6607CA3F41B25F45 --output "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.xz.sig" "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.xz"
+    gpg --armor --detach-sign --yes --default-key 6607CA3F41B25F45 --output "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz.sig" "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz"
 fi
 exit 0
