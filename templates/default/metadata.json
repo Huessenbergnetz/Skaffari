@@ -100,12 +100,12 @@
         },
         {
             "name": "JavaScript Cookie",
-            "version": "2.2.0",
+            "version": "2.2.1",
             "url": "https://github.com/js-cookie/js-cookie",
             "author": "Fagner Brack",
             "authorUrl": "https://about.me/fagnerbrack",
             "license": "MIT License",
-            "licenseUrl": "https://github.com/js-cookie/js-cookie/blob/v2.2.0/LICENSE"
+            "licenseUrl": "https://github.com/js-cookie/js-cookie/blob/v2.2.1/LICENSE"
         }
     ],
     "config": {
