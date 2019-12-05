@@ -6,4 +6,4 @@ chown_socket=@SKAFFARI_SOCKET_USER@:@SKAFFARI_SOCKET_GROUP@
 socket_access=ug
 
 [Rules]
-*debug=false
+*.debug=false
