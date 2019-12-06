@@ -15,6 +15,8 @@ ExecStop=@CUTELYST_WSGI_EXECUTABLE@ --stop @SKAFFARI_PID_FILE@
 NotifyAccess=all
 RuntimeDirectory=skaffari
 PrivateTmp=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 
 [Install]
 WantedBy=multi-user.target
