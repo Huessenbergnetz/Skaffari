@@ -14,6 +14,7 @@ ExecStart=@CUTELYST_WSGI_EXECUTABLE@ -M -a @SKAFFARI_APP_FILE@ --ini @SKAFFARI_I
 ExecStop=@CUTELYST_WSGI_EXECUTABLE@ --stop @SKAFFARI_PID_FILE@
 NotifyAccess=all
 RuntimeDirectory=skaffari
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
