@@ -47,7 +47,7 @@ set(APACHE_VHOSTS_DIR "${CMAKE_INSTALL_SYSCONFDIR}/apache2/vhosts.d" CACHE PATH 
 set(Grantlee5_MAJOR_MINOR_VERSION_STRING "${Grantlee5_VERSION_MAJOR}.${Grantlee5_VERSION_MINOR}" )
 set(GRANTLEE_PLUGIN_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/grantlee/${Grantlee5_MAJOR_MINOR_VERSION_STRING} )
 
-option(INSTALL_SUPPLEMENTARY_FILES "Install systemd service and timer files as well as tmpfiles and apache example config" OFF)
+option(INSTALL_SUPPLEMENTARY_FILES "Install systemd service and timer files as well as apache example config" OFF)
 
 option(ENABLE_WKD "Enable support for Web Key Directory" OFF)
 if (ENABLE_WKD)
