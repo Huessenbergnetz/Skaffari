@@ -4,6 +4,8 @@
 
 {% i18nc_var "Datetime format string to display created and updated times on edit pages" "MMMM d, yyyy hh:mmap" as dtFormatString %}
 {% i18nc_var "Placeholder for datetime inputs, shown to the user as a hint how to input datetimes" "YYYY-MM-DDTHH:mm" as dtFormatPlaceholder %}
+{% i18nc_var "Placeholder for date inputs, shown to the user as a hint how to input dates" "YYYY-MM-DD" as dateFormatPlaceholder %}
+{% i18nc_var "Placeholder for time inputs, shown to the user as a hint how to input times" "HH:mm" as timeFormatPlaceholder %}
 
 <form method="post">
 
@@ -24,13 +26,27 @@
                 <small id="updatedDesc" class="form-text text-muted">{{ help.updated.text }}</small>
             </div>
 
-            <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
-                <label class="col-form-label" for="validUntil">{{ help.validUntil.title }}</label>
-                <input type="datetime-local" id="validUntil" name="validUntil" class="form-control{% if validationErrors.validUntil.count %} is-invalid{% endif %}" placeholder="{{ dtFormatPlaceholder }}" value="{% sk_tzc validUntil|default_if_none:account.validUntil "yyyy-MM-ddTHH:mm" %}" aria-describedby="validUntilDesc" pattern="^(2\d{3})-(0[1-9]|1[012])-(31|30|0[1-9]|[12][0-9])T([01][0-9]|2[0-3]):([0-5][0-9])$" required="required" />
-                {% if validationErrors.validUntil.count %}<div class="invalid-feedback"><small>{{ validationErrors.validUntil.0 }}</small></div>{% endif %}
-                <small id="validUntilDesc" class="form-text text-muted">{{ help.validUntil.text }}</small>
-            </div>
+            <div class="col-12 col-sm-12 col-md-6 col-lg-4">
+                <div class="form-row">
 
+                    <div class="form-group col-8 mb-0">
+                        <label class="col-form-label" for="validUntilDate">{{ help.validUntilDate.title }}</label>
+                        <input type="date" id="validUntilDate" name="validUntilDate" class="form-control{% if validationErrors.validUntilDate.count %} is-invalid{% endif %}" placeholder="{{ dateFormatPlaceholder }}" value="{% sk_tzc validUntilDate|default_if_none:account.validUntil "yyyy-MM-dd" %}" aria-describedby="validUntilDesc" required="required" max="{% sk_tzc maxValidUntil "yyyy-MM-dd" %}" />
+                    </div>
+
+                    <div class="form-group col-4 mb-0">
+                        <label class="col-form-label" for="validUntilTime">{% i18nc "Label for the valid until time field" "Time" %}</label>
+                        <input type="time" id="validUntilTime" name="validUntilTime" class="form-control{% if validationErrors.validUntilTime.count %} is-invalid{% endif %}" placeholder="{{ timeFormatPlaceholder }}" value="{% sk_tzc validUntilTime|default_if_none:account.validUntil "HH:mm" %}" aria-describedby="validUntilDesc" required="required"/>
+                    </div>
+
+                    <div class="col-12 mb-3">
+                        {% if validationErrors.validUntilDate.count %}<div class="invalid-feedback"><small>{{ validationErrors.validUntilDate.0 }}</small></div>{% endif %}
+                        {% if validationErrors.validUntilTime.count %}<div class="invalid-feedback"><small>{{ validationErrors.validUntilTime.0 }}</small></div>{% endif %}
+                        <small id="validUntilDesc" class="form-text text-muted">{{ help.validUntil.text }}</small>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </fieldset>
 
@@ -39,23 +55,47 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="passsword">{{ help.password.title }}</label>
-                <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ _("Password") }}" aria-describedby="passwordDesc">
+                <input type="password" id="password" name="password" class="form-control{% if validationErrors.password.count %} is-invalid{% endif %}" placeholder="{{ _("Password") }}" aria-describedby="passwordDesc" autocomplete="new-password">
                 {% if validationErrors.password.count %}<div class="invalid-feedback"><small>{{ validationErrors.password.0 }}</small></div>{% endif %}
                 <small id="passwordDesc" class="form-text text-muted">{{ help.password.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                  <label class="col-form-label" for="password_confirmation">{{ help.password_confirmation.title }}</label>
-                 <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ _("Password confirmation") }}" aria-describedby="passwordConfirmDesc">
+                 <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="{{ _("Password confirmation") }}" aria-describedby="passwordConfirmDesc" autocomplete="new-password">
                  <small id="passwordConfirmDesc" class="form-text text-muted">{{ help.password_confirmation.text }}</small>
             </div>
 
+            <div class="col-12 col-sm-12 col-md-6 col-lg-4">
+                <div class="form-row">
+
+                    <div class="form-group col-8 mb-0">
+                        <label class="col-form-label" for="passwordExpiresDate">{{ help.passwordExpiresDate.title }}</label>
+                        <input type="date" id="passwordExpiresDate" name="passwordExpiresDate" class="form-control{% if validationErrors.passwordExpiresDate.count %} is-invalid{% endif %}" placeholder="{{ dateFormatPlaceholder }}" value="{% sk_tzc passwordExpiresDate|default_if_none:account.passwordExpires "yyyy-MM-dd" %}" aria-describedby="passwordExpiresDesc" required="required" />
+                    </div>
+
+                    <div class="form-group col-4 mb-0">
+                        <label class="col-form-label" for="passwordExpiresTime">{% i18nc "Label for the password expires time field" "Time" %}</label>
+                        <input type="time" id="passwordExpiresTime" name="passwordExpiresTime" class="form-control{% if validationErrors.passwordExpiresTime.count %} is-invalid{% endif %}" placeholder="{{ timeFormatPlaceholder }}" value="{% sk_tzc passwordExpiresTime|default_if_none:account.passwordExpires "HH:mm" %}" aria-describedby="passwordExpiresDesc" required="required"/>
+                    </div>
+
+                    <div class="col-12 mb-3">
+                        {% if validationErrors.passwordExpiresDate.count %}<div class="invalid-feedback"><small>{{ validationErrors.passwordExpiresDate.0 }}</small></div>{% endif %}
+                        {% if validationErrors.passwordExpiresTime.count %}<div class="invalid-feedback"><small>{{ validationErrors.passwordExpiresTime.0 }}</small></div>{% endif %}
+                        <small id="passwordExpiresDesc" class="form-text text-muted">{{ help.passwordExpires.text }}</small>
+                    </div>
+
+                </div>
+            </div>
+
+<!--
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="passwordExpires">{{ help.passwordExpires.title }}</label>
                 <input type="datetime-local" id="passwordExpires" name="passwordExpires" class="form-control{% if validationErrors.passwordExpires.count %} is-invalid{% endif %}" placeholder="{{ dtFormatPlaceholder }}" value="{% sk_tzc passwordExpires|default_if_none:account.passwordExpires "yyyy-MM-ddTHH:mm" %}" aria-describedby="passwordExpiresDesc" pattern="^(2\d{3})-(0[1-9]|1[012])-(31|30|0[1-9]|[12][0-9])T([01][0-9]|2[0-3]):([0-5][0-9])$" required="required" />
                 {% if validationErrors.passwordExpires.count %}<div class="invalid-feedback"><small>{{ validationErrors.passwordExpires.0 }}</small></div>{% endif %}
                 <small id="passwordExpiresDesc" class="form-text text-muted">{{ help.passwordExpires.text }}</small>
             </div>
+-->
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="quota" class="col-form-label">{{ help.quota.title }}</label>
