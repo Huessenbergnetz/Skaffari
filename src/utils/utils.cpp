@@ -29,6 +29,7 @@
 #include <QJsonObject>
 #include <cmath>
 #include <limits>
+#include <QDebug>
 
 Utils::Utils()
 {
@@ -162,4 +163,31 @@ void Utils::setError(Cutelyst::Context *c, QJsonObject &json, const QString &err
 void Utils::setError(Cutelyst::Context *c, QJsonObject &json, const SkaffariError &error)
 {
     Utils::setError(c, json, error.errorText(), error.status());
+}
+
+QDateTime Utils::dateTimeFromDateAndTime(Cutelyst::Context *c, const QVariantHash &params, const QString &dateTimeKey, const QString &dateKey, const QString &timeKey, const QDateTime &defaultDt)
+{
+    QDateTime dt;
+
+    if (params.contains(dateKey)) {
+        const QDate date = params.value(dateKey).toDate();
+        if (date.isValid()) {
+            QTime time = params.value(timeKey).toTime();
+            if (!time.isValid()) {
+                time = QTime(0, 0);
+            }
+            dt.setDate(date);
+            dt.setTime(time);
+
+            const QTimeZone userTz(Cutelyst::Session::value(c, QStringLiteral("tz"), QStringLiteral("UTC")).toByteArray());
+            dt.setTimeZone(userTz);
+            qInfo() << dt;
+        }
+    }
+
+    if (!dt.isValid()) {
+        dt = params.value(dateTimeKey, defaultDt).toDateTime();
+    }
+
+    return dt;
 }

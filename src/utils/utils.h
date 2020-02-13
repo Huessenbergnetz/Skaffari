@@ -119,6 +119,28 @@ public:
      */
     static void setError(Cutelyst::Context *c, QJsonObject &json, const SkaffariError &error);
 
+    /*!
+     * \brief Extracts date and time form input parameters.
+     *
+     * This is a helper function to get a QDateTime from input parameters \a params where it is not sure
+     * wether a datetime input field is used or separate input fields for date and time. It will
+     * first check if an input field with the name of \a dateKey is available. If that is available,
+     * the content will be used together with the optional content of the field with the name of
+     * \a timeKey. If no field with \a dateKey is available, the date and time will be get from a
+     * field named by the \a dateTimeKey. As fallback, the value of \a defaultDt will be used.
+     *
+     * The returned QDateTime will be set to the current user’s time zone.
+     *
+     * \param c             Pointer to the current context, used to the the current user’s time zone.
+     * \param params        The input parameters to the the date and time values from.
+     * \param dateTimeKey   The key under that a combined date and time value is stored in the params.
+     * \param dateKey       The key under that a pure date value is stored in the params.
+     * \param timeKey       The key under that a pure time value is stored in the params.
+     * \param defaultDt     The fallback default date and time value.
+     * \return A QDateTime from the input parameters set to the time zone of the current user.
+     */
+    static QDateTime dateTimeFromDateAndTime(Cutelyst::Context *c, const QVariantHash &params, const QString &dateTimeKey, const QString &dateKey, const QString &timeKey, const QDateTime &defaultDt);
+
 private:
     // prevent construction
     Utils();
