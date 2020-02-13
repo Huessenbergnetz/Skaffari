@@ -135,7 +135,7 @@ ABBREVIATE_BRIEF       = "The $name class" \
 # description.
 # The default value is: NO.
 
-ALWAYS_DETAILED_SEC    = NO
+ALWAYS_DETAILED_SEC    = YES
 
 # If the INLINE_INHERITED_MEMB tag is set to YES, doxygen will show all
 # inherited members of a class in the documentation of that class as if those
@@ -2128,10 +2128,10 @@ SKIP_FUNCTION_MACROS   = YES
 # the path). If a tag file is not located in the directory in which doxygen is
 # run, you must also specify the path to the tagfile here.
 
-TAGFILES               = /usr/share/doc/packages/qt5/cutelyst/cutelyst.tags=http://api.cutelyst.org \
-                         /usr/share/doc/packages/qt5/qtcore/qtcore.tags=http://doc.qt.io/qt-5.6/ \
-                         /usr/share/doc/packages/qt5/qtnetwork/qtnetwork.tags=http://doc.qt.io/qt-5.6/ \
-                         /usr/share/doc/packages/qt5/qtsql/qtsql.tags=http://doc.qt.io/qt-5.6/ \
+TAGFILES               = /usr/share/doc/packages/qt5/cutelyst2/cutelyst2.tags=http://api.cutelyst.org \
+                         /usr/share/doc/packages/qt5/qtcore/qtcore.tags=http://doc.qt.io/qt-5/ \
+                         /usr/share/doc/packages/qt5/qtnetwork/qtnetwork.tags=http://doc.qt.io/qt-5/ \
+                         /usr/share/doc/packages/qt5/qtsql/qtsql.tags=http://doc.qt.io/qt-5/ \
                          /usr/local/share/doc/libstdc++.tag=https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create a
@@ -2152,7 +2152,7 @@ ALLEXTERNALS           = NO
 # listed.
 # The default value is: YES.
 
-EXTERNAL_GROUPS        = YES
+EXTERNAL_GROUPS        = NO
 
 # If the EXTERNAL_PAGES tag is set to YES, all external pages will be listed in
 # the related pages index. If set to NO, only the current project's pages will
