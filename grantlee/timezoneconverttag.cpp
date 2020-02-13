@@ -73,7 +73,12 @@ void TimeZoneConvert::render(Grantlee::OutputStream *stream, Grantlee::Context *
         *stream << dtVar.toString();
         return;
     } else {
-        if (dtVar.userType() != QVariant::DateTime) {
+        switch (dtVarType) {
+        case QVariant::DateTime:
+        case QVariant::Date:
+        case QVariant::Time:
+            break;
+        default:
             qWarning("%s", "sk_tzc can only operate on QDateTime values.");
             return;
         }
@@ -100,15 +105,6 @@ void TimeZoneConvert::render(Grantlee::OutputStream *stream, Grantlee::Context *
         return;
     }
 
-    QDateTime dtVal = dtVar.toDateTime();
-
-    const QTimeZone userTz = Cutelyst::Session::value(c, QStringLiteral("timeZone"), QVariant::fromValue<QTimeZone>(QTimeZone::utc())).value<QTimeZone>();
-
-    if (userTz != QTimeZone::utc()) {
-        dtVal.setTimeSpec(Qt::UTC);
-        dtVal = dtVal.toTimeZone(userTz);
-    }
-
     QString formatString;
     if (m_format.isValid()) {
         const QVariant formatVar = m_format.resolve(gc);
@@ -120,11 +116,45 @@ void TimeZoneConvert::render(Grantlee::OutputStream *stream, Grantlee::Context *
         }
     }
 
-    if (formatString.isEmpty()) {
-        *stream << c->locale().toString(dtVal, QLocale::ShortFormat);
-    } else {
-        *stream << c->locale().toString(dtVal, formatString);
+    if (dtVarType == QVariant::DateTime) {
+
+        QDateTime dtVal = dtVar.toDateTime();
+
+        const QTimeZone userTz = Cutelyst::Session::value(c, QStringLiteral("timeZone"), QVariant::fromValue<QTimeZone>(QTimeZone::utc())).value<QTimeZone>();
+
+        if (userTz != QTimeZone::utc()) {
+            dtVal.setTimeSpec(Qt::UTC);
+            dtVal = dtVal.toTimeZone(userTz);
+        }
+
+        if (formatString.isEmpty()) {
+            *stream << c->locale().toString(dtVal, QLocale::ShortFormat);
+        } else {
+            *stream << c->locale().toString(dtVal, formatString);
+        }
+
+    } else if (dtVarType == QVariant::Date) {
+
+        const QDate dateVal = dtVar.toDate();
+
+        if (formatString.isEmpty()) {
+            *stream << c->locale().toString(dateVal, QLocale::ShortFormat);
+        } else {
+            *stream << c->locale().toString(dateVal, formatString);
+        }
+
+    } else if (dtVarType == QVariant::Time) {
+
+        const QTime timeVal = dtVar.toTime();
+
+        if (formatString.isEmpty()) {
+            *stream << c->locale().toString(timeVal, QLocale::ShortFormat);
+        } else {
+            *stream << c->locale().toString(timeVal, formatString);
+        }
+
     }
+
 }
 
 #include "moc_timezoneconverttag.cpp"
