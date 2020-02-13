@@ -550,10 +550,10 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
 
     const quota_size_t quota = (p.value(QStringLiteral("quota")).value<quota_size_t>() / Q_UINT64_C(1024));
 
-    const QDateTime defDateTime(QDate(2999, 12, 31), QTime(0, 0), QTimeZone::utc());
+    const QDateTime defDateTime(QDate(2998, 12, 31), QTime(0, 0), QTimeZone::utc());
     const QDateTime currentUtc  = QDateTime::currentDateTimeUtc();
-    const QDateTime validUntil  = p.value(QStringLiteral("validUntil"), defDateTime).toDateTime().toUTC();
-    const QDateTime pwExpires   = p.value(QStringLiteral("passwordExpires"), defDateTime).toDateTime().toUTC();
+    const QDateTime validUntil      = Utils::dateTimeFromDateAndTime(c, p, QStringLiteral("validUntil"), QStringLiteral("validUntilDate"), QStringLiteral("validUntilTime"), defDateTime).toUTC();
+    const QDateTime pwExpires       = Utils::dateTimeFromDateAndTime(c, p, QStringLiteral("passwordExpires"), QStringLiteral("passwordExpiresDate"), QStringLiteral("passwordExpiresTime"), defDateTime).toUTC();
 
     const quint8 accountStatus = Account::calcStatus(validUntil, pwExpires);
 
@@ -1318,8 +1318,8 @@ bool Account::update(Cutelyst::Context *c, SkaffariError &e, Domain *dom, const 
         }
     }
 
-    const QDateTime validUntil      = p.value(QStringLiteral("validUntil"), d->validUntil).toDateTime().toUTC();
-    const QDateTime pwExpires       = p.value(QStringLiteral("passwordExpires"), d->passwordExpires).toDateTime().toUTC();
+    const QDateTime validUntil      = Utils::dateTimeFromDateAndTime(c, p, QStringLiteral("validUntil"), QStringLiteral("validUntilDate"), QStringLiteral("validUntilTime"), d->validUntil).toUTC();
+    const QDateTime pwExpires       = Utils::dateTimeFromDateAndTime(c, p, QStringLiteral("passwordExpires"), QStringLiteral("passwordExpiresDate"), QStringLiteral("passwordExpiresTime"), d->passwordExpires).toUTC();
     const QDateTime currentTimeUtc  = QDateTime::currentDateTimeUtc();
 
     const bool imap         = p.value(QStringLiteral("imap")).toBool();

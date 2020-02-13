@@ -76,6 +76,7 @@ class SkaffariError;
  * transport               | QString                    | transport()
  * updated                 | QDateTime                  | updated()
  * autoconfig              | Domain::AutoconfigStrategy | autoconfig()
+ * validUntil              | QDateTime                  | validUntil()
  */
 class Domain
 {
@@ -536,6 +537,8 @@ if (property == QLatin1String("id")) {
     return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::Archive));
 } else if (property == QLatin1String("otherFolders")) {
     return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::SkaffariOtherFolders));
+} else if (property == QLatin1String("validUntil")) {
+    return QVariant(object.validUntil());
 }
 return QVariant();
 GRANTLEE_END_LOOKUP

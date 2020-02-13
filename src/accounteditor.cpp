@@ -34,10 +34,13 @@
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result
 #include <Cutelyst/Plugins/Utils/validatorconfirmed.h>
 #include <Cutelyst/Plugins/Utils/validatorrequired.h>
+#include <Cutelyst/Plugins/Utils/validatorrequiredwithout.h>
 #include <Cutelyst/Plugins/Utils/validatordatetime.h>
 #include <Cutelyst/Plugins/Utils/validatorboolean.h>
 #include <Cutelyst/Plugins/Utils/validatorfilesize.h>
 #include <Cutelyst/Plugins/Utils/validatormin.h>
+#include <Cutelyst/Plugins/Utils/validatortime.h>
+#include <Cutelyst/Plugins/Utils/validatordate.h>
 #ifdef CUTELYST_VALIDATOR_WITH_PWQUALITY
 #include <Cutelyst/Plugins/Utils/validatorpwquality.h>
 #endif
@@ -104,6 +107,8 @@ void AccountEditor::edit(Context* c)
         c->setStash(QStringLiteral("minQuota"), 0);
     }
 
+    const QDateTime maxValidDomainUserDateTime = Utils::toUserTZ(c, dom.validUntil());
+
     auto req = c->req();
 
     if (req->isPost()) {
@@ -111,6 +116,7 @@ void AccountEditor::edit(Context* c)
         c->setStash(QStringLiteral("_def_boolean"), false);
         c->setStash(QStringLiteral("_pwq_username"), acc.username());
         c->setStash(QStringLiteral("maxValidUntil"), dom.validUntil());
+        c->setStash(QStringLiteral("_maxValidUntilDate"), maxValidDomainUserDateTime.date());
 
         static Validator v({
                                new ValidatorConfirmed(QStringLiteral("password")),
@@ -119,10 +125,16 @@ void AccountEditor::edit(Context* c)
                    #else
                                new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::accPwMinlength()),
                    #endif
-                               new ValidatorRequired(QStringLiteral("validUntil")),
+                               new ValidatorRequiredWithout(QStringLiteral("validUntil"), {QStringLiteral("validUntilDate")}),
                                new ValidatorBefore(QStringLiteral("validUntil"), QStringLiteral("maxValidUntil"), QStringLiteral("userTz"), "yyyy-MM-ddTHH:mm"),
-                               new ValidatorRequired(QStringLiteral("passwordExpires")),
+                               new ValidatorRequiredWithout(QStringLiteral("validUntilDate"), {QStringLiteral("validUntil")}),
+                               new ValidatorBefore(QStringLiteral("validUntilDate"), QStringLiteral("_maxValidUntilDate"), QStringLiteral("userTz"), "yyyy-MM-dd"),
+                               new ValidatorTime(QStringLiteral("validUntilTime"), "HH:mm"),
+                               new ValidatorRequiredWithout(QStringLiteral("passwordExpires"), {QStringLiteral("passwordExpiresDate")}),
                                new ValidatorDateTime(QStringLiteral("passwordExpires"), QStringLiteral("userTz"), "yyyy-MM-ddTHH:mm"),
+                               new ValidatorRequiredWithout(QStringLiteral("passwordExpiresDate"), {QStringLiteral("passwordExpires")}),
+                               new ValidatorDate(QStringLiteral("passwordExpiresDate"), "yyyy-MM-dd"),
+                               new ValidatorTime(QStringLiteral("passwordExpiresTime"), "HH:mm"),
                                new ValidatorBoolean(QStringLiteral("imap"), ValidatorMessages(), QStringLiteral("_def_boolean")),
                                new ValidatorBoolean(QStringLiteral("pop"), ValidatorMessages(), QStringLiteral("_def_boolean")),
                                new ValidatorBoolean(QStringLiteral("sieve"), ValidatorMessages(), QStringLiteral("_def_boolean")),
@@ -149,7 +161,7 @@ void AccountEditor::edit(Context* c)
     }
 
     HelpHash help;
-    help.reserve(12);
+    help.reserve(15);
     help.insert(QStringLiteral("created"), HelpEntry(c->translate("AccountEditor", "Created"), c->translate("AccountEditor", "Date and time this user account was created.")));
     help.insert(QStringLiteral("updated"), HelpEntry(c->translate("AccountEditor", "Updated"), c->translate("AccountEditor", "Date and time this user account was last updated.")));
 
@@ -164,11 +176,24 @@ void AccountEditor::edit(Context* c)
     const int pwMinLength = static_cast<int>(SkaffariConfig::accPwMinlength());
     help.insert(QStringLiteral("password"), HelpEntry(c->translate("AccountEditor", "New password"), c->translate("AccountEditor", "Enter a new password with a minimum length of %n character(s) or leave the field blank to avoid changing the password.", nullptr, pwMinLength)));
     help.insert(QStringLiteral("password_confirmation"), HelpEntry(c->translate("AccountEditor", "New password confirmation"), c->translate("AccountEditor", "Confirm the new password by entering it again.")));
+
     //: format for date and time as shown in the help text for the valid until input field, it is important that the year part has 4 digits
-    const auto validUntilDtString = Utils::toUserTZ(c, dom.validUntil()).toString(c->translate("AccountEditor", "M/d/yyyy h:mm ap"));
+    const auto validUntilDtString = maxValidDomainUserDateTime.toString(c->translate("AccountEditor", "M/d/yyyy h:mm ap"));
     //: %1 will be the string of a date and time
     help.insert(QStringLiteral("validUntil"), HelpEntry(c->translate("AccountEditor", "Valid until"), c->translate("AccountEditor", "You can set a date and time until this account is valid. To make it valid open-end, simply set a date far in the future. The latest date and time until which this account can be valid is %1.").arg(validUntilDtString)));
+
+    //: format for date as shown in the help text for the valid until date input field, it is important that the year part has 4 digits
+    const auto validUntilDateString = maxValidDomainUserDateTime.date().toString(c->translate("AccountEditor", "M/d/yyyy"));
+    //: %1 will be the string of a date
+    help.insert(QStringLiteral("validUntilDate"), HelpEntry(c->translate("AccountEditor", "Valid until date"), c->translate("AccountEditor", "You can set a date until this account is valid. To make it valid open-end, simpy set a date far in the future. The latest date until which this account can be valid is %1.").arg(validUntilDateString)));
+
+    help.insert(QStringLiteral("validUntilTime"), HelpEntry(c->translate("AccountEditor", "Valid until time"), c->translate("AccountEditor", "You can set a time until this account is valid.")));
+
     help.insert(QStringLiteral("passwordExpires"), HelpEntry(c->translate("AccountEditor", "Password expires"), c->translate("AccountEditor", "You can set a date and time until the password for this account is valid. To let the password never expire, simply set a date far in the future.")));
+
+    help.insert(QStringLiteral("passwordExpiresDate"), HelpEntry(c->translate("AccountEditor", "Password expires date"), c->translate("AccountEditor", "You can set a date until the password for this account is valid. To let the password never expire, simply set a date far in the future.")));
+    help.insert(QStringLiteral("passwordExpiresTime"), HelpEntry(c->translate("AccountEditor", "Password expires time"), c->translate("AccountEditor", "You can set a time until the password for this account is valid.")));
+
     help.insert(QStringLiteral("imap"), HelpEntry(c->translate("AccountEditor", "IMAP Access"), c->translate("AccountEditor", "If enabled, the user of this account can access the mailbox through the IMAP protocol.")));
     help.insert(QStringLiteral("pop"), HelpEntry(c->translate("AccountEditor", "POP3 Access"), c->translate("AccountEditor", "If enabled, the user of this account can access the mailbox through the POP3 protocol.")));
     help.insert(QStringLiteral("sieve"), HelpEntry(c->translate("AccountEditor", "Sieve Access"), c->translate("AccountEditor", "If enabled, the user of this account can manage own Sieve scripts on the server.")));
