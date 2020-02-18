@@ -53,7 +53,7 @@
                                     <a href="/domain/{{ domain.id }}/accounts" class="dropdown-item"><i class="fas fa-users fa-fw"></i> {{ mngAccTxt }}</a>
                                     <a href="#" class="dropdown-item disabled"><i class="fas fa-share-square fa-fw"></i> {{ aliAdrTxt }}</a>
                                     <a href="/domain/{{  domain.id }}/check" class="dropdown-item"><i class="fas fa-stethoscope fa-fw"></i> {{ chkDomTxt }}</a>
-                                    {% if user.type >= user.Administrator %}
+                                    {% if user.type >= 254 %}
                                     <a href="#" class="dropdown-item remove-domain-btn text-danger" data-toggle="modal" data-target="#removeDomainModal" data-name="{{ domain.name }}" data-domainid="{{ domain.id }}" data-accountcount="{{ domain.accounts }}"><i class="fas fa-trash fa-fw"></i> {{ delDomTxt }}</a>
                                     {% endif %}
                                 </div>

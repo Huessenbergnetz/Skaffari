@@ -58,7 +58,7 @@
                             <a class="dropdown-item" href="/domain/{{ domain.id }}/add_account"><i class="fas fa-user-plus fa-fw"></i> {{ _("Add account") }}</a>
                             <a class="dropdown-item" href="/domain/{{ domain.id }}/edit"><i class="fas fa-edit fa-fw"></i> {{ _("Edit domain") }}</a>
                             <a class="dropdown-item" href="/domain/{{ domain.id }}/check"><i class="fas fa-stethoscope fa-fw"></i> {{ _("Check domain") }}</a>
-                            {% if user.type >= user.Administrator %}
+                            {% if user.type >= 254 %}
                             <a class="dropdown-item text-danger" href="/domain/{{ domain.id }}/remove"><i class="fas fa-trash fa-fw"></i> {{ _("Delete domain") }}</a>
                             {% endif %}
                         </div>

@@ -80,7 +80,7 @@
             <div class="card-body"><p class="card-text text-danger">{{ domains_last_added_error }}</p></div>
             {% else %}
             <div class="card-body text-center">
-                {% if user.type >= user.Administrator %}
+                {% if user.type >= 254 %}
                 <p class="card-text">{{ _("You have not added any domain yet.") }}</p>
                 <a href="" class="btn btn-primary"><i class="fas fa-plus"></i> {{ _("Add domain") }}</a>
                 {% else %}
