@@ -70,9 +70,9 @@
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="autoconfig">{{ help.autoconfig.title }}</label>
                 <select class="form-control{% if validationErrors.autoconfig.count %} is-invalid{% endif %}" id="autoconfig" name="autoconfig" aria-describedby="autoconfigDesc">
-                    <option value="cyrus"{% ifequal autoconfig|default_if_none:1 0 %} selected{% endifequal %}>{{ _("Disabled") }}</option>
-                    <option value="lmtp"{% ifequal autoconfig|default_if_none:1 1 %} selected{% endifequal %}>{{ _("Use global servers") }}</option>
-                    <option value="smtp"{% ifequal autoconfig|default_if_none:1 2 %} selected{% endifequal %}>{{ _("Use custom servers") }}</option>
+                    <option value="0"{% ifequal autoconfig|default_if_none:1 0 %} selected{% endifequal %}>{{ _("Disabled") }}</option>
+                    <option value="1"{% ifequal autoconfig|default_if_none:1 1 %} selected{% endifequal %}>{{ _("Use global servers") }}</option>
+                    <option value="2"{% ifequal autoconfig|default_if_none:1 2 %} selected{% endifequal %}>{{ _("Use custom servers") }}</option>
                 </select>
                 {% if validationErrors.autoconfig.count %}<div class="invalid-feedback"><small>{{ validationErrors.autoconfig.0 }}</small></div>{% endif %}
                 <small id="autoconfigDesc" class="form-text text-muted">{{ help.autoconfig.text }}</small>
