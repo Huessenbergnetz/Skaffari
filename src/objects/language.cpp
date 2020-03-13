@@ -18,7 +18,7 @@
 
 #include "language.h"
 #include "../common/config.h"
-#include "skaffariconfig.h"
+#include "../utils/skaffariconfig.h"
 #include <Cutelyst/Context>
 #include <Cutelyst/Plugins/Utils/LangSelect>
 #include <QCollator>

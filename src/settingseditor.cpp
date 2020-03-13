@@ -19,7 +19,7 @@
 #include "settingseditor.h"
 #include "utils/utils.h"
 #include "utils/skaffariconfig.h"
-#include "utils/language.h"
+#include "objects/language.h"
 #include "objects/helpentry.h"
 #include "objects/autoconfigserver.h"
 #include "objects/skaffarierror.h"

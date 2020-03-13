@@ -19,9 +19,9 @@
 #include "myaccount.h"
 #include "objects/adminaccount.h"
 #include "objects/skaffarierror.h"
-#include "utils/language.h"
-#include "utils/skaffariconfig.h"
+#include "objects/language.h"
 #include "objects/helpentry.h"
+#include "utils/skaffariconfig.h"
 
 #include <Cutelyst/Plugins/Utils/Validator> // includes the main validator
 #include <Cutelyst/Plugins/Utils/ValidatorResult> // includes the validator result

@@ -28,8 +28,8 @@ set (skaffari_SRCS
     objects/emailaddress.h
     objects/autoconfigserver.cpp
     objects/autoconfigserver.h
-    utils/language.cpp
-    utils/language.h
+    objects/language.cpp
+    objects/language.h
     utils/utils.cpp
     utils/utils.h
     utils/skaffariconfig.cpp

@@ -18,11 +18,11 @@
 
 #include "root.h"
 #include "objects/domain.h"
-#include "utils/utils.h"
-#include "utils/language.h"
-#include "utils/skaffariconfig.h"
+#include "objects/language.h"
 #include "objects/skaffarierror.h"
 #include "objects/adminaccount.h"
+#include "utils/skaffariconfig.h"
+#include "utils/utils.h"
 #include "../common/config.h"
 #include "../common/global.h"
 
