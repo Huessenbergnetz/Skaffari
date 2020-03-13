@@ -19,7 +19,7 @@
 #ifndef LANGUAGE_H
 #define LANGUAGE_H
 
-#include <grantlee5/grantlee/metatype.h>
+#include <QObject>
 #include <QString>
 #include <QVariant>
 #include <QLocale>
@@ -35,6 +35,9 @@ class Context;
  */
 class Language
 {
+    Q_GADGET
+    Q_PROPERTY(QString code READ code CONSTANT)
+    Q_PROPERTY(QString name READ name CONSTANT)
 public:
     /*!
      * \brief Constructs an empty %Language object with C locale.
@@ -96,15 +99,5 @@ private:
 
 Q_DECLARE_METATYPE(Language)
 Q_DECLARE_TYPEINFO(Language, Q_MOVABLE_TYPE);
-
-GRANTLEE_BEGIN_LOOKUP(Language)
-if (property == QLatin1String("code")) {
-    return QVariant(object.code());
-} else if (property == QLatin1String("name")) {
-    return QVariant(object.name());
-} else {
-    return QVariant();
-}
-GRANTLEE_END_LOOKUP
 
 #endif // LANGUAGE_H

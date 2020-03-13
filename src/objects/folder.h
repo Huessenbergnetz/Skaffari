@@ -19,8 +19,8 @@
 #ifndef FOLDER_H
 #define FOLDER_H
 
+#include <QObject>
 #include <QSharedDataPointer>
-#include <grantlee5/grantlee/metatype.h>
 #include "../../common/global.h"
 #include "../imap/skaffariimap.h"
 
@@ -30,6 +30,10 @@
  */
 class Folder
 {
+    Q_GADGET
+    Q_PROPERTY(dbid_t id READ getId CONSTANT)
+    Q_PROPERTY(dbid_t domainId READ getDomainId CONSTANT)
+    Q_PROPERTY(QString name READ getName CONSTANT)
 public:
     /*!
      * \brief Constructs an invalid, empty %Folder object.
@@ -126,16 +130,5 @@ QDataStream &operator<<(QDataStream &stream, const Folder &folder);
  * \brief Reads a %Folder from the given \a stream and stores it in the given \a folder.
  */
 QDataStream &operator>>(QDataStream &stream, Folder &folder);
-
-GRANTLEE_BEGIN_LOOKUP(Folder)
-if (property == QLatin1String("id")) {
-    return QVariant(object.getId());
-} else if (property == QLatin1String("domainId")) {
-    return QVariant(object.getDomainId());
-} else if (property == QLatin1String("name")) {
-    return QVariant(object.getName());
-}
-return QVariant();
-GRANTLEE_END_LOOKUP
 
 #endif // FOLDER_H

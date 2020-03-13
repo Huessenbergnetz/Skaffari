@@ -20,7 +20,7 @@
 #define SIMPLEDOMAIN_H
 
 #include "../../common/global.h"
-#include <grantlee5/grantlee/metatype.h>
+#include <QObject>
 #include <QString>
 #include <QVariant>
 #include <QJsonArray>
@@ -37,6 +37,9 @@ class SkaffariError;
  */
 class SimpleDomain
 {
+    Q_GADGET
+    Q_PROPERTY(dbid_t id READ id CONSTANT)
+    Q_PROPERTY(QString name READ name CONSTANT)
 public:
     /*!
      * \brief Constructs an invalid, empty SimpleDomain.
@@ -182,14 +185,5 @@ QDataStream &operator<<(QDataStream &stream, const SimpleDomain &domain);
  * \brief Reads a %SimpleDomain from the given \a stream and stores it in the given \a domain.
  */
 QDataStream &operator>>(QDataStream &stream, SimpleDomain &domain);
-
-GRANTLEE_BEGIN_LOOKUP(SimpleDomain)
-if (property == QLatin1String("id")) {
-    return QVariant(object.id());
-} else if (property == QLatin1String("name")) {
-    return QVariant(object.name());
-}
-return QVariant();
-GRANTLEE_END_LOOKUP
 
 #endif // SIMPLEDOMAIN_H

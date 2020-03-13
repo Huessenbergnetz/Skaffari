@@ -22,7 +22,6 @@
 #include "domain.h"
 #include "../../common/global.h"
 #include <Cutelyst/ParamsMultiMap>
-#include <grantlee5/grantlee/metatype.h>
 #include <QString>
 #include <QSharedDataPointer>
 #include <QVariant>
@@ -43,75 +42,138 @@ class SkaffariError;
  * \brief Represents an administrator account.
  *
  * The %AdminAccount class represents an administrator account object.
- * There are currently two types of admins, administrators and domain managers.
+ * There are currently three types of admins, super users, administrators and domain managers.
+ *
  * Superusers can modify anything and can also create new domains and deleting existing
  * ones, as well as adding and removing new admin accounts.
  *
- * Domain admins can only modify accounts in domains they are responsible for.
+ * Administratos can create new domains and domain managers, but can not create other
+ * administrators or super users.
  *
- * \par Grantlee accessors
- * Accessor    | Type             | Method
- * ------------|------------------|-----------------
- * created     | QDateTime        | created()
- * domains     | QList<dbid_t>    | domains()
- * id          | dbid_t           | id()
- * isSuperUser | bool             | isSuperUser()
- * isValid     | bool             | isValid()
- * lang        | QString          | lang()
- * maxDisplay  | quint8           | maxDisplay()
- * type        | quint8           | typeInt()
- * typeStr     | QString          | typeStr()
- * tz          | QString          | tz()
- * updated     | QDateTime        | updated()
- * username    | QString          | username()
- * warnLevel   | quint8           | warnLevel()
+ * Domain managers can only modify accounts in domains they are responsible for.
  */
 class AdminAccount
 {
     Q_GADGET
+    /*!
+     * \brief %Database ID of the administrator account.
+     */
+    Q_PROPERTY(dbid_t id READ id CONSTANT)
+    /*!
+     * \brief %Username of the administrator account.
+     */
+    Q_PROPERTY(QString username READ username CONSTANT)
+    /*!
+     * \brief List of %domain %database IDs this admin account is responsible for.
+     *
+     * Only used if the admin account is of type DomainMaster.
+     */
+    Q_PROPERTY(QList<dbid_t> domains READ domains CONSTANT)
+    /*!
+     * \brief Type of this admin account.
+     */
+    Q_PROPERTY(AdminAccount::AdminAccountType type READ type CONSTANT)
+    /*!
+     * \brief Type of this admin account as stringified integer value.
+     */
+    Q_PROPERTY(QString typeStr READ typeStr CONSTANT)
+    /*!
+     * \brief \c true if this admin account is a super user account.
+     */
+    Q_PROPERTY(bool isSuperUser READ isSuperUser CONSTANT)
+    /*!
+     * \brief \c true if this admin accout seems to be valid.
+     *
+     * Note that this does not do a real database check. It simply checks
+     * if the database id is greater than \c 0 and if the username is not empty.
+     */
+    Q_PROPERTY(bool isValid READ isValid CONSTANT)
+    /*!
+     * \brief The language selected by this admin account as string accepted by QLocale.
+     */
+    Q_PROPERTY(QString lang READ lang CONSTANT)
+    /*!
+     * \brief The time zone selected by this admin accout as IANA time zone ID.
+     */
+    Q_PROPERTY(QString tz READ tz CONSTANT)
+    /*!
+     * \brief The maximum number of items to display per page set by this admin.
+     *
+     * Used on pages where results - especially lists - are distributed on multiple pages.
+     */
+    Q_PROPERTY(quint8 maxDisplay READ maxDisplay CONSTANT)
+    /*!
+     * \brief The warn level set by this admin.
+     *
+     * Used on element that display a usage ratio like quotas.
+     */
+    Q_PROPERTY(quint8 warnLevel READ warnLevel CONSTANT)
+    /*!
+     * \brief Date and time this admin account has been created.
+     */
+    Q_PROPERTY(QDateTime created READ created CONSTANT)
+    /*!
+     * \brief Date and time thia dmin account has been updated the last time.
+     */
+    Q_PROPERTY(QDateTime updated READ updated CONSTANT)
 public:
     /*!
      * \brief This enum describes the type of the admin account.
-     *
-     * AllAdmins is a special value, it is not defined to describe an account,
-     * but to filter all admin accounts in specific functions.
      */
     enum AdminAccountType : quint8 {
-        Disabled        = 0,
-        DomainMaster    = 127,  /**< a domain manager, that can only modify certain domains */
-        Administrator   = 254,  /**< an administartor account that can create new domain masters and domains, but not other administrators or super users */
-        SuperUser       = 255   /**< a super user account, that has all rights, especially that can create all other admin accounts */
+        Disabled        = 0,    /**< A disabled admin account. */
+        DomainMaster    = 127,  /**< A domain manager that can only modify certain domains */
+        Administrator   = 254,  /**< An administartor account that can create new domain masters and domains, but not other administrators or super users */
+        SuperUser       = 255   /**< A super user account, that has all rights, especially that can create all other admin accounts */
     };
     Q_ENUM(AdminAccountType)
 
     /*!
      * \brief Constructs an empty administrator account object.
+     *
+     * isValid() will return \c false for this default constructed object.
      */
     AdminAccount();
 
-    /*! \brief Constructs a new administrator account object.
+    /*!
+     * \brief Constructs a new administrator account object from the given parameters.
      *
-     * Constructs a new administrator account object from the given parameters.
-     * \param id the database id of the admin account
-     * \param username the user name of the administrator
-     * \param type the admin account type, can not be AllAdmins
-     * \param domains list of domain IDs this admin is responsible for
-     * \sa setUsername(), setType(), setDomains()
+     * \param id        The database id of the admin account.
+     * \param username  The user name of the administrator
+     * \param type      The admin account type.
+     * \param domains   List of domain %database IDs this admin is responsible for.
      */
     AdminAccount(dbid_t id, const QString &username, AdminAccountType type, const QList<dbid_t> &domains);
 
     /*!
-     * \overload
+     * \brief Constructs a new administrator account object from the given parameters.
+     *
+     * \param id        The database id of the admin account.
+     * \param username  The user name of the administrator
+     * \param type      The admin account type as integer value.
+     * \param domains   List of domain %database IDs this admin is responsible for.
      */
     AdminAccount(dbid_t id, const QString& username, quint8 type, const QList<dbid_t> &domains);
 
     /*!
-     * \overload
+     * \brief Constructs a new administrator account object from \a user.
      */
     AdminAccount(const Cutelyst::AuthenticationUser &user);
 
     /*!
-     * \overload
+     * \brief Constucts a new administrator account object from the given parameters.
+     *
+     * \param id            The database ID of the admin account.
+     * \param username      The user name of the administrator.
+     * \param type          The admin account type.
+     * \param domains       List of domain database IDs this admin is responsible for.
+     * \param tz            The IANA time zone ID string selected by this admin.
+     * \param lang          The language code used by QLocale selected by this admin.
+     * \param tmpl          The template selected by this admin.
+     * \param maxDisplay    The maximum items to display per page for this admin.
+     * \param warnLevel     The warn level selected by this admin.
+     * \param created       Date and time this admin account has been created.
+     * \param updated       Date and time this admin account was updated the last time.
      */
     AdminAccount(dbid_t id, const QString &username, AdminAccountType type, const QList<dbid_t> &domains, const QString &tz, const QString &lang, const QString &tmpl, quint8 maxDisplay, quint8 warnLevel, const QDateTime &created, const QDateTime &updated);
 
@@ -170,12 +232,12 @@ public:
 
     /*!
      * \brief Returns the type of this admin account.
-     * \sa setType()
+     * \sa typeStr(), typeInt()
      */
     AdminAccountType type() const;
     /*!
      * \brief Returns the humand readable name of the account type.
-     * The context is required for translations.
+     * The context \a c is required for translations.
      */
     QString typeName(Cutelyst::Context *c) const;
     /*!
@@ -190,64 +252,59 @@ public:
     QString typeStr() const;
 
     /*!
-     * \brief Returns \c true if this admin is a super user (administrator, not domain manager).
+     * \brief Returns \c true if this admin is of type SuperUser.
      */
     bool isSuperUser() const;
 
     /*!
      * \brief Returns the language set for this admin.
-     * \sa setLang()
      */
     QString lang() const;
 
     /*!
      * \brief Returns the time zone ID for this admin.
-     * \sa setTz()
      */
     QString tz() const;
 
     /*!
      * \brief Returns the date and time this admin account has been created.
-     * \sa setCreated()
      */
     QDateTime created() const;
 
     /*!
      * \brief Returns the date and tim this admin account has been created.
-     * \sa setUpdated()
      */
     QDateTime updated() const;
 
     /*!
      * \brief Returns the maximum number of list entries to display per page.
-     * \sa setMaxDisplay()
      */
     quint8 maxDisplay() const;
 
     /*!
      * \brief Returns the warn level in percent for displaying limits like quota usage.
-     * \sa setWarnLevel()
      */
     quint8 warnLevel() const;
 
     /*!
      * \brief Returns the template name to use.
      * Currently not in use.
-     * \sa setTemplate()
      */
     QString getTemplate() const;
 
     /*!
      * \brief Returns \c true if the account seems to be valid.
      *
-     * This function returns \c true, if the account seems to be valid. There is
-     * no test against the databse. It only checks if user name and id are
-     * correctly set.
+     * There is no test against the databse. It only checks if username
+     * and id are correctly set.
      */
     bool isValid() const;
 
     /*!
      * \brief Returns the data as JSON object.
+     *
+     * The returned JSON object will contain all properties of the %AdminAccount object
+     * except typeStr and type will be stored as integer value.
      *
      * If the %AdminAccount is not valid (isValid() returns \c false), the returned
      * JSON object will be empty.
@@ -444,7 +501,7 @@ QDebug operator<<(QDebug dbg, const AdminAccount &account);
 
 /*!
  * \relates AdminAccount
- * \brief Reads a %Domain from the given \a stream and stores it in the given \a account.
+ * \brief Reads an %AdminAccount from the given \a stream and stores it in the given \a account.
  */
 QDataStream &operator>>(QDataStream &stream, AdminAccount &account);
 
@@ -453,36 +510,5 @@ QDataStream &operator>>(QDataStream &stream, AdminAccount &account);
  * \brief Writes the given \a account to the given \a stream.
  */
 QDataStream &operator<<(QDataStream &stream, const AdminAccount &account);
-
-GRANTLEE_BEGIN_LOOKUP(AdminAccount)
-if (property == QLatin1String("id")) {
-    return QVariant(object.id());
-} else if (property == QLatin1String("username")) {
-    return QVariant(object.username());
-} else if (property == QLatin1String("domains")) {
-    return QVariant::fromValue<QList<dbid_t>>(object.domains());
-} else if (property == QLatin1String("type")) {
-    return QVariant(object.typeInt());
-} else if (property == QLatin1String("typeStr")) {
-    return QVariant(object.typeStr());
-} else if (property == QLatin1String("isValid")) {
-    return QVariant(object.isValid());
-} else if (property == QLatin1String("isSuperUser")) {
-    return QVariant(object.isSuperUser());
-} else if (property == QLatin1String("lang")) {
-    return QVariant(object.lang());
-} else if (property == QLatin1String("tz")) {
-    return QVariant(object.tz());
-} else if (property == QLatin1String("created")) {
-    return QVariant(object.created());
-} else if (property == QLatin1String("updated")) {
-    return QVariant(object.updated());
-} else if (property == QLatin1String("warnLevel")) {
-    return QVariant(object.warnLevel());
-} else if (property == QLatin1String("maxDisplay")) {
-    return QVariant(object.maxDisplay());
-}
-return QVariant();
-GRANTLEE_END_LOOKUP
 
 #endif // SKAFFARI_ADMINACCOUNT_H

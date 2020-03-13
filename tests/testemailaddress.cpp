@@ -1,18 +1,23 @@
 #include "../src/objects/emailaddress.h"
 
 #include <QTest>
+#include <QMetaObject>
+#include <QMetaProperty>
 
 class EmailAddressTest : public QObject
 {
     Q_OBJECT
 public:
-    EmailAddressTest(QObject *parent = nullptr) : QObject(parent) {}
+    EmailAddressTest(QObject *parent = nullptr) : QObject(parent) {
+        qRegisterMetaType<dbid_t>("dbid_t");
+    }
 
 private Q_SLOTS:
     void initTestCase() {}
 
     void doTest();
     void doTest_data();
+    void testMove();
 
     void cleanupTestCase() {}
 };
@@ -31,11 +36,14 @@ void EmailAddressTest::doTest()
     EmailAddress a(id, aceId, address);
 
     QCOMPARE(a.id(), id);
+    QCOMPARE(EmailAddress::staticMetaObject.property(EmailAddress::staticMetaObject.indexOfProperty("id")).readOnGadget(&a).value<dbid_t>(), id);
     QCOMPARE(a.aceId(), aceId);
     QCOMPARE(a.name(), full);
+    QCOMPARE(EmailAddress::staticMetaObject.property(EmailAddress::staticMetaObject.indexOfProperty("name")).readOnGadget(&a).toString(), full);
     QCOMPARE(a.localPart(), local);
     QCOMPARE(a.domainPart(), domain);
     QCOMPARE(a.isIdn(), isIdn);
+    QCOMPARE(EmailAddress::staticMetaObject.property(EmailAddress::staticMetaObject.indexOfProperty("isIdn")).readOnGadget(&a).toBool(), isIdn);
     QCOMPARE(a.isValid(), isValid);
 }
 
@@ -56,6 +64,26 @@ void EmailAddressTest::doTest_data()
     QTest::newRow("test-03") << static_cast<dbid_t>(1) << static_cast<dbid_t>(0) << QStringLiteral("@example.com") << QStringLiteral("@") << QString() << QString() << false << false;
     QTest::newRow("test-04") << static_cast<dbid_t>(1) << static_cast<dbid_t>(0) << QStringLiteral("test@") << QStringLiteral("@") << QString() << QString() << false << false;
     QTest::newRow("test-05") << static_cast<dbid_t>(1) << static_cast<dbid_t>(0) << QStringLiteral("test") << QStringLiteral("@") << QString() << QString() << false << false;
+}
+
+void EmailAddressTest::testMove()
+{
+    // Test move constructor
+    {
+        EmailAddress a1{1, 2, QStringLiteral("test@example.com")};
+        QCOMPARE(a1.name(), QStringLiteral("test@example.com"));
+        EmailAddress a2(std::move(a1));
+        QCOMPARE(a2.name(), QStringLiteral("test@example.com"));
+    }
+
+    // Test move assignment
+    {
+        EmailAddress a1{1, 2, QStringLiteral("test@example.com")};
+        QCOMPARE(a1.name(), QStringLiteral("test@example.com"));
+        EmailAddress a2{3, 4, QStringLiteral("test2@example.com")};
+        a2 = std::move(a1);
+        QCOMPARE(a2.name(), QStringLiteral("test@example.com"));
+    }
 }
 
 QTEST_MAIN(EmailAddressTest)

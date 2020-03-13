@@ -58,19 +58,9 @@ extern "C"
 #include <syslog.h>
 }
 
-#include "objects/domain.h"
-#include "objects/simpleadmin.h"
-#include "objects/simpledomain.h"
-#include "objects/simpleaccount.h"
-#include "objects/adminaccount.h"
-#include "objects/account.h"
-#include "objects/folder.h"
 #include "objects/helpentry.h"
-#include "objects/emailaddress.h"
 #include "objects/skaffarierror.h"
-#include "objects/autoconfigserver.h"
 
-#include "utils/language.h"
 #include "utils/skaffariconfig.h"
 #include "utils/qtimezonevariant_p.h"
 
@@ -204,20 +194,9 @@ bool Skaffari::init()
     qRegisterMetaType<quota_size_t>("quota_size_t");
     qRegisterMetaType<dbid_t>("dbid_t");
     qRegisterMetaType<HelpHash>("HelpHash");
+    qRegisterMetaType<QList<dbid_t>>("QList<dbid_t>");
+    qRegisterMetaType<std::vector<Folder>>("std::vector<Folder>");
     qRegisterMetaTypeStreamOperators<QTimeZone>("QTimeZone");
-
-    qCDebug(SK_CORE) << "Registering Grantlee meta types.";
-    Grantlee::registerMetaType<Folder>();
-    Grantlee::registerMetaType<Domain>();
-    Grantlee::registerMetaType<SimpleAdmin>();
-    Grantlee::registerMetaType<SimpleDomain>();
-    Grantlee::registerMetaType<SimpleAccount>();
-    Grantlee::registerMetaType<AdminAccount>();
-    Grantlee::registerMetaType<Language>();
-    Grantlee::registerMetaType<Account>();
-    Grantlee::registerMetaType<HelpEntry>();
-    Grantlee::registerMetaType<EmailAddress>();
-    Grantlee::registerMetaType<AutoconfigServer>();
 
     const QString tmplName = generalConfig.value(QStringLiteral("template"), QStringLiteral("default")).toString().trimmed();
 

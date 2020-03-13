@@ -2,18 +2,23 @@
 
 #include <QTest>
 #include <QDataStream>
+#include <QMetaObject>
+#include <QMetaProperty>
 
 class SimpleAdminTest : public QObject
 {
     Q_OBJECT
 public:
-    SimpleAdminTest(QObject *parent = nullptr) : QObject(parent) {}
+    SimpleAdminTest(QObject *parent = nullptr) : QObject(parent) {
+        qRegisterMetaType<dbid_t>("dbid_t");
+    }
 
 private Q_SLOTS:
     void initTestCase() {}
 
     void doTest();
     void doTest_data();
+    void testMove();
     void datastream();
 
     void cleanupTestCase() {}
@@ -28,7 +33,9 @@ void SimpleAdminTest::doTest()
     SimpleAdmin a(id, name);
 
     QCOMPARE(a.id(), id);
+    QCOMPARE(SimpleAdmin::staticMetaObject.property(SimpleAdmin::staticMetaObject.indexOfProperty("id")).readOnGadget(&a).value<dbid_t>(), id);
     QCOMPARE(a.name(), name);
+    QCOMPARE(SimpleAdmin::staticMetaObject.property(SimpleAdmin::staticMetaObject.indexOfProperty("name")).readOnGadget(&a).toString(), name);
     QCOMPARE(a.isValid(), valid);
 }
 
@@ -41,6 +48,26 @@ void SimpleAdminTest::doTest_data()
     QTest::newRow("test-00") << static_cast<dbid_t>(1) << QStringLiteral("admin") << true;
     QTest::newRow("test-01") << static_cast<dbid_t>(0) << QStringLiteral("admin") << false;
     QTest::newRow("test-02") << static_cast<dbid_t>(1) << QString() << false;
+}
+
+void SimpleAdminTest::testMove()
+{
+    // Test move constructor
+    {
+        SimpleAdmin a1{1, QStringLiteral("admin")};
+        QCOMPARE(a1.name(), QStringLiteral("admin"));
+        SimpleAdmin a2(std::move(a1));
+        QCOMPARE(a2.name(), QStringLiteral("admin"));
+    }
+
+    // Test move assignment
+    {
+        SimpleAdmin a1{1, QStringLiteral("admin")};
+        QCOMPARE(a1.name(), QStringLiteral("admin"));
+        SimpleAdmin a2{2, QStringLiteral("admin2")};
+        a2 = std::move(a1);
+        QCOMPARE(a2.name(), QStringLiteral("admin"));
+    }
 }
 
 void SimpleAdminTest::datastream()

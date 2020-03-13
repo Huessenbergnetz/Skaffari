@@ -20,9 +20,9 @@
 #define SKAFFARIEMAILADDRESS_H
 
 #include "../../common/global.h"
+#include <QObject>
 #include <QString>
 #include <QSharedDataPointer>
-#include <grantlee5/grantlee/metatype.h>
 #include <QVariant>
 
 namespace Cutelyst {
@@ -37,6 +37,10 @@ class SkaffariError;
  */
 class EmailAddress
 {
+    Q_GADGET
+    Q_PROPERTY(dbid_t id READ id CONSTANT)
+    Q_PROPERTY(QString name READ name CONSTANT)
+    Q_PROPERTY(bool isIdn READ isIdn CONSTANT)
 public:
     /*!
      * \brief Constructs an invalid, empty %EmailAdress object.
@@ -169,16 +173,5 @@ Q_DECLARE_TYPEINFO(EmailAddress, Q_MOVABLE_TYPE);
  * \brief Writes the \a address to the \a dbg stream and returns the stream.
  */
 QDebug operator<<(QDebug dbg, const EmailAddress &address);
-
-GRANTLEE_BEGIN_LOOKUP(EmailAddress)
-if (property == QLatin1String("id")) {
-   return QVariant(object.id());
-} else if (property == QLatin1String("name")) {
-   return QVariant(object.name());
-} else if (property == QLatin1String("isIdn")) {
-   return QVariant(object.isIdn());
-}
-return QVariant();
-GRANTLEE_END_LOOKUP
 
 #endif // SKAFFARIEMAILADDRESS_H

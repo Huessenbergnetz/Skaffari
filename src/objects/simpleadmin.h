@@ -20,7 +20,8 @@
 #define SIMPLEADMIN_H
 
 #include "../../common/global.h"
-#include <grantlee5/grantlee/metatype.h>
+//#include <grantlee5/grantlee/metatype.h>
+#include <QObject>
 #include <QString>
 #include <QVariant>
 
@@ -30,6 +31,9 @@
  */
 class SimpleAdmin
 {
+    Q_GADGET
+    Q_PROPERTY(dbid_t id READ id CONSTANT)
+    Q_PROPERTY(QString name READ name CONSTANT)
 public:
     /*!
      * \brief Constructs an invalid, empty %SimpleAdmin.
@@ -114,13 +118,13 @@ QDataStream &operator<<(QDataStream &stream, const SimpleAdmin &admin);
  */
 QDataStream &operator>>(QDataStream &stream, SimpleAdmin &admin);
 
-GRANTLEE_BEGIN_LOOKUP(SimpleAdmin)
-if (property == QLatin1String("id")) {
-    return QVariant(object.id());
-} else if (property == QLatin1String("name")) {
-    return QVariant(object.name());
-}
-return QVariant();
-GRANTLEE_END_LOOKUP
+//GRANTLEE_BEGIN_LOOKUP(SimpleAdmin)
+//if (property == QLatin1String("id")) {
+//    return QVariant(object.id());
+//} else if (property == QLatin1String("name")) {
+//    return QVariant(object.name());
+//}
+//return QVariant();
+//GRANTLEE_END_LOOKUP
 
 #endif // SIMPLEADMIN_H

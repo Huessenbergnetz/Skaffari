@@ -19,8 +19,9 @@
 #ifndef HELPENTRY_H
 #define HELPENTRY_H
 
+#include <QObject>
 #include <QSharedDataPointer>
-#include <grantlee5/grantlee/metatype.h>
+//#include <grantlee5/grantlee/metatype.h>
 
 /*!
  * \ingroup skaffaricore
@@ -28,6 +29,9 @@
  */
 class HelpEntry
 {
+    Q_GADGET
+    Q_PROPERTY(QString title READ title CONSTANT)
+    Q_PROPERTY(QString text READ text CONSTANT)
 public:
     /*!
      * \brief Constructs an invalid, empty %HelpEntry object.
@@ -74,12 +78,12 @@ public:
     /*!
      * \brief Returns the title of the help entry.
      */
-    QString getTitle() const;
+    QString title() const;
 
     /*!
      * \brief Returns the help text.
      */
-    QString getText() const;
+    QString text() const;
 
 protected:
     class Data;
@@ -89,14 +93,14 @@ protected:
 Q_DECLARE_METATYPE(HelpEntry)
 Q_DECLARE_TYPEINFO(HelpEntry, Q_MOVABLE_TYPE);
 
-GRANTLEE_BEGIN_LOOKUP(HelpEntry)
-if (property == QLatin1String("title")) {
-    return QVariant(object.getTitle());
-} else if (property == QLatin1String("text")) {
-    return QVariant(object.getText());
-}
-return QVariant();
-GRANTLEE_END_LOOKUP
+//GRANTLEE_BEGIN_LOOKUP(HelpEntry)
+//if (property == QLatin1String("title")) {
+//    return QVariant(object.getTitle());
+//} else if (property == QLatin1String("text")) {
+//    return QVariant(object.getText());
+//}
+//return QVariant();
+//GRANTLEE_END_LOOKUP
 
 typedef QHash<QString, HelpEntry> HelpHash;
 Q_DECLARE_METATYPE(HelpHash)

@@ -26,8 +26,6 @@
 
 #include <Cutelyst/ParamsMultiMap>
 
-#include <grantlee5/grantlee/metatype.h>
-
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -51,44 +49,49 @@ class SkaffariError;
 /*!
  * \ingroup skaffaricore
  * \brief Represents a single domain that is managed by %Skaffari.
- *
- * \par Grantlee accessors
- * Accessor                | Type                       | Method
- * ------------------------|----------------------------|-------
- * accounts                | quint32                    | accounts()
- * accountUsagePercent     | float                      | accountUsagePercent()
- * admins                  | std::vector<SimpleAdmin>   | admins()
- * children                | std::vector<SimpleDomain>  | children()
- * created                 | QDateTime                  | created()
- * domainQuota             | quota_size_t               | domainQuota()
- * domainQuotaUsed         | quota_size_t               | domainQuotaUsed()
- * domainQuotaUsagePercent | float                      | domainQuotaUsagePercent()
- * id                      | dbid_t                     | id()
- * isValid                 | bool                       | isValid()
- * folders                 | std::vector<Folder>        | folders()
- * freeNames               | bool                       | isFreeNamesEnabled()
- * freeAddress             | bool                       | isFreeAddressEnabled()
- * maxAccounts             | quint32                    | maxAccounts()
- * name                    | QString                    | name()
- * parent                  | SimpleDomain               | parent()
- * prefix                  | QString                    | prefix()
- * quota                   | quota_size_t               | quota()
- * transport               | QString                    | transport()
- * updated                 | QDateTime                  | updated()
- * autoconfig              | Domain::AutoconfigStrategy | autoconfig()
- * validUntil              | QDateTime                  | validUntil()
  */
 class Domain
 {
+    Q_GADGET
+    Q_PROPERTY(dbid_t id READ id CONSTANT)
+    Q_PROPERTY(QString name READ name CONSTANT)
+    Q_PROPERTY(QString prefix READ prefix CONSTANT)
+    Q_PROPERTY(QString transport READ transport CONSTANT)
+    Q_PROPERTY(quota_size_t quota READ quota CONSTANT)
+    Q_PROPERTY(quint32 maxAccounts READ maxAccounts CONSTANT)
+    Q_PROPERTY(quota_size_t domainQuota READ domainQuota CONSTANT)
+    Q_PROPERTY(quota_size_t domainQuotaUsed READ domainQuotaUsed CONSTANT)
+    Q_PROPERTY(float domainQuotaUsagePercent READ domainQuotaUsagePercent CONSTANT)
+    Q_PROPERTY(bool freeNames READ isFreeNamesEnabled CONSTANT)
+    Q_PROPERTY(bool freeAddress READ isFreeAddressEnabled CONSTANT)
+    Q_PROPERTY(std::vector<Folder> folders READ folders CONSTANT)
+    Q_PROPERTY(Folder draftsFolder READ draftsFolder CONSTANT)
+    Q_PROPERTY(Folder junkFolder READ junkFolder CONSTANT)
+    Q_PROPERTY(Folder sentFolder READ sentFolder CONSTANT)
+    Q_PROPERTY(Folder trashFolder READ trashFolder CONSTANT)
+    Q_PROPERTY(Folder archiveFolder READ archiveFolder CONSTANT)
+    Q_PROPERTY(Folder otherFolders READ otherFolders CONSTANT)
+    Q_PROPERTY(quint32 accounts READ accounts CONSTANT)
+    Q_PROPERTY(float accountUsagePercent READ accountUsagePercent CONSTANT)
+    Q_PROPERTY(std::vector<SimpleAdmin> admins READ admins CONSTANT)
+    Q_PROPERTY(bool isValid READ isValid CONSTANT)
+    Q_PROPERTY(QDateTime created READ created CONSTANT)
+    Q_PROPERTY(QDateTime updated READ updated CONSTANT)
+    Q_PROPERTY(Domain::AutoconfigStrategy autoconfig READ autoconfig CONSTANT)
+    Q_PROPERTY(SimpleDomain parent READ parent CONSTANT)
+    Q_PROPERTY(std::vector<SimpleDomain> children READ children CONSTANT)
+    Q_PROPERTY(bool isIdn READ isIdn CONSTANT)
+    Q_PROPERTY(QDateTime validUntil READ validUntil CONSTANT)
 public:
     /*!
      * \brief How to handle autoconfig for this domain.
      */
     enum AutoconfigStrategy : qint8 {
-        AutoconfigDisabled,     /**< Autoconfig is disabled for this domain. */
-        UseGlobalAutoconfig,    /**< Use the global servers for this domain. */
-        UseCustomAutoconfig     /**< Use custom servers for this domain. */
+        AutoconfigDisabled  = 0,    /**< Autoconfig is disabled for this domain. */
+        UseGlobalAutoconfig = 1,    /**< Use the global servers for this domain. */
+        UseCustomAutoconfig = 2     /**< Use custom servers for this domain. */
     };
+    Q_ENUM(AutoconfigStrategy)
 
     /*!
      * \brief Constructs a new %Domain object with empty data.
@@ -235,6 +238,36 @@ public:
      * \brief Returns the folder for the \a specialUse.
      */
     Folder folder(SkaffariIMAP::SpecialUse specialUse) const;
+
+    /*!
+     * \brief Returns the folder to create for drafts.
+     */
+    Folder draftsFolder() const;
+
+    /*!
+     * \brief Returns the folder to create for junk.
+     */
+    Folder junkFolder() const;
+
+    /*!
+     * \brief Returns the folder to create for sent messages.
+     */
+    Folder sentFolder() const;
+
+    /*!
+     * \brief Returns the folder to create as trash.
+     */
+    Folder trashFolder() const;
+
+    /*!
+     * \brief Returns the folder to create as archive.
+     */
+    Folder archiveFolder() const;
+
+    /*!
+     * \brief Returns a folder that has a name as comma separated list of other folders.
+     */
+    Folder otherFolders() const;
 
     /*!
      * \brief Returns the number of accounts in this domain.
@@ -479,68 +512,5 @@ QDataStream &operator>>(QDataStream &stream, Domain &domain);
  * \brief Writes the given \a domain to the given \a stream.
  */
 QDataStream &operator<<(QDataStream &stream, const Domain &domain);
-
-GRANTLEE_BEGIN_LOOKUP(Domain)
-if (property == QLatin1String("id")) {
-    return QVariant(object.id());
-} else if (property == QLatin1String("name")) {
-    return QVariant(object.name());
-} else if (property == QLatin1String("prefix")) {
-    return QVariant(object.prefix());
-} else if (property == QLatin1String("transport")) {
-    return QVariant(object.transport());
-} else if (property == QLatin1String("quota")) {
-    return QVariant(object.quota());
-} else if (property == QLatin1String("maxAccounts")) {
-    return QVariant(object.maxAccounts());
-} else if (property == QLatin1String("domainQuota")) {
-    return QVariant(object.domainQuota());
-} else if (property == QLatin1String("domainQuotaUsed")) {
-    return QVariant(object.domainQuotaUsed());
-} else if (property == QLatin1String("domainQuotaUsagePercent")) {
-    return QVariant(object.domainQuotaUsagePercent());
-}  else if (property == QLatin1String("freeNames")) {
-    return QVariant(object.isFreeNamesEnabled());
-} else if (property == QLatin1String("freeAddress")) {
-    return QVariant(object.isFreeAddressEnabled());
-} else if (property == QLatin1String("folders")) {
-    return QVariant::fromValue<std::vector<Folder>>(object.folders());
-} else if (property == QLatin1String("accounts")) {
-    return QVariant(object.accounts());
-} else if (property == QLatin1String("admins")) {
-    return QVariant::fromValue<std::vector<SimpleAdmin>>(object.admins());
-} else if (property == QLatin1String("isValid")) {
-    return QVariant(object.isValid());
-} else if (property == QLatin1String("created")) {
-    return QVariant(object.created());
-} else if (property == QLatin1String("updated")) {
-    return QVariant(object.updated());
-} else if (property == QLatin1String("autoconfig")) {
-    return QVariant(object.autoconfig());
-} else if (property == QLatin1String("parent")) {
-    return QVariant::fromValue<SimpleDomain>(object.parent());
-} else if (property == QLatin1String("children")) {
-    return QVariant::fromValue<std::vector<SimpleDomain>>(object.children());
-} else if (property == QLatin1String("accountUsagePercent")) {
-    return QVariant(object.accountUsagePercent());
-} else if (property == QLatin1String("isIdn")) {
-    return QVariant(object.isIdn());
-} else if (property == QLatin1String("draftsFolder")) {
-    return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::Drafts));
-} else if (property == QLatin1String("junkFolder")) {
-    return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::Junk));
-} else if (property == QLatin1String("sentFolder")) {
-    return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::Sent));
-} else if (property == QLatin1String("trashFolder")) {
-    return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::Trash));
-} else if (property == QLatin1String("archiveFolder")) {
-    return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::Archive));
-} else if (property == QLatin1String("otherFolders")) {
-    return QVariant::fromValue<Folder>(object.folder(SkaffariIMAP::SkaffariOtherFolders));
-} else if (property == QLatin1String("validUntil")) {
-    return QVariant(object.validUntil());
-}
-return QVariant();
-GRANTLEE_END_LOOKUP
 
 #endif // DOMAIN_H

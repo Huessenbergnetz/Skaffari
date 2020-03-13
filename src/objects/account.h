@@ -23,7 +23,6 @@
 #include "domain.h"
 #include <Cutelyst/ParamsMultiMap>
 #include <Cutelyst/Plugins/Utils/Pagination>
-#include <grantlee5/grantlee/metatype.h>
 #include <QSharedDataPointer>
 #include <QString>
 #include <QStringList>
@@ -49,6 +48,103 @@ class SkaffariError;
  */
 class Account
 {
+    Q_GADGET
+    /*!
+     * \brief Database ID of the account.
+     */
+    Q_PROPERTY(dbid_t id READ id CONSTANT)
+    /*!
+     * \brief Database ID of the domain this account belongs to.
+     */
+    Q_PROPERTY(dbid_t domainId READ domainId CONSTANT)
+    /*!
+     * \brief User name for this account.
+     */
+    Q_PROPERTY(QString username READ username CONSTANT)
+    /*!
+     * \brief \c true if IMAP access for this account is enabled.
+     */
+    Q_PROPERTY(bool imap READ isImapEnabled CONSTANT)
+    /*!
+     * \brief \c true if POP3 access for this account is enabled.
+     */
+    Q_PROPERTY(bool pop READ isPopEnabled CONSTANT)
+    /*!
+     * \brief \c true if SIEVE access for this account is enabled.
+     */
+    Q_PROPERTY(bool sieve READ isSieveEnabled CONSTANT)
+    /*!
+     * \brief \c true if SMTP access for this account is enabled.
+     */
+    Q_PROPERTY(bool smtpauth READ isSmtpauthEnabled CONSTANT)
+    /*!
+     * \brief The email addresses that are connected to this account.
+     */
+    Q_PROPERTY(QStringList addresses READ addresses CONSTANT)
+    /*!
+     * \brief The email forwards that are defined for this account.
+     */
+    Q_PROPERTY(QStringList forwards READ forwards CONSTANT)
+    /*!
+     * \brief The quota defined for this account in KiB.
+     */
+    Q_PROPERTY(quota_size_t quota READ quota CONSTANT)
+    /*!
+     * \brief The quota used by this account in KiB.
+     */
+    Q_PROPERTY(quota_size_t usage READ usage CONSTANT)
+    /*!
+     * \brief Percentage value of the used quota.
+     */
+    Q_PROPERTY(float usagePercent READ usagePercent CONSTANT)
+    /*!
+     * \brief \c true if this account is valid.
+     *
+     * An account is valid if the account’s database ID, returned via getId(), and the
+     * domain database ID both return values greater than \c 0.
+     */
+    Q_PROPERTY(bool isValid READ isValid CONSTANT)
+    /*!
+     * \brief UTC date and time this account has been created.
+     */
+    Q_PROPERTY(QDateTime created READ created CONSTANT)
+    /*!
+     * \brief UTC date and time this account has been updated the last time.
+     */
+    Q_PROPERTY(QDateTime updated READ updated CONSTANT)
+    /*!
+     * \brief UTC date and time until this account is valid.
+     */
+    Q_PROPERTY(QDateTime validUntil READ validUntil CONSTANT)
+    /*!
+     * \brief \c true if forwarded emails should be kept local too.
+     */
+    Q_PROPERTY(bool keepLocal READ keepLocal CONSTANT)
+    /*!
+     * \brief \c true if this account is used to catch all incoming emails for the domain.
+     *
+     * A catch-all account will receive all emails for a domain for that does not exist a
+     * separate address.
+     */
+    Q_PROPERTY(bool catchAll READ catchAll CONSTANT)
+    /*!
+     * \brief UTC date and time when the current password of this user expires.
+     */
+    Q_PROPERTY(QDateTime passwordExpires READ passwordExpires CONSTANT)
+    /*!
+     * \brief \c true if the password for this account has been expired.
+     *
+     * A password has been expired if the date and time set in passwordExpires are after
+     * the current date and time.
+     */
+    Q_PROPERTY(bool passwordExpired READ passwordExpired CONSTANT)
+    /*!
+     * \brief \c true if the validity of this account has been expired.
+     *
+     * An account has been expired if the date and time set in validUntil are after
+     * the current date and time.
+     */
+    Q_PROPERTY(bool expired READ expired CONSTANT)
 public:
     /*!
      * \brief Creates an empty, invalid %Account object.
@@ -213,7 +309,7 @@ public:
     /*!
      * \brief Returns \c true if this account is valid.
      *
-     * An account is valid if the account's database ID, returned via getId(), and the
+     * An account is valid if the account’s database ID, returned via getId(), and the
      * domain database ID both return values greater than \c 0.
      *
      * Access from Grantlee: isValid
@@ -537,52 +633,5 @@ QDataStream &operator<<(QDataStream &stream, const Account &account);
  * \brief Reads an %Account from the given \a stream and stores it in the given \a account.
  */
 QDataStream &operator>>(QDataStream &stream, Account &account);
-
-GRANTLEE_BEGIN_LOOKUP(Account)
-if (property == QLatin1String("id")) {
-    return QVariant(object.id());
-} else if (property == QLatin1String("domainId")) {
-    return QVariant(object.domainId());
-} else if (property == QLatin1String("username")) {
-    return QVariant(object.username());
-} else if (property == QLatin1String("imap")) {
-    return QVariant(object.isImapEnabled());
-} else if (property == QLatin1String("pop")) {
-    return QVariant(object.isPopEnabled());
-} else if (property == QLatin1String("sieve")) {
-    return QVariant(object.isSieveEnabled());
-} else if (property == QLatin1String("smtpauth")) {
-    return QVariant(object.isSmtpauthEnabled());
-} else if (property == QLatin1String("addresses")) {
-    return QVariant(object.addresses());
-} else if (property == QLatin1String("forwards")) {
-    return QVariant(object.forwards());
-} else if (property == QLatin1String("quota")) {
-    return QVariant(object.quota());
-} else if (property == QLatin1String("usage")) {
-    return QVariant(object.usage());
-} else if (property == QLatin1String("usagePercent")) {
-    return QVariant(object.usagePercent());
-} else if (property == QLatin1String("isValid")) {
-    return QVariant(object.isValid());
-} else if (property == QLatin1String("created")) {
-    return QVariant(object.created());
-} else if (property == QLatin1String("updated")) {
-    return QVariant(object.updated());
-} else if (property == QLatin1String("validUntil")) {
-    return QVariant(object.validUntil());
-} else if (property == QLatin1String("keepLocal")) {
-    return QVariant(object.keepLocal());
-} else if (property == QLatin1String("catchAll")) {
-    return QVariant(object.catchAll());
-} else if (property == QLatin1String("passwordExpires")) {
-    return QVariant(object.passwordExpires());
-} else if (property == QLatin1String("passwordExpired")) {
-    return QVariant(object.passwordExpired());
-} else if (property == QLatin1String("expired")) {
-    return QVariant(object.expired());
-}
-return QVariant();
-GRANTLEE_END_LOOKUP
 
 #endif // ACCOUNT_H

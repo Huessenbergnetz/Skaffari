@@ -83,12 +83,12 @@ void HelpEntry::swap(HelpEntry &other) noexcept
     std::swap(d, other.d);
 }
 
-QString HelpEntry::getTitle() const
+QString HelpEntry::title() const
 {
     return d->title;
 }
 
-QString HelpEntry::getText() const
+QString HelpEntry::text() const
 {
     return d->text;
 }

@@ -20,7 +20,7 @@
 #define AUTOCONFIGSERVER_H
 
 #include "../../common/global.h"
-#include <grantlee5/grantlee/metatype.h>
+#include <QObject>
 #include <QSharedDataPointer>
 #include <vector>
 
@@ -33,21 +33,18 @@ class SkaffariError;
 /*!
  * \ingroup skaffaricore
  * \brief Represents a server used for autoconfiguration of mail user agents.
- *
- * \par Grantlee accessors
- * Accessor       | Type           | Method
- * ---------------|----------------|-------
- * id             | dbid_t         | id()
- * domainId       | dbid_t         | domainId()
- * type           | Type           | type()
- * hostname       | QString        | hostname()
- * port           | quint16        | port()
- * socketType     | SocketType     | socketType()
- * authentication | Authentication | authentication()
- * sorting        | qint8          | sorting()
  */
 class AutoconfigServer
 {
+    Q_GADGET
+    Q_PROPERTY(dbid_t id READ id CONSTANT)
+    Q_PROPERTY(dbid_t domainId READ domainId CONSTANT)
+    Q_PROPERTY(AutoconfigServer::Type type READ type CONSTANT)
+    Q_PROPERTY(QString hostname READ hostname CONSTANT)
+    Q_PROPERTY(quint16 port READ port CONSTANT)
+    Q_PROPERTY(AutoconfigServer::SocketType socketType READ socketType CONSTANT)
+    Q_PROPERTY(AutoconfigServer::Authentication authentication READ authentication CONSTANT)
+    Q_PROPERTY(qint8 sorting READ sorting CONSTANT)
 public:
     /*!
      * \brief Type of the server.
@@ -57,6 +54,7 @@ public:
         Pop3    = 1,    /**< POP3 server */
         Smtp    = 2     /**< SMTP server */
     };
+    Q_ENUM(Type)
 
     /*!
      * \brief Type of the socket to use for this server.
@@ -66,6 +64,7 @@ public:
         StartTls    = 1,    /**< Use STARTTLS for this connection */
         Ssl         = 2     /**< USE SSL/TLS socket connection */
     };
+    Q_ENUM(SocketType)
 
     /*!
      * \brief %Authentication method to use for this server.
@@ -78,6 +77,7 @@ public:
         ClientIpAddress = 4,    /**< The server recognizes this user based on the IP address. No authentication needed, the server will require no username nor password. */
         TlsClientCert   = 5     /**< On the SSL/TLS layer, the server requests a client certificate and the client sends one (possibly after letting the user select/confirm one), if available. */
     };
+    Q_ENUM(Authentication)
 
     /*!
      * \brief Constructs an invalid, empty %AutoconfigServer object.
@@ -292,27 +292,5 @@ QDataStream &operator<<(QDataStream &stream, const std::vector<AutoconfigServer>
  * \brief Reads a list of %AutoconfigServer from the given \a stream and stores it in the given \a servers.
  */
 QDataStream &operator>>(QDataStream &stream, std::vector<AutoconfigServer> &servers);
-
-GRANTLEE_BEGIN_LOOKUP(AutoconfigServer)
-if (property == QLatin1String("id")) {
-    return QVariant(object.id());
-} else if (property == QLatin1String("domainId")) {
-    return QVariant(object.domainId());
-} else if (property == QLatin1String("type")) {
-    return QVariant(object.type());
-} else if (property == QLatin1String("hostname")) {
-    return QVariant(object.hostname());
-} else if (property == QLatin1String("port")) {
-    return QVariant(object.port());
-} else if (property == QLatin1String("socketType")) {
-    return QVariant(object.socketType());
-} else if (property == QLatin1String("authentication")) {
-    return QVariant(object.authentication());
-} else if (property == QLatin1String("sorting")) {
-    return QVariant(object.sorting());
-} else {
-    return QVariant();
-}
-GRANTLEE_END_LOOKUP
 
 #endif // AUTOCONFIGSERVER_H

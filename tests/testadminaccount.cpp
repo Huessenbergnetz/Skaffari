@@ -2,19 +2,25 @@
 #include <QTest>
 #include <QObject>
 #include <QDataStream>
+#include <QMetaObject>
+#include <QMetaProperty>
 
 class AdminAccountTest : public QObject
 {
     Q_OBJECT
 public:
-    AdminAccountTest(QObject *parent = nullptr) : QObject(parent) {}
+    AdminAccountTest(QObject *parent = nullptr) : QObject(parent) {
+        qRegisterMetaType<quota_size_t>("quota_size_t");
+        qRegisterMetaType<dbid_t>("dbid_t");
+        qRegisterMetaType<QList<dbid_t>>("QList<dbid_t>");
+    }
 
 private Q_SLOTS:
     void initTestCase() {}
 
     void isNotValid();
     void constructor();
-    void isValid();
+    void testMove();
     void id();
     void username();
     void domains();
@@ -66,31 +72,51 @@ void AdminAccountTest::isNotValid()
 void AdminAccountTest::constructor()
 {
     m_acc = AdminAccount(123, QStringLiteral("admin"), AdminAccount::DomainMaster, domIdList, QStringLiteral("Europe/Berlin"), QStringLiteral("de_DE"), QStringLiteral("default"), 50, 85, baseTime.addMonths(-1), baseTime);
+    QVERIFY(m_acc.isValid());
 }
 
-void AdminAccountTest::isValid()
+void AdminAccountTest::testMove()
 {
-    QVERIFY(m_acc.isValid());
+    // Test move constructor
+    {
+        AdminAccount a1(123, QStringLiteral("admin"), AdminAccount::DomainMaster, domIdList, QStringLiteral("Europe/Berlin"), QStringLiteral("de_DE"), QStringLiteral("default"), 50, 85, baseTime.addMonths(-1), baseTime);
+        QCOMPARE(a1.username(), QStringLiteral("admin"));
+        AdminAccount a2(std::move(a1));
+        QCOMPARE(a2.username(), QStringLiteral("admin"));
+    }
+
+    // Test move assignment
+    {
+        AdminAccount a1(123, QStringLiteral("admin"), AdminAccount::DomainMaster, domIdList, QStringLiteral("Europe/Berlin"), QStringLiteral("de_DE"), QStringLiteral("default"), 50, 85, baseTime.addMonths(-1), baseTime);
+        QCOMPARE(a1.username(), QStringLiteral("admin"));
+        AdminAccount a2(123, QStringLiteral("admin2"), AdminAccount::DomainMaster, domIdList, QStringLiteral("Europe/Berlin"), QStringLiteral("de_DE"), QStringLiteral("default"), 50, 85, baseTime.addMonths(-1), baseTime);
+        a2 = std::move(a1);
+        QCOMPARE(a2.username(), QStringLiteral("admin"));
+    }
 }
 
 void AdminAccountTest::id()
 {
     QCOMPARE(m_acc.id(), static_cast<dbid_t>(123));
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("id")).readOnGadget(&m_acc).value<dbid_t>(), static_cast<dbid_t>(123));
 }
 
 void AdminAccountTest::username()
 {
     QCOMPARE(m_acc.username(), QStringLiteral("admin"));
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("username")).readOnGadget(&m_acc).toString(), QStringLiteral("admin"));
 }
 
 void AdminAccountTest::domains()
 {
     QCOMPARE(m_acc.domains(), domIdList);
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("domains")).readOnGadget(&m_acc).value<QList<dbid_t>>(), domIdList);
 }
 
 void AdminAccountTest::type()
 {
     QCOMPARE(m_acc.type(), AdminAccount::DomainMaster);
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("type")).readOnGadget(&m_acc).value<AdminAccount::AdminAccountType>(), AdminAccount::DomainMaster);
 }
 
 void AdminAccountTest::typeInt()
@@ -101,41 +127,50 @@ void AdminAccountTest::typeInt()
 void AdminAccountTest::typeStr()
 {
     QCOMPARE(m_acc.typeStr(), QStringLiteral("127"));
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("typeStr")).readOnGadget(&m_acc).toString(), QStringLiteral("127"));
 }
 
 void AdminAccountTest::isSuperUser()
 {
     QVERIFY(!m_acc.isSuperUser());
+    QVERIFY(!AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("isSuperUser")).readOnGadget(&m_acc).toBool());
 }
 
 void AdminAccountTest::lang()
 {
     QCOMPARE(m_acc.lang(), QStringLiteral("de_DE"));
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("lang")).readOnGadget(&m_acc).toString(), QStringLiteral("de_DE"));
 }
 
 void AdminAccountTest::tz()
 {
     QCOMPARE(m_acc.tz(), QStringLiteral("Europe/Berlin"));
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("tz")).readOnGadget(&m_acc).toString(), QStringLiteral("Europe/Berlin"));
 }
 
 void AdminAccountTest::created()
 {
-    QCOMPARE(m_acc.created(), baseTime.addMonths(-1));
+    const QDateTime expected = baseTime.addMonths(-1);
+    QCOMPARE(m_acc.created(), expected);
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("created")).readOnGadget(&m_acc).toDateTime(), expected);
 }
 
 void AdminAccountTest::updated()
 {
     QCOMPARE(m_acc.updated(), baseTime);
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("updated")).readOnGadget(&m_acc).toDateTime(), baseTime);
 }
 
 void AdminAccountTest::warnLevel()
 {
     QCOMPARE(m_acc.warnLevel(), static_cast<quint8>(85));
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("warnLevel")).readOnGadget(&m_acc).value<quint8>(), static_cast<quint8>(85));
 }
 
 void AdminAccountTest::maxDisplay()
 {
     QCOMPARE(m_acc.maxDisplay(), static_cast<quint8>(50));
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("maxDisplay")).readOnGadget(&m_acc).value<quint8>(), static_cast<quint8>(50));
 }
 
 void AdminAccountTest::nameIdString()
@@ -151,6 +186,7 @@ void AdminAccountTest::isValidTest()
 
     AdminAccount aa(id, username, AdminAccount::Administrator, QList<dbid_t>(), QStringLiteral("UTC"), QStringLiteral("en"), QStringLiteral("default"), 25, 90, baseTime, baseTime);
     QCOMPARE(aa.isValid(), result);
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("isValid")).readOnGadget(&aa).toBool(), result);
 }
 
 void AdminAccountTest::isValidTest_data()
@@ -173,6 +209,7 @@ void AdminAccountTest::isSuperUserTest()
     AdminAccount aa(12, QStringLiteral("bigadmin"), type, QList<dbid_t>(), QStringLiteral("UTC"), QStringLiteral("en"), QStringLiteral("default"), 25, 90, baseTime, baseTime);
 
     QCOMPARE(aa.isSuperUser(), result);
+    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("isSuperUser")).readOnGadget(&aa).toBool(), result);
 }
 
 void AdminAccountTest::isSuperUserTest_data()

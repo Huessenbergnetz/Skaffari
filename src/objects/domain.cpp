@@ -194,6 +194,36 @@ Folder Domain::folder(SkaffariIMAP::SpecialUse specialUse) const
     return f;
 }
 
+Folder Domain::draftsFolder() const
+{
+    return folder(SkaffariIMAP::Drafts);
+}
+
+Folder Domain::junkFolder() const
+{
+    return folder(SkaffariIMAP::Junk);
+}
+
+Folder Domain::sentFolder() const
+{
+    return folder(SkaffariIMAP::Sent);
+}
+
+Folder Domain::trashFolder() const
+{
+    return folder(SkaffariIMAP::Trash);
+}
+
+Folder Domain::archiveFolder() const
+{
+    return folder(SkaffariIMAP::Archive);
+}
+
+Folder Domain::otherFolders() const
+{
+    return folder(SkaffariIMAP::SkaffariOtherFolders);
+}
+
 quint32 Domain::accounts() const
 {
     return d->accounts;

@@ -21,7 +21,8 @@
 
 #include "../../common/global.h"
 #include "adminaccount.h"
-#include <grantlee5/grantlee/metatype.h>
+#include <QObject>
+//#include <grantlee5/grantlee/metatype.h>
 #include <QSharedDataPointer>
 #include <QString>
 #include <QVariant>
@@ -43,10 +44,10 @@ class SkaffariError;
  */
 class SimpleAccount
 {
-    class Data;
-    QSharedDataPointer<Data> d;
-    friend QDataStream &operator>>(QDataStream &stream, SimpleAccount &account);
-    friend QDataStream &operator<<(QDataStream &stream, const SimpleAccount &account);
+    Q_GADGET
+    Q_PROPERTY(dbid_t id READ id CONSTANT)
+    Q_PROPERTY(QString username READ username CONSTANT)
+    Q_PROPERTY(QString domainname READ domainname CONSTANT)
 public:
     /*!
      * \brief Constructs an invalid, empty %SimpleAccount.
@@ -187,6 +188,12 @@ public:
      * \return          Single account.
      */
     static SimpleAccount get(Cutelyst::Context *c, SkaffariError &e, dbid_t id);
+
+private:
+    class Data;
+    QSharedDataPointer<Data> d;
+    friend QDataStream &operator>>(QDataStream &stream, SimpleAccount &account);
+    friend QDataStream &operator<<(QDataStream &stream, const SimpleAccount &account);
 };
 
 Q_DECLARE_METATYPE(SimpleAccount)
@@ -210,15 +217,15 @@ QDataStream &operator<<(QDataStream &stream, const SimpleAccount &account);
  */
 QDataStream &operator>>(QDataStream &stream, SimpleAccount &account);
 
-GRANTLEE_BEGIN_LOOKUP(SimpleAccount)
-if (property == QLatin1String("id")) {
-    return QVariant(object.id());
-} else if (property == QLatin1String("username")) {
-    return QVariant(object.username());
-} else if (property == QLatin1String("domainname")) {
-    return QVariant(object.domainname());
-}
-return QVariant();
-GRANTLEE_END_LOOKUP
+//GRANTLEE_BEGIN_LOOKUP(SimpleAccount)
+//if (property == QLatin1String("id")) {
+//    return QVariant(object.id());
+//} else if (property == QLatin1String("username")) {
+//    return QVariant(object.username());
+//} else if (property == QLatin1String("domainname")) {
+//    return QVariant(object.domainname());
+//}
+//return QVariant();
+//GRANTLEE_END_LOOKUP
 
 #endif // SIMPLEACCOUNT_H

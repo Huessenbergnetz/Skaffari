@@ -2,18 +2,23 @@
 
 #include <QTest>
 #include <QDataStream>
+#include <QMetaObject>
+#include <QMetaProperty>
 
 class SimpleDomainTest : public QObject
 {
     Q_OBJECT
 public:
-    SimpleDomainTest(QObject *parent = nullptr) : QObject(parent) {}
+    SimpleDomainTest(QObject *parent = nullptr) : QObject(parent) {
+        qRegisterMetaType<dbid_t>("dbid_t");
+    }
 
 private Q_SLOTS:
     void initTestCase() {}
 
     void doTest();
     void doTest_data();
+    void testMove();
     void datastream();
 
     void cleanupTestCase() {}
@@ -29,7 +34,9 @@ void SimpleDomainTest::doTest()
     SimpleDomain d(id, name);
 
     QCOMPARE(d.id(), id);
+    QCOMPARE(SimpleDomain::staticMetaObject.property(SimpleDomain::staticMetaObject.indexOfProperty("id")).readOnGadget(&d).value<dbid_t>(), id);
     QCOMPARE(d.name(), name);
+    QCOMPARE(SimpleDomain::staticMetaObject.property(SimpleDomain::staticMetaObject.indexOfProperty("name")).readOnGadget(&d).toString(), name);
     QCOMPARE(d.nameIdString(), nameId);
     QCOMPARE(d.isValid(), valid);
 }
@@ -44,6 +51,26 @@ void SimpleDomainTest::doTest_data()
     QTest::newRow("test-00") << static_cast<dbid_t>(1) << QStringLiteral("example.com") << QStringLiteral("example.com (ID: 1)") << true;
     QTest::newRow("test-01") << static_cast<dbid_t>(0) << QStringLiteral("example.com") << QStringLiteral("example.com (ID: 0)") << false;
     QTest::newRow("test-02") << static_cast<dbid_t>(1) << QString() << QStringLiteral(" (ID: 1)") << false;
+}
+
+void SimpleDomainTest::testMove()
+{
+    // Test move constructor
+    {
+        SimpleDomain d1{1, QStringLiteral("example.com")};
+        QCOMPARE(d1.name(), QStringLiteral("example.com"));
+        SimpleDomain d2(std::move(d1));
+        QCOMPARE(d2.name(), QStringLiteral("example.com"));
+    }
+
+    // Test move assignment
+    {
+        SimpleDomain d1{1, QStringLiteral("example.com")};
+        QCOMPARE(d1.name(), QStringLiteral("example.com"));
+        SimpleDomain d2{2, QStringLiteral("example.net")};
+        d2 = std::move(d1);
+        QCOMPARE(d2.name(), QStringLiteral("example.com"));
+    }
 }
 
 void SimpleDomainTest::datastream()
