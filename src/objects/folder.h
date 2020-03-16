@@ -25,7 +25,7 @@
 #include "../imap/skaffariimap.h"
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffariobjects
  * \brief Contains information about a single default folder.
  */
 class Folder

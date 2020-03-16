@@ -22,7 +22,6 @@
 #include "../../common/global.h"
 #include "adminaccount.h"
 #include <QObject>
-//#include <grantlee5/grantlee/metatype.h>
 #include <QSharedDataPointer>
 #include <QString>
 #include <QVariant>
@@ -39,7 +38,7 @@ class Context;
 class SkaffariError;
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffariobjects
  * \brief Contains basic account data (only database ID, user name and domain name).
  */
 class SimpleAccount
@@ -216,16 +215,5 @@ QDataStream &operator<<(QDataStream &stream, const SimpleAccount &account);
  * \brief Reads an %SimpleAccount from the given \a stream and stores it in the given \a account.
  */
 QDataStream &operator>>(QDataStream &stream, SimpleAccount &account);
-
-//GRANTLEE_BEGIN_LOOKUP(SimpleAccount)
-//if (property == QLatin1String("id")) {
-//    return QVariant(object.id());
-//} else if (property == QLatin1String("username")) {
-//    return QVariant(object.username());
-//} else if (property == QLatin1String("domainname")) {
-//    return QVariant(object.domainname());
-//}
-//return QVariant();
-//GRANTLEE_END_LOOKUP
 
 #endif // SIMPLEACCOUNT_H

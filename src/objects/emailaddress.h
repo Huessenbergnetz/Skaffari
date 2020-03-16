@@ -32,7 +32,7 @@ class Context;
 class SkaffariError;
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffariobjects
  * \brief Contains information about a single email address from the virtual table.
  */
 class EmailAddress

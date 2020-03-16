@@ -32,7 +32,7 @@ class Context;
 class SkaffariError;
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffariobjects
  * \brief Contains basic domain data (only database ID and domain name).
  */
 class SimpleDomain

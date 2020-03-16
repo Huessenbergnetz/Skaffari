@@ -14,6 +14,7 @@ add_library(grantlee_skaffari MODULE
     splitfilter.cpp
     splitfilter.h
     skaffarigrantlee.cpp
+    skaffarigrantlee.h
 )
 
 target_include_directories(grantlee_skaffari SYSTEM PRIVATE ${Cutelyst2Qt5_INCLUDE_DIR})

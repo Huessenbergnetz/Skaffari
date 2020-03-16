@@ -22,13 +22,25 @@
 #include <grantlee/taglibraryinterface.h>
 
 /*!
- * \defgroup skaffarigrantlee SkaffariGrantlee
+ * \defgroup skaffarigrantlee Grantlee
  * \brief %Skaffari specific Grantlee template engine plugins
  */
 
 /*!
  * \ingroup skaffarigrantlee
- * \brief Skaffari specific plugin for the Grantlee template engine.
+ * \defgroup skaffarigrantleetags Tags
+ * \brief %Skaffari specific Grantlee tags
+ */
+
+/*!
+ * \ingroup skaffarigrantlee
+ * \defgroup skaffarigrantleefilters Filters
+ * \brief %Skaffari specific Grantlee filters
+ */
+
+/*!
+ * \ingroup skaffarigrantlee
+ * \brief %Skaffari specific plugin for the Grantlee template engine.
  *
  * Provides Skaffari specific tags and filters for the Grantlee template engine.
  *

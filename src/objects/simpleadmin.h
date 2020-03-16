@@ -20,13 +20,12 @@
 #define SIMPLEADMIN_H
 
 #include "../../common/global.h"
-//#include <grantlee5/grantlee/metatype.h>
 #include <QObject>
 #include <QString>
 #include <QVariant>
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffariobjects
  * \brief Provides basic information about an administrator.
  */
 class SimpleAdmin
@@ -117,14 +116,5 @@ QDataStream &operator<<(QDataStream &stream, const SimpleAdmin &admin);
  * \brief Reads an %SimpleAdmin from the given \a stream and stores it in the given \a admin.
  */
 QDataStream &operator>>(QDataStream &stream, SimpleAdmin &admin);
-
-//GRANTLEE_BEGIN_LOOKUP(SimpleAdmin)
-//if (property == QLatin1String("id")) {
-//    return QVariant(object.id());
-//} else if (property == QLatin1String("name")) {
-//    return QVariant(object.name());
-//}
-//return QVariant();
-//GRANTLEE_END_LOOKUP
 
 #endif // SIMPLEADMIN_H

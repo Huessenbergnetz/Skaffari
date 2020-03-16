@@ -26,7 +26,7 @@ using namespace Cutelyst;
 class SkaffariEngine;
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffaricontrollers
  * \brief Routes for the admin namespace.
  */
 class AdminEditor : public Controller

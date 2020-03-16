@@ -38,7 +38,7 @@ class AdminAccountData;
 class SkaffariError;
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffariobjects
  * \brief Represents an administrator account.
  *
  * The %AdminAccount class represents an administrator account object.

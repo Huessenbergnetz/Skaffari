@@ -22,7 +22,7 @@
 #include <grantlee5/grantlee/filter.h>
 
 /*!
- * \ingroup skaffarigrantlee
+ * \ingroup skaffarigrantleefilters
  * \brief Grantlee template filter to sort a list of strings according to the current locale.
  *
  * This filter can be used as \c sk_stringlistsort in your Grantlee templates. It sorts a list

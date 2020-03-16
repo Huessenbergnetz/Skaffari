@@ -32,7 +32,7 @@
 #include "accountstatusupdater.h"
 
 /*!
- * \defgroup skaffaricmd SkaffariCMD
+ * \defgroup skaffaricmd CMD
  * \brief The %Skaffari command line utility skaffaricmd.
  */
 

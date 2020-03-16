@@ -45,7 +45,7 @@ public:
 
 
 /*!
- * \ingroup skaffarigrantlee
+ * \ingroup skaffarigrantleetags
  * \brief Grantlee template tag to convert a numeric value into a human readable file size.
  *
  * Converts for example 1024 into 1 KiB. It takes the current user's locale into account. The

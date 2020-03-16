@@ -21,10 +21,9 @@
 
 #include <QObject>
 #include <QSharedDataPointer>
-//#include <grantlee5/grantlee/metatype.h>
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffariobjects
  * \brief Represents a single help entry.
  */
 class HelpEntry
@@ -92,15 +91,6 @@ protected:
 
 Q_DECLARE_METATYPE(HelpEntry)
 Q_DECLARE_TYPEINFO(HelpEntry, Q_MOVABLE_TYPE);
-
-//GRANTLEE_BEGIN_LOOKUP(HelpEntry)
-//if (property == QLatin1String("title")) {
-//    return QVariant(object.getTitle());
-//} else if (property == QLatin1String("text")) {
-//    return QVariant(object.getText());
-//}
-//return QVariant();
-//GRANTLEE_END_LOOKUP
 
 typedef QHash<QString, HelpEntry> HelpHash;
 Q_DECLARE_METATYPE(HelpHash)

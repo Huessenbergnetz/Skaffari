@@ -47,7 +47,7 @@ class DomainData;
 class SkaffariError;
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffariobjects
  * \brief Represents a single domain that is managed by %Skaffari.
  */
 class Domain

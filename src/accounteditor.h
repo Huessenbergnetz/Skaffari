@@ -25,7 +25,7 @@ using namespace Cutelyst;
 class SkaffariEngine;
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffaricontrollers
  * \brief Routes for the account namespace.
  *
  * Except for the list() action all actions in this controller are chained to the base()

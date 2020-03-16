@@ -28,7 +28,7 @@ using namespace Cutelyst;
 class SkaffariEngine;
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffaricontrollers
  * \brief Routes for the domain namespace.
  */
 class DomainEditor : public Controller

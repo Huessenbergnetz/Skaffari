@@ -22,8 +22,6 @@
 #include <grantlee/parser.h>
 #include <Cutelyst/Context>
 
-#include <QDebug>
-
 AdminTypeTag::AdminTypeTag(QObject *parent) : Grantlee::AbstractNodeFactory(parent)
 {
 

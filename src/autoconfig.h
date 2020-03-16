@@ -26,6 +26,10 @@ Q_DECLARE_LOGGING_CATEGORY(SK_AUTOCONFIG)
 
 using namespace Cutelyst;
 
+/*!
+ * \ingroup skaffaricontrollers
+ * \brief Controller for the Microsoft autoconfiguration feature.
+ */
 class Autoconfig : public Controller
 {
     Q_OBJECT
@@ -35,8 +39,6 @@ public:
 
     C_ATTR(index, :Path)
     void index(Context *c);
-
-private Q_SLOTS:
 };
 
 #endif // AUTOCONFIG_H

@@ -22,7 +22,7 @@
 #include <Cutelyst/Plugins/Utils/ValidatorRule>
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffarivalidator
  * \brief Cutelyst input validator to check if an account exists by the database ID.
  *
  * This validator fails if the database ID got from the input field does not exist

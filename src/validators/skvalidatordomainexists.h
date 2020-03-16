@@ -21,6 +21,13 @@
 
 #include <Cutelyst/Plugins/Utils/ValidatorRule>
 
+/*!
+ * \ingroup skaffarivalidator
+ * \brief Cutelyst input validator to check if a domain exists by the database ID.
+ *
+ * This validator fails if the database ID got from the input field does not exist
+ * in the \a domain table.
+ */
 class SkValidatorDomainExists : public Cutelyst::ValidatorRule
 {
 public:

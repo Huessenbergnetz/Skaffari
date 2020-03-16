@@ -31,7 +31,7 @@ class Context;
 class SkaffariError;
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffariobjects
  * \brief Represents a server used for autoconfiguration of mail user agents.
  */
 class AutoconfigServer

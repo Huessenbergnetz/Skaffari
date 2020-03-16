@@ -31,7 +31,7 @@ class Context;
 }
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffariobjects
  * \brief The SkaffariError class provides Skaffari error information.
  *
  * A SkaffariError objet can provide information about different errors that can happen

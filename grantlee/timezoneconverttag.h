@@ -44,7 +44,7 @@ public:
 };
 
 /*!
- * \ingroup skaffarigrantlee
+ * \ingroup skaffarigrantleetags
  * \brief Grantlee template tag to convert a datetime into a specific time zone and format string output.
  *
  * This will take the current user's locale and time zone into account. Time zone and locale will be taken

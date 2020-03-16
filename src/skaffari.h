@@ -27,8 +27,26 @@ Q_DECLARE_LOGGING_CATEGORY(SK_CORE)
 using namespace Cutelyst;
 
 /*!
- * \defgroup skaffaricore SkaffariCore
+ * \defgroup skaffaricore Core
  * \brief %Skaffari core application
+ */
+
+/*!
+ * \ingroup skaffaricore
+ * \defgroup skaffariobjects Objects
+ * \brief Data objects used by %Skaffari
+ */
+
+/*!
+ * \ingroup skaffaricore
+ * \defgroup skaffaricontrollers Controllers
+ * \brief %Cutelyst controllers for %Skaffari
+ */
+
+/*!
+ * \ingroup skaffaricore
+ * \defgroup skaffarivalidator Validators
+ * \brief %Skaffari specific %Cutelyst input validators.
  */
 
 /*!

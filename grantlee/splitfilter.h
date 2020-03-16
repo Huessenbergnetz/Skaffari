@@ -22,7 +22,7 @@
 #include <grantlee5/grantlee/filter.h>
 
 /*!
- * \ingroup skaffarigrantlee
+ * \ingroup skaffarigrantleefilters
  * \brief Grantlee template filter to split a string into QStringList.
  *
  * This filter can be use as \c sk_split in your grantlee templates. It splits

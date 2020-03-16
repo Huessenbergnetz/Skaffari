@@ -26,6 +26,10 @@ Q_DECLARE_LOGGING_CATEGORY(SK_AUTODISCOVER)
 
 using namespace Cutelyst;
 
+/*!
+ * \ingroup skaffaricontrollers
+ * \brief Controller for the autodiscover feature supported by Thunderbird and others.
+ */
 class Autodiscover : public Controller
 {
     Q_OBJECT

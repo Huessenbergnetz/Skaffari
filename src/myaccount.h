@@ -25,6 +25,7 @@ using namespace Cutelyst;
 class SkaffariEngine;
 
 /*!
+ * \ingroup skaffaricontrollers
  * \brief Routes for the myaccount namespace.
  */
 class MyAccount : public Controller

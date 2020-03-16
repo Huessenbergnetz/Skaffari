@@ -24,7 +24,7 @@
 using namespace Cutelyst;
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffaricontrollers
  * \brief Routes for the settings namespace.
  */
 class SettingsEditor : public Controller

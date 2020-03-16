@@ -44,6 +44,10 @@ public:
     Grantlee::Node *getNode(const QString &tagContent, Grantlee::Parser *p) const override;
 };
 
+/*!
+ * \ingroup skaffarigrantleetags
+ * \brief Converts AdminAccount::AdminAccountType into a human readable translated string.
+ */
 class AdminType : public Grantlee::Node // clazy:exclude=ctor-missing-parent-argument
 {
     Q_OBJECT

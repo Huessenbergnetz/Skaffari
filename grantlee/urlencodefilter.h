@@ -22,7 +22,7 @@
 #include <grantlee5/grantlee/filter.h>
 
 /*!
- * \ingroup skaffarigrantlee
+ * \ingroup skaffarigrantleefilters
  * \brief Grantlee template filter to encode strings to percent encoding.
  *
  * This filter can be used as \c sk_urlencode in your Grantlee templates. It encodes

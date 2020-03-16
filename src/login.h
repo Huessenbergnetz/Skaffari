@@ -28,7 +28,7 @@ using namespace Cutelyst;
 class SkaffariEngine;
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffaricontrollers
  * \brief Handles the login route.
  */
 class Login : public Controller

@@ -30,7 +30,7 @@ class Context;
 }
 
 /*!
- * \ingroup skaffaricore
+ * \ingroup skaffariobjects
  * \brief Contains information about a supported language.
  */
 class Language
