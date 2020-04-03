@@ -207,6 +207,16 @@ QVariantHash SkaffariConfig::getAutoconfigSettings()
 
 QString SkaffariConfig::tmpl() { QReadLocker locker(&cfg->lock); return cfg->tmpl; }
 QString SkaffariConfig::tmplBasePath() { QReadLocker locker(&cfg->lock); return cfg->tmplBasePath; }
+QString SkaffariConfig::tmplPath(const QString &pathpart)
+{
+    QReadLocker locker(&cfg->lock);
+    return tmplBasePath() + QLatin1Char('/') + pathpart;
+}
+QString SkaffariConfig::tmplPath(const QStringList &pathparts)
+{
+    QReadLocker locker(&cfg->lock);
+    return tmplBasePath() + QLatin1Char('/') + pathparts.join(QLatin1Char('/'));
+}
 void SkaffariConfig::setTmplBasePath(const QString &path) { QWriteLocker locker(&cfg->lock); cfg->tmplBasePath = path; }
 bool SkaffariConfig::useMemcached() { QReadLocker locker(&cfg->lock); return cfg->useMemcached; }
 bool SkaffariConfig::useMemcachedSession() { QReadLocker locker(&cfg->lock); return cfg->useMemcachedSession; }

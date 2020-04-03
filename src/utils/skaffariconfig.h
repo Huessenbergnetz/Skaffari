@@ -488,6 +488,23 @@ public:
     static void setTmplBasePath(const QString &path);
 
     /*!
+     * \brief Returns an absolut path to the \a pathpart under the template.
+     *
+     * If the \link tmplBasePath() template base path\endlink e.g. is \c /usr/share/skaffari/templates/default
+     * and the \a pathpart is \c site it will return \c /usr/share/skaffari/templates/default/site
+     */
+    static QString tmplPath(const QString &pathpart);
+
+    /*!
+     * \brief Returns an absolut path to the \a pathparts under the template.
+     *
+     * If the \link tmplBasePath() template base path\endlink e.g. is \c /usr/share/skaffari/templates/default
+     * and the \a pathparts are \c static and \c favicon.ico it will return
+     * \c /usr/share/skaffari/templates/default/static/favicon.ico
+     */
+    static QString tmplPath(const QStringList &pathsparts);
+
+    /*!
      * \brief Returns \c true if the current template uses asynchronous/AJAX requests to load the list of accounts.
      */
     static bool tmplAsyncAccountList();
