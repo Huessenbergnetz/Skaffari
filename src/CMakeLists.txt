@@ -3,6 +3,24 @@ set (skaffari_SRCS
     imap/skaffariimap.h
     imap/skaffariimaperror.cpp
     imap/skaffariimaperror.h
+    cutelee/acedecodefilter.cpp
+    cutelee/acedecodefilter.h
+    cutelee/admintypetag.cpp
+    cutelee/admintypetag.h
+    cutelee/filesizeformattag.cpp
+    cutelee/filesizeformattag.h
+    cutelee/splitfilter.cpp
+    cutelee/splitfilter.h
+    cutelee/stringformatfilter.cpp
+    cutelee/stringformatfilter.h
+    cutelee/stringlistsortfilter.cpp
+    cutelee/stringlistsortfilter.h
+    cutelee/timezoneconverttag.cpp
+    cutelee/timezoneconverttag.h
+    cutelee/urlencodefilter.cpp
+    cutelee/urlencodefilter.h
+    cutelee/skaffaricutelee.cpp
+    cutelee/skaffaricutelee.h
     objects/account.cpp
     objects/account.h
     objects/account_p.h
@@ -133,7 +151,7 @@ target_link_libraries(skaffari
         Cutelyst::Session
         Cutelyst::Authentication
         Cutelyst::StatusMessage
-        Cutelyst::View::Grantlee
+        Cutelyst::View::Cutelee
         Cutelyst::StaticSimple
         Cutelyst::Utils::Validator
         Cutelyst::Utils::Sql
@@ -142,7 +160,7 @@ target_link_libraries(skaffari
         Cutelyst::Memcached
         Cutelyst::MemcachedSessionStore
         Cutelyst::CSRFProtection
-        Grantlee5::Templates
+        Cutelee5::Templates
         crypt
         ${ICU_LIBRARIES}
 )

@@ -20,7 +20,7 @@
 
 #include <Cutelyst/Application>
 #include <Cutelyst/Plugins/StaticSimple/StaticSimple>
-#include <Cutelyst/Plugins/View/Grantlee/grantleeview.h>
+#include <Cutelyst/Plugins/View/Cutelee/cuteleeview.h>
 #include <Cutelyst/Plugins/Session/Session>
 #include <Cutelyst/Plugins/Authentication/authentication.h>
 #include <Cutelyst/Plugins/Authentication/credentialpassword.h>
@@ -33,8 +33,7 @@
 #include <Cutelyst/Plugins/CSRFProtection/CSRFProtection>
 #include <Cutelyst/Plugins/Utils/LangSelect>
 
-#include <grantlee5/grantlee/metatype.h>
-#include <grantlee5/grantlee/engine.h>
+#include <cutelee/engine.h>
 
 #include <QSqlDatabase>
 #include <QSqlError>
@@ -57,6 +56,8 @@ extern "C"
 
 #include <syslog.h>
 }
+
+#include "cutelee/skaffaricutelee.h"
 
 #include "objects/helpentry.h"
 #include "objects/skaffarierror.h"
@@ -206,7 +207,7 @@ bool Skaffari::init()
         SkaffariConfig::setTmplBasePath(tmplBasePath);
 
         QVariantMap tmplConfig;
-        QFile tmplConfigFile(SkaffariConfig::tmplBasePath() + QLatin1String("/metadata.json"));
+        QFile tmplConfigFile(SkaffariConfig::tmplPath(QStringLiteral("/metadata.json")));
         if (tmplConfigFile.exists()) {
             qCDebug(SK_CORE, "Found template metadata file.");
             if (tmplConfigFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
@@ -251,18 +252,18 @@ bool Skaffari::init()
         isInitialized = true;
     }
 
-    const QString sitePath = SkaffariConfig::tmplBasePath() + QLatin1String("/site");
+    const QString sitePath = SkaffariConfig::tmplPath(QStringLiteral("site"));
 
-    qCDebug(SK_CORE) << "Registering Grantlee view.";
-    auto view = new GrantleeView(this);
+    qCDebug(SK_CORE) << "Registering Cutelee view.";
+    auto view = new CuteleeView(this);
     view->setTemplateExtension(QStringLiteral(".html"));
     view->setWrapper(QStringLiteral("wrapper.html"));
     view->setCache(false);
     view->setIncludePaths({sitePath});
-    view->engine()->addDefaultLibrary(QStringLiteral("grantlee_i18ntags"));
-    view->engine()->addDefaultLibrary(QStringLiteral("grantlee_skaffari"));
+    view->engine()->addDefaultLibrary(QStringLiteral("cutelee_i18ntags"));
+    view->engine()->insertDefaultLibrary(QStringLiteral("cutelee_skaffari"), new SkaffariCutelee(view->engine()));
 
-    view->loadTranslationsFromDir(tmplName, SkaffariConfig::tmplBasePath() + QLatin1String("/l10n"), QStringLiteral("_"));
+    view->loadTranslationsFromDir(tmplName, SkaffariConfig::tmplPath(QStringLiteral("l10n")), QStringLiteral("_"));
 
     qCDebug(SK_CORE) << "Registering Controllers.";
     new Root(this);
@@ -279,7 +280,7 @@ bool Skaffari::init()
     qCDebug(SK_CORE) << "Registering plugins.";
 
     auto staticSimple = new StaticSimple(this);
-    const QString staticPath = SkaffariConfig::tmplBasePath() + QLatin1String("/static");
+    const QString staticPath = SkaffariConfig::tmplPath(QStringLiteral("static"));
     staticSimple->setIncludePaths({staticPath, QStringLiteral(SKAFFARI_STATICDIR)});
 
     if (SkaffariConfig::useMemcached()) {
@@ -302,7 +303,7 @@ bool Skaffari::init()
 
     auto csrf = new CSRFProtection(this);
     csrf->setDefaultDetachTo(QStringLiteral("/csrfdenied"));
-    csrf->setIgnoredNamespaces({QStringLiteral("autodiscover/autodiscover.xml")});
+    csrf->setIgnoredNamespaces({QStringLiteral("autodiscover/autodiscover.xml"), QStringLiteral("mail/config-v1.1.xml")});
 
     new StatusMessage(this);
 

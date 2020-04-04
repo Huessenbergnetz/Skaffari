@@ -178,18 +178,18 @@ void Root::about(Context *c)
     coreComponents.push_back(createCoreComponentInfo(QStringLiteral("Cutelyst"),
                                                      QString::fromLatin1(Application::cutelystVersion()),
                                                      QStringLiteral("https://www.cutelyst.org"),
-                                                     QStringLiteral("Daniel Nicoletti"),
-                                                     QStringLiteral("https://dantti.wordpress.com"),
+                                                     QStringLiteral("Cutelyst Contributors"),
+                                                     QStringLiteral("https://github.com/cutelyst/cutelyst/graphs/contributors"),
                                                      QStringLiteral("GNU Lesser General Public License 2.1"),
                                                      QStringLiteral("https://github.com/cutelyst/cutelyst/blob/master/COPYING")));
 
-    coreComponents.push_back(createCoreComponentInfo(QStringLiteral("Grantlee"),
-                                                     QStringLiteral(GRANTLEE_VERSION),
-                                                     QStringLiteral("http://www.grantlee.org"),
-                                                     QStringLiteral("Stephen Kelly"),
-                                                     QStringLiteral("https://steveire.wordpress.com/"),
+    coreComponents.push_back(createCoreComponentInfo(QStringLiteral("Cutelee"),
+                                                     QStringLiteral(CUTELEE_VERSION),
+                                                     QStringLiteral("https://github.com/cutelyst/cutelee"),
+                                                     QStringLiteral("Cutelee Contributors"),
+                                                     QStringLiteral("https://github.com/cutelyst/cutelee/graphs/contributors"),
                                                      QStringLiteral("GNU Lesser General Public License 2.1"),
-                                                     QStringLiteral("https://github.com/steveire/grantlee/blob/master/COPYING.LIB")));
+                                                     QStringLiteral("https://github.com/cutelyst/cutelee/blob/master/COPYING.LIB")));
 
     coreComponents.push_back(createCoreComponentInfo(QStringLiteral("Qt"),
                                                      QString::fromLatin1(qVersion()),
@@ -227,7 +227,7 @@ void Root::about(Context *c)
                                                      QStringLiteral("https://github.com/libpwquality/libpwquality/blob/master/COPYING")));
 #endif
 
-    QFile tmplMetadataFile(SkaffariConfig::tmplBasePath() + QLatin1String("/metadata.json"));
+    QFile tmplMetadataFile(SkaffariConfig::tmplPath(QStringLiteral("metadata.json")));
     if (Q_LIKELY(tmplMetadataFile.exists())) {
         if (Q_LIKELY(tmplMetadataFile.open(QIODevice::ReadOnly|QIODevice::Text))) {
             QJsonParseError jpe;
@@ -338,15 +338,7 @@ bool Root::Auto(Context* c)
 
     StatusMessage::load(c);
 
-    c->stash({
-                 {QStringLiteral("user"),           QVariant::fromValue<AdminAccount>(AdminAccount(user))},
-                 {QStringLiteral("userId"),         user.id()},
-                 {QStringLiteral("userType"),       user.value(QStringLiteral("type"))},
-                 {QStringLiteral("userName"),       user.value(QStringLiteral("username"))},
-                 {QStringLiteral("userMaxDisplay"), Session::value(c, QStringLiteral("maxdisplay"), SkaffariConfig::defMaxdisplay()).value<quint8>()},
-                 {QStringLiteral("userWarnLevel"),  Session::value(c, QStringLiteral("warnlevel"), SkaffariConfig::defWarnlevel()).value<quint8>()},
-                 {QStringLiteral("userTz"),         Session::value(c, QStringLiteral("tz"), SkaffariConfig::defTimezone()).toByteArray()}
-             });
+    c->setStash(QStringLiteral("user"), QVariant::fromValue<AdminAccount>(AdminAccount(user)));
 
     return true;
 }

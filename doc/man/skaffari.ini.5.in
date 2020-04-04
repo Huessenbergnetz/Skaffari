@@ -48,7 +48,7 @@ This section contains general configuration options.
 .B template
 = default
 .RS 4
-The Grantlee template that should be used to render the web user interface. The value has to be the name of the template folder in
+The Cutelee template that should be used to render the web user interface. The value has to be the name of the template folder in
 .I @TEMPLATES_INSTALL_DIR@
 .RE
 

@@ -62,10 +62,10 @@
                         <td data-sort-value="{{ domain.name }}"><a href="/domain/{{ domain.id }}/accounts" title="{{ _("Manage accounts") }}">{{ domain.name }}</a><br/><small class="text-muted">{% i18n "ID: %1, Prefix: %2" domain.id domain.prefix %}{% if domain.parent.id > 0 %}, {{ _("Parent:") }} <a href="#domain-{{ domain.parent.id }}">{{ domain.parent.name }}</a>{% endif %}</small></td>
                         <td class="no-filtering text-right">{{ _(domain.accounts) }}</td>
                         <td class="no-filtering text-right" data-sort-value="{{ domain.maxAccounts }}">{% if domain.maxAccounts > 0 %}{{ _(domain.maxAccounts) }}{% else %}{{ unlimitedTxt }}{% endif %}</td>
-                        <td class="no-filtering text-right" data-sort-value="{{ domain.quota }}">{% if domain.quota > 0 %}{% sk_fsf domain.quota 2 2 1024 %}{% else %}{{ _("not set") }}{% endif %}</td>
-                        <td class="no-filtering text-right" data-sort-value="{{ domain.domainQuota }}">{% if domain.domainQuota > 0 %}{% sk_fsf domain.domainQuota 2 2 1024 %}{% else %}{{ unlimitedTxt }}{% endif %}</td>
+                        <td class="no-filtering text-right" data-sort-value="{{ domain.quota }}">{% if domain.quota > 0 %}{% l10n_filesize domain.quota 2 2 1024 %}{% else %}{{ _("not set") }}{% endif %}</td>
+                        <td class="no-filtering text-right" data-sort-value="{{ domain.domainQuota }}">{% if domain.domainQuota > 0 %}{% l10n_filesize domain.domainQuota 2 2 1024 %}{% else %}{{ unlimitedTxt }}{% endif %}</td>
                         <td class="no-filtering text-right" data-sort-value="{{ domain.domainQuotaUsed }}">
-                            {% sk_fsf domain.domainQuotaUsed 2 2 1024 %}
+                            {% l10n_filesize domain.domainQuotaUsed 2 2 1024 %}
                             {% if domain.domainQuota > 0 %}
                             <div class="progress" title="{{ domain.domainQuotaUsagePercent|floatformat:2 }}%">
                                 <div class="progress-bar bg-info pb-w-{{ domain.domainQuotaUsagePercent|floatformat:0 }}" role="progressbar" aria-valuenow="{{ domain.domainQuotaUsed }}" aria-valuemin="0" aria-valuemax="{{ domain.domainQuota }}">{{ domain.domainQuotaUsagePercent|floatformat:2 }}%</div>

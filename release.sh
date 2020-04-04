@@ -22,7 +22,7 @@ then
     exit 1;
 fi
 
-if [ -z $OUTPUTDIR ]
+if [ -z "$OUTPUTDIR" ]
 then
     echo "Missing output directory";
     exit 2;
@@ -85,7 +85,7 @@ done
 
 popd
 
-for SRCDIR in common cmd sql src doc l10n grantlee supplementary tests
+for SRCDIR in common cmd sql src doc l10n supplementary tests
 do
     cp -r $SRCDIR $DIR
 done

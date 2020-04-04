@@ -47,7 +47,7 @@
         <div class="card border-light text-center">
             <div class="card-header">{{ _("Domain quota assigned") }}</div>
             <div class="card-body">
-                <p class="card-text dasboard-number">{% sk_fsf domainquota_assigned 2 2 1024 %}</p>
+                <p class="card-text dasboard-number">{% l10n_filesize domainquota_assigned 2 2 1024 %}</p>
             </div>
         </div>
     </div>
@@ -56,7 +56,7 @@
         <div class="card border-light text-center">
             <div class="card-header">{{ _("Account quota assigned") }}</div>
             <div class="card-body">
-                <p class="card-text dasboard-number">{% sk_fsf accountquota_assigned 2 2 1024 %}</p>
+                <p class="card-text dasboard-number">{% l10n_filesize accountquota_assigned 2 2 1024 %}</p>
             </div>
         </div>
     </div>

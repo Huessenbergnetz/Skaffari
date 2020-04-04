@@ -45,19 +45,19 @@
                 <label for="domainQuota" class="col-form-label">{{ help.domainQuota.title }}</label>
                 {% if user.type >= 254 %}
                 <div class="input-group">
-                    <div class="input-group-prepend"><span class="input-group-text">{% sk_fsf domain.domainQuotaUsed 2 2 1024 %} /</span></div>
-                    <input type="text" id="domainQuota" name="domainQuota" class="form-control{% if validationErrors.domainQuota.count %} is-invalid{% endif %}" value="{% sk_fsf domainQuota|default_if_none:domain.domainQuota 2 2 1024 %}" placeholder="{% sk_fsf domain.domainQuota 2 2 1024 %}" aria-describedby="domainQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?" />
+                    <div class="input-group-prepend"><span class="input-group-text">{% l10n_filesize domain.domainQuotaUsed 2 2 1024 %} /</span></div>
+                    <input type="text" id="domainQuota" name="domainQuota" class="form-control{% if validationErrors.domainQuota.count %} is-invalid{% endif %}" value="{% l10n_filesize domainQuota|default_if_none:domain.domainQuota 2 2 1024 %}" placeholder="{% l10n_filesize domain.domainQuota 2 2 1024 %}" aria-describedby="domainQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?" />
                 </div>
                 {% if validationErrors.domainQuota.count %}<div class="invalid-feedback"><small>{{ validationErrors.domainQuota.0 }}</small></div>{% endif %}
                 {% else %}
-                <input type="text" id="domainQuota" class="form-control-plaintext" value="{% sk_fsf domain.domainQuotaUsed 2 2 1024 %} / {% if domain.domainQuota > 0 %}{% sk_fsf domain.domainQuota 2 2 1024 %}{% else %}{{ _("unlimited") }}{% endif %}" aria-describedby="domainQuotaDesc" readonly="readonly" />
+                <input type="text" id="domainQuota" class="form-control-plaintext" value="{% l10n_filesize domain.domainQuotaUsed 2 2 1024 %} / {% if domain.domainQuota > 0 %}{% l10n_filesize domain.domainQuota 2 2 1024 %}{% else %}{{ _("unlimited") }}{% endif %}" aria-describedby="domainQuotaDesc" readonly="readonly" />
                 {% endif %}
                 <small id="domainQuotaDesc" class="form-text text-muted">{{ help.domainQuota.text }}</small>
             </div>
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="quota" class="col-form-label">{{ help.quota.title }}</label>
-                <input type="text" id="quota" name="quota" class="form-control{% if validationErrors.quota.count %} is-invalid{% endif %}" value="{% sk_fsf quota|default_if_none:domain.quota 2 2 1024 %}" placeholder="{% sk_fsf domain.quota 2 2 1024 %}" aria-describedby="quotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?" />
+                <input type="text" id="quota" name="quota" class="form-control{% if validationErrors.quota.count %} is-invalid{% endif %}" value="{% l10n_filesize quota|default_if_none:domain.quota 2 2 1024 %}" placeholder="{% l10n_filesize domain.quota 2 2 1024 %}" aria-describedby="quotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?" />
                 {% if validationErrors.quota.count %}<div class="invalid-feedback"><small>{{ validationErrors.quota.0 }}</small></div>{% endif %}
                 <small id="quotaDesc" class="form-text text-muted">{{ help.quota.text }}</small>
             </div>

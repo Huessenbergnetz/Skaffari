@@ -5,7 +5,7 @@ project(skaffari VERSION 1.0.0)
 
 find_package(Qt5 5.6.0 REQUIRED COMPONENTS Core Network Sql Xml)
 find_package(Cutelyst2Qt5 2.10.0 REQUIRED)
-find_package(Grantlee5 5.2.0 REQUIRED)
+find_package(Cutelee5 5.2.0 REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 # Auto generate moc files
@@ -43,9 +43,6 @@ set(SKAFFARI_CMD_PATH "${CMAKE_INSTALL_BINDIR}/skaffaricmd")
 set(CUTELYST_WSGI_EXECUTABLE "${CMAKE_INSTALL_BINDIR}/cutelyst-wsgi2" CACHE FILEPATH "Path to the cutelyst-wsgi2 executable")
 set(SYSTEMD_UNIT_DIR "${CMAKE_INSTALL_PREFIX}/lib/systemd/system" CACHE PATH "Systemd unit directory")
 set(APACHE_VHOSTS_DIR "${CMAKE_INSTALL_SYSCONFDIR}/apache2/vhosts.d" CACHE PATH "Apache virtual hosts config directory")
-
-set(Grantlee5_MAJOR_MINOR_VERSION_STRING "${Grantlee5_VERSION_MAJOR}.${Grantlee5_VERSION_MINOR}" )
-set(GRANTLEE_PLUGIN_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/grantlee/${Grantlee5_MAJOR_MINOR_VERSION_STRING} )
 
 option(INSTALL_SUPPLEMENTARY_FILES "Install systemd service and timer files as well as apache example config" OFF)
 
@@ -108,7 +105,6 @@ add_subdirectory(cmd)
 add_subdirectory(templates)
 add_subdirectory(doc)
 add_subdirectory(l10n)
-add_subdirectory(grantlee)
 add_subdirectory(supplementary)
 
 if (BUILD_TESTS)
