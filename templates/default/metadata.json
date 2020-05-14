@@ -37,30 +37,30 @@
         },
         {
             "name": "Font Awesome Free Icons",
-            "version": "5.11.2",
+            "version": "5.13.0",
             "url": "https://fontawesome.com",
             "author": "Fonticons Inc.",
             "authorUrl": "https://fontawesome.com",
             "license": "Creative Commons Attribution 4.0 International",
-            "licenseUrl": "https://fontawesome.com/license"
+            "licenseUrl": "https://fontawesome.com/license/free"
         },
         {
             "name": "Font Awesome Free Fonts",
-            "version": "5.11.2",
+            "version": "5.13.0",
             "url": "https://fontawesome.com",
             "author": "Fonticons Inc.",
             "authorUrl": "https://fontawesome.com",
             "license": "SIL Open Font License 1.1",
-            "licenseUrl": "https://fontawesome.com/license"
+            "licenseUrl": "https://fontawesome.com/license/free"
         },
         {
             "name": "Font Awesome Free Code",
-            "version": "5.11.2",
+            "version": "5.13.0",
             "url": "https://fontawesome.com",
             "author": "Fonticons Inc.",
             "authorUrl": "https://fontawesome.com",
             "license": "MIT License",
-            "licenseUrl": "https://fontawesome.com/license"
+            "licenseUrl": "https://fontawesome.com/license/free"
         },
         {
             "name": "qJax",
