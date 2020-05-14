@@ -124,6 +124,15 @@
             "authorUrl": "https://thottingal.in/",
             "license": "MIT License",
             "licenseUrl": "https://github.com/santhoshtr/CLDRPluralRuleParser/blob/v1.2.0/LICENSE.txt"
+        },
+        {
+            "name": "jQuery Filter Table Plugin",
+            "version": "1.5.7",
+            "url": "https://github.com/sunnywalker/jQuery.FilterTable",
+            "author": "Sunny Walker",
+            "authorUrl": "https://github.com/sunnywalker",
+            "license": "MIT License",
+            "licenseUrl": "https://github.com/sunnywalker/jQuery.FilterTable/blob/v1.5.7/MIT-LICENSE.txt"
         }
     ],
     "config": {
