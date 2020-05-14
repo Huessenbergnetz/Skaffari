@@ -20,7 +20,7 @@
     "queuejax": "1.5.2",
     "sass": "^1.26.5",
     "sass-loader": "^8.0.2",
-    "select2": "4.0.12",
+    "select2": "4.0.13",
     "stupid-table-plugin": "1.1.3"
   }
 }
