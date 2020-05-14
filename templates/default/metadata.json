@@ -106,6 +106,24 @@
             "authorUrl": "https://about.me/fagnerbrack",
             "license": "MIT License",
             "licenseUrl": "https://github.com/js-cookie/js-cookie/blob/v2.2.1/LICENSE"
+        },
+        {
+            "name": "jQuery.i18n",
+            "version": "1.0.7",
+            "url": "https://github.com/wikimedia/jquery.i18n",
+            "author": "Santhosh Thottingal and other",
+            "authorUrl": "https://thottingal.in/",
+            "license": "MIT License",
+            "licenseUrl": "https://github.com/wikimedia/jquery.i18n/blob/v1.0.7/MIT-LICENSE"
+        },
+        {
+            "name": "CLDR Plural Rule Parser",
+            "version": "1.2.0",
+            "url": "https://github.com/santhoshtr/CLDRPluralRuleParser",
+            "author": "Santhosh Thottingal and other",
+            "authorUrl": "https://thottingal.in/",
+            "license": "MIT License",
+            "licenseUrl": "https://github.com/santhoshtr/CLDRPluralRuleParser/blob/v1.2.0/LICENSE.txt"
         }
     ],
     "config": {

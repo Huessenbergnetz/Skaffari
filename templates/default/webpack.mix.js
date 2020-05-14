@@ -1,7 +1,14 @@
 let mix = require('laravel-mix');
 
 mix.options({
-    processCssUrls: false
+    processCssUrls: false,
+    terser: {
+        terserOptions: {
+            output: {
+                comments: /@license/i
+            }
+        }
+    }
 });
 
 mix.sass('assets/sass/style.scss', 'static/css/');
@@ -10,7 +17,7 @@ mix.scripts([
     'node_modules/jquery/dist/jquery.js',
     'node_modules/popper.js/dist/umd/popper.js',
     'node_modules/bootstrap/js/dist/util.js',
-    'node_modules/bootstrap/js/dist/index.js',
+//     'node_modules/bootstrap/js/dist/index.js',
     'node_modules/bootstrap/js/dist/alert.js',
     'node_modules/bootstrap/js/dist/button.js',
     'node_modules/bootstrap/js/dist/collapse.js',
@@ -21,13 +28,13 @@ mix.scripts([
     'node_modules/queuejax/jquery.qjax.js',
     'node_modules/stupid-table-plugin/stupidtable.js',
     'node_modules/js-cookie/src/js.cookie.js',
-    'assets/js/jquery.i18n/CLDRPluralRuleParser.js',
-    'assets/js/jquery.i18n/jquery.i18n.js',
-    'assets/js/jquery.i18n/jquery.i18n.messagestore.js',
-    'assets/js/jquery.i18n/jquery.i18n.fallbacks.js',
-    'assets/js/jquery.i18n/jquery.i18n.parser.js',
-    'assets/js/jquery.i18n/jquery.i18n.emitter.js',
-    'assets/js/jquery.i18n/jquery.i18n.language.js',
+    'node_modules/@wikimedia/jquery.i18n/libs/CLDRPluralRuleParser/src/CLDRPluralRuleParser.js',
+    'node_modules/@wikimedia/jquery.i18n/src/jquery.i18n.js',
+    'node_modules/@wikimedia/jquery.i18n/src/jquery.i18n.messagestore.js',
+    'node_modules/@wikimedia/jquery.i18n/src/jquery.i18n.fallbacks.js',
+    'node_modules/@wikimedia/jquery.i18n/src/jquery.i18n.parser.js',
+    'node_modules/@wikimedia/jquery.i18n/src/jquery.i18n.emitter.js',
+    'node_modules/@wikimedia/jquery.i18n/src/jquery.i18n.language.js',
     'assets/js/jquery.filtertable.js',
     'assets/js/general.js',
     'assets/js/forwardlist.js',
