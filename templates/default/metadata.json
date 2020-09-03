@@ -19,21 +19,21 @@
         },
         {
             "name": "Popper.js",
-            "version": "1.16.0",
+            "version": "1.16.1",
             "url": "https://popper.js.org/",
             "author": "Federico Zivolo",
             "authorUrl": "https://fezvrasta.github.io/",
             "license": "MIT License",
-            "licenseUrl": "https://github.com/FezVrasta/popper.js/blob/v1.16.0/LICENSE.md"
+            "licenseUrl": "https://github.com/FezVrasta/popper.js/blob/v1.16.1/LICENSE.md"
         },
         {
             "name": "Bootstrap",
-            "version": "4.5.0",
+            "version": "4.5.2",
             "url": "http://getbootstrap.com/",
             "author": "Bootstrap Core Team",
             "authorUrl": "https://github.com/orgs/twbs/people",
             "license": "MIT License",
-            "licenseUrl": "https://github.com/twbs/bootstrap/blob/v4.5.0/LICENSE"
+            "licenseUrl": "https://github.com/twbs/bootstrap/blob/v4.5.2/LICENSE"
         },
         {
             "name": "Font Awesome Free Icons",
