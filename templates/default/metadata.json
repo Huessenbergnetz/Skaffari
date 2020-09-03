@@ -82,12 +82,12 @@
         },
         {
             "name": "Select2 Bootstrap4 Theme",
-            "version": "1.3.2",
+            "version": "1.4.0",
             "url": "https://github.com/ttskch/select2-bootstrap4-theme",
             "author": "Takashi Kanemoto",
             "authorUrl": "https://ttskch.github.io/",
             "license": "MIT License",
-            "licenseUrl": "https://github.com/ttskch/select2-bootstrap4-theme/blob/1.3.2/LICENSE"
+            "licenseUrl": "https://github.com/ttskch/select2-bootstrap4-theme/blob/1.3.3/LICENSE"
         },
         {
             "name": "Stupid jQuery Table Sort",
