@@ -16,10 +16,10 @@
     "cross-env": "^7.0.2",
     "jquery": "3.5.1",
     "js-cookie": "2.2.1",
-    "laravel-mix": "^5.0.4",
+    "laravel-mix": "^5.0.5",
     "popper.js": "1.16.1",
     "queuejax": "1.5.2",
-    "sass": "^1.26.5",
+    "sass": "^1.26.10",
     "sass-loader": "^8.0.2",
     "select2": "4.0.13",
     "stupid-table-plugin": "1.1.3"
