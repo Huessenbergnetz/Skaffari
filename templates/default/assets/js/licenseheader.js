@@ -4,10 +4,10 @@
  * released under MIT license (https://github.com/jquery/sizzle/blob/master/LICENSE.txt).
  * jQuery v3.5.1 (https://jquery.com) by JS Foundation and other contributors,
  * released under MIT license (https://jquery.org/license).
- * Popper.js v1.16.0 (https://popper.js.org/) by Federico Zivolo and contributors,
- * released under MIT license (https://github.com/popperjs/popper-core/blob/v1.16.0/LICENSE.md)
- * Bootstrap v4.5.0 (http://getbootstrap.com) by Twitter Inc.,
- * released under MIT license (https://github.com/twbs/bootstrap/blob/v4.5.0/LICENSE).
+ * Popper.js v1.16.1 (https://popper.js.org/) by Federico Zivolo and contributors,
+ * released under MIT license (https://github.com/popperjs/popper-core/blob/v1.16.1/LICENSE.md)
+ * Bootstrap v4.5.3 (http://getbootstrap.com) by Twitter Inc.,
+ * released under MIT license (https://github.com/twbs/bootstrap/blob/v4.5.3/LICENSE).
  * qJax v1.5.2 (https://github.com/PortableSheep/qjax) by Michael Gunderson,
  * released under GNU General Public License 2 (https://github.com/PortableSheep/qJax/blob/1.5.2/GPL-LICENSE.txt).
  * Select2 v4.0.13 (https://select2.org/) by Select2 Team,
