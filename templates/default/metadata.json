@@ -28,12 +28,12 @@
         },
         {
             "name": "Bootstrap",
-            "version": "4.5.3",
+            "version": "4.6.0",
             "url": "http://getbootstrap.com/",
             "author": "Bootstrap Core Team",
             "authorUrl": "https://github.com/orgs/twbs/people",
             "license": "MIT License",
-            "licenseUrl": "https://github.com/twbs/bootstrap/blob/v4.5.3/LICENSE"
+            "licenseUrl": "https://github.com/twbs/bootstrap/blob/v4.6.0/LICENSE"
         },
         {
             "name": "Font Awesome Free Icons",
