@@ -11,7 +11,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="username">{{ help.username.title }}</label>
-                <input type="text" id="username" name="username" class="form-control{% if validationErrors.username.count %} is-invalid{% endif %}" value="{{ username }}" placeholder="{{ help.username.title }}" autocomplete="new-password" required="required" />
+                <input type="text" id="username" name="username" class="form-control{% if validationErrors.username.count %} is-invalid{% endif %}" value="{{ username }}" placeholder="{{ help.username.title }}" required="required" />
                 {% if validationErrors.username.count %}<div class="invalid-feedback"><small>{{ validationErrors.username.0 }}</small></div>{% endif %}
                 <small id="validUntilDesc" class="form-text text-muted">{{ help.username.text }}</small>
             </div>
