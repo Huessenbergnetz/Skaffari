@@ -11,7 +11,7 @@ configure_file(skaffari-update-account-status.service.in ${CMAKE_BINARY_DIR}/sup
 configure_file(skaffari.conf.template.in ${CMAKE_BINARY_DIR}/supplementary/skaffari.conf.template)
 configure_file(skaffari.ini.in ${CMAKE_BINARY_DIR}/supplementary/skaffari.ini)
 
-install(FILES ${CMAKE_BINARY_DIR}/supplementary/skaffari.ini DESTINATION ${CMAKE_INSTALL_SYSCONFDIR})
+install(FILES ${CMAKE_BINARY_DIR}/supplementary/skaffari.ini DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR})
 
 if(INSTALL_SUPPLEMENTARY_FILES)
     install(FILES
