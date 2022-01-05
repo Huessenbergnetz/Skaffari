@@ -73,6 +73,7 @@ skaffari_test(testsimpleaccount Cutelyst::Core "" "")
 skaffari_test(testsimpleadmin "" "" "")
 skaffari_test(testsimpledomain "" "" "")
 skaffari_test(testautoconfigserver "" "" "")
+skaffari_test(testcuteleeplugin Cutelee::Templates "" "")
 
 # ConfigChecker test
 add_executable(testconfigchecker_exec
