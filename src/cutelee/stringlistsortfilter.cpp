@@ -21,7 +21,7 @@
 #include <QLocale>
 #include <QCollator>
 #include <QStringList>
-#include <cutelee5/cutelee/util.h>
+#include <cutelee/util.h>
 
 QVariant StringListSortFilter::doFilter(const QVariant &input, const QVariant &argument, bool autoescape) const
 {
