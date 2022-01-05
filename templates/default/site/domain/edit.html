@@ -29,7 +29,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="maxAccounts">{{ help.maxAccounts.title }}</label>
-                {% if user.type >= 254 %}
+                {% if user.type >= user.Administrator %}
                 <div class="input-group">
                     <div class="input-group-prepend"><span class="input-group-text">{{ domain.accounts }} /</span></div>
                     <input type="number" id="maxAccounts" name="maxAccounts" class="form-control{% if validationErrors.maxAccounts.count %} is-invalid{% endif %}" value="{{ maxAccounts|default_if_none:domain.maxAccounts }}" min="0" placeholder="{{ domain.maxAccounts }}" aria-describedby="maxAccountsDesc" />
@@ -43,7 +43,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label for="domainQuota" class="col-form-label">{{ help.domainQuota.title }}</label>
-                {% if user.type >= 254 %}
+                {% if user.type >= user.Administrator %}
                 <div class="input-group">
                     <div class="input-group-prepend"><span class="input-group-text">{% l10n_filesize domain.domainQuotaUsed 2 2 1024 %} /</span></div>
                     <input type="text" id="domainQuota" name="domainQuota" class="form-control{% if validationErrors.domainQuota.count %} is-invalid{% endif %}" value="{% l10n_filesize domainQuota|default_if_none:domain.domainQuota 2 2 1024 %}" placeholder="{% l10n_filesize domain.domainQuota 2 2 1024 %}" aria-describedby="domainQuotaDesc" pattern="^\d+[,.٫]?\d*\s*[KkMmGgTt]?[Ii]?[Bb]?" />
@@ -65,7 +65,7 @@
             {% if domain.children.count == 0 %}
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="parent">{{ help.parent.title }}</label>
-                {% if user.type >= 254 %}
+                {% if user.type >= user.Administrator %}
                 <select id="parent" name="parent" class="form-control{% if validationErrors.parent.count %} is-invalid{% endif %} select2" aria-describedby="parentDesc">
                     <option value="0"{% if parent|default_if_none:domain.parent.id == 0 %} selected="selected"{% endif %}>{% i18nc "parent domain" "none" %}</option>
                     {% for dom in domains %}
@@ -90,7 +90,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="transport">{{ help.transport.title }}</label>
-                {% if user.type >= 254 %}
+                {% if user.type >= user.Administrator %}
                 <select class="form-control{% if validationErrors.transport.count %} is-invalid{% endif %}" id="transport" name="transport" aria-describedby="transportDesc">
                     <option value="cyrus"{% ifequal domain.transport "cyrus" %} selected="selected"{% endifequal %}>Cyrus</option>
                     <option value="lmtp"{% ifequal domain.transport "lmtp" %} selected="selected"{% endifequal %}>LMTP</option>
@@ -106,7 +106,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <label class="col-form-label" for="autoconfig">{{ help.autoconfig.title }}</label>
-                {% if user.type >= 254 %}
+                {% if user.type >= user.Administrator %}
                 <select class="form-control{% if validationErrors.autoconfig.count %} is-invalid{% endif %}" id="autoconfig" name="autoconfig" aria-describedby="autoconfigDesc">
                     <option value="0"{% if autoconfig|default_if_none:domain.autoconfig == 0 %} selected="selected"{% endif %}>{{ _("Disabled") }}</option>
                     <option value="1"{% if autoconfig|default_if_none:domain.autoconfig == 1 %} selected="selected"{% endif %}>{{ _("Use global servers") }}</option>
@@ -128,7 +128,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if freeNames|default_if_none:domain.freeNames %} checked="checked"{% endif %}{% if user.type < 254 %} disabled="disabled"{% endif %} />
+                    <input type="checkbox" class="form-check-input" id="freeNames" name="freeNames" value="1" aria-describedby="freeNamesDesc"{% if freeNames|default_if_none:domain.freeNames %} checked="checked"{% endif %}{% if user.type < user.Administrator %} disabled="disabled"{% endif %} />
                     <label class="form-check-label">{{ help.freeNames.title }}</label>
                     <small id="freeNamesDesc" class="form-text text-muted">{{ help.freeNames.text }}</small>
                 </div>
@@ -136,7 +136,7 @@
 
             <div class="form-group col-12 col-sm-12 col-md-6 col-lg-4">
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if freeAddress|default_if_none:domain.freeAddress %} checked="checked"{% endif %}{% if user.type < 254 %} disabled="disabled"{% endif %} />
+                    <input type="checkbox" class="form-check-input" id="freeAddress" name="freeAddress" value="1" aria-describedby="freeAddressDesc"{% if freeAddress|default_if_none:domain.freeAddress %} checked="checked"{% endif %}{% if user.type < user.Administrator %} disabled="disabled"{% endif %} />
                     <label class="form-check-label">{{ help.freeAddress.title }}</label>
                     <small id="freeAddressDesc" class="form-text text-muted">{{ help.freeAddress.text }}</small>
                 </div>

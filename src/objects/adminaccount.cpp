@@ -54,12 +54,6 @@ AdminAccount::AdminAccount(dbid_t id, const QString &username, AdminAccountType 
 
 }
 
-AdminAccount::AdminAccount(dbid_t id, const QString& username, quint8 type, const QList<dbid_t> &domains) :
-    d(new AdminAccountData(id, username, type, domains))
-{
-
-}
-
 AdminAccount::AdminAccount(const Cutelyst::AuthenticationUser &user) :
     d(new AdminAccountData(user))
 {
@@ -67,12 +61,8 @@ AdminAccount::AdminAccount(const Cutelyst::AuthenticationUser &user) :
 }
 
 AdminAccount::AdminAccount(dbid_t id, const QString &username, AdminAccountType type, const QList<dbid_t> &domains, const QString &tz, const QString &lang, const QString &tmpl, quint8 maxDisplay, quint8 warnLevel, const QDateTime &created, const QDateTime &updated) :
-    d(new AdminAccountData)
+    d(new AdminAccountData(id, username, type, domains))
 {
-    d->id = id;
-    d->username = username;
-    d->type = type;
-    d->domains = domains;
     d->tz = tz;
     d->tmpl = tmpl;
     d->lang = lang;
@@ -136,16 +126,6 @@ QString AdminAccount::nameIdString() const
 AdminAccount::AdminAccountType AdminAccount::type() const
 {
     return d->type;
-}
-
-quint8 AdminAccount::typeInt() const
-{
-    return static_cast<quint8>(d->type);
-}
-
-QString AdminAccount::typeStr() const
-{
-    return QString::number(typeInt());
 }
 
 QString AdminAccount::typeName(Cutelyst::Context *c) const
@@ -243,7 +223,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
         qCWarning(SK_ADMIN, "%s: invalid administrator type.", err);
         return aa;
     }
-    const AdminAccount::AdminAccountType type = AdminAccount::getUserType(typeVar);
+    const AdminAccount::AdminAccountType type = static_cast<AdminAccount::AdminAccountType>(typeVar.value<quint8>());
 
     if (type == AdminAccount::Disabled) {
         error.setErrorType(SkaffariError::InputError);
@@ -422,7 +402,7 @@ std::vector<AdminAccount> AdminAccount::list(Cutelyst::Context *c, SkaffariError
     while (q.next()) {
         list.emplace_back(q.value(0).value<dbid_t>(),
                           q.value(1).toString(),
-                          q.value(2).value<quint8>(),
+                          static_cast<AdminAccount::AdminAccountType>(q.value(2).value<quint8>()),
                           QList<dbid_t>());
     }
 
@@ -456,21 +436,22 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError &e, dbid_t id
         return acc;
     }
 
-    const QString _username = q.value(0).toString();
+    const QString username = q.value(0).toString();
+    const AdminAccount::AdminAccountType type = static_cast<AdminAccount::AdminAccountType>(q.value(1).value<quint8>());
     QDateTime createdTime = q.value(7).toDateTime();
     createdTime.setTimeSpec(Qt::UTC);
     QDateTime updatedTime = q.value(8).toDateTime();
     updatedTime.setTimeSpec(Qt::UTC);
 
     QList<dbid_t> doms;
-    if (acc.type() < Administrator) {
+    if (type < Administrator) {
 
         QSqlQuery q2 = CPreparedSqlQueryThread(QStringLiteral("SELECT domain_id FROM domainadmin WHERE admin_id = :admin_id"));
         q2.bindValue(QStringLiteral(":admin_id"), id);
 
         if (Q_UNLIKELY(!q2.exec())) {
             e.setSqlError(q2.lastError(), c->translate("AdminAccount", "Failed to query domain IDs from database this domain manager is responsible for."));
-            qCCritical(SK_ADMIN, "%s failed to query domain IDs admin %s (ID: %u) is responsible for: %s", uniStr, qUtf8Printable(_username), id, qUtf8Printable(q2.lastError().text()));
+            qCCritical(SK_ADMIN, "%s failed to query domain IDs admin %s (ID: %u) is responsible for: %s", uniStr, qUtf8Printable(username), id, qUtf8Printable(q2.lastError().text()));
             return acc;
         }
 
@@ -480,8 +461,8 @@ AdminAccount AdminAccount::get(Cutelyst::Context *c, SkaffariError &e, dbid_t id
     }
 
     acc = AdminAccount(id,
-                       _username,
-                       AdminAccountData::getUserType(q.value(1).value<quint8>()),
+                       username,
+                       type,
                        doms,
                        q.value(2).toString(),
                        q.value(3).toString(),
@@ -515,7 +496,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError &e, const QVariant
         return ret;
     }
 
-    const AdminAccountType type = AdminAccountData::getUserType(typeVar.value<quint8>());
+    const AdminAccountType type = static_cast<AdminAccount::AdminAccountType>(typeVar.value<quint8>());
 
     if (type >= AdminAccount::getUserType(c)) {
         e.setErrorType(SkaffariError::AuthorizationError);
@@ -813,12 +794,6 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError &e, const QVari
     d->updated = currentUtc;
 
     c->setLocale(lang);
-    c->stash({
-                 {QStringLiteral("userMaxDisplay"), maxdisplay},
-                 {QStringLiteral("userWarnLevel"), warnlevel},
-                 {QStringLiteral("userTz"), tz},
-                 {QStringLiteral("lang"), lang.name()}
-             });
 
     ret = true;
 
@@ -925,24 +900,9 @@ AdminAccount AdminAccount::getUser(Cutelyst::Context *c)
     return c->stash(QStringLiteral(ADMIN_USER_STASH_KEY)).value<AdminAccount>();
 }
 
-AdminAccount::AdminAccountType AdminAccount::getUserType(quint8 type)
-{
-    return AdminAccountData::getUserType(type);
-}
-
-AdminAccount::AdminAccountType AdminAccount::getUserType(const Cutelyst::AuthenticationUser &user)
-{
-    return AdminAccountData::getUserType(user.value(QStringLiteral("type"), 0).value<quint8>());
-}
-
 AdminAccount::AdminAccountType AdminAccount::getUserType(Cutelyst::Context *c)
 {
     return c->stash(QStringLiteral(ADMIN_USER_STASH_KEY)).value<AdminAccount>().type();
-}
-
-AdminAccount::AdminAccountType AdminAccount::getUserType(const QVariant &user)
-{
-    return AdminAccountData::getUserType(user.value<quint8>());
 }
 
 dbid_t AdminAccount::getUserId(Cutelyst::Context *c)
@@ -987,18 +947,17 @@ QString AdminAccount::typeToName(AdminAccount::AdminAccountType type, Cutelyst::
     return name;
 }
 
-QStringList AdminAccount::allowedTypes(AdminAccount::AdminAccountType userType)
+QList<AdminAccount::AdminAccountType> AdminAccount::allowedTypes(AdminAccount::AdminAccountType userType)
 {
-    QStringList lst;
+    QList<AdminAccount::AdminAccountType> lst;
 
     const QMetaEnum me = QMetaEnum::fromType<AdminAccount::AdminAccountType>();
 
     if (me.isValid() && (me.keyCount() > 0)) {
-        const int _userType = static_cast<int>(userType);
         for (int i = 0; i < me.keyCount(); ++i) {
-            const auto type = me.value(i);
-            if ((type != 0) && ((_userType == 255) || (type < _userType))) {
-                lst << QString::number(type); // clazy:exclude=reserve-candidates
+            const AdminAccount::AdminAccountType type = static_cast<AdminAccount::AdminAccountType>(me.value(i));
+            if ((type != AdminAccountType::Disabled) && ((userType == AdminAccountType::SuperUser) || (type < userType))) {
+                lst << type;
             }
         }
     }
@@ -1006,9 +965,29 @@ QStringList AdminAccount::allowedTypes(AdminAccount::AdminAccountType userType)
     return lst;
 }
 
-QStringList AdminAccount::allowedTypes(Cutelyst::Context *c)
+QList<AdminAccount::AdminAccountType> AdminAccount::allowedTypes(Cutelyst::Context *c)
 {
     return AdminAccount::allowedTypes(AdminAccount::getUserType(c));
+}
+
+QStringList AdminAccount::typesStringList(const QList<AdminAccount::AdminAccountType> types)
+{
+    QStringList lst;
+    lst.reserve(types.size());
+    for (AdminAccount::AdminAccountType t : types) {
+        lst << QString::number(static_cast<int>(t));
+    }
+    return lst;
+}
+
+QList<int> AdminAccount::typesIntList(const QList<AdminAccount::AdminAccountType> types)
+{
+    QList<int> lst;
+    lst.reserve(types.size());
+    for (AdminAccount::AdminAccountType t : types) {
+        lst << static_cast<int>(t);
+    }
+    return lst;
 }
 
 AdminAccount::AdminAccountType AdminAccount::maxAllowedType(AdminAccount::AdminAccountType userType)
@@ -1073,10 +1052,17 @@ QDebug operator<<(QDebug dbg, const AdminAccount &account)
 
 QDataStream& operator<<(QDataStream &stream, const AdminAccount &account)
 {
-    stream << account.domains() << account.username() << account.lang()
-           << account.getTemplate() << account.tz() << account.created()
-           << account.updated() << account.id() << static_cast<quint8>(account.type())
-           << account.maxDisplay() << account.warnLevel();
+    stream << account.domains()
+           << account.username()
+           << account.lang()
+           << account.getTemplate()
+           << account.tz()
+           << account.created()
+           << account.updated()
+           << account.id()
+           << static_cast<quint8>(account.type())
+           << account.maxDisplay()
+           << account.warnLevel();
 
     return stream;
 }
@@ -1093,7 +1079,7 @@ QDataStream& operator>>(QDataStream &stream, AdminAccount &account)
     stream >> account.d->id;
     quint8 _type;
     stream >> _type;
-    account.d->type = AdminAccount::getUserType(_type);
+    account.d->type = static_cast<AdminAccount::AdminAccountType>(_type);
     stream >> account.d->maxDisplay;
     stream >> account.d->warnLevel;
 

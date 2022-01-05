@@ -17,6 +17,7 @@
  */
 
 #include "admineditor.h"
+#include "logging.h"
 #include "objects/adminaccount.h"
 #include "objects/skaffarierror.h"
 #include "objects/simpledomain.h"
@@ -54,6 +55,8 @@ AdminEditor::~AdminEditor()
 
 bool AdminEditor::Auto(Context *c)
 {
+    qCDebug(SK_CORE, "%s", "Entering AdminEditor::Auto()");
+
     if (Q_UNLIKELY(AdminAccount::getUserType(c) < AdminAccount::Administrator)) {
         c->res()->setStatus(Response::Forbidden);
         c->detach(c->getAction(QStringLiteral("error")));
@@ -65,6 +68,8 @@ bool AdminEditor::Auto(Context *c)
 
 void AdminEditor::index(Context *c)
 {
+    qCDebug(SK_CORE, "%s", "Entering AdminEditor::index()");
+
     SkaffariError e(c);
     const auto accounts = AdminAccount::list(c, e);
 
@@ -79,6 +84,8 @@ void AdminEditor::index(Context *c)
 
 void AdminEditor::base(Context *c, const QString &id)
 {
+    qCDebug(SK_CORE, "%s", "Entering AdminEditor::base()");
+
     bool ok = true;
     const dbid_t adminId = Utils::strToDbid(id, &ok);
     if (Q_LIKELY(ok)) {
@@ -108,12 +115,16 @@ void AdminEditor::base(Context *c, const QString &id)
 
 void AdminEditor::create(Context *c)
 {
-    c->setStash(QStringLiteral("allowedAdminTypes"), AdminAccount::allowedTypes(c));
+    qCDebug(SK_CORE, "%s", "Entering AdminEditor::create()");
+
+    const QList<AdminAccount::AdminAccountType> allowedAdminTypes = AdminAccount::allowedTypes(c);
+    c->setStash(QStringLiteral("allowedAdminTypes"), QVariant::fromValue<QList<int>>(AdminAccount::typesIntList(allowedAdminTypes)));
 
     auto req = c->req();
     if (req->isPost()) {
 
         c->setStash(QStringLiteral("_maxAllowedAdminType"), static_cast<quint8>(AdminAccount::maxAllowedType(c)));
+        c->setStash(QStringLiteral("_allowedAdminTypesStrLst"), AdminAccount::typesStringList(allowedAdminTypes));
 
         static Validator v({
                                new ValidatorRequired(QStringLiteral("username")),
@@ -125,7 +136,7 @@ void AdminEditor::create(Context *c)
                    #else
                                new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),
                    #endif
-                               new ValidatorIn(QStringLiteral("type"), QStringLiteral("allowedAdminTypes")),
+                               new ValidatorIn(QStringLiteral("type"), QStringLiteral("_allowedAdminTypesStrLst")),
                                new ValidatorMax(QStringLiteral("type"), QMetaType::UChar, QStringLiteral("_maxAllowedAdminType"))
                            });
 
@@ -138,7 +149,7 @@ void AdminEditor::create(Context *c)
 
             if (e.type() == SkaffariError::NoError) {
                 c->res()->redirect(c->uriForAction(QStringLiteral("/admin/index"),
-                                                   StatusMessage::statusQuery(c, c->translate("AdminEditor", "Successfully created new administrator %1.").arg(req->bodyParam(QStringLiteral("username"))))
+                                                   StatusMessage::statusQuery(c, c->translate("AdminEditor", "Successfully created new administrator %1.").arg(vr.value(QStringLiteral("username")).toString()))
                                                    )
                                    );
             } else {
@@ -150,7 +161,6 @@ void AdminEditor::create(Context *c)
     }
 
     SkaffariError e(c);
-    // if access has been granted, user type is 0
     const std::vector<SimpleDomain> domains = SimpleDomain::list(c, e);
 
     if (e.type() != SkaffariError::NoError) {
@@ -175,7 +185,10 @@ void AdminEditor::create(Context *c)
 
 void AdminEditor::edit(Context *c)
 {
-    c->setStash(QStringLiteral("allowedAdminTypes"), AdminAccount::allowedTypes(c));
+    qCDebug(SK_CORE, "%s", "Entering AdminEditor::edit()");
+
+    const QList<AdminAccount::AdminAccountType> allowedAdminTypes = AdminAccount::allowedTypes(c);
+    c->setStash(QStringLiteral("allowedAdminTypes"), QVariant::fromValue<QList<int>>(AdminAccount::typesIntList(allowedAdminTypes)));
 
     auto req = c->req();
     if (req->isPost()) {
@@ -183,6 +196,7 @@ void AdminEditor::edit(Context *c)
         auto aac = AdminAccount::fromStash(c);
         c->setStash(QStringLiteral("_pwq_username"), aac.username());
         c->setStash(QStringLiteral("_maxAllowedAdminType"), static_cast<quint8>(AdminAccount::maxAllowedType(c)));
+        c->setStash(QStringLiteral("_allowedAdminTypesStrLst"), AdminAccount::typesStringList(allowedAdminTypes));
 
         static Validator v({
                                new ValidatorConfirmed(QStringLiteral("password")),
@@ -194,7 +208,7 @@ void AdminEditor::edit(Context *c)
                    #else
                                new ValidatorMin(QStringLiteral("password"), QMetaType::QString, SkaffariConfig::admPwMinlength()),
                    #endif
-                               new ValidatorIn(QStringLiteral("type"), QStringLiteral("allowedAdminTypes")),
+                               new ValidatorIn(QStringLiteral("type"), QStringLiteral("_allowedAdminTypesStrLst")),
                                new ValidatorMax(QStringLiteral("type"), QMetaType::UChar, QStringLiteral("_maxAllowedAdminType"))
                            });
 
@@ -204,7 +218,7 @@ void AdminEditor::edit(Context *c)
             vr.addValue(QStringLiteral("assocdomains"), QVariant::fromValue<QStringList>(req->bodyParameters(QStringLiteral("assocdomains"))));
             SkaffariError e(c);
             if (aac.update(c, e, vr.values())) {
-                c->setStash(QStringLiteral("adminaccount"), QVariant::fromValue<AdminAccount>(aac));
+                AdminAccount::toStash(c, aac);
                 c->setStash(QStringLiteral("status_msg"), c->translate("AdminEditor", "Successfully updated administrator %1.").arg(aac.username()));
             } else {
                 c->setStash(QStringLiteral("error_msg"), e.errorText());
@@ -215,7 +229,6 @@ void AdminEditor::edit(Context *c)
     }
 
     SkaffariError e(c);
-    // if access has been granted, user type is 0
     const std::vector<SimpleDomain> domains = SimpleDomain::list(c, e);
 
     if (e.type() != SkaffariError::NoError) {
@@ -242,6 +255,8 @@ void AdminEditor::edit(Context *c)
 
 void AdminEditor::remove(Context *c)
 {
+    qCDebug(SK_CORE, "%s", "Entering AdminEditor::remove()");
+
     auto req = c->req();
 
     const auto isAjax = req->xhr();

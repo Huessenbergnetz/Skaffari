@@ -692,7 +692,7 @@ std::vector<Domain> Domain::list(Cutelyst::Context *c, SkaffariError &errorData,
     QSqlQuery q(QSqlDatabase::database(Cutelyst::Sql::databaseNameThread()));
 
     QString prepString = QStringLiteral("SELECT dom.id, dom.parent_id, dom.ace_id, dom.domain_name, dom.prefix, dom.transport, dom.quota, dom.maxaccounts, dom.domainquota, dom.domainquotaused, dom.freenames, dom.freeaddress, dom.accountcount, dom.created_at, dom.updated_at, dom.valid_until, dom.autoconfig FROM domain dom");
-    const bool isAdmin = AdminAccount::getUserType(user) >= AdminAccount::Administrator;
+    const bool isAdmin = AdminAccount::getUserType(c) >= AdminAccount::Administrator;
     if (isAdmin) {
         prepString.append(QStringLiteral(" WHERE dom.idn_id = 0"));
     } else {

@@ -25,8 +25,8 @@ private Q_SLOTS:
     void username();
     void domains();
     void type();
-    void typeInt();
-    void typeStr();
+//    void typeInt();
+//    void typeStr();
     void isSuperUser();
     void lang();
     void tz();
@@ -48,11 +48,11 @@ private Q_SLOTS:
     void maxAllowedTypeTest();
     void maxAllowedTypeTest_data();
 
-    void getUserTypeByIntTest();
-    void getUserTypeByIntTest_data();
+//    void getUserTypeByIntTest();
+//    void getUserTypeByIntTest_data();
 
-    void typeIntTest();
-    void typeIntTest_data();
+//    void typeIntTest();
+//    void typeIntTest_data();
 
     void datastream();
 
@@ -119,16 +119,16 @@ void AdminAccountTest::type()
     QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("type")).readOnGadget(&m_acc).value<AdminAccount::AdminAccountType>(), AdminAccount::DomainMaster);
 }
 
-void AdminAccountTest::typeInt()
-{
-    QCOMPARE(m_acc.typeInt(), static_cast<quint8>(127));
-}
+//void AdminAccountTest::typeInt()
+//{
+//    QCOMPARE(m_acc.typeInt(), static_cast<quint8>(127));
+//}
 
-void AdminAccountTest::typeStr()
-{
-    QCOMPARE(m_acc.typeStr(), QStringLiteral("127"));
-    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("typeStr")).readOnGadget(&m_acc).toString(), QStringLiteral("127"));
-}
+//void AdminAccountTest::typeStr()
+//{
+//    QCOMPARE(m_acc.typeStr(), QStringLiteral("127"));
+//    QCOMPARE(AdminAccount::staticMetaObject.property(AdminAccount::staticMetaObject.indexOfProperty("typeStr")).readOnGadget(&m_acc).toString(), QStringLiteral("127"));
+//}
 
 void AdminAccountTest::isSuperUser()
 {
@@ -226,9 +226,9 @@ void AdminAccountTest::isSuperUserTest_data()
 void AdminAccountTest::allowedTypesTest()
 {
     QFETCH(AdminAccount::AdminAccountType, type);
-    QFETCH(QStringList, result);
+    QFETCH(QList<AdminAccount::AdminAccountType>, result);
 
-    const QStringList ats = AdminAccount::allowedTypes(type);
+    const QList<AdminAccount::AdminAccountType> ats = AdminAccount::allowedTypes(type);
 
     QCOMPARE(ats, result);
 }
@@ -236,12 +236,12 @@ void AdminAccountTest::allowedTypesTest()
 void AdminAccountTest::allowedTypesTest_data()
 {
     QTest::addColumn<AdminAccount::AdminAccountType>("type");
-    QTest::addColumn<QStringList>("result");
+    QTest::addColumn<QList<AdminAccount::AdminAccountType>>("result");
 
-    QTest::newRow("Disabled") << AdminAccount::Disabled << QStringList();
-    QTest::newRow("DomainMaster") << AdminAccount::DomainMaster << QStringList();
-    QTest::newRow("Administrator") << AdminAccount::Administrator << QStringList(QStringLiteral("127"));
-    QTest::newRow("SuperUser") << AdminAccount::SuperUser << QStringList({QStringLiteral("127"), QStringLiteral("254"), QStringLiteral("255")});
+    QTest::newRow("Disabled") << AdminAccount::Disabled << QList<AdminAccount::AdminAccountType>();
+    QTest::newRow("DomainMaster") << AdminAccount::DomainMaster << QList<AdminAccount::AdminAccountType>();
+    QTest::newRow("Administrator") << AdminAccount::Administrator << QList<AdminAccount::AdminAccountType>({AdminAccount::DomainMaster});
+    QTest::newRow("SuperUser") << AdminAccount::SuperUser << QList<AdminAccount::AdminAccountType>({AdminAccount::DomainMaster, AdminAccount::Administrator, AdminAccount::SuperUser});
 }
 
 void AdminAccountTest::maxAllowedTypeTest()
@@ -263,45 +263,45 @@ void AdminAccountTest::maxAllowedTypeTest_data()
     QTest::newRow("SuperUser") << AdminAccount::SuperUser << AdminAccount::SuperUser;
 }
 
-void AdminAccountTest::getUserTypeByIntTest()
-{
-    QFETCH(quint8, type);
-    QFETCH(AdminAccount::AdminAccountType, result);
+//void AdminAccountTest::getUserTypeByIntTest()
+//{
+//    QFETCH(quint8, type);
+//    QFETCH(AdminAccount::AdminAccountType, result);
 
-    QCOMPARE(AdminAccount::getUserType(type), result);
-}
+//    QCOMPARE(AdminAccount::getUserType(type), result);
+//}
 
-void AdminAccountTest::getUserTypeByIntTest_data()
-{
-    QTest::addColumn<quint8>("type");
-    QTest::addColumn<AdminAccount::AdminAccountType>("result");
+//void AdminAccountTest::getUserTypeByIntTest_data()
+//{
+//    QTest::addColumn<quint8>("type");
+//    QTest::addColumn<AdminAccount::AdminAccountType>("result");
 
-    QTest::newRow("Disabled") << static_cast<quint8>(0) << AdminAccount::Disabled;
-    QTest::newRow("DomainMaster") << static_cast<quint8>(127) << AdminAccount::DomainMaster;
-    QTest::newRow("Administrator") << static_cast<quint8>(254) << AdminAccount::Administrator;
-    QTest::newRow("SuperUser") << static_cast<quint8>(255) << AdminAccount::SuperUser;
-}
+//    QTest::newRow("Disabled") << static_cast<quint8>(0) << AdminAccount::Disabled;
+//    QTest::newRow("DomainMaster") << static_cast<quint8>(127) << AdminAccount::DomainMaster;
+//    QTest::newRow("Administrator") << static_cast<quint8>(254) << AdminAccount::Administrator;
+//    QTest::newRow("SuperUser") << static_cast<quint8>(255) << AdminAccount::SuperUser;
+//}
 
-void AdminAccountTest::typeIntTest()
-{
-    QFETCH(AdminAccount::AdminAccountType, type);
-    QFETCH(quint8, result);
+//void AdminAccountTest::typeIntTest()
+//{
+//    QFETCH(AdminAccount::AdminAccountType, type);
+//    QFETCH(quint8, result);
 
-    AdminAccount a(1, QStringLiteral("admin"), type, QList<dbid_t>());
+//    AdminAccount a(1, QStringLiteral("admin"), type, QList<dbid_t>());
 
-    QCOMPARE(a.typeInt(), result);
-}
+//    QCOMPARE(a.typeInt(), result);
+//}
 
-void AdminAccountTest::typeIntTest_data()
-{
-    QTest::addColumn<AdminAccount::AdminAccountType>("type");
-    QTest::addColumn<quint8>("result");
+//void AdminAccountTest::typeIntTest_data()
+//{
+//    QTest::addColumn<AdminAccount::AdminAccountType>("type");
+//    QTest::addColumn<quint8>("result");
 
-    QTest::newRow("Disabled") << AdminAccount::Disabled << static_cast<quint8>(0);
-    QTest::newRow("DomainMaster") << AdminAccount::DomainMaster << static_cast<quint8>(127);
-    QTest::newRow("Administrator") << AdminAccount::Administrator << static_cast<quint8>(254);
-    QTest::newRow("SuperUser") << AdminAccount::SuperUser << static_cast<quint8>(255);
-}
+//    QTest::newRow("Disabled") << AdminAccount::Disabled << static_cast<quint8>(0);
+//    QTest::newRow("DomainMaster") << AdminAccount::DomainMaster << static_cast<quint8>(127);
+//    QTest::newRow("Administrator") << AdminAccount::Administrator << static_cast<quint8>(254);
+//    QTest::newRow("SuperUser") << AdminAccount::SuperUser << static_cast<quint8>(255);
+//}
 
 void AdminAccountTest::datastream()
 {
@@ -323,8 +323,8 @@ void AdminAccountTest::datastream()
     QCOMPARE(m_acc.nameIdString(), a2.nameIdString());
     QCOMPARE(m_acc.domains(), a2.domains());
     QCOMPARE(m_acc.type(), a2.type());
-    QCOMPARE(m_acc.typeInt(), a2.typeInt());
-    QCOMPARE(m_acc.typeStr(), a2.typeStr());
+//    QCOMPARE(m_acc.typeInt(), a2.typeInt());
+//    QCOMPARE(m_acc.typeStr(), a2.typeStr());
     QCOMPARE(m_acc.isSuperUser(), a2.isSuperUser());
     QCOMPARE(m_acc.lang(), a2.lang());
     QCOMPARE(m_acc.tz(), a2.tz());

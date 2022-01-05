@@ -66,17 +66,13 @@ class AdminAccount
     /*!
      * \brief List of %domain %database IDs this admin account is responsible for.
      *
-     * Only used if the admin account is of type DomainMaster.
+     * Only used if the admin account is of type \link AdminAccountType DomainMaster\endlink.
      */
     Q_PROPERTY(QList<dbid_t> domains READ domains CONSTANT)
     /*!
      * \brief Type of this admin account.
      */
     Q_PROPERTY(AdminAccount::AdminAccountType type READ type CONSTANT)
-    /*!
-     * \brief Type of this admin account as stringified integer value.
-     */
-    Q_PROPERTY(QString typeStr READ typeStr CONSTANT)
     /*!
      * \brief \c true if this admin account is a super user account.
      */
@@ -144,16 +140,6 @@ public:
      * \param domains   List of domain %database IDs this admin is responsible for.
      */
     AdminAccount(dbid_t id, const QString &username, AdminAccountType type, const QList<dbid_t> &domains);
-
-    /*!
-     * \brief Constructs a new administrator account object from the given parameters.
-     *
-     * \param id        The database id of the admin account.
-     * \param username  The user name of the administrator
-     * \param type      The admin account type as integer value.
-     * \param domains   List of domain %database IDs this admin is responsible for.
-     */
-    AdminAccount(dbid_t id, const QString& username, quint8 type, const QList<dbid_t> &domains);
 
     /*!
      * \brief Constructs a new administrator account object from \a user.
@@ -235,21 +221,12 @@ public:
      * \sa typeStr(), typeInt()
      */
     AdminAccountType type() const;
+
     /*!
      * \brief Returns the humand readable name of the account type.
      * The context \a c is required for translations.
      */
     QString typeName(Cutelyst::Context *c) const;
-    /*!
-     * \brief Returns the integer representation of the currently set account type.
-     * \sa type()
-     */
-    quint8 typeInt() const;
-    /*!
-     * \brief Returns the type as string containing the number value.
-     * \sa type()
-     */
-    QString typeStr() const;
 
     /*!
      * \brief Returns \c true if this admin is of type SuperUser.
@@ -410,31 +387,16 @@ public:
     static AdminAccount fromStash(Cutelyst::Context *c);
 
     /*!
-     * \brief Returns the admin user type associated with the integer \a type.
+     * \brief Returns the currenlty logged in user.
+     * \param c pointer to the current context
      */
-    static AdminAccount::AdminAccountType getUserType(quint8 type);
-
-    /*!
-     * \brief Returns the type of the \a user.
-     */
-    static AdminAccount::AdminAccountType getUserType(const Cutelyst::AuthenticationUser &user);
+    static AdminAccount getUser(Cutelyst::Context *c);
 
     /*!
      * \brief Returns the type of the currently logged in user.
      * \param c pointer to the current context
      */
     static AdminAccount::AdminAccountType getUserType(Cutelyst::Context *c);
-
-    /*!
-     * \brief Returns the type of the %AdminAccount stored in the \a user variant.
-     */
-    static AdminAccount::AdminAccountType getUserType(const QVariant &user);
-
-    /*!
-     * \brief Returns the currenlty logged in user.
-     * \param c pointer to the current context
-     */
-    static AdminAccount getUser(Cutelyst::Context *c);
 
     /*!
      * \brief Returns the database ID of the currently logged in admin user.
@@ -464,13 +426,27 @@ public:
     /*!
      * \brief Returns a list of integer strings that show the allowed types a user with \a userType can create.
      */
-    static QStringList allowedTypes(AdminAccount::AdminAccountType userType);
+    static QList<AdminAccount::AdminAccountType> allowedTypes(AdminAccount::AdminAccountType userType);
 
     /*!
      * \brief Returns a list of integer strings that show the types the currently logged in user can create.
      * \param c pointer to the current context
      */
-    static QStringList allowedTypes(Cutelyst::Context *c);
+    static QList<AdminAccount::AdminAccountType> allowedTypes(Cutelyst::Context *c);
+
+    /*!
+     * \brief Returns a list of AdminAccount::AdminAccountType \a types as list of stringified integers.
+     *
+     * This function is mainly intended for input validation.
+     */
+    static QStringList typesStringList(const QList<AdminAccount::AdminAccountType> types);
+
+    /*!
+     * \brief Returns a list of AdminAccount::AdminAccountType \a types as list of integers.
+     *
+     * This function is mainly inteded for usage in Cutelee templates.
+     */
+    static QList<int> typesIntList(const QList<AdminAccount::AdminAccountType> types);
 
     /*!
      * \brief Returns the maximum allowed type a user with \a userType can create.

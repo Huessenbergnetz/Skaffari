@@ -52,7 +52,7 @@
                 <label for="type" class="col-form-label">{{ help.type.title }}</label>
                 <select class="form-control{% if validationErrors.type.count %} is-invalid{% endif %}" id="type" name="type" aria-describedby="typeDesc">
                     {% for allowedType in allowedAdminTypes %}
-                    <option value="{{ allowedType }}"{% ifequal adminaccount.typeStr allowedType %} selected="selected"{% endifequal %}>{% sk_admintypename allowedType %}</option>
+                    <option value="{{ allowedType }}"{% if adminaccount.type == allowedType %} selected="selected"{% endif %}>{% sk_admintypename allowedType %}</option>
                     {% endfor %}
                 </select>
                 {% if validationErrors.type.count %}<div class="invlid-feedback"><small>{{ validationErrors.type.0 }}</small></div>{% endif %}

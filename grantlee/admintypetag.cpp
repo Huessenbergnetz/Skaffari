@@ -59,10 +59,12 @@ void AdminType::render(Grantlee::OutputStream *stream, Grantlee::Context *gc) co
         }
 
         type = a.type();
-    } else if (adminVar.canConvert<Grantlee::SafeString>()) {
-        type = static_cast<AdminAccount::AdminAccountType>(adminVar.value<Grantlee::SafeString>().get().toUShort());
+    } else if (adminVar.canConvert<AdminAccount::AdminAccountType>()) {
+        type = adminVar.value<AdminAccount::AdminAccountType>();
     } else if (adminVar.canConvert<quint8>()) {
         type = static_cast<AdminAccount::AdminAccountType>(adminVar.value<quint8>());
+    } else if (adminVar.canConvert<Grantlee::SafeString>()) {
+        type = static_cast<AdminAccount::AdminAccountType>(adminVar.value<Grantlee::SafeString>().get().toUShort());
     } else {
         qWarning("%s", "Failed to convert input into AdminAccount object.");
         return;

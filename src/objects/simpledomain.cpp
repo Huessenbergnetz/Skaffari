@@ -149,8 +149,8 @@ std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError
 std::vector<SimpleDomain> SimpleDomain::list(Cutelyst::Context *c, SkaffariError &e, bool orphansOnly)
 {
     std::vector<SimpleDomain> lst;
-    const auto user = Cutelyst::Authentication::user(c);
-    lst = list(c, e, user.value(QStringLiteral("type")).value<quint8>(), user.id().value<dbid_t>(), orphansOnly);
+    const auto user = AdminAccount::getUser(c);
+    lst = SimpleDomain::list(c, e, static_cast<quint8>(user.type()), user.id(), orphansOnly);
     return lst;
 }
 

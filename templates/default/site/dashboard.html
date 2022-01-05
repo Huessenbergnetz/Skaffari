@@ -11,7 +11,7 @@
         <div class="card border-light text-center">
             <div class="card-header">{{ _("Administrators") }}</div>
             <div class="card-body">
-                <p class="card-text dasboard-number">{% if user.type >= 254 %}<a href="/admin">{{ admin_count }}</a>{% else %}{{ admin_count }}{% endif %}</p>
+                <p class="card-text dasboard-number">{% if user.type >= user.Administrator %}<a href="/admin">{{ admin_count }}</a>{% else %}{{ admin_count }}{% endif %}</p>
             </div>
         </div>
     </div>
@@ -80,7 +80,7 @@
             <div class="card-body"><p class="card-text text-danger">{{ domains_last_added_error }}</p></div>
             {% else %}
             <div class="card-body text-center">
-                {% if user.type >= 254 %}
+                {% if user.type >= user.Administrator %}
                 <p class="card-text">{{ _("You have not added any domain yet.") }}</p>
                 <a href="" class="btn btn-primary"><i class="fas fa-plus"></i> {{ _("Add domain") }}</a>
                 {% else %}

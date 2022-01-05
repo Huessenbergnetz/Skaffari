@@ -28,15 +28,6 @@ class AdminAccountData : public QSharedData
 public:
     AdminAccountData() = default;
 
-    AdminAccountData(dbid_t _id, const QString &_username, quint8 _type, const QList<dbid_t> &_domains) :
-        QSharedData(),
-        domains(_domains),
-        username(_username),
-        id(_id)
-    {
-        type = AdminAccountData::getUserType(_type);
-    }
-
     AdminAccountData(dbid_t _id, const QString &_username, AdminAccount::AdminAccountType _type, const QList<dbid_t> &_domains) :
         QSharedData(),
         domains(_domains),
@@ -52,6 +43,7 @@ public:
         tmpl(user.value(QStringLiteral("style")).toString()),
         tz(user.value(QStringLiteral("tz")).toString()),
         id(user.id().value<dbid_t>()),
+        type(static_cast<AdminAccount::AdminAccountType>(user.value(QStringLiteral("type")).value<quint8>())),
         maxDisplay(user.value(QStringLiteral("maxdisplay")).value<quint8>()),
         warnLevel(user.value(QStringLiteral("warnLevel")).value<quint8>())
     {
@@ -59,7 +51,6 @@ public:
         created.setTimeSpec(Qt::UTC);
         updated = user.value(QStringLiteral("updated_at")).toDateTime();
         updated.setTimeSpec(Qt::UTC);
-        type = AdminAccountData::getUserType(user.value(QStringLiteral("type")).value<quint8>());
         const QVariantList doms = user.value(QStringLiteral("domains")).toList();
         domains.reserve(doms.size());
         for (const QVariant &dom : doms) {
@@ -69,31 +60,17 @@ public:
 
     ~AdminAccountData() {}
 
-    static AdminAccount::AdminAccountType getUserType(quint8 _type)
-    {
-        switch (_type) {
-        case 255:
-            return AdminAccount::SuperUser;
-        case 254:
-            return AdminAccount::Administrator;
-        case 127:
-            return AdminAccount::DomainMaster;
-        default:
-            return AdminAccount::Disabled;
-        }
-    }
-
     QList<dbid_t> domains;
     QString username;
     QString lang;
     QString tmpl;
-    QString tz;
+    QString tz = QStringLiteral("UTC");
     QDateTime created;
     QDateTime updated;
-    dbid_t id;
-    AdminAccount::AdminAccountType type;
-    quint8 maxDisplay;
-    quint8 warnLevel;
+    dbid_t id = 0;
+    AdminAccount::AdminAccountType type = AdminAccount::Disabled;
+    quint8 maxDisplay = 25;
+    quint8 warnLevel = 90;
 };
 
 #endif // SKAFFAIR_ADMINACCOUNT_P_H

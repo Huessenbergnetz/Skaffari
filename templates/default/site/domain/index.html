@@ -3,7 +3,7 @@
         <h2><i class="fas fa-cubes"></i> {{ _("Domains") }}</h2>
     </div>
     <div class="col-12 col-sm-3">
-        {% if user.type >= 254 %}
+        {% if user.type >= user.Administrator %}
         <a class="btn btn-outline-primary float-sm-right d-none d-sm-block" href="/domain/create" role="button"><i class="fas fa-plus"></i><span class="d-sm-none d-md-inline"> {{ _("Add") }}</span></a>
         <a class="btn btn-outline-primary btn-block d-block d-sm-none" href="/domain/create" role="button"><i class="fas fa-plus"></i> {{ _("Add") }}</a>
         {% endif %}
@@ -53,7 +53,7 @@
                                     <a href="/domain/{{ domain.id }}/accounts" class="dropdown-item"><i class="fas fa-users fa-fw"></i> {{ mngAccTxt }}</a>
                                     <a href="#" class="dropdown-item disabled"><i class="fas fa-share-square fa-fw"></i> {{ aliAdrTxt }}</a>
                                     <a href="/domain/{{  domain.id }}/check" class="dropdown-item"><i class="fas fa-stethoscope fa-fw"></i> {{ chkDomTxt }}</a>
-                                    {% if user.type >= 254 %}
+                                    {% if user.type >= user.Administrator %}
                                     <a href="#" class="dropdown-item remove-domain-btn text-danger" data-toggle="modal" data-target="#removeDomainModal" data-name="{{ domain.name }}" data-domainid="{{ domain.id }}" data-accountcount="{{ domain.accounts }}"><i class="fas fa-trash fa-fw"></i> {{ delDomTxt }}</a>
                                     {% endif %}
                                 </div>
