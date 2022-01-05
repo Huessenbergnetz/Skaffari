@@ -13,6 +13,8 @@ add_library(grantlee_skaffari MODULE
     stringlistsortfilter.h
     splitfilter.cpp
     splitfilter.h
+    stringformatfilter.cpp
+    stringformatfilter.h
     skaffarigrantlee.cpp
     skaffarigrantlee.h
 )
