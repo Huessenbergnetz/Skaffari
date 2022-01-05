@@ -17,6 +17,7 @@
  */
 
 #include "root.h"
+#include "logging.h"
 #include "objects/domain.h"
 #include "objects/language.h"
 #include "objects/skaffarierror.h"
@@ -312,6 +313,8 @@ void Root::error(Context *c)
 
 bool Root::Auto(Context* c)
 {
+    qCDebug(SK_CORE, "%s", "Entering Root::Auto()");
+
     if (c->controllerName() == QLatin1String("Login")) {
         return true;
     }

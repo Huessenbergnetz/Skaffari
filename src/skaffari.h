@@ -20,9 +20,8 @@
 #define SKAFFARI_H
 
 #include <Cutelyst/Application>
-#include <QLoggingCategory>
 
-Q_DECLARE_LOGGING_CATEGORY(SK_CORE)
+#include "logging.h"
 
 using namespace Cutelyst;
 
