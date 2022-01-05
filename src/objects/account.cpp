@@ -223,26 +223,28 @@ QJsonObject Account::toJson() const
 {
     QJsonObject ao;
 
-    ao.insert(QStringLiteral("id"), static_cast<qint64>(d->id));
-    ao.insert(QStringLiteral("domainId"), static_cast<qint64>(d->domainId));
-    ao.insert(QStringLiteral("username"), d->username);
-    ao.insert(QStringLiteral("imap"), d->imap);
-    ao.insert(QStringLiteral("pop"), d->pop);
-    ao.insert(QStringLiteral("sieve"), d->sieve);
-    ao.insert(QStringLiteral("smtpauth"), d->smtpauth);
-    ao.insert(QStringLiteral("addresses"), QJsonArray::fromStringList(d->addresses));
-    ao.insert(QStringLiteral("forwards"), QJsonArray::fromStringList(d->forwards));
-    ao.insert(QStringLiteral("quota"), static_cast<qint64>(d->quota));
-    ao.insert(QStringLiteral("usage"), static_cast<qint64>(d->usage));
-    ao.insert(QStringLiteral("created"), d->created.toString(Qt::ISODate));
-    ao.insert(QStringLiteral("updated"), d->updated.toString(Qt::ISODate));
-    ao.insert(QStringLiteral("validUntil"), d->validUntil.toString(Qt::ISODate));
-    ao.insert(QStringLiteral("passwordExpires"), d->passwordExpires.toString(Qt::ISODate));
-    ao.insert(QStringLiteral("passwordExpired"), passwordExpired());
-    ao.insert(QStringLiteral("keepLocal"), d->keepLocal);
-    ao.insert(QStringLiteral("catchAll"), d->catchAll);
-    ao.insert(QStringLiteral("expired"), expired());
-    ao.insert(QStringLiteral("status"), d->status);
+    if (isValid()) {
+        ao.insert(QStringLiteral("id"), static_cast<qint64>(d->id));
+        ao.insert(QStringLiteral("domainId"), static_cast<qint64>(d->domainId));
+        ao.insert(QStringLiteral("username"), d->username);
+        ao.insert(QStringLiteral("imap"), d->imap);
+        ao.insert(QStringLiteral("pop"), d->pop);
+        ao.insert(QStringLiteral("sieve"), d->sieve);
+        ao.insert(QStringLiteral("smtpauth"), d->smtpauth);
+        ao.insert(QStringLiteral("addresses"), QJsonArray::fromStringList(d->addresses));
+        ao.insert(QStringLiteral("forwards"), QJsonArray::fromStringList(d->forwards));
+        ao.insert(QStringLiteral("quota"), static_cast<qint64>(d->quota));
+        ao.insert(QStringLiteral("usage"), static_cast<qint64>(d->usage));
+        ao.insert(QStringLiteral("created"), d->created.toString(Qt::ISODate));
+        ao.insert(QStringLiteral("updated"), d->updated.toString(Qt::ISODate));
+        ao.insert(QStringLiteral("validUntil"), d->validUntil.toString(Qt::ISODate));
+        ao.insert(QStringLiteral("passwordExpires"), d->passwordExpires.toString(Qt::ISODate));
+        ao.insert(QStringLiteral("passwordExpired"), passwordExpired());
+        ao.insert(QStringLiteral("keepLocal"), d->keepLocal);
+        ao.insert(QStringLiteral("catchAll"), d->catchAll);
+        ao.insert(QStringLiteral("expired"), expired());
+        ao.insert(QStringLiteral("status"), d->status);
+    }
 
     return ao;
 }
