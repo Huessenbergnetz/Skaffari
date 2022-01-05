@@ -42,7 +42,7 @@ class SkaffariError;
 
 /*!
  * \ingroup skaffariobjects
- * \brief Represents an user account
+ * \brief Represents an email user account
  *
  * An user account contains information about a single email user account, inlcuding associated addresses and forwards.
  */
@@ -216,22 +216,16 @@ public:
 
     /*!
      * \brief Returns the account database ID.
-     *
-     * Access from Grantlee: id
      */
     dbid_t id() const;
 
     /*!
      * \brief Returns the database ID of the domain the account belongs to.
-     *
-     * Access from Grantlee: domainId
      */
     dbid_t domainId() const;
 
     /*!
      * \brief Returns the username of the account.
-     *
-     * Access from Grantlee: username
      */
     QString username() const;
 
@@ -245,64 +239,46 @@ public:
 
     /*!
      * \brief Returns \c true if IMAP access is enabled for this account.
-     *
-     * Access from Grantlee: imap
      */
     bool isImapEnabled() const;
 
     /*!
      * \brief Returns \c true if POP3 access is enabled for this account.
-     *
-     * Access from Grantlee: pop
      */
     bool isPopEnabled() const;
 
     /*!
      * \brief Returns \c true if Sieve access is enabled for this account.
-     *
-     * Access from Grantlee: sieve
      */
     bool isSieveEnabled() const;
 
     /*!
      * \brief Returns \c true if sending emails via SMTP is enabled for this account.
-     *
-     * Access from Grantlee: smtpauth
      */
     bool isSmtpauthEnabled() const;
 
     /*!
      * \brief Returns the email addresses that are connected to this account.
-     *
-     * Access from Grantlee: addresses
      */
     QStringList addresses() const;
 
     /*!
      * \brief Returns the emal forwards that are defined for this account.
-     *
-     * Access from Grantlee: forwards
      */
     QStringList forwards() const;
 
     /*!
      * \brief Returns the quota defined for this account in KiB.
-     *
-     * Access from Grantlee: quota
      */
     quota_size_t quota() const;
 
     /*!
      * \brief Returns the quota used by this account in KiB.
-     *
-     * Access from Grantlee: usage
      */
     quota_size_t usage() const;
 
     /*!
      * \brief Returns a percentage value of the used quota.
-     *
-     * Access from Grantlee: usagePercent
      */
     float usagePercent() const;
 
@@ -311,67 +287,49 @@ public:
      *
      * An account is valid if the account’s database ID, returned via getId(), and the
      * domain database ID both return values greater than \c 0.
-     *
-     * Access from Grantlee: isValid
      */
     bool isValid() const;
 
     /*!
      * \brief Returns the date and time this account has been created.
-     *
-     * Access from Grantlee: created
      */
     QDateTime created() const;
 
     /*!
      * \brief Returns the date and time this account has been updated the last time.
-     *
-     * Access from Grantlee: updated
      */
     QDateTime updated() const;
 
     /*!
      * \brief Returns the date and time until this account is valid.
-     *
-     * Access from Grantlee: validUntil
+     * \sa expired()
      */
     QDateTime validUntil() const;
 
     /*!
      * \brief Returns \c true if forwarded emails should be kept local too.
-     *
-     * Access from Grantlee: keepLocal
      */
     bool keepLocal() const;
 
     /*!
      * \brief Returns \c true if this account is for catch-all.
-     *
-     * Access from Grantlee: catchAll
      */
     bool catchAll() const;
 
     /*!
      * \brief Returns the date and time when the current password of this user expires.
-     *
-     * Access from Grantlee: passwordExpires
+     * \sa passwordExpired()
      */
     QDateTime passwordExpires() const;
 
     /*!
      * \brief Returns \c true if the password of this user has been expired.
-     *
-     * Access from Grantlee: passwordExpired
-     *
      * \sa passwordExpires()
      */
     bool passwordExpired() const;
 
     /*!
      * \brief Returns \c true if this account has been expired.
-     *
-     * Access from Grantlee: expired
-     *
      * \sa validUntil()
      */
     bool expired() const;
@@ -382,7 +340,13 @@ public:
     quint8 status() const;
 
     /*!
-     * \brief Converts the account data into a JSON object.
+     * \brief Converts this account object into a JSON object.
+     *
+     * The returned JSON object will contain every property of the %Account object
+     * except \c usagePercent and \c isValid.
+     *
+     * If the %Account is not valid (isValid() returns \c false), the returned JSON object
+     * will be empty.
      */
     QJsonObject toJson() const;
 
@@ -405,7 +369,7 @@ public:
     static Account create(Cutelyst::Context *c, SkaffariError &e, const QVariantHash &p, const Domain &d, const QStringList &selectedKids);
 
     /*!
-     * \brief Removes the account from the database and the IMAP server.
+     * \brief Removes this account from the database and the IMAP server.
      *
      * Will at first try to delete the account's mailbox from the IMAP server, if that succeeds, the account will
      * be deleted from the database.
@@ -525,7 +489,7 @@ public:
     QString addEmail(Cutelyst::Context *c, SkaffariError &e, const QVariantHash &p);
 
     /*!
-     * \brief Removes an email address from the account pointed to by \a a.
+     * \brief Removes an email address from this account.
      * \param c         Pointer to the current context, used for string translation and user authentication.
      * \param e         Object taking information about occurring errors.
      * \param address   The address that should be removed.
@@ -534,7 +498,7 @@ public:
     bool removeEmail(Cutelyst::Context *c, SkaffariError &e, const QString &address);
 
     /*!
-     * \brief Adds a new \a forward address to the account pointed to by \a a.
+     * \brief Adds a new \a forward address to this account.
      *
      * If adding the forward email address fails, the SkaffariError object pointed to by \a e will contain information
      * about occurred errors.
@@ -547,7 +511,7 @@ public:
     bool addForward(Cutelyst::Context *c, SkaffariError &e, const QString &forward);
 
     /*!
-     * \brief Removes a \a forward email address from the account.
+     * \brief Removes a \a forward email address from this account.
      * \param c         Pointer to the current context, used for string translation and user authentication.
      * \param e         Object taking information about occurring errors.
      * \param forward   The forward address that should be removed.
@@ -556,7 +520,7 @@ public:
     bool removeForward(Cutelyst::Context *c, SkaffariError &e, const QString &forward);
 
     /*!
-     * \brief Edits a forward address on the account.
+     * \brief Edits a forward address on this account.
      * \param c             Pointer to the current context, used for string translation and user authentication.
      * \param e             Object taking information about occurring errors.
      * \param oldForward    Old forward address that should be changed.
