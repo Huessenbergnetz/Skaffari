@@ -44,7 +44,7 @@ class AutoconfigServer
     Q_PROPERTY(quint16 port READ port CONSTANT)
     Q_PROPERTY(AutoconfigServer::SocketType socketType READ socketType CONSTANT)
     Q_PROPERTY(AutoconfigServer::Authentication authentication READ authentication CONSTANT)
-    Q_PROPERTY(qint8 sorting READ sorting CONSTANT)
+    Q_PROPERTY(qint16 sorting READ sorting CONSTANT)
 public:
     /*!
      * \brief Type of the server.
@@ -167,7 +167,7 @@ public:
     /*!
      * \brief Returns the sorting value. Lower comes first.
      */
-    qint8 sorting() const;
+    qint16 sorting() const;
 
     /*!
      * \brief Returns \c true if the server is valid, otherwise \c false.

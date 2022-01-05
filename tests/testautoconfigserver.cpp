@@ -51,8 +51,8 @@ void AutoconfigServerTest::constructor()
     QCOMPARE(s.authentication(), AutoconfigServer::Cleartext);
     QCOMPARE(AutoconfigServer::staticMetaObject.property(AutoconfigServer::staticMetaObject.indexOfProperty("authentication")).readOnGadget(&s).value<AutoconfigServer::Authentication>(), AutoconfigServer::Cleartext);
 
-    QCOMPARE(s.sorting(), static_cast<qint8>(10));
-    QCOMPARE(AutoconfigServer::staticMetaObject.property(AutoconfigServer::staticMetaObject.indexOfProperty("sorting")).readOnGadget(&s).value<qint8>(), static_cast<qint8>(10));
+    QCOMPARE(s.sorting(), static_cast<qint16>(10));
+    QCOMPARE(AutoconfigServer::staticMetaObject.property(AutoconfigServer::staticMetaObject.indexOfProperty("sorting")).readOnGadget(&s).value<qint8>(), static_cast<qint16>(10));
 }
 
 void AutoconfigServerTest::testMove()

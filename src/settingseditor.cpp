@@ -205,7 +205,7 @@ void SettingsEditor::add_autoconfig_server(Context *c)
                                new ValidatorBetween(QStringLiteral("socketType"), QMetaType::Char, static_cast<qint8>(AutoconfigServer::Plain), static_cast<qint8>(AutoconfigServer::Ssl)),
                                new ValidatorRequired(QStringLiteral("authentication")),
                                new ValidatorBetween(QStringLiteral("authentication"), QMetaType::Char, static_cast<qint8>(AutoconfigServer::Cleartext), static_cast<qint8>(AutoconfigServer::TlsClientCert)),
-                               new ValidatorBetween(QStringLiteral("sorting"), QMetaType::Char, std::numeric_limits<qint8>::min(), std::numeric_limits<qint8>::max())
+                               new ValidatorBetween(QStringLiteral("sorting"), QMetaType::Short, std::numeric_limits<qint16>::min(), std::numeric_limits<qint16>::max())
                            });
         const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
         if (vr) {
@@ -267,7 +267,7 @@ void SettingsEditor::edit_autoconfig_server(Context *c, const QString &id)
                                new ValidatorBetween(QStringLiteral("socketType"), QMetaType::Char, static_cast<qint8>(AutoconfigServer::Plain), static_cast<qint8>(AutoconfigServer::Ssl)),
                                new ValidatorRequired(QStringLiteral("authentication")),
                                new ValidatorBetween(QStringLiteral("authentication"), QMetaType::Char, static_cast<qint8>(AutoconfigServer::Cleartext), static_cast<qint8>(AutoconfigServer::TlsClientCert)),
-                               new ValidatorBetween(QStringLiteral("sorting"), QMetaType::Char, std::numeric_limits<qint8>::min(), std::numeric_limits<qint8>::max())
+                               new ValidatorBetween(QStringLiteral("sorting"), QMetaType::Short, std::numeric_limits<qint16>::min(), std::numeric_limits<qint16>::max())
                            });
         const ValidatorResult vr = v.validate(c, Validator::FillStashOnError|Validator::BodyParamsOnly);
         if (vr) {

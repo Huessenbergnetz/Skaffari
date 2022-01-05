@@ -37,16 +37,16 @@ class AutoconfigServer::Data : public QSharedData
 public:
     Data() : QSharedData() {}
 
-    Data(dbid_t _id, dbid_t _domainId, Type _type, const QString &_hostname, quint16 _port, SocketType _socketType, Authentication _authentication, qint8 _sorting) :
+    Data(dbid_t _id, dbid_t _domainId, Type _type, const QString &_hostname, quint16 _port, SocketType _socketType, Authentication _authentication, qint16 _sorting) :
         QSharedData(),
         hostname(_hostname),
         id(_id),
         domainId(_domainId),
         port(_port),
+        sorting(_sorting),
         type(_type),
         socketType(_socketType),
-        authentication(_authentication),
-        sorting(_sorting)
+        authentication(_authentication)
     {}
 
     ~Data() {}
@@ -55,10 +55,10 @@ public:
     dbid_t id = 0;
     dbid_t domainId = 0;
     quint16 port = 0;
+    qint16 sorting = 0;
     AutoconfigServer::Type type = AutoconfigServer::Imap;
     AutoconfigServer::SocketType socketType = AutoconfigServer::Plain;
     AutoconfigServer::Authentication authentication = AutoconfigServer::Cleartext;
-    qint8 sorting = 0;
 };
 
 AutoconfigServer::AutoconfigServer() : d(new Data)
@@ -141,7 +141,7 @@ AutoconfigServer::Authentication AutoconfigServer::authentication() const
     return d->authentication;
 }
 
-qint8 AutoconfigServer::sorting() const
+qint16 AutoconfigServer::sorting() const
 {
     return d->sorting;
 }
@@ -204,7 +204,7 @@ AutoconfigServer AutoconfigServer::get(Cutelyst::Context *c, dbid_t domainId, db
                          q.value(2).value<quint16>(),
                          static_cast<AutoconfigServer::SocketType>(q.value(3).value<qint8>()),
                          static_cast<AutoconfigServer::Authentication>(q.value(4).value<qint8>()),
-                         q.value(5).value<qint8>());
+                         q.value(5).value<qint16>());
 
     return s;
 }
@@ -253,7 +253,7 @@ std::vector<AutoconfigServer> AutoconfigServer::list(Cutelyst::Context *c, dbid_
                          q.value(4).value<quint16>(),
                          static_cast<AutoconfigServer::SocketType>(q.value(5).value<qint8>()),
                          static_cast<AutoconfigServer::Authentication>(q.value(6).value<qint8>()),
-                         q.value(7).value<qint8>());
+                         q.value(7).value<qint16>());
     }
 
     if (SkaffariConfig::useMemcached()) {
@@ -275,7 +275,7 @@ AutoconfigServer AutoconfigServer::create(Cutelyst::Context *c, dbid_t domainId,
     const quint16 port = p.value(QStringLiteral("port")).value<quint16>();
     const qint8 socketType = p.value(QStringLiteral("socketType")).value<qint8>();
     const qint8 authentication = p.value(QStringLiteral("authentication")).value<qint8>();
-    const qint8 sorting = p.value(QStringLiteral("sorting"), 0).value<qint8>();
+    const qint16 sorting = p.value(QStringLiteral("sorting"), 0).value<qint16>();
 
     QSqlQuery q;
 
@@ -364,7 +364,7 @@ bool AutoconfigServer::update(Cutelyst::Context *c, const QVariantHash &p, Skaff
     const SocketType _socketType = static_cast<SocketType>(socketTypeInt);
     const qint8 authenticationInt = p.value(QStringLiteral("authentication")).value<qint8>();
     const Authentication _authentication = static_cast<Authentication>(authenticationInt);
-    const qint8 _sorting = p.value(QStringLiteral("sorting"), 0).value<qint8>();
+    const qint16 _sorting = p.value(QStringLiteral("sorting"), 0).value<qint16>();
 
     if (type() == _type && hostname() == _hostname && port() == _port && socketType() == _socketType && authentication() == _authentication && sorting() == _sorting) {
         // nothing changed
