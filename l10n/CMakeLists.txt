@@ -8,7 +8,7 @@ if (LRELEASE_CMD)
         list(APPEND QM_FILES ${CMAKE_CURRENT_BINARY_DIR}/skaffaricmd_${l}.qm)
     endforeach(l)
 
-    install (FILES ${QM_FILES} DESTINATION ${CMAKE_INSTALL_LOCALEDIR})
+    install (FILES ${QM_FILES} DESTINATION ${LANGDIR})
 
 endif(LRELEASE_CMD)
  

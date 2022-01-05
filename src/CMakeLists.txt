@@ -75,6 +75,7 @@ set (skaffari_SRCS
     autodiscover.h
     root.cpp
     root.h
+    logging.h
     skaffari.cpp
     skaffari.h
     ../common/password.cpp
@@ -160,7 +161,7 @@ target_link_libraries(skaffari
         Cutelyst::Memcached
         Cutelyst::MemcachedSessionStore
         Cutelyst::CSRFProtection
-        Cutelee5::Templates
+        Cutelee::Templates
         crypt
         ${ICU_LIBRARIES}
 )
@@ -190,4 +191,4 @@ else(SYSTEMD_FOUND)
     message(STATUS "Can not find systemd. Disabling systemd journal support.")
 endif(SYSTEMD_FOUND)
 
-install(TARGETS skaffari DESTINATION ${CMAKE_INSTALL_LIBDIR}/cutelyst${Cutelyst2Qt5_VERSION_MAJOR}-apps)
+install(TARGETS skaffari DESTINATION ${CMAKE_INSTALL_LIBDIR}/cutelyst${Cutelyst3Qt5_VERSION_MAJOR}-qt5-apps)
