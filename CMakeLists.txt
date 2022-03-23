@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 cmake_policy(SET CMP0048 NEW)
 
+if (CMAKE_VERSION VERSION_GREATER 3.19.8)
+    cmake_policy(SET CMP0115 NEW)
+endif (CMAKE_VERSION VERSION_GREATER 3.19.8)
+
 project(skaffari VERSION 1.0.0)
 
 find_package(Qt5 5.6.0 REQUIRED COMPONENTS Core Network Sql Xml)
