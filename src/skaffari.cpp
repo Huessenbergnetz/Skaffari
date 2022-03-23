@@ -197,6 +197,7 @@ bool Skaffari::init()
     qRegisterMetaType<HelpHash>("HelpHash");
     qRegisterMetaType<QList<dbid_t>>("QList<dbid_t>");
     qRegisterMetaType<std::vector<Folder>>("std::vector<Folder>");
+    qRegisterMetaType<std::vector<SimpleDomain>>("std::vector<SimpleDomain>");
     qRegisterMetaTypeStreamOperators<QTimeZone>("QTimeZone");
 
     const QString tmplName = generalConfig.value(QStringLiteral("template"), QStringLiteral("default")).toString().trimmed();
@@ -301,9 +302,9 @@ bool Skaffari::init()
     lsp->setSupportedLocales(supportedLocales);
     lsp->setSessionKey(QStringLiteral("lang"));
 
-    auto csrf = new CSRFProtection(this);
-    csrf->setDefaultDetachTo(QStringLiteral("/csrfdenied"));
-    csrf->setIgnoredNamespaces({QStringLiteral("autodiscover/autodiscover.xml"), QStringLiteral("mail/config-v1.1.xml")});
+//    auto csrf = new CSRFProtection(this);
+//    csrf->setDefaultDetachTo(QStringLiteral("/csrfdenied"));
+//    csrf->setIgnoredNamespaces({QStringLiteral("autodiscover/autodiscover.xml"), QStringLiteral("mail/config-v1.1.xml")});
 
     new StatusMessage(this);
 

@@ -7,7 +7,7 @@
 <div class="row justify-content-center mt-2">
     <div class="col-12 col-sm-12 col-md-8 col-lg-6">
         <form id="editForwardForm" method="post">
-            {% c_csrf_token %}
+            {# c_csrf_token #}
             <div class="form-group">
                 <input type="email" id="newforward" name="newforward" class="form-control{% if validationErrors.newforward.count %} is-invalid{% endif %}" aria-describedby="newforwardDesc" placeholder="name@example.com" value="{{ newforward|default_if_none:oldforward }}" required="required" />
                 {% if validationErrors.newforward.count %}<div class="invalid-feedback"><small>{{ validationErrors.newforward.0 }}</small></div>{% endif %}

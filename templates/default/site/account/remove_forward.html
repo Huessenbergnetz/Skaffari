@@ -6,7 +6,7 @@
                 <h2 class="card-title">{{ forward }}</h2>
                 <p class="card-text text-warning">{% i18n "Are you sure you want to remove this forward email address from account %1?" account.username %}</p>
                 <form method="post">
-                    {% c_csrf_token %}
+                    {# c_csrf_token #}
                     <input type="hidden" id="email" name="email" value="{{ forward }}" required="required" />
                     <div>
                         <a class="btn btn-secondary" href="/account/{{ domain.id }}/{{ account.id }}/forwards" role="button"><i class="fas fa-times"></i> {{ _("Cancel") }}</a>
