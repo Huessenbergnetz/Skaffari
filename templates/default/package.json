@@ -12,7 +12,7 @@
     "@fortawesome/fontawesome-free": "5.15.4",
     "@ttskch/select2-bootstrap4-theme": "1.5.2",
     "@wikimedia/jquery.i18n": "1.0.7",
-    "bootstrap": "4.6.0",
+    "bootstrap": "4.6.1",
     "cross-env": "^7.0.3",
     "jquery": "3.5.1",
     "js-cookie": "2.2.1",
