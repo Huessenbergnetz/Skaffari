@@ -28,6 +28,8 @@
 #include <QLocale>
 #include <QDateTime>
 #include <QTimeZone>
+#include <QMetaType>
+#include <QDebug>
 
 Q_DECLARE_METATYPE(QTimeZone)
 
@@ -65,7 +67,7 @@ TimeZoneConvert::TimeZoneConvert(const Cutelee::FilterExpression &dateTime, cons
 void TimeZoneConvert::render(Cutelee::OutputStream *stream, Cutelee::Context *gc) const
 {
     const QVariant dtVar = m_dateTime.resolve(gc);
-    const auto dtVarType = dtVar.userType();
+    const int dtVarType = dtVar.userType();
     if (dtVarType == qMetaTypeId<Cutelee::SafeString>()) {
         *stream << dtVar.value<Cutelee::SafeString>().get();
         return;
@@ -79,7 +81,7 @@ void TimeZoneConvert::render(Cutelee::OutputStream *stream, Cutelee::Context *gc
         case QVariant::Time:
             break;
         default:
-            qWarning("%s", "sk_tzc can only operate on QDateTime values.");
+            qWarning() << "sk_tzc can only operate on QDateTime values, but not on" << QMetaType::typeName(dtVarType) << "(ID:" << dtVarType << "):" << dtVar;
             return;
         }
     }

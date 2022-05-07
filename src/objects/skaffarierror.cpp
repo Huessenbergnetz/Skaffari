@@ -366,7 +366,7 @@ QString SkaffariError::typeTitle(Cutelyst::Context *c) const
             ret = ctx->translate("SkaffariError", "Not found");
             break;
         default:
-            ret = ctx->translate("SkaffariError", "Unkown Error");
+            ret = ctx->translate("SkaffariError", "Unknown Error");
             break;
         }
     }
