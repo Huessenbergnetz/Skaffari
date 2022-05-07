@@ -22,7 +22,7 @@
                     <dd>{{ server.sorting }}</dd>
                 </dl>
                 <form method="post">
-                    {# c_csrf_token #}
+                    {% c_csrf_token %}
                     <input type="hidden" id="serverId" name="serverId" value="{{ server.id }}" required="required" />
                     <div>
                         <a class="btn btn-secondary" href="/settings/autoconfig" role="button"><i class="fas fa-times"></i> {{ _("Cancel") }}</a>

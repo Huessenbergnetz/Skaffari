@@ -8,7 +8,7 @@
                 <p class="card-text text-danger">{% i18np "If you proceed you will delete %n user account(s)." domain.accounts %}</p>
                 <p class="card-text">{{ _("To proceed, please enter the domain name.") }}</p>
                 <form method="post">
-                    {# c_csrf_token #}
+                    {% c_csrf_token %}
                     <input type="text" id="domainName" name="domainName" class="form-control" value="" required="required" />
                     <div class="mt-3">
                         <a class="btn btn-secondary" href="/domain/{{ domain.id }}/accounts" role="button"><i class="fas fa-times"></i> {{ _("Cancel") }}</a>

@@ -302,9 +302,9 @@ bool Skaffari::init()
     lsp->setSupportedLocales(supportedLocales);
     lsp->setSessionKey(QStringLiteral("lang"));
 
-//    auto csrf = new CSRFProtection(this);
-//    csrf->setDefaultDetachTo(QStringLiteral("/csrfdenied"));
-//    csrf->setIgnoredNamespaces({QStringLiteral("autodiscover/autodiscover.xml"), QStringLiteral("mail/config-v1.1.xml")});
+    auto csrf = new CSRFProtection(this);
+    csrf->setDefaultDetachTo(QStringLiteral("/csrfdenied"));
+    csrf->setIgnoredNamespaces({QStringLiteral("autodiscover/autodiscover.xml"), QStringLiteral("mail/config-v1.1.xml")});
 
     new StatusMessage(this);
 
