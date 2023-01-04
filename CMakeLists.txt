@@ -38,7 +38,6 @@ set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATADIR}/doc/skaffari" CACHE PATH "Dir
 set(CMAKE_INSTALL_MANDIR "${CMAKE_INSTALL_DATADIR}/man" CACHE PATH "Directory to install man pages")
 set(SKAFFARI_RUNTIME_DIR "/run/skaffari" CACHE PATH "Directory for runtime files (pid and socket)")
 set(SKAFFARI_SOCKET_FILE "${SKAFFARI_RUNTIME_DIR}/skaffari.sock")
-set(SKAFFARI_PID_FILE "${SKAFFARI_RUNTIME_DIR}/skaffari.pid")
 set(SKAFFARI_USER "skaffari" CACHE STRING "System user for Skaffari")
 set(SKAFFARI_GROUP "skaffari" CACHE STRING "System group for Skaffari")
 set(SKAFFARI_SOCKET_USER "${SKAFFARI_USER}" CACHE STRING "User for the Skaffari FastCGI socket file")

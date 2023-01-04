@@ -8,17 +8,15 @@ Before=httpd.service nginx.service lighttpd.service
 [Service]
 Type=notify
 Environment="QT_LOGGING_CONF=@SKAFFARI_INI_FILE@"
-PIDFile=@SKAFFARI_PID_FILE@
+PIDFile=${RUNTIME_DIRECTORY}/skaffari.pid
 ExecStartPre=@SKAFFARI_CMD_PATH@ -t -i @SKAFFARI_INI_FILE@
-ExecStart=@CUTELYST_WSGI_EXECUTABLE@ -M -a @SKAFFARI_APP_FILE@ --ini @SKAFFARI_INI_FILE@ --pidfile @SKAFFARI_PID_FILE@ --fastcgi-socket @SKAFFARI_SOCKET_FILE@ --socket-access ug
-ExecStop=@CUTELYST_WSGI_EXECUTABLE@ --stop @SKAFFARI_PID_FILE@
+ExecStart=@CUTELYST_WSGI_EXECUTABLE@ -M -a @SKAFFARI_APP_FILE@ --ini @SKAFFARI_INI_FILE@ --pidfile ${RUNTIME_DIRECTORY}/skaffari.pid --fastcgi-socket ${RUNTIME_DIRECTORY}/skaffari.sock --socket-access ug --chown-socket @SKAFFARI_SOCKET_USER@:@SKAFFARI_SOCKET_GROUP@ --uid @SKAFFARI_USER@ --gid @SKAFFARI_GROUP@
+ExecStop=@CUTELYST_WSGI_EXECUTABLE@ --stop ${RUNTIME_DIRECTORY}/skaffari.pid
 NotifyAccess=all
 RuntimeDirectory=skaffari
 PrivateTmp=true
 SystemCallArchitectures=native
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-User=@SKAFFARI_USER@
-Group=@SKAFFARI_GROUP@
 
 [Install]
 WantedBy=multi-user.target

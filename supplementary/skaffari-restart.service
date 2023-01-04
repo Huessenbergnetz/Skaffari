@@ -1,0 +1,8 @@
+[Unit]
+Description=Restarts the Skaffari Server to reestablish MySQL connections
+After=network.target local-fs.target mariadb.service
+Requisite=mariadb.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl restart skaffari.service

@@ -1,0 +1,10 @@
+[Unit]
+Description=Restarts the Skaffari Server to reestablish MySQL connections
+
+[Timer]
+OnBootSec=7h
+OnUnitActiveSec=7h
+Persistent=false
+
+[Install]
+WantedBy=timers.target
