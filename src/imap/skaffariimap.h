@@ -267,6 +267,8 @@ public:
      */
     QStringList getMailboxes();
 
+    void sendId();
+
     /*!
      * \brief Returns the last occurred error.
      * \return Last error object.
