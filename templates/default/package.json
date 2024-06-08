@@ -2,25 +2,25 @@
   "private": true,
   "scripts": {
     "dev": "npm run development",
-    "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
-    "watch": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
-    "hot": "cross-env NODE_ENV=development webpack-dev-server --inline --hot --config=node_modules/laravel-mix/setup/webpack.config.js",
+    "development": "npx mix",
+    "watch": "npx mix watch",
+    "watch-poll": "npx mix watch -- --watch-options-poll=1000",
+    "hot": "npx mix --hot",
     "prod": "npm run production",
-    "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
+    "production": "npx mix --production"
   },
   "devDependencies": {
     "@fortawesome/fontawesome-free": "5.15.4",
     "@ttskch/select2-bootstrap4-theme": "1.5.2",
     "@wikimedia/jquery.i18n": "1.0.7",
     "bootstrap": "4.6.1",
-    "cross-env": "^7.0.3",
     "jquery": "3.5.1",
     "js-cookie": "2.2.1",
-    "laravel-mix": "^5.0.9",
+    "laravel-mix": "^6.0.49",
     "popper.js": "1.16.1",
     "queuejax": "1.5.2",
-    "sass": "^1.32.6",
-    "sass-loader": "^8.0.2",
+    "sass": "^1.56.1",
+    "sass-loader": "^12.6.0",
     "select2": "4.0.13",
     "stupid-table-plugin": "1.1.3"
   }
