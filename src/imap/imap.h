@@ -42,6 +42,12 @@ public:
     [[nodiscard]] bool hasCapability(const QString &capability, bool reload = false);
 
 private:
+    struct Namespace {
+        QString prefix;
+        QChar delimeter;
+        bool isNull{true};
+    };
+
     QString getTag();
 
     bool sendCommand(const QString &command);
@@ -69,9 +75,13 @@ private:
     void sendId();
 
     ImapError m_lastError;
+    Namespace personalNamespace;
+    Namespace usersNamespace;
+    Namespace sharedNamespace;
     Cutelyst::Context *m_c{nullptr};
     quint32 m_tagSequence{0};
     QStringList m_capabilites;
+    QChar delimeter;
     bool m_loggedIn{false};
 };
 

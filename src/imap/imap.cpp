@@ -142,6 +142,10 @@ bool Imap::login(const QString &user, const QString &password)
         sendId();
     }
 
+    if (hasCapability(QStringLiteral("NAMESPACE"))) {
+
+    }
+
     return true;
 }
 
