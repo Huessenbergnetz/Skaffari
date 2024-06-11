@@ -5,6 +5,10 @@ set (skaffari_SRCS
     imap/skaffariimaperror.h
     imap/imap.cpp
     imap/imap.h
+    imap/imapresult.cpp
+    imap/imapresult.h
+    imap/imaperror.cpp
+    imap/imaperror.h
     cutelee/acedecodefilter.cpp
     cutelee/acedecodefilter.h
     cutelee/admintypetag.cpp
