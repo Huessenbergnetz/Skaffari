@@ -22,6 +22,7 @@
 #include "../../common/password.h"
 #include "../../common/global.h"
 #include "../imap/skaffariimap.h"
+#include "../imap/imap.h"
 #include "../objects/account.h"
 #include "../objects/simpleaccount.h"
 #include <QCryptographicHash>
@@ -416,6 +417,7 @@ public:
      * IMAP/encryption
      */
     static SkaffariIMAP::EncryptionType imapEncryption();
+    static Skaffari::Imap::EncryptionType imapEncryption2();
     /*!
      * \brief IMAP mailbox creation strategy.
      *
