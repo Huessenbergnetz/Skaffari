@@ -74,6 +74,7 @@ skaffari_test(testsimpleadmin "" "" "")
 skaffari_test(testsimpledomain "" "" "")
 skaffari_test(testautoconfigserver "" "" "")
 skaffari_test(testcuteleeplugin Cutelee::Templates "" "")
+skaffari_test(testimapparser "" "" "")
 
 # ConfigChecker test
 add_executable(testconfigchecker_exec

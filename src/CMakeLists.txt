@@ -9,6 +9,8 @@ set (skaffari_SRCS
     imap/imapresponse.h
     imap/imaperror.cpp
     imap/imaperror.h
+    imap/imapparser.cpp
+    imap/imapparser.h
     cutelee/acedecodefilter.cpp
     cutelee/acedecodefilter.h
     cutelee/admintypetag.cpp
