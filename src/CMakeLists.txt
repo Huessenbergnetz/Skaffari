@@ -5,8 +5,8 @@ set (skaffari_SRCS
     imap/skaffariimaperror.h
     imap/imap.cpp
     imap/imap.h
-    imap/imapresult.cpp
-    imap/imapresult.h
+    imap/imapresponse.cpp
+    imap/imapresponse.h
     imap/imaperror.cpp
     imap/imaperror.h
     cutelee/acedecodefilter.cpp

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-#include "imapresult.h"
+#include "imapresponse.h"
 
 ImapResponse::Data::Data(ImapResponse::Type _type, const ImapError &_error)
     : QSharedData()

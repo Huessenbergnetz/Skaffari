@@ -8,7 +8,7 @@
 
 #include <QSslSocket>
 
-#include "imap/imapresult.h"
+#include "imap/imapresponse.h"
 
 namespace Cutelyst {
 class Context;
