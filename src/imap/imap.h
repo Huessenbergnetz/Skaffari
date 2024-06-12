@@ -14,8 +14,6 @@ namespace Cutelyst {
 class Context;
 }
 
-namespace Skaffari {
-
 class Imap : public QSslSocket
 {
     Q_OBJECT
@@ -64,7 +62,7 @@ private:
 
     bool waitForResponse(bool disCon = false, const QString &errorString = {}, int msecs = 30'000);
 
-    ImapResult checkResponse(const QByteArray &data, const QString &tag = {});
+    ImapResponse checkResponse(const QByteArray &data, const QString &tag = {});
 
     bool authLogin(const QString &user, const QString &password);
 
@@ -84,7 +82,5 @@ private:
     QChar delimeter;
     bool m_loggedIn{false};
 };
-
-}
 
 #endif // SKAFFARI_IMAP_H

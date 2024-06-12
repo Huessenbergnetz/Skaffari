@@ -10,8 +10,6 @@
 
 class QSslError;
 
-namespace Skaffari {
-
 class ImapError
 {
 public:
@@ -79,9 +77,7 @@ private:
     QSharedDataPointer<Data> data;
 };
 
-}
-
-Q_DECLARE_TYPEINFO(Skaffari::ImapError, Q_MOVABLE_TYPE); // NOLINT(modernize-type-traits)
+Q_DECLARE_TYPEINFO(ImapError, Q_MOVABLE_TYPE); // NOLINT(modernize-type-traits)
 
 // void swap(Skaffari::ImapError &a, Skaffari::ImapError &b) noexcept
 // {

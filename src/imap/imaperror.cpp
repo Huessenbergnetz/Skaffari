@@ -7,8 +7,6 @@
 
 #include <QSslError>
 
-using namespace Skaffari;
-
 ImapError::Data::Data(ImapError::Type _type, QString _text)
     : QSharedData()
     , text{std::move(_text)}

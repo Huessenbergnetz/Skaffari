@@ -3,16 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-#ifndef SKAFFARI_IMAPRESULT_H
-#define SKAFFARI_IMAPRESULT_H
+#ifndef SKAFFARI_IMAPRESPONSE_H
+#define SKAFFARI_IMAPRESPONSE_H
 
 #include "imap/imaperror.h"
 
 #include <QSharedData>
 
-namespace Skaffari {
-
-class ImapResult {
+class ImapResponse {
 public:
     enum Type : int {
         OK,
@@ -21,18 +19,18 @@ public:
         Undefined
     };
 
-    ImapResult() noexcept = default;
+    ImapResponse() noexcept = default;
 
-    ImapResult(Type type, const ImapError &error);
-    ImapResult(Type type, const QString &statusLine, const QStringList &lines = {});
+    ImapResponse(Type type, const ImapError &error);
+    ImapResponse(Type type, const QString &statusLine, const QStringList &lines = {});
 
-    ImapResult(const ImapResult &other) noexcept = default;
-    ImapResult(ImapResult &&other) noexcept = default;
-    ImapResult &operator=(const ImapResult &other) noexcept = default;
-    ImapResult &operator=(ImapResult &&other) noexcept = default;
-    ~ImapResult() noexcept = default;
+    ImapResponse(const ImapResponse &other) noexcept = default;
+    ImapResponse(ImapResponse &&other) noexcept = default;
+    ImapResponse &operator=(const ImapResponse &other) noexcept = default;
+    ImapResponse &operator=(ImapResponse &&other) noexcept = default;
+    ~ImapResponse() noexcept = default;
 
-    void swap(ImapResult &other) noexcept { data.swap(other.data); }
+    void swap(ImapResponse &other) noexcept { data.swap(other.data); }
 
     [[nodiscard]] Type type() const noexcept;
 
@@ -52,8 +50,8 @@ private:
     public:
         Data() noexcept = default;
 
-        Data(ImapResult::Type _type, const ImapError &_error);
-        Data(ImapResult::Type _type, const QString &_statusLine, const QStringList &_lines);
+        Data(ImapResponse::Type _type, const ImapError &_error);
+        Data(ImapResponse::Type _type, const QString &_statusLine, const QStringList &_lines);
 
         Data(const Data &) noexcept = default;
         Data &operator=(const Data &) = delete;
@@ -62,19 +60,17 @@ private:
         ImapError error;
         QStringList lines;
         QString statusLine;
-        ImapResult::Type type{ImapResult::Undefined};
+        ImapResponse::Type type{ImapResponse::Undefined};
     };
 
     QSharedDataPointer<Data> data;
 };
 
-}
+Q_DECLARE_TYPEINFO(ImapResponse, Q_MOVABLE_TYPE); // NOLINT(modernize-type-traits)
 
-Q_DECLARE_TYPEINFO(Skaffari::ImapResult, Q_MOVABLE_TYPE); // NOLINT(modernize-type-traits)
-
-// void swap(Skaffari::ImapResult &a, Skaffari::ImapResult &b) noexcept
+// void swap(Skaffari::ImapResponse &a, Skaffari::ImapResponse &b) noexcept
 // {
 //     a.swap(b);
 // }
 
-#endif // SKAFFARI_IMAPRESULT_H
+#endif // SKAFFARI_IMAPRESPONSE_H

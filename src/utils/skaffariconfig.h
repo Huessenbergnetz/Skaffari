@@ -417,7 +417,7 @@ public:
      * IMAP/encryption
      */
     static SkaffariIMAP::EncryptionType imapEncryption();
-    static Skaffari::Imap::EncryptionType imapEncryption2();
+    static Imap::EncryptionType imapEncryption2();
     /*!
      * \brief IMAP mailbox creation strategy.
      *
