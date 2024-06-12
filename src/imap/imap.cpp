@@ -226,6 +226,38 @@ QStringList Imap::getCapabilities(bool reload)
     return m_capabilites;
 }
 
+void Imap::getNamespaces()
+{
+    const QString tag = getTag();
+
+    if (Q_UNLIKELY(!sendCommand(tag, QStringLiteral("CAPABILITY")))) {
+        return;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse())) {
+        return;
+    }
+
+    ImapResponse r = checkResponse(readAll(), tag);
+    if (!r) {
+        m_lastError = r.error();
+        return;
+    }
+
+    if (r.lines().empty()) {
+        m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request namespaces from the IMAP server.")};
+        return;
+    }
+
+    QString nsLine = r.lines().constFirst();
+    if (Q_UNLIKELY(!nsLine.startsWith(QLatin1String("NAMESPACE"), Qt::CaseInsensitive))) {
+        m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Invalid response after NAMESPACE request.")};
+        return;
+    }
+
+    nsLine.remove(QLatin1String("NAMESPACE "), Qt::CaseInsensitive);
+}
+
 bool Imap::hasCapability(const QString &capability, bool reload)
 {
     if (reload) {
