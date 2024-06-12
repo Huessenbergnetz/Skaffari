@@ -12,8 +12,6 @@
 #include <QLoggingCategory>
 #include <QMessageAuthenticationCode>
 
-using namespace Skaffari;
-
 Imap::Imap(Cutelyst::Context *c, QObject *parent)
     : QSslSocket{parent}
     , m_c{c}
@@ -59,7 +57,7 @@ bool Imap::login(const QString &user, const QString &password)
         return false;
     }
 
-    ImapResult r = checkResponse(readAll());
+    ImapResponse r = checkResponse(readAll());
 
     if (!r) {
         disconnectOnError(r.error());
@@ -174,7 +172,7 @@ void Imap::logout()
         return;
     }
 
-    const ImapResult r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse(readAll(), tag);
 
     if (!r) {
         disconnectOnError();
@@ -202,7 +200,7 @@ QStringList Imap::getCapabilities(bool reload)
             return m_capabilites;
         }
 
-        ImapResult r = checkResponse(readAll(), tag);
+        ImapResponse r = checkResponse(readAll(), tag);
         if (!r) {
             m_lastError = r.error();
             return m_capabilites;
@@ -308,17 +306,17 @@ bool Imap::waitForResponse(bool disCon, const QString &errorString, int msecs)
     return false;
 }
 
-ImapResult Imap::checkResponse(const QByteArray &data, const QString &tag)
+ImapResponse Imap::checkResponse(const QByteArray &data, const QString &tag)
 {
     if (Q_UNLIKELY(data.isEmpty())) {
         qCWarning(SK_IMAP) << "The IMAP response is undefined.";
-        return {ImapResult::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
+        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
     }
 
     const QList<QByteArray> rawLines = data.split('\n');
     if (Q_UNLIKELY(rawLines.empty())) {
         qCWarning(SK_IMAP) << "The IMAP response is undefined.";
-        return {ImapResult::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
+        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
     }
 
     QString statusLine;
@@ -339,20 +337,20 @@ ImapResult Imap::checkResponse(const QByteArray &data, const QString &tag)
 
     if (Q_UNLIKELY(statusLine.isEmpty())) {
         qCWarning(SK_IMAP) << "The IMAP response is undefined.";
-        return {ImapResult::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
+        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
     }
 
     if (statusLine.startsWith(QLatin1String("OK"), Qt::CaseInsensitive)) {
-        return {ImapResult::OK, statusLine.mid(3), lines};
+        return {ImapResponse::OK, statusLine.mid(3), lines};
     } else if (statusLine.startsWith(QLatin1String("BAD"), Qt::CaseInsensitive)) {
         qCCritical(SK_IMAP) << "We received a BAD response from the IMAP server:" << statusLine.mid(4);
-        return {ImapResult::BAD, ImapError{ImapError::BadResponse, m_c->translate("SkaffariIMAP", "We received a BAD response from the IMAP server: %1").arg(statusLine.mid(4))}};
+        return {ImapResponse::BAD, ImapError{ImapError::BadResponse, m_c->translate("SkaffariIMAP", "We received a BAD response from the IMAP server: %1").arg(statusLine.mid(4))}};
     } else if (statusLine.startsWith(QLatin1String("NO"), Qt::CaseInsensitive)) {
         qCCritical(SK_IMAP) << "We received a NO response from the IMAP server:" << statusLine.mid(3);
-        return {ImapResult::NO, ImapError{ImapError::NoResponse, m_c->translate("SkaffariIMAP", "We received a NO response from the IMAP server: %1").arg(statusLine.mid(3))}};
+        return {ImapResponse::NO, ImapError{ImapError::NoResponse, m_c->translate("SkaffariIMAP", "We received a NO response from the IMAP server: %1").arg(statusLine.mid(3))}};
     } else {
         qCCritical(SK_IMAP) << "The IMAP response is undefined";
-        return {ImapResult::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
+        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
     }
 }
 
@@ -397,7 +395,7 @@ bool Imap::authLogin(const QString &user, const QString &password)
         return false;
     }
 
-    const ImapResult r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse(readAll(), tag);
     if (!r) {
         disconnectOnError(r.error());
         return false;
@@ -434,7 +432,7 @@ bool Imap::authPlain(const QString &user, const QString &password)
         return false;
     }
 
-    const ImapResult r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse(readAll(), tag);
     if (!r) {
         disconnectOnError(r.error());
         return false;
@@ -482,7 +480,7 @@ bool Imap::authCramMd5(const QString &user, const QString &password)
         return false;
     }
 
-    const ImapResult r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse(readAll(), tag);
     if (!r) {
         disconnectOnError(r.error());
         return false;
@@ -517,7 +515,7 @@ void Imap::sendId()
         return;
     }
 
-    const ImapResult r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse(readAll(), tag);
 
     if (r.lines().empty()) {
         return;

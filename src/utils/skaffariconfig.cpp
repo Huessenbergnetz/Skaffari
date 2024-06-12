@@ -65,7 +65,7 @@ struct ConfigValues
     quint16 imapPort = 143;
     QAbstractSocket::NetworkLayerProtocol imapProtocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(SK_DEF_IMAP_PROTOCOL);
     SkaffariIMAP::EncryptionType imapEncryption = static_cast<SkaffariIMAP::EncryptionType>(SK_DEF_IMAP_ENCRYPTION);
-    Skaffari::Imap::EncryptionType imapEncryption2 = static_cast<Skaffari::Imap::EncryptionType>(SK_DEF_IMAP_ENCRYPTION);
+    Imap::EncryptionType imapEncryption2 = static_cast<Imap::EncryptionType>(SK_DEF_IMAP_ENCRYPTION);
     SkaffariIMAP::AuthMech imapAuthMech = static_cast<SkaffariIMAP::AuthMech>(SK_DEF_IMAP_AUTHMECH);
     Account::CreateMailbox imapCreatemailbox = static_cast<Account::CreateMailbox>(SK_DEF_IMAP_CREATEMAILBOX);
     bool imapUnixhierarchysep = SK_DEF_IMAP_UNIXHIERARCHYSEP;
@@ -115,7 +115,7 @@ void SkaffariConfig::load(const QVariantMap &general, const QVariantMap &account
     cfg->imapPort = imap.value(QStringLiteral("port"), 143).value<quint16>();
     cfg->imapProtocol = static_cast<QAbstractSocket::NetworkLayerProtocol>(imap.value(QStringLiteral("protocol"), SK_DEF_IMAP_PROTOCOL).value<quint8>());
     cfg->imapEncryption = static_cast<SkaffariIMAP::EncryptionType>(imap.value(QStringLiteral("encryption"), SK_DEF_IMAP_ENCRYPTION).value<quint8>());
-    cfg->imapEncryption2 = static_cast<Skaffari::Imap::EncryptionType>(imap.value(QStringLiteral("encryption"), SK_DEF_IMAP_ENCRYPTION).toInt());
+    cfg->imapEncryption2 = static_cast<Imap::EncryptionType>(imap.value(QStringLiteral("encryption"), SK_DEF_IMAP_ENCRYPTION).toInt());
     cfg->imapCreatemailbox = static_cast<Account::CreateMailbox>(imap.value(QStringLiteral("createmailbox"), SK_DEF_IMAP_CREATEMAILBOX).value<quint8>());
     cfg->imapUnixhierarchysep = imap.value(QStringLiteral("unixhierarchysep"), SK_DEF_IMAP_UNIXHIERARCHYSEP).toBool();
     cfg->imapDomainasprefix = imap.value(QStringLiteral("domainasprefix"), SK_DEF_IMAP_DOMAINASPREFIX).toBool();
@@ -313,7 +313,7 @@ QString SkaffariConfig::imapPassword() { QReadLocker locker(&cfg->lock);  return
 QString SkaffariConfig::imapPeername() { QReadLocker locker(&cfg->lock); return cfg->imapPeername; }
 QAbstractSocket::NetworkLayerProtocol SkaffariConfig::imapProtocol() { QReadLocker locker(&cfg->lock); return cfg->imapProtocol; }
 SkaffariIMAP::EncryptionType SkaffariConfig::imapEncryption() { QReadLocker locker(&cfg->lock); return cfg->imapEncryption; }
-Skaffari::Imap::EncryptionType SkaffariConfig::imapEncryption2() { QReadLocker locker(&cfg->lock); return cfg->imapEncryption2; }
+Imap::EncryptionType SkaffariConfig::imapEncryption2() { QReadLocker locker(&cfg->lock); return cfg->imapEncryption2; }
 Account::CreateMailbox SkaffariConfig::imapCreatemailbox() { QReadLocker locker(&cfg->lock); return cfg->imapCreatemailbox; }
 bool SkaffariConfig::imapUnixhierarchysep() { QReadLocker locker(&cfg->lock); return cfg->imapUnixhierarchysep; }
 bool SkaffariConfig::imapDomainasprefix() { QReadLocker locker(&cfg->lock); return cfg->imapDomainasprefix;}

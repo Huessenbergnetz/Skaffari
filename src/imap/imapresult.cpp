@@ -5,16 +5,14 @@
 
 #include "imapresult.h"
 
-using namespace Skaffari;
-
-ImapResult::Data::Data(ImapResult::Type _type, const ImapError &_error)
+ImapResponse::Data::Data(ImapResponse::Type _type, const ImapError &_error)
     : QSharedData()
     , error{_error}
     , type{_type}
 {
 }
 
-ImapResult::Data::Data(ImapResult::Type _type, const QString &_statusLine, const QStringList &_lines)
+ImapResponse::Data::Data(ImapResponse::Type _type, const QString &_statusLine, const QStringList &_lines)
     : QSharedData()
     , lines{_lines}
     , statusLine{_statusLine}
@@ -22,32 +20,32 @@ ImapResult::Data::Data(ImapResult::Type _type, const QString &_statusLine, const
 {
 }
 
-ImapResult::ImapResult(ImapResult::Type type, const ImapError &error)
-    : data{new ImapResult::Data{type, error}}
+ImapResponse::ImapResponse(ImapResponse::Type type, const ImapError &error)
+    : data{new ImapResponse::Data{type, error}}
 {
 }
 
-ImapResult::ImapResult(Type type, const QString &statusLine, const QStringList &lines)
-    : data{new ImapResult::Data{type, statusLine, lines}}
+ImapResponse::ImapResponse(Type type, const QString &statusLine, const QStringList &lines)
+    : data{new ImapResponse::Data{type, statusLine, lines}}
 {
 }
 
-ImapResult::Type ImapResult::type() const noexcept
+ImapResponse::Type ImapResponse::type() const noexcept
 {
-    return data ? data->type : ImapResult::Undefined;
+    return data ? data->type : ImapResponse::Undefined;
 }
 
-QString ImapResult::statusLine() const noexcept
+QString ImapResponse::statusLine() const noexcept
 {
     return data ? data->statusLine : QString();
 }
 
-QStringList ImapResult::lines() const noexcept
+QStringList ImapResponse::lines() const noexcept
 {
     return data ? data->lines : QStringList();
 }
 
-ImapError ImapResult::error() const noexcept
+ImapError ImapResponse::error() const noexcept
 {
     return data ? data->error : ImapError();
 }
