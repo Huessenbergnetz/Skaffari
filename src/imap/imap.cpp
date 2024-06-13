@@ -205,6 +205,24 @@ void Imap::logout()
     }
 }
 
+QString getCreateFolderSpecialUse(Imap::SpecialUse specialUse)
+{
+    switch (specialUse) {
+    case Imap::SpecialUse::Archive:
+        return QStringLiteral(R"( (USE (\Archive)))");
+    case Imap::SpecialUse::Drafts:
+        return QStringLiteral(R"( (USE (\Drafts)))");
+    case Imap::SpecialUse::Junk:
+        return QStringLiteral(R"( (USE (\Junk)))");
+    case Imap::SpecialUse::Sent:
+        return QStringLiteral(R"( (USE (\Sent)))");
+    case Imap::SpecialUse::Trash:
+        return QStringLiteral(R"( (USE (\Trash)))");
+    default:
+        return {};
+    }
+}
+
 bool Imap::createFolder(const QString &user, const QString &folder, SpecialUse specialUse)
 {
     Q_ASSERT_X(!folder.isEmpty(), "create folder", "empty folder name");
@@ -224,25 +242,54 @@ bool Imap::createFolder(const QString &user, const QString &folder, SpecialUse s
     QString cmd = QLatin1String(R"(CREATE ")") + getUserMailboxName(user, false) + delimeter + _folder + QLatin1Char('"');
 
     if (hasCapability(QStringLiteral("CREATE-SPECIAL-USE"))) {
-        switch (specialUse) {
-        case SpecialUse::Archive:
-            cmd += QLatin1String(R"( (USE (\Archive)))");
-            break;
-        case SpecialUse::Drafts:
-            cmd += QLatin1String(R"( (USE (\Drafts)))");
-            break;
-        case SpecialUse::Junk:
-            cmd += QLatin1String(R"( (USE (\Junk)))");
-            break;
-        case SpecialUse::Sent:
-            cmd += QLatin1String(R"( (USE (\Sent)))");
-            break;
-        case SpecialUse::Trash:
-            cmd += QLatin1String(R"( (USE (\Trash)))");
-            break;
-        default:
-            break;
+        cmd += getCreateFolderSpecialUse(specialUse);
+    }
+
+    if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return false;
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+
+    if (!r) {
+        m_lastError = r.error();
+        return false;
+    }
+
+    return true;
+}
+
+bool Imap::createFolder(const QString &folder, Imap::SpecialUse specialUse)
+{
+    Q_ASSERT_X(!folder.isEmpty(), "create folder", "empty folder name");
+
+    const QString _folder = Imap::toUtf7Imap(folder);
+
+    if (Q_UNLIKELY(!_folder.isEmpty())) {
+        m_lastError = ImapError{ImapError::InternalError, m_c->translate("SkaffariIMAP", "Failed to convert folder name into UTF-7-IMAP.")};
+        return false;
+    }
+
+    const QString tag = getTag();
+    const QList<std::pair<QString,QString>> nsList = getNamespace(NamespaceType::Personal);
+    QString nsname;
+    if (!nsList.empty()) {
+        if (const auto ns = nsList.constFirst(); !ns.first.isNull()) {
+            nsname = ns.first;
         }
+    }
+    if (nsname.isNull()) {
+        nsname = QStringLiteral("INBOX.");
+    }
+
+    QString cmd = QLatin1String(R"(CREATE ")") + nsname + _folder + QLatin1Char('"');
+
+    if (hasCapability(QStringLiteral("CREATE-SPECIAL-USE"))) {
+        cmd += getCreateFolderSpecialUse(specialUse);
     }
 
     if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
@@ -995,7 +1042,11 @@ QString Imap::getUserMailboxName(const QString &user, bool quoted)
         }
     }
     const QString delimeter = getDelimeter(Imap::NamespaceType::Others);
-    return QLatin1String(R"("user)") + delimeter + user + QLatin1Char('"');
+    if (quoted) {
+        return QLatin1String(R"("user)") + delimeter + user + QLatin1Char('"');
+    } else {
+        return QLatin1String("user") + delimeter + user;
+    }
 }
 
 #include "moc_imap.cpp"
