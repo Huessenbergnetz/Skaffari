@@ -115,7 +115,7 @@ void Autoconfig::index(Context *c)
 
     if (e.type() != SkaffariError::NoError) {
         c->res()->setStatus(Response::InternalServerError);
-        c->res()->setBody(e.type() == SkaffariError::SqlError ? c->translate("Autoconfig", "SQL query failed.") : c->translate("Autoconfig", "Internal server error."));
+        c->res()->setBody(e.type() == SkaffariError::Sql ? c->translate("Autoconfig", "SQL query failed.") : c->translate("Autoconfig", "Internal server error."));
         return;
     }
 

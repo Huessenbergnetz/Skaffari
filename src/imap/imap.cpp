@@ -18,6 +18,8 @@
 #include <unicode/localpointer.h>
 #include <unicode/ucnv.h>
 
+Q_LOGGING_CATEGORY(SK_IMAP, "skaffari.imap")
+
 Imap::Imap(Cutelyst::Context *c, QObject *parent)
     : QSslSocket{parent}
     , m_c{c}
@@ -40,7 +42,7 @@ bool Imap::login(const QString &user, const QString &password)
 
     m_lastError.clear();
 
-    const EncryptionType encType = SkaffariConfig::imapEncryption2();
+    const EncryptionType encType = SkaffariConfig::imapEncryption();
 
     if (encType != IMAPS) {
         connectToHost(SkaffariConfig::imapHost(), SkaffariConfig::imapPort(), ReadWrite, SkaffariConfig::imapProtocol());
@@ -115,18 +117,22 @@ bool Imap::login(const QString &user, const QString &password)
     QStringList caps = getCapabilities(true);
 
     if (caps.contains(QStringLiteral("AUTH=CRAM-MD5"))) {
+        qCDebug(SK_IMAP) << "Using AUTH=CRAM-MD5";
         if (!authCramMd5(user, password)) {
             return false;
         }
     } else if (caps.contains(QStringLiteral("AUTH=PLAIN"))) {
+        qCDebug(SK_IMAP) << "Using AUTH=PLAIN";
         if (!authPlain(user, password)) {
             return false;
         }
     } else if (caps.contains(QStringLiteral("AUTH=LOGIN"))) {
+        qCDebug(SK_IMAP) << "Using AUTH=LOGIN";
         if (!authLogin(user, password)) {
             return false;
         }
     } else { // use IMAP LOGIN as fallback
+        qCWarning(SK_IMAP) << "Using IMAP LOGIN fallback";
         const QString tag = getTag();
         const QString cmd = QLatin1String("LOGIN \"") + user + QLatin1String("\" \"") + password + QLatin1Char('"');
 
@@ -203,6 +209,11 @@ void Imap::logout()
     if (state() != QSslSocket::UnconnectedState && !waitForDisconnected()) {
         abort();
     }
+}
+
+bool Imap::isLoggedIn() const
+{
+    return m_loggedIn;
 }
 
 QString getCreateFolderSpecialUse(Imap::SpecialUse specialUse)
@@ -352,7 +363,7 @@ bool Imap::deleteMailbox(const QString &user)
             return a.first > b.first;
         });
 
-        qDebug(SK_IMAP) << "Folder to delete:" << folders;
+        qCDebug(SK_IMAP) << "Folder to delete:" << folders;
 
         for (const auto &f : std::as_const(folders)) {
             const QString mb = userRoot + delimeter + f.second;
@@ -899,31 +910,42 @@ bool Imap::waitForResponse(bool disCon, const QString &errorString, int msecs)
 ImapResponse Imap::checkResponse(const QByteArray &data, const QString &tag)
 {
     if (Q_UNLIKELY(data.isEmpty())) {
-        qCWarning(SK_IMAP) << "The IMAP response is undefined.";
-        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
+        qCWarning(SK_IMAP) << "The IMAP response is empty.";
+        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is empty.")}};
     }
 
-    const QList<QByteArray> rawLines = data.split('\n');
-    if (Q_UNLIKELY(rawLines.empty())) {
-        qCWarning(SK_IMAP) << "The IMAP response is undefined.";
-        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
+    const QString dataStr = QString::fromLatin1(data);
+    const QStringList dataLines = dataStr.split(QStringLiteral("\r\n"), Qt::SkipEmptyParts);
+    if (Q_UNLIKELY(dataLines.empty())) {
+        qCWarning(SK_IMAP) << "The IMAP response is empty.";
+        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is empty.")}};
     }
 
     QString statusLine;
     QStringList lines;
 
-    for (const auto &rawLine : rawLines) {
-        QString line = QString::fromLatin1(rawLine.trimmed());
+    for (const auto &dataLine : dataLines) {
+        const QString line = dataLine.trimmed();
         if (!tag.isEmpty() && line.startsWith(tag)) {
-            statusLine = statusLine.mid(tag.size() + 1);
+            statusLine = line.mid(tag.size() + 1);
         } else {
             lines.push_back(line.mid(2));
+        }
+    }
+
+    if (SK_IMAP().isDebugEnabled()) {
+        int i = 1;
+        for (const QString &l : std::as_const(lines)) {
+            qCDebug(SK_IMAP).nospace() << "Response data (" << i << "): " << l.toLatin1();
+            i++;
         }
     }
 
     if (statusLine.isEmpty() && !lines.empty()) {
         statusLine = lines.takeLast();
     }
+
+    qCDebug(SK_IMAP) << "Response status:" << statusLine;
 
     if (Q_UNLIKELY(statusLine.isEmpty())) {
         qCWarning(SK_IMAP) << "The IMAP response is undefined.";
@@ -1015,7 +1037,7 @@ bool Imap::authPlain(const QString &user, const QString &password)
     }
 
     const QByteArray cmd = QByteArrayLiteral("\0") + user.toUtf8() + QByteArrayLiteral("\0") + password.toUtf8();
-    if (Q_UNLIKELY(!sendCommand(cmd))) {
+    if (Q_UNLIKELY(!sendCommand(cmd.toBase64()))) {
         disconnectOnError();
         return false;
     }
@@ -1148,7 +1170,7 @@ void Imap::sendId()
         m_serverId.insert(key, value);
     }
 
-    qDebug(SK_IMAP) << "IMAP Server ID:" << m_serverId;
+    qCDebug(SK_IMAP) << "IMAP Server ID:" << m_serverId;
 }
 
 Imap::NsList Imap::getNamespace(Imap::NamespaceType type)
@@ -1359,6 +1381,8 @@ void Imap::getNamespaces()
     }
 
     m_namespaceQueried = true;
+
+    qCDebug(SK_IMAP) << "Requested namespaces:" << namespaces;
 
     m_namespaces = namespaces;
 }

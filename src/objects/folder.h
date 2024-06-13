@@ -22,7 +22,7 @@
 #include <QObject>
 #include <QSharedDataPointer>
 #include "../../common/global.h"
-#include "../imap/skaffariimap.h"
+#include "imap/imap.h"
 
 /*!
  * \ingroup skaffariobjects
@@ -46,7 +46,7 @@ public:
      * \param domainId  Database ID of the domain the folder belongs to.
      * \param name      Name of the folder.
      */
-    Folder(dbid_t id, dbid_t domainId, const QString &name, SkaffariIMAP::SpecialUse specialUse);
+    Folder(dbid_t id, dbid_t domainId, const QString &name, Imap::SpecialUse specialUse);
 
     /*!
      * \brief Constructs a copy of \a other.
@@ -96,7 +96,7 @@ public:
     /*!
      * \brief Returns the special use flag of the folder.
      */
-    SkaffariIMAP::SpecialUse getSpecialUse() const;
+    Imap::SpecialUse getSpecialUse() const;
 
     bool operator==(const Folder &other) const;
 

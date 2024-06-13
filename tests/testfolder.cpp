@@ -25,7 +25,7 @@ private Q_SLOTS:
 
 void FolderTest::constructor()
 {
-    Folder f(1, 2, QStringLiteral("Papierkorb"), SkaffariIMAP::Trash);
+    Folder f(1, 2, QStringLiteral("Papierkorb"), Imap::SpecialUse::Trash);
 
     QCOMPARE(f.getId(), static_cast<dbid_t>(1));
     QCOMPARE(Folder::staticMetaObject.property(Folder::staticMetaObject.indexOfProperty("id")).readOnGadget(&f).value<dbid_t>(), static_cast<dbid_t>(1));
@@ -33,14 +33,14 @@ void FolderTest::constructor()
     QCOMPARE(Folder::staticMetaObject.property(Folder::staticMetaObject.indexOfProperty("domainId")).readOnGadget(&f).value<dbid_t>(), static_cast<dbid_t>(2));
     QCOMPARE(f.getName(), QStringLiteral("Papierkorb"));
     QCOMPARE(Folder::staticMetaObject.property(Folder::staticMetaObject.indexOfProperty("name")).readOnGadget(&f).toString(), QStringLiteral("Papierkorb"));
-    QCOMPARE(f.getSpecialUse(), SkaffariIMAP::Trash);
+    QCOMPARE(f.getSpecialUse(), Imap::SpecialUse::Trash);
 }
 
 void FolderTest::testMove()
 {
     // Test move constructor
     {
-        Folder f1(1, 2, QStringLiteral("Papierkorb"), SkaffariIMAP::Trash);
+        Folder f1(1, 2, QStringLiteral("Papierkorb"), Imap::SpecialUse::Trash);
         QCOMPARE(f1.getName(), QStringLiteral("Papierkorb"));
         Folder f2(std::move(f1));
         QCOMPARE(f2.getName(), QStringLiteral("Papierkorb"));
@@ -48,9 +48,9 @@ void FolderTest::testMove()
 
     // Test move assignment
     {
-        Folder f1(1, 2, QStringLiteral("Papierkorb"), SkaffariIMAP::Trash);
+        Folder f1(1, 2, QStringLiteral("Papierkorb"), Imap::SpecialUse::Trash);
         QCOMPARE(f1.getName(), QStringLiteral("Papierkorb"));
-        Folder f2(2, 2, QStringLiteral("Archiv"), SkaffariIMAP::Archive);
+        Folder f2(2, 2, QStringLiteral("Archiv"), Imap::SpecialUse::Archive);
         f2 = std::move(f1);
         QCOMPARE(f2.getName(), QStringLiteral("Papierkorb"));
     }
@@ -58,7 +58,7 @@ void FolderTest::testMove()
 
 void FolderTest::datastream()
 {
-    Folder f1(123, 456, QStringLiteral("Papierkorb"), SkaffariIMAP::Trash);
+    Folder f1(123, 456, QStringLiteral("Papierkorb"), Imap::SpecialUse::Trash);
 
     QByteArray outBa;
     QDataStream out(&outBa, QIODevice::WriteOnly);

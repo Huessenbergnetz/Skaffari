@@ -19,7 +19,7 @@
 #ifndef SKAFFARIERROR_H
 #define SKAFFARIERROR_H
 
-#include "../imap/skaffariimaperror.h"
+#include "imap/imaperror.h"
 #include <QSharedDataPointer>
 #include <QString>
 #include <QVariant>
@@ -44,21 +44,21 @@ public:
     /*!
      * \brief Different types of errors that can happen in Skaffari.
      */
-    enum ErrorType {
-        NoError,				/**< No Error occurred */
-        ImapError,				/**< An IMAP error occurred */
-        SqlError,				/**< An SQL error occurred */
-        ConfigError,			/**< An configuration error occurred, or configuration could not be written */
-        EmptyDatabase,			/**< The database is completely empty */
-        DbLayoutError,			/**< The database layout is not complete */
-        AuthenticationError,	/**< Authentication failed */
-        InputError,				/**< Input data is corrupted */
-        ApplicationError,       /**< An internal error occurred */
-        AuthorizationError,     /**< Authorization for an operation failed */
-        NotFound,               /**< The requested resource could not be found */
-        UnknownError			/**< Unknown error */
+    enum Type {
+        NoError,    	/**< No Error occurred */
+        Imap,           /**< An IMAP error occurred */
+        Sql,            /**< An SQL error occurred */
+        Config,			/**< An configuration error occurred, or configuration could not be written */
+        EmptyDatabase,  /**< The database is completely empty */
+        DbLayout,       /**< The database layout is not complete */
+        Authentication,	/**< Authentication failed */
+        Input,			/**< Input data is corrupted */
+        Application,    /**< An internal error occurred */
+        Authorization,  /**< Authorization for an operation failed */
+        NotFound,       /**< The requested resource could not be found */
+        Unknown         /**< Unknown error */
     };
-    Q_ENUM(ErrorType)
+    Q_ENUM(Type)
 
     /*!
      * \brief Constructs a SkaffariError of type \link SkaffariError::NoError NoError \endlink.
@@ -72,12 +72,12 @@ public:
      * \param errorText Optional QString human readable error description.
      * \param errorData Optional container for additional error data for further processing.
      */
-    SkaffariError(Cutelyst::Context *c, ErrorType type , const QString &errorText = QString(), const QVariant &errorData = QVariant());
+    SkaffariError(Cutelyst::Context *c, Type type , const QString &errorText = QString(), const QVariant &errorData = QVariant());
 
     /*!
      * \brief Constructs a SkaffariError object using the sqlError.
      *
-     * This constructor takes a QSqlError to construct a SkaffariError of type \link SkaffariError::SqlError SqlError \endlink.
+     * This constructor takes a QSqlError to construct a SkaffariError of type \link SkaffariError::Sql SqlError \endlink.
      * The used QSqlError can be returned by qSqlError(). errorText() takes also the text strings of the QSqlError into account.
      *
      * You can optionally specify a custom error text that is prepended to the output of errorText().
@@ -90,15 +90,15 @@ public:
     /*!
      * \brief Constructs a SkaffariError object using the \a imapError.
      *
-     * This constructor takes a SkaffariImapError to construct a SkaffariError of type \link SkaffariError::ImapError ImapError \endlink.
-     * The used SkaffariIMAPError can be returned by imapError(). errorText() takes also the text strings of the SkaffariIMAPError into account.
+     * This constructor takes a ImapError to construct a SkaffariError of type \link SkaffariError::ImapError ImapError \endlink.
+     * The used ImapError can be returned by imapError(). errorText() takes also the text strings of the ImapError into account.
      *
      * You can optionally specify a custom error text that is prepended to the output of errorText().
      *
-     * \param imapError A SkaffariIMAPError
+     * \param imapError A ImapError
      * \param errorText Optional custom error text for better explanation.
      */
-    SkaffariError(Cutelyst::Context *c, const SkaffariIMAPError &imapError, const QString &errorText = QString());
+    SkaffariError(Cutelyst::Context *c, const ImapError &imapError, const QString &errorText = QString());
 
     /*!
      * \brief Constructs a copy of the error \e other, passed as the argument to this constructor.
@@ -123,13 +123,13 @@ public:
     /*!
      * \brief Returns the type of this error.
      */
-    ErrorType type() const;
+    Type type() const;
     /*!
      * \brief Sets the type of the error.
      *
      * This will also implicitely set the status().
      */
-    void setErrorType(ErrorType nType);
+    void setErrorType(Type nType);
 
     /*!
      * \brief Returns a HTTP response status appropriate to the current error.
@@ -143,7 +143,7 @@ public:
     /*!
      * \brief Returns a human readable error text.
      *
-     * If SkaffariError was constructed using a QSqlError or a SkaffariIMAPError,
+     * If SkaffariError was constructed using a QSqlError or a ImapError,
      * this also returns the error texts of them.
      *
      * \return QString of human readable error text.
@@ -179,18 +179,18 @@ public:
     void setSqlError(const QSqlError &error, const QString &text = QString());
 
     /*!
-     * \brief Returns the SkaffariIMAPError.
+     * \brief Returns the ImapError.
      *
-     * If a SkaffariIMAPError was used to construct this SkaffariError, this returns
-     * the used SkaffariIMAPError.
+     * If a ImapError was used to construct this SkaffariError, this returns
+     * the used ImapError.
      *
-     * \return The SkaffariIMAPError used for constructing this SkaffariError.
+     * \return The ImapError used for constructing this SkaffariError.
      */
-    SkaffariIMAPError imapError() const;
+    ImapError imapError() const;
     /*!
      * \brief Sets the IMAP \a error and an optional additional \a text.
      */
-    void setImapError(const SkaffariIMAPError &error, const QString &text = QString());
+    void setImapError(const ImapError &error, const QString &text = QString());
 
     /*!
      * \brief Assigns the value of the error \e other to this error.
@@ -242,7 +242,7 @@ public:
      * \param errorText Optional String human readable error description.
      * \param detach    If set to \c true, the context will be detached to the error function.
      */
-    static void toStash(Cutelyst::Context *c, ErrorType type , const QString &errorText = QString(), bool detach = true);
+    static void toStash(Cutelyst::Context *c, Type type , const QString &errorText = QString(), bool detach = true);
 
 private:
     class Data;

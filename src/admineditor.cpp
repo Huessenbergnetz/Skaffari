@@ -107,7 +107,7 @@ void AdminEditor::base(Context *c, const QString &id)
             }
         }
     } else {
-        SkaffariError e(c, SkaffariError::InputError, c->translate("AdminEditor", "Invalid administrator database ID."));
+        SkaffariError e(c, SkaffariError::Input, c->translate("AdminEditor", "Invalid administrator database ID."));
         e.toStash(c);
         c->detach(c->getAction(QStringLiteral("error")));
     }

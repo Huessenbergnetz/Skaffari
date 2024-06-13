@@ -98,7 +98,7 @@ void DomainEditor::base(Context* c, const QString &id)
             c->detach(c->getAction(QStringLiteral("error")));
         }
     } else {
-        SkaffariError e(c, SkaffariError::InputError, c->translate("DomainEditor", "Invalid domain database ID."));
+        SkaffariError e(c, SkaffariError::Input, c->translate("DomainEditor", "Invalid domain database ID."));
         e.toStash(c);
         c->detach(c->getAction(QStringLiteral("error")));
     }

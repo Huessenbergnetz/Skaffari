@@ -78,7 +78,7 @@ void AccountEditor::base(Context* c, const QString &domainId, const QString& acc
                 if (Q_LIKELY(accOk)) {
                     Account::toStash(c, accId);
                 } else {
-                    SkaffariError e(c, SkaffariError::InputError, c->translate("AccountEditor", "Invalid account database ID."));
+                    SkaffariError e(c, SkaffariError::Input, c->translate("AccountEditor", "Invalid account database ID."));
                     e.toStash(c);
                     c->detach(c->getAction(QStringLiteral("error")));
                 }
@@ -87,7 +87,7 @@ void AccountEditor::base(Context* c, const QString &domainId, const QString& acc
             c->detach(c->getAction(QStringLiteral("error")));
         }
     } else {
-        SkaffariError e(c, SkaffariError::InputError, c->translate("AccountEditor", "Invalid domain database ID."));
+        SkaffariError e(c, SkaffariError::Input, c->translate("AccountEditor", "Invalid domain database ID."));
         e.toStash(c);
         c->detach(c->getAction(QStringLiteral("error")));
     }
@@ -863,7 +863,7 @@ void AccountEditor::edit_forward(Context *c, const QString &oldForward)
                     c->setStash(QStringLiteral("error_msg"), e.errorText());
                 }
 
-                if (e.type() == SkaffariError::InputError) {
+                if (e.type() == SkaffariError::Input) {
                     c->res()->setStatus(Response::BadRequest);
                 } else {
                     c->res()->setStatus(Response::InternalServerError);
