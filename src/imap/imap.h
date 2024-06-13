@@ -65,6 +65,8 @@ public:
 
     [[nodiscard]] bool createMailbox(const QString &user);
 
+    [[nodiscard]] bool deleteMailbox(const QString &user);
+
     [[nodiscard]] QStringList getCapabilities(bool reload = false);
 
     [[nodiscard]] QString getDelimeter(NamespaceType nsType);
@@ -121,6 +123,8 @@ private:
     [[nodiscard]] QString getUserMailboxName(const QStringList &folders, bool quoted = true);
 
     [[nodiscard]] QString getInboxFolder(const QStringList &folders, bool quoted = true);
+
+    [[nodiscard]] QList<std::pair<int,QString>> getUserFolders(const QString &user);
 
     void sendId();
 
