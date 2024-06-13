@@ -58,6 +58,8 @@ public:
 
     [[nodiscard]] bool createFolder(const QString &user, const QString &folder, SpecialUse specialUse = SpecialUse::None);
 
+    [[nodiscard]] bool createFolder(const QString &folder, SpecialUse specialUse = SpecialUse::None);
+
     [[nodiscard]] bool createMailbox(const QString &user);
 
     [[nodiscard]] QStringList getCapabilities(bool reload = false);
