@@ -114,7 +114,7 @@ private:
 
     [[nodiscard]] QString getUserMailboxName(const QString &user, bool quoted = true);
 
-    [[nodiscard]] QString getInboxFolder(const QStringList &fodler, bool quoted = true);
+    [[nodiscard]] QString getInboxFolder(const QStringList &folders, bool quoted = true);
 
     void sendId();
 

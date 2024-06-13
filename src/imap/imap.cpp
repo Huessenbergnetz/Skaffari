@@ -555,9 +555,7 @@ bool Imap::subscribeFolder(const QString &folder)
     if (_folder.isEmpty()) {
         _folder = QStringLiteral("INBOX");
     } else {
-        const NsList nsList = getNamespace(NamespaceType::Personal);
-        const std::pair<QString,QString> ns = nsList.constFirst();
-        _folder = ns.first + _folder;
+        _folder = getInboxFolder({_folder}, false);
     }
 
     const QString tag = getTag();
