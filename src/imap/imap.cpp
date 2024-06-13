@@ -275,10 +275,10 @@ bool Imap::createFolder(const QString &folder, Imap::SpecialUse specialUse)
     }
 
     const QString tag = getTag();
-    const QList<std::pair<QString,QString>> nsList = getNamespace(NamespaceType::Personal);
+    const NsList nsList = getNamespace(NamespaceType::Personal);
     QString nsname;
     if (!nsList.empty()) {
-        if (const auto ns = nsList.constFirst(); !ns.first.isNull()) {
+        if (const NsData ns = nsList.constFirst(); !ns.first.isNull()) {
             nsname = ns.first;
         }
     }
@@ -380,9 +380,9 @@ QStringList Imap::getCapabilities(bool reload)
 
 QString Imap::getDelimeter(NamespaceType nsType)
 {
-    const QList<std::pair<QString,QString>> nsList = getNamespace(nsType);
+    const NsList nsList = getNamespace(nsType);
     if (!nsList.empty()) {
-        const std::pair<QString,QString> ns = nsList.constFirst();
+        const NsData ns = nsList.constFirst();
         if (!ns.second.isEmpty()) {
             return ns.second;
         }
@@ -458,6 +458,110 @@ bool Imap::setQuota(const QString &user, quota_size_t quota)
 
     const QString tag = getTag();
     const QString cmd = QLatin1String("SETQUOTA ") + getUserMailboxName(user) + QLatin1String("(STORAGE ") + QString::number(quota) + QLatin1Char(')');
+
+    if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return false;
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+
+    if (!r) {
+        m_lastError = r.error();
+        return false;
+    }
+
+    return true;
+}
+
+bool Imap::setSpecialUse(const QString &folder, Imap::SpecialUse specialUse)
+{
+    Q_ASSERT_X(!folder.isEmpty(), "set special use", "empty folder name");
+
+    m_lastError.clear();
+
+    const QString _folder = Imap::toUtf7Imap(folder);
+    if (Q_UNLIKELY(!_folder.isEmpty())) {
+        m_lastError = ImapError{ImapError::InternalError, m_c->translate("SkaffariIMAP", "Failed to convert folder name into UTF-7-IMAP.")};
+        return false;
+    }
+
+    QString cmd = QLatin1String("SETMETADATA ") + getInboxFolder({folder}) + QLatin1String(" (/private/specialuse ");
+
+    switch(specialUse) {
+    case SpecialUse::Archive:
+        cmd += QLatin1String(R"("\\Archive")");
+        break;
+    case SpecialUse::Drafts:
+        cmd += QLatin1String(R"("\\Drafts")");
+        break;
+    case SpecialUse::Junk:
+        cmd += QLatin1String(R"("\\Junk")");
+        break;
+    case SpecialUse::Sent:
+        cmd += QLatin1String(R"("\\Sent")");
+        break;
+    case SpecialUse::Trash:
+        cmd += QLatin1String(R"("\\Trash")");
+        break;
+    case SpecialUse::None:
+        cmd += QLatin1String("NIL");
+        break;
+    default:
+        Q_ASSERT_X(false, "set special use", "invalid special use type");
+        m_lastError = ImapError{ImapError::InternalError, m_c->translate("SkaffariIMAP", "Invalid special use type.")};
+        return false;
+    }
+
+    cmd += QLatin1Char(')');
+    const QString tag = getTag();
+
+    if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return false;
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+
+    if (!r) {
+        m_lastError = r.error();
+        return false;
+    }
+
+    return true;
+}
+
+bool Imap::subscribeFolder(const QString &folder)
+{
+    Q_ASSERT_X(!folder.isEmpty(), "set special use", "empty folder name");
+
+    m_lastError.clear();
+
+    QString _folder;
+    if (!folder.isEmpty()) {
+        _folder = Imap::toUtf7Imap(folder);
+        if (Q_UNLIKELY(!_folder.isEmpty())) {
+            m_lastError = ImapError{ImapError::InternalError, m_c->translate("SkaffariIMAP", "Failed to convert folder name into UTF-7-IMAP.")};
+            return false;
+        }
+    }
+
+    if (_folder.isEmpty()) {
+        _folder = QStringLiteral("INBOX");
+    } else {
+        const NsList nsList = getNamespace(NamespaceType::Personal);
+        const std::pair<QString,QString> ns = nsList.constFirst();
+        _folder = ns.first + _folder;
+    }
+
+    const QString tag = getTag();
+    const QString cmd = QLatin1String(R"(SUBSCRIBE ")") + _folder + QLatin1Char('"');
 
     if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
         return false;
@@ -866,7 +970,7 @@ void Imap::sendId()
     qDebug(SK_IMAP) << "IMAP Server ID:" << m_serverId;
 }
 
-QList<std::pair<QString,QString>> Imap::getNamespace(Imap::NamespaceType type)
+Imap::NsList Imap::getNamespace(Imap::NamespaceType type)
 {
     if (!m_namespaceQueried) {
         getNamespaces();
@@ -991,13 +1095,13 @@ void Imap::getNamespaces()
         return;
     }
 
-    QList<QList<std::pair<QString,QString>>> namespaces;
+    QList<NsList> namespaces;
 
     for (const QVariant &v : nsList) {
         if (v.type() == QMetaType::QString) {
             const auto str = v.toString();
             if (str.isEmpty()) {
-                namespaces << QList<std::pair<QString,QString>>();
+                namespaces << NsList();
             } else {
                 // single string can only be NIL, if it is
                 // not parsed as empty string, the response is invalid
@@ -1007,7 +1111,7 @@ void Imap::getNamespaces()
             }
         } else if (v.type() == QMetaType::QVariantList) {
             const auto lst = v.toList();
-            QList<std::pair<QString,QString>> tmpNs;
+            NsList tmpNs;
             for (const auto &li : lst) {
                 const QVariantList tmp = parser.parse(li.toString());
                 for (const auto &t : tmp) {
@@ -1031,9 +1135,9 @@ void Imap::getNamespaces()
 
 QString Imap::getUserMailboxName(const QString &user, bool quoted)
 {
-    const QList<std::pair<QString,QString>> nsList = getNamespace(Imap::NamespaceType::Others);
+    const NsList nsList = getNamespace(Imap::NamespaceType::Others);
     if (!nsList.empty()) {
-        if (!nsList.constFirst().first.isEmpty()) {
+        if (!nsList.constFirst().first.isNull()) {
             if (quoted) {
                 return QLatin1Char('"') + nsList.constFirst().first + user + QLatin1Char('"');
             } else {
@@ -1046,6 +1150,26 @@ QString Imap::getUserMailboxName(const QString &user, bool quoted)
         return QLatin1String(R"("user)") + delimeter + user + QLatin1Char('"');
     } else {
         return QLatin1String("user") + delimeter + user;
+    }
+}
+
+QString Imap::getInboxFolder(const QStringList &folders, bool quoted)
+{
+    const NsList nsList = getNamespace(Imap::NamespaceType::Personal);
+    if (!nsList.empty()) {
+        if (const NsData &ns = nsList.constFirst(); ns.first.isNull()) {
+            if (quoted) {
+                return QLatin1Char('"') + ns.first + folders.join(ns.second) + QLatin1Char('"');
+            } else {
+                return ns.first + folders.join(ns.second);
+            }
+        }
+    }
+    const QString delimeter = getDelimeter(Imap::NamespaceType::Personal);
+    if (quoted) {
+        return QLatin1String(R"("INBOX)") + delimeter + folders.join(delimeter) + QLatin1Char('"');
+    } else {
+        return QLatin1String(R"(INBOX)") + delimeter + folders.join(delimeter);
     }
 }
 

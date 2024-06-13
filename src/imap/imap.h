@@ -19,6 +19,9 @@ class Imap : public QSslSocket
 {
     Q_OBJECT
 public:
+    using NsData = std::pair<QString,QString>;
+    using NsList = QList<NsData>;
+
     enum EncryptionType : int {
         Unsecured = 0,
         StartTLS = 1,
@@ -66,13 +69,17 @@ public:
 
     [[nodiscard]] QString getDelimeter(NamespaceType nsType);
 
-    QList<std::pair<QString,QString>> getNamespace(NamespaceType type);
+    NsList getNamespace(NamespaceType type);
 
     [[nodiscard]] quota_pair getQuota(const QString &user);
 
     [[nodiscard]] bool hasCapability(const QString &capability, bool reload = false);
 
     [[nodiscard]] bool setQuota(const QString &user, quota_size_t quota);
+
+    [[nodiscard]] bool setSpecialUse(const QString &folder, SpecialUse specialUse);
+
+    [[nodiscard]] bool subscribeFolder(const QString &folder);
 
     static QString toUtf7Imap(const QString &str);
 
@@ -107,10 +114,12 @@ private:
 
     [[nodiscard]] QString getUserMailboxName(const QString &user, bool quoted = true);
 
+    [[nodiscard]] QString getInboxFolder(const QStringList &fodler, bool quoted = true);
+
     void sendId();
 
     ImapError m_lastError;
-    QList<QList<std::pair<QString,QString>>> m_namespaces;
+    QList<NsList> m_namespaces;
     QMap<QString,QString> m_serverId;
     Cutelyst::Context *m_c{nullptr};
     quint32 m_tagSequence{0};
