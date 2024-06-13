@@ -13,6 +13,11 @@
 #include <QLoggingCategory>
 #include <QMessageAuthenticationCode>
 
+#include <unicode/ucnv_err.h>
+#include <unicode/uenum.h>
+#include <unicode/localpointer.h>
+#include <unicode/ucnv.h>
+
 Imap::Imap(Cutelyst::Context *c, QObject *parent)
     : QSslSocket{parent}
     , m_c{c}
@@ -200,6 +205,88 @@ void Imap::logout()
     }
 }
 
+bool Imap::createFolder(const QString &user, const QString &folder, SpecialUse specialUse)
+{
+    Q_ASSERT_X(!folder.isEmpty(), "create folder", "empty folder name");
+    Q_ASSERT_X(!user.isEmpty(), "create folder", "empty user name");
+
+    m_lastError.clear();
+
+    const QString _folder = Imap::toUtf7Imap(folder);
+
+    if (Q_UNLIKELY(!_folder.isEmpty())) {
+        m_lastError = ImapError{ImapError::InternalError, m_c->translate("SkaffariIMAP", "Failed to convert folder name into UTF-7-IMAP.")};
+        return false;
+    }
+
+    const QString tag = getTag();
+    const QString delimeter = getDelimeter(NamespaceType::Others);
+    QString cmd = QLatin1String(R"(CREATE ")") + getUserMailboxName(user, false) + delimeter + _folder + QLatin1Char('"');
+
+    if (hasCapability(QStringLiteral("CREATE-SPECIAL-USE"))) {
+        switch (specialUse) {
+        case SpecialUse::Archive:
+            cmd += QLatin1String(R"( (USE (\Archive)))");
+            break;
+        case SpecialUse::Drafts:
+            cmd += QLatin1String(R"( (USE (\Drafts)))");
+            break;
+        case SpecialUse::Junk:
+            cmd += QLatin1String(R"( (USE (\Junk)))");
+            break;
+        case SpecialUse::Sent:
+            cmd += QLatin1String(R"( (USE (\Sent)))");
+            break;
+        case SpecialUse::Trash:
+            cmd += QLatin1String(R"( (USE (\Trash)))");
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return false;
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+
+    if (!r) {
+        m_lastError = r.error();
+        return false;
+    }
+
+    return true;
+}
+
+bool Imap::createMailbox(const QString &user)
+{
+    m_lastError.clear();
+
+    const QString tag = getTag();
+    const QString cmd = QLatin1String("CREATE ") + getUserMailboxName(user);
+
+    if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return false;
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+    if (!r) {
+        m_lastError = r.error();
+        return false;
+    }
+
+    return true;
+}
+
 QStringList Imap::getCapabilities(bool reload)
 {
     if (reload || m_capabilites.empty()) {
@@ -341,6 +428,70 @@ bool Imap::setQuota(const QString &user, quota_size_t quota)
     }
 
     return true;
+}
+
+QString Imap::toUtf7Imap(const QString &str)
+{
+    if (str.isEmpty()) {
+        return str;
+    }
+
+    const QByteArray utf8 = str.toUtf8();
+
+    const int32_t bufSize = utf8.size() * 3;
+    auto buf = static_cast<char*>(malloc(sizeof(char) * bufSize));
+
+    if (Q_UNLIKELY(!buf)) {
+        qCCritical(SK_IMAP) << "Failed to convert UTF-8 string" << str << "to UTF7-IMAP (RFC2060 5.1.3): failed to allocate buffer of size" << bufSize;
+        return {};
+    }
+
+    UErrorCode uec = U_ZERO_ERROR;
+
+    const int32_t size = ucnv_convert("imap-mailbox-name", "utf-8", buf, bufSize, utf8.constData(), utf8.size(), &uec);
+
+    QString utf7;
+    if ((size > 0) && (uec == U_ZERO_ERROR)) {
+        utf7 = QString::fromLatin1(buf, size);
+    } else {
+        qCCritical(SK_IMAP) << "Failed to convert UTF-8 string" << str << "to UTF7-IMAP (RFC2060 5.1.3):" << u_errorName(uec);
+    }
+
+    free(buf);
+
+    return utf7;
+}
+
+QString Imap::fromUtf7Imap(const QString &str)
+{
+    if (str.isEmpty()) {
+        return str;
+    }
+
+    const QByteArray utf7 = str.toLatin1();
+
+    const int32_t bufSize = utf7.size() + 1;
+    auto buf = static_cast<char*>(malloc(sizeof(char) * bufSize));
+
+    if (Q_UNLIKELY(!buf)) {
+        qCCritical(SK_IMAP) << "Failed to convert UTF7-IMAP (RFC2060 5.1.3) string" << str << "to UTF-8: failed to allocate buffer of size" << bufSize;
+        return {};
+    }
+
+    UErrorCode uec = U_ZERO_ERROR;
+
+    const int32_t size = ucnv_convert("utf-8", "imap-mailbox-name", buf, bufSize, utf7.constData(), utf7.size(), &uec);
+
+    QString utf8;
+    if ((size > 0) && (uec == U_ZERO_ERROR)) {
+        utf8 = QString::fromUtf8(buf, size);
+    } else {
+        qCCritical(SK_IMAP) << "Failed to convert UTF7-IMAP (RFC2060 5.1.3) string" << str << "to UTF-8:" << u_errorName(uec);
+    }
+
+    free(buf);
+
+    return utf8;
 }
 
 QString Imap::getTag()

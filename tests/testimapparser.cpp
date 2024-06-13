@@ -1,4 +1,4 @@
-#include "../src/imap/imapparser.h"
+#include "imap/imapparser.h"
 
 #include <QTest>
 
