@@ -78,6 +78,7 @@ private:
 
     ImapError m_lastError;
     QList<QList<std::pair<QString,QString>>> m_namespaces;
+    QMap<QString,QString> m_serverId;
     Cutelyst::Context *m_c{nullptr};
     quint32 m_tagSequence{0};
     QStringList m_capabilites;

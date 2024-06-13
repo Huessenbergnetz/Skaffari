@@ -539,9 +539,36 @@ void Imap::sendId()
         return;
     }
 
-    const QString &line = r.lines().constFirst();
+    ImapParser parser;
+    const QVariantList responseList = parser.parse(r.lines().constFirst());
+    if (responseList.empty()) {
+        qCWarning(SK_IMAP) << "Failed to parse ID response";
+        return;
+    }
+    const QVariantList idList = responseList.constFirst().toList();
+    if (idList.empty()) {
+        qCWarning(SK_IMAP) << "Failed to parse ID response";
+        return;
+    }
 
-    Q_UNUSED(line)
+    if (idList.size() %2 != 0) {
+        qCWarning(SK_IMAP) << "ID response has an odd size";
+        return;
+    }
+
+    m_serverId.clear();
+
+    int i = 0;
+    const int size = idList.size();
+    while(i < size) {
+        const auto key = idList.at(i).toString();
+        ++i;
+        const auto value = idList.at(i).toString();
+        ++i;
+        m_serverId.insert(key, value);
+    }
+
+    qDebug(SK_IMAP) << "IMAP Server ID:" << m_serverId;
 }
 
 QList<std::pair<QString,QString>> Imap::getNamespace(Imap::NamespaceType type)
