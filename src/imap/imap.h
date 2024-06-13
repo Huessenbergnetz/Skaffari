@@ -43,6 +43,8 @@ public:
 
     [[nodiscard]] QStringList getCapabilities(bool reload = false);
 
+    [[nodiscard]] QString getDelimeter(NamespaceType nsType);
+
     QList<std::pair<QString,QString>> getNamespace(NamespaceType type);
 
     [[nodiscard]] bool hasCapability(const QString &capability, bool reload = false);
@@ -82,7 +84,7 @@ private:
     Cutelyst::Context *m_c{nullptr};
     quint32 m_tagSequence{0};
     QStringList m_capabilites;
-    QChar delimeter;
+    QString m_delimeter;
     bool m_loggedIn{false};
     bool m_namespaceQueried{false};
 };

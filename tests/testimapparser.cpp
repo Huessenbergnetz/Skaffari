@@ -15,6 +15,7 @@ private Q_SLOTS:
     void testParseNamespaceReponse();
     void testParseGetquotarootResponse();
     void testParseIdResponse();
+    void testParseGetDelimeterResponse();
 
 private:
     ImapParser m_parser;
@@ -62,6 +63,14 @@ void ImapParserTest::testParseIdResponse()
         id.insert(key, value);
     }
     QCOMPARE(id.value(QStringLiteral("version")), QStringLiteral("3.2.12"));
+}
+
+void ImapParserTest::testParseGetDelimeterResponse()
+{
+    const QVariantList parsed = m_parser.parse(QStringLiteral(R"-((\Noselect) "." "")-"));
+    QCOMPARE(parsed.size(), 3);
+    QCOMPARE(parsed.at(1).toString(), QStringLiteral("."));
+    QVERIFY(parsed.at(2).toString().isEmpty());
 }
 
 QTEST_MAIN(ImapParserTest)
