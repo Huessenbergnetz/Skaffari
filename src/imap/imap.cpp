@@ -239,7 +239,7 @@ bool Imap::createFolder(const QString &user, const QString &folder, SpecialUse s
 
     const QString tag = getTag();
     const QString delimeter = getDelimeter(NamespaceType::Others);
-    QString cmd = QLatin1String(R"(CREATE ")") + getUserMailboxName(user, false) + delimeter + _folder + QLatin1Char('"');
+    QString cmd = QLatin1String(R"(CREATE ")") + getUserMailboxName({user}, false) + delimeter + _folder + QLatin1Char('"');
 
     if (hasCapability(QStringLiteral("CREATE-SPECIAL-USE"))) {
         cmd += getCreateFolderSpecialUse(specialUse);
@@ -315,7 +315,7 @@ bool Imap::createMailbox(const QString &user)
     m_lastError.clear();
 
     const QString tag = getTag();
-    const QString cmd = QLatin1String("CREATE ") + getUserMailboxName(user);
+    const QString cmd = QLatin1String("CREATE ") + getUserMailboxName({user});
 
     if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
         return false;
@@ -508,12 +508,74 @@ bool Imap::hasCapability(const QString &capability, bool reload)
     }
 }
 
+bool Imap::setAcl(const QString &mailbox, const QString &user, const QString &acl)
+{
+    m_lastError.clear();
+
+    QString _mb = Imap::toUtf7Imap(mailbox);
+    if (Q_UNLIKELY(_mb.isEmpty())) {
+        m_lastError = ImapError{ImapError::InternalError, m_c->translate("SkaffariIMAP", "Failed to convert folder name into UTF-7-IMAP.")};
+        return false;
+    }
+
+    const QString tag = getTag();
+    const QString cmd = QLatin1String("SETACL ") + getUserMailboxName({_mb}) + QLatin1String(" \"") + user + QLatin1String("\" ") + acl;
+
+    if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return false;
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+
+    if (!r) {
+        m_lastError = r.error();
+        return false;
+    }
+
+    return true;
+}
+
+bool Imap::deleteAcl(const QString &mailbox, const QString &user)
+{
+    m_lastError.clear();
+
+    QString _mb = Imap::toUtf7Imap(mailbox);
+    if (Q_UNLIKELY(_mb.isEmpty())) {
+        m_lastError = ImapError{ImapError::InternalError, m_c->translate("SkaffariIMAP", "Failed to convert folder name into UTF-7-IMAP.")};
+        return false;
+    }
+
+    const QString tag = getTag();
+    const QString cmd = QLatin1String("DELETEACL ") + getUserMailboxName({_mb}) + QLatin1String(" \"") + user + QLatin1Char('"');
+
+    if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return false;
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+
+    if (!r) {
+        m_lastError = r.error();
+        return false;
+    }
+
+    return true;
+}
+
 bool Imap::setQuota(const QString &user, quota_size_t quota)
 {
     m_lastError.clear();
 
     const QString tag = getTag();
-    const QString cmd = QLatin1String("SETQUOTA ") + getUserMailboxName(user) + QLatin1String("(STORAGE ") + QString::number(quota) + QLatin1Char(')');
+    const QString cmd = QLatin1String("SETQUOTA ") + getUserMailboxName({user}) + QLatin1String("(STORAGE ") + QString::number(quota) + QLatin1Char(')');
 
     if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
         return false;
@@ -1040,7 +1102,7 @@ quota_pair Imap::getQuota(const QString &user)
     m_lastError.clear();
 
     const QString tag = getTag();
-    const QString cmd = QLatin1String("GETQUOTA ") + getUserMailboxName(user);
+    const QString cmd = QLatin1String("GETQUOTA ") + getUserMailboxName({user});
 
     if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
         return quota;
@@ -1189,23 +1251,23 @@ void Imap::getNamespaces()
     m_namespaces = namespaces;
 }
 
-QString Imap::getUserMailboxName(const QString &user, bool quoted)
+QString Imap::getUserMailboxName(const QStringList &folders, bool quoted)
 {
     const NsList nsList = getNamespace(Imap::NamespaceType::Others);
     if (!nsList.empty()) {
-        if (!nsList.constFirst().first.isNull()) {
+        if (const NsData &ns = nsList.constFirst(); !ns.first.isNull()) {
             if (quoted) {
-                return QLatin1Char('"') + nsList.constFirst().first + user + QLatin1Char('"');
+                return QLatin1Char('"') + nsList.constFirst().first + folders.join(ns.second) + QLatin1Char('"');
             } else {
-                return nsList.constFirst().first + user;
+                return nsList.constFirst().first + folders.join(ns.second);
             }
         }
     }
     const QString delimeter = getDelimeter(Imap::NamespaceType::Others);
     if (quoted) {
-        return QLatin1String(R"("user)") + delimeter + user + QLatin1Char('"');
+        return QLatin1String(R"("user)") + delimeter + folders.join(delimeter) + QLatin1Char('"');
     } else {
-        return QLatin1String("user") + delimeter + user;
+        return QLatin1String("user") + delimeter + folders.join(delimeter);
     }
 }
 
@@ -1213,7 +1275,7 @@ QString Imap::getInboxFolder(const QStringList &folders, bool quoted)
 {
     const NsList nsList = getNamespace(Imap::NamespaceType::Personal);
     if (!nsList.empty()) {
-        if (const NsData &ns = nsList.constFirst(); ns.first.isNull()) {
+        if (const NsData &ns = nsList.constFirst(); !ns.first.isNull()) {
             if (quoted) {
                 return QLatin1Char('"') + ns.first + folders.join(ns.second) + QLatin1Char('"');
             } else {

@@ -77,6 +77,10 @@ public:
 
     [[nodiscard]] bool hasCapability(const QString &capability, bool reload = false);
 
+    [[nodiscard]] bool setAcl(const QString &mailbox, const QString &user, const QString &acl = QStringLiteral("lrswipkxtecda"));
+
+    [[nodiscard]] bool deleteAcl(const QString &mailbox, const QString &user);
+
     [[nodiscard]] bool setQuota(const QString &user, quota_size_t quota);
 
     [[nodiscard]] bool setSpecialUse(const QString &folder, SpecialUse specialUse);
@@ -114,7 +118,7 @@ private:
 
     void getNamespaces();
 
-    [[nodiscard]] QString getUserMailboxName(const QString &user, bool quoted = true);
+    [[nodiscard]] QString getUserMailboxName(const QStringList &folders, bool quoted = true);
 
     [[nodiscard]] QString getInboxFolder(const QStringList &folders, bool quoted = true);
 
