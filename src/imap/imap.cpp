@@ -318,6 +318,31 @@ bool Imap::hasCapability(const QString &capability, bool reload)
     }
 }
 
+bool Imap::setQuota(const QString &user, quota_size_t quota)
+{
+    m_lastError.clear();
+
+    const QString tag = getTag();
+    const QString cmd = QLatin1String("SETQUOTA ") + getUserMailboxName(user) + QLatin1String("(STORAGE ") + QString::number(quota) + QLatin1Char(')');
+
+    if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return false;
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+
+    if (!r) {
+        m_lastError = r.error();
+        return false;
+    }
+
+    return true;
+}
+
 QString Imap::getTag()
 {
     return QStringLiteral("a%1").arg(++m_tagSequence, 6, 10, QLatin1Char('0'));
