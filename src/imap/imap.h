@@ -118,6 +118,8 @@ private:
 
     ImapResponse checkResponse(const QByteArray &data, const QString &tag = {});
 
+    ImapResponse checkResponse2(const QString &tag, int msecs = 30'000);
+
     bool authLogin(const QString &user, const QString &password);
 
     bool authPlain(const QString &user, const QString &password);
