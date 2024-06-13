@@ -84,7 +84,7 @@ public:
      * \brief Converts a string \a str into a database ID of type dbid_t.
      * \param str       Input string.
      * \param ok        If not a \c nullptr, failure is reported by setting it to \c false and success by setting it to \c true.
-     * \param errorMsg  If not an empty string, will put a SkaffariError object with the message and of type SkaffariError::InputError to the stash and will detach context to the error function.
+     * \param errorMsg  If not an empty string, will put a SkaffariError object with the message and of type SkaffariError::Input to the stash and will detach context to the error function.
      * \param c         Pointer to the current context.
      * \return The string converted into database ID type dbid_t. Returns \c 0 if the conversion fails.
      */

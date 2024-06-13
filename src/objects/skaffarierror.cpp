@@ -31,7 +31,7 @@ public:
         c(_c)
     {}
 
-    Data(Cutelyst::Context *_c, SkaffariError::ErrorType _type , const QString &_errorText, const QVariant &_errorData) :
+    Data(Cutelyst::Context *_c, SkaffariError::Type _type , const QString &_errorText, const QVariant &_errorData) :
         QSharedData(),
         c(_c),
         errorText(_errorText),
@@ -39,16 +39,16 @@ public:
         errorType(_type)
     {
         switch (errorType) {
-        case SkaffariError::AuthenticationError:
+        case SkaffariError::Authentication:
             status = Cutelyst::Response::Unauthorized;
             break;
-        case SkaffariError::AuthorizationError:
+        case SkaffariError::Authorization:
             status = Cutelyst::Response::Forbidden;
             break;
         case SkaffariError::NotFound:
             status = Cutelyst::Response::NotFound;
             break;
-        case SkaffariError::InputError:
+        case SkaffariError::Input:
             status = Cutelyst::Response::BadRequest;
             break;
         default:
@@ -61,7 +61,7 @@ public:
         QSharedData(),
         c(_c),
         qSqlError(_sqlError),
-        errorType(SkaffariError::SqlError),
+        errorType(SkaffariError::Sql),
         status(Cutelyst::Response::InternalServerError)
     {
         if (_errorText.isEmpty()) {
@@ -73,19 +73,19 @@ public:
         }
     }
 
-    Data(Cutelyst::Context *_c, const SkaffariIMAPError& _imapError, const QString &_errorText) :
+    Data(Cutelyst::Context *_c, const ImapError& _imapError, const QString &_errorText) :
         QSharedData(),
         c(_c),
         imapError(_imapError),
-        errorType(SkaffariError::ImapError),
+        errorType(SkaffariError::Imap),
         status(Cutelyst::Response::InternalServerError)
     {
         if (_errorText.isEmpty()) {
-            errorText = imapError.errorText();
+            errorText = imapError.text();
         } else {
             errorText = _errorText;
             errorText.append(QChar(QChar::Space));
-            errorText.append(imapError.errorText());
+            errorText.append(imapError.text());
         }
     }
 
@@ -97,8 +97,8 @@ public:
     QSqlError qSqlError;
     QString errorText;
     QVariant errorData;
-    SkaffariIMAPError imapError;
-    SkaffariError::ErrorType errorType = SkaffariError::NoError;
+    ImapError imapError;
+    SkaffariError::Type errorType = SkaffariError::NoError;
     Cutelyst::Response::HttpStatus status = Cutelyst::Response::OK;
 };
 
@@ -123,7 +123,7 @@ SkaffariError::SkaffariError(Cutelyst::Context *c) :
 
 }
 
-SkaffariError::SkaffariError(Cutelyst::Context *c, SkaffariError::ErrorType type, const QString &errorText, const QVariant &errorData) :
+SkaffariError::SkaffariError(Cutelyst::Context *c, Type type, const QString &errorText, const QVariant &errorData) :
     d(new Data(c, type, errorText, errorData))
 {
 
@@ -135,7 +135,7 @@ SkaffariError::SkaffariError(Cutelyst::Context *c, const QSqlError& sqlError, co
 
 }
 
-SkaffariError::SkaffariError(Cutelyst::Context *c, const SkaffariIMAPError& imapError, const QString &errorText) :
+SkaffariError::SkaffariError(Cutelyst::Context *c, const ImapError& imapError, const QString &errorText) :
     d(new Data(c, imapError, errorText))
 {
 
@@ -163,25 +163,25 @@ void SkaffariError::swap(SkaffariError &other) noexcept
     std::swap(d, other.d);
 }
 
-SkaffariError::ErrorType SkaffariError::type() const
+SkaffariError::Type SkaffariError::type() const
 {
     return d->errorType;
 }
 
-void SkaffariError::setErrorType(ErrorType nType)
+void SkaffariError::setErrorType(Type nType)
 {
     d->errorType = nType;
     switch (nType) {
-    case SkaffariError::AuthenticationError:
+    case SkaffariError::Authentication:
         d->status = Cutelyst::Response::Unauthorized;
         break;
-    case SkaffariError::AuthorizationError:
+    case SkaffariError::Authorization:
         d->status = Cutelyst::Response::Forbidden;
         break;
     case SkaffariError::NotFound:
         d->status = Cutelyst::Response::NotFound;
         break;
-    case SkaffariError::InputError:
+    case SkaffariError::Input:
         d->status = Cutelyst::Response::BadRequest;
         break;
     default:
@@ -214,22 +214,22 @@ QString SkaffariError::errorText() const
         case NoError:
             text = d->c->translate("SkaffariError", "No error occurred, everything is fine.");
             break;
-        case ImapError:
+        case Imap:
             text = d->c->translate("SkaffariError", "IMAP error:");
             break;
-        case SqlError:
+        case Sql:
             text = d->databaseErrorText();
             break;
-        case ConfigError:
+        case Config:
             text = d->c->translate("SkaffariError", "Configuration error:");
             break;
-        case AuthenticationError:
+        case Authentication:
             text = d->c->translate("SkaffariError", "Authentication error:");
             break;
-        case AuthorizationError:
+        case Authorization:
             text = d->c->translate("SkaffariError", "Authorization error:");
             break;
-        case InputError:
+        case Input:
             text = d->c->translate("SkaffariError", "Invalid input:");
             break;
         case NotFound:
@@ -258,7 +258,7 @@ QVariant SkaffariError::errorData() const
     return d->errorData;
 }
 
-SkaffariIMAPError SkaffariError::imapError() const
+ImapError SkaffariError::imapError() const
 {
     return d->imapError;
 }
@@ -277,7 +277,7 @@ SkaffariError& SkaffariError::operator=(SkaffariError &&other) noexcept
 
 SkaffariError& SkaffariError::operator=(const QSqlError& sqlError)
 {
-    d->errorType = SqlError;
+    d->errorType = Sql;
     d->imapError.clear();
     d->qSqlError = sqlError;
     d->errorText = sqlError.text();
@@ -298,7 +298,7 @@ bool SkaffariError::operator!=(const SkaffariError& other) const
 
 void SkaffariError::setSqlError(const QSqlError &error, const QString &text)
 {
-    d->errorType = SqlError;
+    d->errorType = Sql;
     d->qSqlError = error;
     if (text.isEmpty()) {
         d->errorText = error.text();
@@ -312,17 +312,17 @@ void SkaffariError::setSqlError(const QSqlError &error, const QString &text)
     d->status = Cutelyst::Response::InternalServerError;
 }
 
-void SkaffariError::setImapError(const SkaffariIMAPError &error, const QString &text)
+void SkaffariError::setImapError(const ImapError &error, const QString &text)
 {
-    d->errorType = ImapError;
+    d->errorType = Imap;
     d->qSqlError = QSqlError();
     d->imapError = error;
     if (text.isEmpty()) {
-        d->errorText = error.errorText();
+        d->errorText = error.text();
     } else {
         d->errorText = text;
         d->errorText.append(QChar(QChar::Space));
-        d->errorText.append(error.errorText());
+        d->errorText.append(error.text());
     }
     d->errorData.clear();
     d->status = Cutelyst::Response::InternalServerError;
@@ -339,27 +339,27 @@ QString SkaffariError::typeTitle(Cutelyst::Context *c) const
 
     if (ctx) {
         switch (d->errorType) {
-        case ImapError:
+        case Imap:
             ret = ctx->translate("SkaffariError", "IMAP error");
             break;
-        case DbLayoutError:
-        case SqlError:
+        case DbLayout:
+        case Sql:
             ret = ctx->translate("SkaffariError", "Database error");
             break;
-        case ConfigError:
+        case Config:
             ret = ctx->translate("SkaffariError", "Configuration error");
             break;
         case EmptyDatabase:
             ret = ctx->translate("SkaffariError", "Empty database");
             break;
-        case AuthorizationError:
-        case AuthenticationError:
+        case Authorization:
+        case Authentication:
             ret = ctx->translate("SkaffariError", "Access denied");
             break;
-        case InputError:
+        case Input:
             ret = ctx->translate("SkaffariError", "Invalid input data");
             break;
-        case ApplicationError:
+        case Application:
             ret = ctx->translate("SkaffariError", "Internal server error");
             break;
         case NotFound:
@@ -388,7 +388,7 @@ SkaffariError SkaffariError::fromStash(Cutelyst::Context *c)
     return c->stash(QStringLiteral(STASH_KEY)).value<SkaffariError>();
 }
 
-void SkaffariError::toStash(Cutelyst::Context *c, ErrorType type, const QString &errorText, bool detach)
+void SkaffariError::toStash(Cutelyst::Context *c, Type type, const QString &errorText, bool detach)
 {
     SkaffariError e(c, type, errorText);
     e.toStash(c, detach);

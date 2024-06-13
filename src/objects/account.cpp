@@ -17,13 +17,15 @@
  */
 
 #include "account_p.h"
-#include "skaffarierror.h"
-#include "emailaddress.h"
-#include "adminaccount.h"
-#include "../utils/utils.h"
-#include "../imap/skaffariimap.h"
+
+#include "objects/emailaddress.h"
+#include "objects/adminaccount.h"
+#include "objects/skaffarierror.h"
+#include "utils/utils.h"
+#include "imap/imap.h"
+#include "imap/imaperror.h"
 #include "../../common/password.h"
-#include "../utils/skaffariconfig.h"
+#include "utils/skaffariconfig.h"
 #include <Cutelyst/Context>
 #include <Cutelyst/Plugins/Utils/Sql>
 #include <Cutelyst/Response>
@@ -507,7 +509,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
 
     QList<Cutelyst::ValidatorEmail::Diagnose> diags;
     if (!Cutelyst::ValidatorEmail::validate(emailAce, Cutelyst::ValidatorEmail::Valid, Cutelyst::ValidatorEmail::NoOption, &diags)) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(Cutelyst::ValidatorEmail::diagnoseString(c, diags.at(0)));
         return a;
     }
@@ -520,7 +522,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
     }
     if (Q_UNLIKELY(emailExists)) {
         e.setErrorText(c->translate("Account", "The email address %1 is already in use by another user.").arg(email));
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         return a;
     }
 
@@ -538,7 +540,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
 
     if (Q_UNLIKELY(encpw.isEmpty())) {
         e.setErrorText(c->translate("Account", "User password encryption failed. Please check your encryption settings."));
-        e.setErrorType(SkaffariError::ConfigError);
+        e.setErrorType(SkaffariError::Config);
         qCCritical(SK_ACCOUNT, "%s failed to encrypt user password for new account %s. Please check your encryption settings.", uniStr, aunStr);
         return a;
     }
@@ -559,7 +561,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
 
     const quint8 accountStatus = Account::calcStatus(validUntil, pwExpires);
 
-    QMap<SkaffariIMAP::SpecialUse,QString> folders;
+    QMap<Imap::SpecialUse,QString> folders;
 
     QSqlQuery q = CPreparedSqlQueryThread(QStringLiteral("INSERT INTO accountuser (domain_id, username, password, imap, pop, sieve, smtpauth, quota, created_at, updated_at, valid_until, pwd_expire, status) "
                                          "VALUES (:domain_id, :username, :password, :imap, :pop, :sieve, :smtpauth, :quota, :created_at, :updated_at, :valid_until, :pwd_expire, :status)"));
@@ -708,14 +710,11 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
 
     if (createMailbox != DoNotCreate) {
 
-        SkaffariIMAP imap(c);
+        Imap imap(c);
 
         if (createMailbox == LoginAfterCreation) {
 
-            imap.setUser(username);
-            imap.setPassword(password);
-
-            mailboxCreated = imap.login();
+            mailboxCreated = imap.login(username, password);
             if (!mailboxCreated) {
                 e.setImapError(imap.lastError(), c->translate("Account", "Logging in to IMAP server for automatic creation of mailbox and folders by the server failed."));
             }
@@ -723,10 +722,7 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
 
         } else if (createMailbox == OnlySetQuota) {
 
-            imap.setUser(username);
-            imap.setPassword(password);
-
-            mailboxCreated = imap.login();
+            mailboxCreated = imap.login(username, password);
             if (!mailboxCreated) {
                 e.setImapError(imap.lastError(), c->translate("Account", "Logging in to IMAP server for automatic creation of mailbox and folders by the server failed."));
             }
@@ -734,8 +730,6 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
             imap.logout();
 
             if (mailboxCreated) {
-                imap.setUser(SkaffariConfig::imapUser());
-                imap.setPassword(SkaffariConfig::imapPassword());
 
                 if (Q_LIKELY(imap.login())) {
 
@@ -769,55 +763,55 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
 
                     const QString sentFolder = p.value(QStringLiteral("sentFolder")).toString().trimmed();
                     if (!sentFolder.isEmpty()) {
-                        if (Q_UNLIKELY(!imap.createFolder(username, sentFolder, SkaffariIMAP::Sent))) {
-                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP sent folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(sentFolder), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                        if (Q_UNLIKELY(!imap.createFolder(username, sentFolder, Imap::SpecialUse::Sent))) {
+                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP sent folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(sentFolder), aunStr, qUtf8Printable(imap.lastError().text()));
                         } else {
-                            folders.insert(SkaffariIMAP::Sent, sentFolder);
+                            folders.insert(Imap::SpecialUse::Sent, sentFolder);
                         }
                     }
 
                     const QString trashFolder = p.value(QStringLiteral("trashFolder")).toString().trimmed();
                     if (!trashFolder.isEmpty()) {
-                        if (Q_UNLIKELY(!imap.createFolder(username, trashFolder, SkaffariIMAP::Trash))) {
-                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP trash folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(trashFolder), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                        if (Q_UNLIKELY(!imap.createFolder(username, trashFolder, Imap::SpecialUse::Trash))) {
+                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP trash folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(trashFolder), aunStr, qUtf8Printable(imap.lastError().text()));
                         } else {
-                            folders.insert(SkaffariIMAP::Trash, trashFolder);
+                            folders.insert(Imap::SpecialUse::Trash, trashFolder);
                         }
                     }
 
                     const QString draftsFolder = p.value(QStringLiteral("draftsFolder")).toString().trimmed();
                     if (!draftsFolder.isEmpty()) {
-                        if (Q_UNLIKELY(!imap.createFolder(username, draftsFolder, SkaffariIMAP::Drafts))) {
-                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP drafts folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(draftsFolder), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                        if (Q_UNLIKELY(!imap.createFolder(username, draftsFolder, Imap::SpecialUse::Drafts))) {
+                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP drafts folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(draftsFolder), aunStr, qUtf8Printable(imap.lastError().text()));
                         } else {
-                            folders.insert(SkaffariIMAP::Drafts, draftsFolder);
+                            folders.insert(Imap::SpecialUse::Drafts, draftsFolder);
                         }
                     }
 
                     const QString junkFolder = p.value(QStringLiteral("junkFolder")).toString().trimmed();
                     if (!junkFolder.isEmpty()) {
-                        if (Q_UNLIKELY(!imap.createFolder(username, junkFolder, SkaffariIMAP::Junk))) {
-                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP junk folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(junkFolder), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                        if (Q_UNLIKELY(!imap.createFolder(username, junkFolder, Imap::SpecialUse::Junk))) {
+                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP junk folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(junkFolder), aunStr, qUtf8Printable(imap.lastError().text()));
                         } else {
-                            folders.insert(SkaffariIMAP::Junk, junkFolder);
+                            folders.insert(Imap::SpecialUse::Junk, junkFolder);
                         }
                     }
 
                     const QString archiveFolder = p.value(QStringLiteral("archiveFolder")).toString().trimmed();
                     if (!archiveFolder.isEmpty()) {
-                        if (Q_UNLIKELY(!imap.createFolder(username, archiveFolder, SkaffariIMAP::Archive))) {
-                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP archive folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(archiveFolder), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                        if (Q_UNLIKELY(!imap.createFolder(username, archiveFolder, Imap::SpecialUse::Archive))) {
+                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP archive folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(archiveFolder), aunStr, qUtf8Printable(imap.lastError().text()));
                         } else {
-                            folders.insert(SkaffariIMAP::Archive, archiveFolder);
+                            folders.insert(Imap::SpecialUse::Archive, archiveFolder);
                         }
                     }
 
                     const QStringList otherFolders = p.value(QStringLiteral("otherFolders")).toString().trimmed().split(QLatin1Char(','));
                     for (const QString &otherFolder : otherFolders) {
                         if (Q_UNLIKELY(!imap.createFolder(username, otherFolder))) {
-                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(otherFolder), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                            qCWarning(SK_ACCOUNT, "%s failed to create IMAP folder \"%s\" for new account %s: %s", uniStr, qUtf8Printable(otherFolder), aunStr, qUtf8Printable(imap.lastError().text()));
                         } else {
-                            folders.insert(SkaffariIMAP::None, otherFolder);
+                            folders.insert(Imap::SpecialUse::None, otherFolder);
                         }
                     }
 
@@ -860,32 +854,30 @@ Account Account::create(Cutelyst::Context *c, SkaffariError &e, const QVariantHa
     // now lets subscribe the new user to its folders
     // and set special use flags if CREATE-SPECIAL-USE is not available
     if (createMailbox == CreateBySkaffari) {
-        SkaffariIMAP imap(c);
-        imap.setUser(username);
-        imap.setPassword(password);
+        Imap imap(c);
 
-        if (Q_LIKELY(imap.login())) {
+        if (Q_LIKELY(imap.login(username, password))) {
 
             if (Q_UNLIKELY(!imap.subscribeFolder())) {
-                qCWarning(SK_ACCOUNT, "%s failed to subscribe newly created user \"%s\" to its INBOX: %s", uniStr, aunStr, qUtf8Printable(imap.lastError().errorText()));
+                qCWarning(SK_ACCOUNT, "%s failed to subscribe newly created user \"%s\" to its INBOX: %s", uniStr, aunStr, qUtf8Printable(imap.lastError().text()));
             }
 
             for (const QString &f : folders.values()) {
                 if (Q_UNLIKELY(!imap.subscribeFolder(f))) {
-                    qCWarning(SK_ACCOUNT, "%s failed to subscribe newly created user \"%s\" to folder \"%s\": %s", uniStr, aunStr, qUtf8Printable(f), qUtf8Printable(imap.lastError().errorText()));
+                    qCWarning(SK_ACCOUNT, "%s failed to subscribe newly created user \"%s\" to folder \"%s\": %s", uniStr, aunStr, qUtf8Printable(f), qUtf8Printable(imap.lastError().text()));
                 }
             }
 
             if (!imap.hasCapability(QStringLiteral("CREATE-SPECIAL-USE")) && imap.hasCapability(QStringLiteral("SPECIAL-USE")) && imap.hasCapability(QStringLiteral("METADATA"))) {
                 for (auto i = folders.constBegin(); i != folders.constEnd(); ++i) {
                     if (Q_UNLIKELY(!imap.setSpecialUse(i.value(), i.key()))) {
-                        qCWarning(SK_ACCOUNT, "%s failed to set special use flag %u on folder \"%s\" for newly created user \"%s\": %s", uniStr, static_cast<uint>(i.key()), qUtf8Printable(i.value()), aunStr, qUtf8Printable(imap.lastError().errorText()));
+                        qCWarning(SK_ACCOUNT, "%s failed to set special use flag %u on folder \"%s\" for newly created user \"%s\": %s", uniStr, static_cast<uint>(i.key()), qUtf8Printable(i.value()), aunStr, qUtf8Printable(imap.lastError().text()));
                     }
                 }
             }
 
         } else {
-            qCWarning(SK_ACCOUNT, "%s failed to login newly created user \"%s\" to subscribe to folders: %s", uniStr, aunStr, qUtf8Printable(imap.lastError().errorText()));
+            qCWarning(SK_ACCOUNT, "%s failed to login newly created user \"%s\" to subscribe to folders: %s", uniStr, aunStr, qUtf8Printable(imap.lastError().text()));
         }
     }
 
@@ -906,10 +898,10 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError &e) const
     const QByteArray aniBa = nameIdString().toUtf8();
     const char *aniStr = aniBa.constData();
 
-    SkaffariIMAP imap(c);
+    Imap imap(c);
     if (Q_UNLIKELY(!imap.login())) {
         e.setImapError(imap.lastError(), c->translate("Account", "Logging in to IMAP server to delete the mailbox %1 failed.").arg(d->username));
-        qCCritical(SK_ACCOUNT, "%s failed to login as admin into IMAP server to delete the mailbox of account %s: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().errorText()));
+        qCCritical(SK_ACCOUNT, "%s failed to login as admin into IMAP server to delete the mailbox of account %s: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().text()));
         return ret;
     }
 
@@ -918,7 +910,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError &e) const
         // remove will fail if we can not delete the mailbox on the IMAP server
         if (SkaffariConfig::imapCreatemailbox() > DoNotCreate) {
             e.setImapError(imap.lastError(), c->translate("Account", "Setting the access rights for the IMAP administrator to delete the mailbox %1 failed.").arg(d->username));
-            qCCritical(SK_ACCOUNT, "%s failed to set the access rights for the IMAP administrator to delete the mailbox of account %s: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().errorText()));
+            qCCritical(SK_ACCOUNT, "%s failed to set the access rights for the IMAP administrator to delete the mailbox of account %s: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().text()));
             imap.logout();
             return ret;
         }
@@ -929,7 +921,7 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError &e) const
         // remove will fail if we can not delete the mailbox on the IMAP server
         if (SkaffariConfig::imapCreatemailbox() > DoNotCreate) {
             e.setImapError(imap.lastError(), c->translate("Account", "Mailbox %1 could not be deleted from the IMAP server.").arg(d->username));
-            qCCritical(SK_ACCOUNT, "%s failed to delete mailbox of account %s from the IMAP server: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().errorText()));
+            qCCritical(SK_ACCOUNT, "%s failed to delete mailbox of account %s from the IMAP server: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().text()));
             imap.logout();
             return ret;
         }
@@ -1050,9 +1042,9 @@ Cutelyst::Pagination Account::list(Cutelyst::Context *c, SkaffariError &e, const
 
     pag = Cutelyst::Pagination(static_cast<int>(foundRows), p.limit(), p.currentPage(), p.pages().size());
 
-    SkaffariIMAP imap(c);
+    Imap imap(c);
     if (!imap.login()) {
-        qCWarning(SK_ACCOUNT, "%s failed to log IMAP admin into IMAP server to query account quotas while listing accounts for domain %s: %s", uniStr, dniStr, qUtf8Printable(imap.lastError().errorText()));
+        qCWarning(SK_ACCOUNT, "%s failed to log IMAP admin into IMAP server to query account quotas while listing accounts for domain %s: %s", uniStr, dniStr, qUtf8Printable(imap.lastError().text()));
     }
 
     QCollator col(c->locale());
@@ -1200,7 +1192,7 @@ Account Account::get(Cutelyst::Context *c, SkaffariError &e, dbid_t id)
     }
 
     if (!gotUsage) {
-        SkaffariIMAP imap(c);
+        Imap imap(c);
         if (imap.login()) {
             quota_pair quotaPair = imap.getQuota(userName);
             usage = quotaPair.first;
@@ -1296,7 +1288,7 @@ bool Account::update(Cutelyst::Context *c, SkaffariError &e, Domain *dom, const 
         Password pw(password);
         encPw = pw.encrypt(SkaffariConfig::accPwMethod(), SkaffariConfig::accPwAlgorithm(), SkaffariConfig::accPwRounds());
         if (Q_UNLIKELY(encPw.isEmpty())) {
-            e.setErrorType(SkaffariError::ApplicationError);
+            e.setErrorType(SkaffariError::Application);
             e.setErrorText(c->translate("Account", "Password encryption failed."));
             qCCritical(SK_ACCOUNT, "%s failed to encrypt user password for account %s. Please check your encryption settings.", uniStr, aniStr);
             return ret;
@@ -1306,16 +1298,16 @@ bool Account::update(Cutelyst::Context *c, SkaffariError &e, Domain *dom, const 
     const quota_size_t quota = p.contains(QStringLiteral("quota")) ? static_cast<quota_size_t>(p.value(QStringLiteral("quota")).value<quota_size_t>()/Q_UINT64_C(1024)) : d->quota;
 
     if (quota != d->quota) {
-        SkaffariIMAP imap(c);
+        Imap imap(c);
         if (Q_LIKELY(imap.login())) {
             if (Q_UNLIKELY(!imap.setQuota(d->username, quota))) {
                 e.setImapError(imap.lastError(), c->translate("Account", "Changing the storage quota failed."));
-                qCCritical(SK_ACCOUNT, "%s failed to set storage quota for account %s on IMAP server: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().errorText()));
+                qCCritical(SK_ACCOUNT, "%s failed to set storage quota for account %s on IMAP server: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().text()));
                 return ret;
             }
         } else {
             e.setImapError(imap.lastError(), c->translate("Account", "Logging in to IMAP server to change the storage quota failed."));
-            qCCritical(SK_ACCOUNT, "%s faild to log into IMAP server as %s to change storage quota of account %s: %s", uniStr, qUtf8Printable(SkaffariConfig::imapUser()), aniStr, qUtf8Printable(imap.lastError().errorText()));
+            qCCritical(SK_ACCOUNT, "%s faild to log into IMAP server as %s to change storage quota of account %s: %s", uniStr, qUtf8Printable(SkaffariConfig::imapUser()), aniStr, qUtf8Printable(imap.lastError().text()));
             return ret;
         }
     }
@@ -1490,18 +1482,18 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError &e, const Domain 
     const QByteArray dniBa = dom.nameIdString().toUtf8();
     const char *dniStr = dniBa.constData();
 
-    SkaffariIMAP imap(c);
+    Imap imap(c);
     if (Q_UNLIKELY(!imap.login())) {
         e.setImapError(imap.lastError());
-        qCCritical(SK_ACCOUNT, "%s failed to login as IMAP admin %s into IMAP server while checking user account %s: %s", uniStr, qUtf8Printable(SkaffariConfig::imapUser()), aniStr, qUtf8Printable(imap.lastError().errorText()));
+        qCCritical(SK_ACCOUNT, "%s failed to login as IMAP admin %s into IMAP server while checking user account %s: %s", uniStr, qUtf8Printable(SkaffariConfig::imapUser()), aniStr, qUtf8Printable(imap.lastError().text()));
         return actions;
     }
 
     const QStringList mboxes = imap.getMailboxes();
 
-    if (mboxes.empty() && (imap.lastError().type() != SkaffariIMAPError::NoError)) {
+    if (mboxes.empty() && (imap.lastError().type() != ImapError::NoError)) {
         e.setImapError(imap.lastError(), c->translate("Account", "Could not retrieve a list of all mailboxes from the IMAP server."));
-        qCCritical(SK_ACCOUNT, "%s failed to query a list of all mailboxes from the IMAP server while checking user account %s: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().errorText()));
+        qCCritical(SK_ACCOUNT, "%s failed to query a list of all mailboxes from the IMAP server while checking user account %s: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().text()));
         imap.logout();
         return actions;
     }
@@ -1509,7 +1501,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError &e, const Domain 
     if ((SkaffariConfig::imapCreatemailbox() != DoNotCreate) && !mboxes.contains(d->username)) {
         if (Q_UNLIKELY(!imap.createMailbox(d->username))) {
             e.setImapError(imap.lastError());
-            qCCritical(SK_ACCOUNT, "%s failed to create missing mailbox on IMAP server for user account %s: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().errorText()));
+            qCCritical(SK_ACCOUNT, "%s failed to create missing mailbox on IMAP server for user account %s: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().text()));
             imap.logout();
             return actions;
         } else {
@@ -1525,7 +1517,7 @@ QStringList Account::check(Cutelyst::Context *c, SkaffariError &e, const Domain 
         if (quota.second == 0) {
             if (Q_UNLIKELY(!imap.setQuota(d->username, newQuota))) {
                 e.setImapError(imap.lastError());
-                qCCritical(SK_ACCOUNT, "%s failed to set correct mailbox storage quota of %llu on IMAP sever for user account %s: %s", uniStr, newQuota, aniStr, qUtf8Printable(imap.lastError().errorText()));
+                qCCritical(SK_ACCOUNT, "%s failed to set correct mailbox storage quota of %llu on IMAP sever for user account %s: %s", uniStr, newQuota, aniStr, qUtf8Printable(imap.lastError().text()));
                 imap.logout();
                 return actions;
             } else {
@@ -1706,21 +1698,21 @@ QString Account::updateEmail(Cutelyst::Context *c, SkaffariError &e, const QVari
     const QString address = localPart + QLatin1Char('@') + dom.name();
 
     if (address == oldAddress) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("Account", "The email address has not been changed."));
         qCWarning(SK_ACCOUNT, "%s failed to update email address for account %s: address %s has not been changed.", uniStr, aniStr, qUtf8Printable(address));
         return ret;
     }
 
     if (!d->addresses.contains(oldAddress)) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("Account", "The email address %1 is not part of this account.").arg(oldAddress));
         qCWarning(SK_ACCOUNT, "%s failed to udpate email address for account %s: address %s is not part of the account.", uniStr, aniStr, qUtf8Printable(oldAddress));
         return ret;
     }
 
     if (d->addresses.contains(address)) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("Account", "The email address %1 is already part of this account.").arg(address));
         qCWarning(SK_ACCOUNT, "%s failed to update email address for account %s: address %s is alread part of the account.", uniStr, aniStr, qUtf8Printable(address));
         return ret;
@@ -1734,7 +1726,7 @@ QString Account::updateEmail(Cutelyst::Context *c, SkaffariError &e, const QVari
 
     QList<Cutelyst::ValidatorEmail::Diagnose> diags;
     if (!Cutelyst::ValidatorEmail::validate(aceAddress, Cutelyst::ValidatorEmail::Valid, Cutelyst::ValidatorEmail::NoOption, &diags)) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(Cutelyst::ValidatorEmail::diagnoseString(c, diags.at(0)));
         qCWarning(SK_ACCOUNT, "%s failed to update email address for account %s: new address %s is not valid.", uniStr, aniStr, qUtf8Printable(address));
         return ret;
@@ -1833,7 +1825,7 @@ QString Account::addEmail(Cutelyst::Context *c, SkaffariError &e, const QVariant
     const QString address = localPart + QLatin1Char('@') + dom.name();
 
     if (d->addresses.contains(address)) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("Account", "The email address %1 is already part of this account.").arg(address));
         qCWarning(SK_ACCOUNT, "%s failed to add email address to account %s: address %s is already part of the account.", uniStr, aniStr, qUtf8Printable(address));
         return ret;
@@ -1847,7 +1839,7 @@ QString Account::addEmail(Cutelyst::Context *c, SkaffariError &e, const QVariant
 
     QList<Cutelyst::ValidatorEmail::Diagnose> diags;
     if (!Cutelyst::ValidatorEmail::validate(aceAddress, Cutelyst::ValidatorEmail::Valid, Cutelyst::ValidatorEmail::NoOption, &diags)) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(Cutelyst::ValidatorEmail::diagnoseString(c, diags.at(0)));
         qCWarning(SK_ACCOUNT, "%s failed to add email address to account %s: address %s is not valid.", uniStr, aniStr, qUtf8Printable(address));
         return ret;
@@ -1909,14 +1901,14 @@ bool Account::removeEmail(Cutelyst::Context *c, SkaffariError &e, const QString 
     const char *aniStr = aniBa.constData();
 
     if (d->addresses.size() <= 1) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("Account", "You can not remove the last email address for this account. Remove the entire account instead."));
         qCWarning(SK_ACCOUNT, "%s failed to remove email address from account %s: address %s is the last address of the account.", uniStr, aniStr, qUtf8Printable(address));
         return ret;
     }
 
     if (!d->addresses.contains(address)) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("Account", "The email address %1 is not part of this account.").arg(address));
         qCWarning(SK_ACCOUNT, "%s failed to remove email address from account %s: address %s is not part of the account.", uniStr, aniStr, qUtf8Printable(address));
         return ret;
@@ -1942,7 +1934,7 @@ bool Account::removeEmail(Cutelyst::Context *c, SkaffariError &e, const QString 
         }
 
         if (domainAddressCount < 2) {
-            e.setErrorType(SkaffariError::InputError);
+            e.setErrorType(SkaffariError::Input);
             e.setErrorText(c->translate("Account", "You can not remove the last email address that matches the domain this account belongs to."));
             qCWarning(SK_ACCOUNT, "%s failed to remove email address from acount %s: address %s is the last domain address of the account.", uniStr, aniStr, qUtf8Printable(address));
             return ret;
@@ -1998,7 +1990,7 @@ bool Account::addForward(Cutelyst::Context *c, SkaffariError &e, const QString &
     const bool oldDataAvailable = !forwards.first.empty();
 
     if (Q_UNLIKELY(forwards.first.contains(forward, Qt::CaseInsensitive))) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("Account", "Emails to account %1 are already forwarded to %2.").arg(d->username, forward));
         qCWarning(SK_ACCOUNT, "%s failed to add new forward address to account %s: forward to %s already exists.", uniStr, aniStr, fwStr);
         return ret;
@@ -2059,7 +2051,7 @@ bool Account::removeForward(Cutelyst::Context *c, SkaffariError &e, const QStrin
     const char *fwStr = fwStrBa.constData();
 
     if (Q_UNLIKELY(!forwards.first.contains(forward, Qt::CaseInsensitive))) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("Account", "Forwarding address %1 cannot be removed from user account %2. Forwarding does not exist for this account.").arg(forward, d->username));
         qCWarning(SK_ACCOUNT, "%s failed to remove forward address from account %s: forward to %s does not exist.", uniStr, aniStr, fwStr);
         return ret;
@@ -2136,14 +2128,14 @@ bool Account::editForward(Cutelyst::Context *c, SkaffariError &e, const QString 
     const char *nfwStr = nfwStrBa.constData();
 
     if (Q_UNLIKELY(!forwards.first.contains(oldForward, Qt::CaseInsensitive))) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("Account", "Can not change forward email address %1 from account %2. The forward does not exist.").arg(oldForward, d->username));
         qCWarning(SK_ACCOUNT, "%s failed to change forward address of account %s: forward to %s does not exist.", uniStr, aniStr, ofwStr);
         return ret;
     }
 
     if (Q_UNLIKELY(forwards.first.contains(newForward, Qt::CaseInsensitive))) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("Account", "Forwarding address %1 for user account %2 cannot be changed to %3. The new forwarding already exists.").arg(oldForward, d->username, newForward));
         qCWarning(SK_ACCOUNT, "%s failed to change forward address of account %s: forward to %s already exists.", uniStr, aniStr, nfwStr);
         return ret;
@@ -2335,7 +2327,7 @@ bool AccountData::canAddAddress(Cutelyst::Context *c, SkaffariError &e, const Do
 
         if (!addressAllowed) {
             e.setErrorText(c->translate("Account", "You can not create email addresses for other domains as long as free addresses are not allowed for this domain."));
-            e.setErrorType(SkaffariError::AuthorizationError);
+            e.setErrorType(SkaffariError::Authorization);
             qCWarning(SK_ACCOUNT, "%s tried to add email address %s to account %s while free addresses are not allowed for domain %s.", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(address), qUtf8Printable(nameIdString()), qUtf8Printable(myDomain.nameIdString()));
             return ret;
         }
@@ -2355,7 +2347,7 @@ bool AccountData::canAddAddress(Cutelyst::Context *c, SkaffariError &e, const Do
         if (otherUser.isEmpty()) {
             otherUser = q.value(1).toString();
         }
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("Account", "Email address %1 is already assigned to another user account.").arg(address));
         qCWarning(SK_ACCOUNT, "%s tried to add email address %s to account %s that is already assigned to %s.", qUtf8Printable(AdminAccount::getUserNameIdString(c)), qUtf8Printable(address), qUtf8Printable(nameIdString()), qUtf8Printable(otherUser));
         return ret;

@@ -241,7 +241,7 @@ void SettingsEditor::edit_autoconfig_server(Context *c, const QString &id)
     bool ok = true;
     const dbid_t serverId = Utils::strToDbid(id, &ok);
     if (Q_UNLIKELY(!ok)) {
-        SkaffariError e(c, SkaffariError::InputError, c->translate("SettingsEditor", "Invalid autoconfig server ID."));
+        SkaffariError e(c, SkaffariError::Input, c->translate("SettingsEditor", "Invalid autoconfig server ID."));
         e.toStash(c);
         c->detach(c->getAction(QStringLiteral("error")));
         return;

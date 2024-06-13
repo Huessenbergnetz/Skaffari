@@ -21,7 +21,6 @@
 
 #include "../../common/password.h"
 #include "../../common/global.h"
-#include "../imap/skaffariimap.h"
 #include "../imap/imap.h"
 #include "../objects/account.h"
 #include "../objects/simpleaccount.h"
@@ -416,8 +415,7 @@ public:
      * \par Config file key
      * IMAP/encryption
      */
-    static SkaffariIMAP::EncryptionType imapEncryption();
-    static Imap::EncryptionType imapEncryption2();
+    static Imap::EncryptionType imapEncryption();
     /*!
      * \brief IMAP mailbox creation strategy.
      *
@@ -472,7 +470,7 @@ public:
      * \par Config file key
      * IMAP/authmech
      */
-    static SkaffariIMAP::AuthMech imapAuthmech();
+    // static SkaffariIMAP::AuthMech imapAuthmech();
 
     /*!
      * \brief Returns the directory name of the template currently in use.

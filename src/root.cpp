@@ -313,8 +313,6 @@ void Root::error(Context *c)
 
 bool Root::Auto(Context* c)
 {
-    qCDebug(SK_CORE, "%s", "Entering Root::Auto()");
-
     if (c->controllerName() == QLatin1String("Login")) {
         return true;
     }

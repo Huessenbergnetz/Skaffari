@@ -28,7 +28,7 @@ class Folder::Data : public QSharedData
 public:
     Data() : QSharedData() {}
 
-    Data(dbid_t _id, dbid_t _domainId, const QString &_name, const SkaffariIMAP::SpecialUse _specialUse) :
+    Data(dbid_t _id, dbid_t _domainId, const QString &_name, const Imap::SpecialUse _specialUse) :
         QSharedData(),
         name(_name),
         id(_id),
@@ -41,7 +41,7 @@ public:
     QString name;
     dbid_t id = 0;
     dbid_t domainId = 0;
-    SkaffariIMAP::SpecialUse specialUse = SkaffariIMAP::None;
+    Imap::SpecialUse specialUse = Imap::SpecialUse::None;
 };
 
 Folder::Folder() :
@@ -50,7 +50,7 @@ Folder::Folder() :
 
 }
 
-Folder::Folder(dbid_t id, dbid_t domainId, const QString &name, SkaffariIMAP::SpecialUse specialUse) :
+Folder::Folder(dbid_t id, dbid_t domainId, const QString &name, Imap::SpecialUse specialUse) :
     d(new Data(id, domainId, name, specialUse))
 {
 
@@ -105,7 +105,7 @@ QString Folder::getName() const
     return d->name;
 }
 
-SkaffariIMAP::SpecialUse Folder::getSpecialUse() const
+Imap::SpecialUse Folder::getSpecialUse() const
 {
     return d->specialUse;
 }
@@ -149,6 +149,6 @@ QDataStream &operator>>(QDataStream &stream, Folder &folder)
     stream >> folder.d->domainId;
     stream >> specialUse;
 
-    folder.d->specialUse = static_cast<SkaffariIMAP::SpecialUse>(specialUse);
+    folder.d->specialUse = static_cast<Imap::SpecialUse>(specialUse);
     return stream;
 }

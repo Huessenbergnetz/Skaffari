@@ -17,11 +17,12 @@
  */
 
 #include "domain_p.h"
-#include "skaffarierror.h"
-#include "account.h"
-#include "adminaccount.h"
-#include "../utils/utils.h"
-#include "../utils/skaffariconfig.h"
+
+#include "objects/skaffarierror.h"
+#include "objects/account.h"
+#include "objects/adminaccount.h"
+#include "utils/utils.h"
+#include "utils/skaffariconfig.h"
 #include "../../common/global.h"
 #include <Cutelyst/ParamsMultiMap>
 #include <Cutelyst/Response>
@@ -180,7 +181,7 @@ std::vector<Folder> Domain::folders() const
     return d->folders;
 }
 
-Folder Domain::folder(SkaffariIMAP::SpecialUse specialUse) const
+Folder Domain::folder(Imap::SpecialUse specialUse) const
 {
     Folder f;
     const auto folders = d->folders;
@@ -196,32 +197,32 @@ Folder Domain::folder(SkaffariIMAP::SpecialUse specialUse) const
 
 Folder Domain::draftsFolder() const
 {
-    return folder(SkaffariIMAP::Drafts);
+    return folder(Imap::SpecialUse::Drafts);
 }
 
 Folder Domain::junkFolder() const
 {
-    return folder(SkaffariIMAP::Junk);
+    return folder(Imap::SpecialUse::Junk);
 }
 
 Folder Domain::sentFolder() const
 {
-    return folder(SkaffariIMAP::Sent);
+    return folder(Imap::SpecialUse::Sent);
 }
 
 Folder Domain::trashFolder() const
 {
-    return folder(SkaffariIMAP::Trash);
+    return folder(Imap::SpecialUse::Trash);
 }
 
 Folder Domain::archiveFolder() const
 {
-    return folder(SkaffariIMAP::Archive);
+    return folder(Imap::SpecialUse::Archive);
 }
 
 Folder Domain::otherFolders() const
 {
-    return folder(SkaffariIMAP::SkaffariOtherFolders);
+    return folder(Imap::SpecialUse::Other);
 }
 
 quint32 Domain::accounts() const
@@ -414,22 +415,22 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
     for (const QString &folderType : DEFAULT_FOLDER_TYPES) {
         const QString folderName = params.value(folderType).toString().trimmed();
         if (!folderName.isEmpty()) {
-            SkaffariIMAP::SpecialUse specialUse = SkaffariIMAP::None;
+            Imap::SpecialUse specialUse = Imap::SpecialUse::None;
             if (folderType == QLatin1String("sentFolder")) {
-                specialUse = SkaffariIMAP::Sent;
+                specialUse = Imap::SpecialUse::Sent;
             } else if (folderType == QLatin1String("draftsFolder")) {
-                specialUse = SkaffariIMAP::Drafts;
+                specialUse = Imap::SpecialUse::Drafts;
             } else if (folderType == QLatin1String("trashFolder")) {
-                specialUse = SkaffariIMAP::Trash;
+                specialUse = Imap::SpecialUse::Trash;
             } else if (folderType == QLatin1String("junkFolder")) {
-                specialUse = SkaffariIMAP::Junk;
+                specialUse = Imap::SpecialUse::Junk;
             } else if (folderType == QLatin1String("archiveFolder")) {
-                specialUse = SkaffariIMAP::Archive;
+                specialUse = Imap::SpecialUse::Archive;
             } else if (folderType == QLatin1String("otherFolders")) {
-                specialUse = SkaffariIMAP::SkaffariOtherFolders;
+                specialUse = Imap::SpecialUse::Other;
             }
 
-            if (specialUse != SkaffariIMAP::None) {
+            if (specialUse != Imap::SpecialUse::None) {
                 q.bindValue(QStringLiteral(":domain_id"), domainId);
                 q.bindValue(QStringLiteral(":name"), folderName);
                 q.bindValue(QStringLiteral(":special_use"), static_cast<quint8>(specialUse));
@@ -538,7 +539,7 @@ Domain Domain::create(Cutelyst::Context *c, const QVariantHash &params, Skaffari
                     delRoleAcc.removeEmail(c, errorData, addedRolesIt.value());
                     ++addedRolesIt;
                 }
-                errorData.setErrorType(SkaffariError::SqlError);
+                errorData.setErrorType(SkaffariError::Sql);
                 errorData.setErrorText(c->translate("Domain", "Failed to insert role account email addresses into databaes."));
                 return dom;
             }
@@ -586,7 +587,7 @@ Domain Domain::get(Cutelyst::Context *c, dbid_t domId, SkaffariError &errorData)
             std::vector<Folder> defFolders;
             defFolders.reserve(static_cast<std::vector<Folder>::size_type>(fq.size()));
             while (fq.next()) {
-                defFolders.emplace_back(fq.value(0).value<dbid_t>(), domId, fq.value(1).toString(), static_cast<SkaffariIMAP::SpecialUse>(static_cast<quint8>(fq.value(2).toUInt())));
+                defFolders.emplace_back(fq.value(0).value<dbid_t>(), domId, fq.value(1).toString(), static_cast<Imap::SpecialUse>(static_cast<quint8>(fq.value(2).toUInt())));
             }
 
             QSqlQuery aq = CPreparedSqlQueryThread(QStringLiteral("SELECT a.id, a.username FROM domainadmin da JOIN adminuser a ON a.id = da.admin_id WHERE da.domain_id = :domain_id"));
@@ -1001,7 +1002,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
 
         const dbid_t parentId = p.value(QStringLiteral("parent"), 0).value<dbid_t>();
         if (parentId == d->id) {
-            e.setErrorType(SkaffariError::InputError);
+            e.setErrorType(SkaffariError::Input);
             e.setErrorText(c->translate("Domain", "You can not set a domain as its own parent domain."));
             qCCritical(SK_DOMAIN, "%s: can not set domain as own parent.", err);
             return ret;
@@ -1062,7 +1063,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
         }
 
     } else {
-        e.setErrorType(SkaffariError::AuthorizationError);
+        e.setErrorType(SkaffariError::Authorization);
         e.setErrorText(c->translate("Domain", "You are not authorized to update this domain."));
         qCWarning(SK_DOMAIN, "%s: access denied!", err);
         return ret;
@@ -1070,23 +1071,23 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
 
     for (const QString &folderType : DEFAULT_FOLDER_TYPES) {
         const QString folderName = p.value(folderType).toString().trimmed();
-        SkaffariIMAP::SpecialUse specialUse = SkaffariIMAP::None;
+        Imap::SpecialUse specialUse = Imap::SpecialUse::None;
         if (folderType == QLatin1String("sentFolder")) {
-            specialUse = SkaffariIMAP::Sent;
+            specialUse = Imap::SpecialUse::Sent;
         } else if (folderType == QLatin1String("draftsFolder")) {
-            specialUse = SkaffariIMAP::Drafts;
+            specialUse = Imap::SpecialUse::Drafts;
         } else if (folderType == QLatin1String("trashFolder")) {
-            specialUse = SkaffariIMAP::Trash;
+            specialUse = Imap::SpecialUse::Trash;
         } else if (folderType == QLatin1String("junkFolder")) {
-            specialUse = SkaffariIMAP::Junk;
+            specialUse = Imap::SpecialUse::Junk;
         } else if (folderType == QLatin1String("archiveFolder")) {
-            specialUse = SkaffariIMAP::Archive;
+            specialUse = Imap::SpecialUse::Archive;
         } else if (folderType == QLatin1String("otherFolders")) {
-            specialUse = SkaffariIMAP::SkaffariOtherFolders;
+            specialUse = Imap::SpecialUse::Other;
         }
         Folder oldFolder = folder(specialUse);
         // folder name has changed
-        if (oldFolder.getSpecialUse() != SkaffariIMAP::None && !folderName.isEmpty() && specialUse != SkaffariIMAP::None && oldFolder.getSpecialUse() == specialUse && oldFolder.getName() != folderName) {
+        if (oldFolder.getSpecialUse() != Imap::SpecialUse::None && !folderName.isEmpty() && specialUse != Imap::SpecialUse::None && oldFolder.getSpecialUse() == specialUse && oldFolder.getName() != folderName) {
             if (Q_UNLIKELY(!q.prepare(QStringLiteral("UPDATE folder SET name = :name WHERE id = :id")))) {
                 e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
                 qCCritical(SK_DOMAIN, "%s: can not prepare query to update default folders in database: %s", err, qUtf8Printable(q.lastError().text()));
@@ -1101,7 +1102,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
             }
             foldersVect.emplace_back(oldFolder.getId(), d->id, folderName, specialUse);
         // the folder should be removed
-        } else if (oldFolder.getSpecialUse() != SkaffariIMAP::None && folderName.isEmpty() && specialUse != SkaffariIMAP::None && oldFolder.getSpecialUse() == specialUse) {
+        } else if (oldFolder.getSpecialUse() != Imap::SpecialUse::None && folderName.isEmpty() && specialUse != Imap::SpecialUse::None && oldFolder.getSpecialUse() == specialUse) {
             if (Q_UNLIKELY(!q.prepare(QStringLiteral("DELETE FROM folder WHERE id = :id")))) {
                 e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
                 qCCritical(SK_DOMAIN, "%s: can not prepare query to delete default folder from database: %s", err, qUtf8Printable(q.lastError().text()));
@@ -1114,7 +1115,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
                 return ret;
             }
         // the folder should be created
-        } else if (oldFolder.getSpecialUse() == SkaffariIMAP::None && !folderName.isEmpty() && specialUse != SkaffariIMAP::None) {
+        } else if (oldFolder.getSpecialUse() == Imap::SpecialUse::None && !folderName.isEmpty() && specialUse != Imap::SpecialUse::None) {
             if (Q_UNLIKELY(!q.prepare(QStringLiteral("INSERT INTO folder (domain_id, name, special_use) VALUES (:domain_id, :name, :special_use)")))) {
                 e.setSqlError(q.lastError(), c->translate("Domain", "Failed to update default folders in database."));
                 qCCritical(SK_DOMAIN, "%s: can not prepare query to insert default folder into database: %s", err, qUtf8Printable(q.lastError().text()));
@@ -1130,7 +1131,7 @@ bool Domain::update(Cutelyst::Context *c, const QVariantHash &p, SkaffariError &
             }
             foldersVect.emplace_back(q.lastInsertId().value<dbid_t>(), d->id, folderName, specialUse);
         // nothing has changed, only add it to the list of folders
-        } else if (specialUse != SkaffariIMAP::None && !folderName.isEmpty() && oldFolder.getSpecialUse() == specialUse && oldFolder.getName() == folderName) {
+        } else if (specialUse != Imap::SpecialUse::None && !folderName.isEmpty() && oldFolder.getSpecialUse() == specialUse && oldFolder.getName() == folderName) {
             foldersVect.push_back(oldFolder);
         }
     }

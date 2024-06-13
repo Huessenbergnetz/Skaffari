@@ -218,7 +218,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
 
     const QVariant typeVar = params.value(QStringLiteral("type"));
     if (!typeVar.canConvert<quint8>()) {
-        error.setErrorType(SkaffariError::InputError);
+        error.setErrorType(SkaffariError::Input);
         error.setErrorText(c->translate("AdminAccount", "Invalid administrator type."));
         qCWarning(SK_ADMIN, "%s: invalid administrator type.", err);
         return aa;
@@ -226,14 +226,14 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
     const AdminAccount::AdminAccountType type = static_cast<AdminAccount::AdminAccountType>(typeVar.value<quint8>());
 
     if (type == AdminAccount::Disabled) {
-        error.setErrorType(SkaffariError::InputError);
+        error.setErrorType(SkaffariError::Input);
         error.setErrorText(c->translate("AdminAccount", "Invalid administrator type."));
         qCWarning(SK_ADMIN, "%s: invalid administrator type.", err);
         return aa;
     }
 
     if (type >= AdminAccount::getUserType(c)) {
-        error.setErrorType(SkaffariError::AuthorizationError);
+        error.setErrorType(SkaffariError::Authorization);
         error.setErrorText(c->translate("AdminAccount", "You are not allowed to create users of type %1.").arg(AdminAccount::typeToName(type, c)));
         qCWarning(SK_ADMIN, "%s: not allowed to create users of type %u.", err, type);
         return aa;
@@ -249,7 +249,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
     }
 
     if (Q_UNLIKELY(q.next())) {
-        error.setErrorType(SkaffariError::InputError);
+        error.setErrorType(SkaffariError::Input);
         error.setErrorText(c->translate("AdminAccount", "This administrator user name is already in use."));
         qCWarning(SK_ADMIN, "%s: username is already in use by ID %u.", err, q.value(0).value<dbid_t>());
         return aa;
@@ -262,7 +262,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
                                                                              27);
 
     if (Q_UNLIKELY(password.isEmpty())) {
-        error.setErrorType(SkaffariError::ApplicationError);
+        error.setErrorType(SkaffariError::Application);
         error.setErrorText(c->translate("AdminAccount", "Password encryption failed. Please check your encryption settings."));
         qCCritical(SK_ADMIN, "%s: password encryption failed.", err);
         return aa;
@@ -306,7 +306,7 @@ AdminAccount AdminAccount::create(Cutelyst::Context *c, const QVariantHash &para
 
     const dbid_t id = q.lastInsertId().value<dbid_t>();
     if (Q_UNLIKELY(id <= 0)) {
-        error.setErrorType(SkaffariError::ApplicationError);
+        error.setErrorType(SkaffariError::Application);
         error.setErrorText(c->translate("AdminAccount", "Faild to insert new administrator data into the database."));
         qCCritical(SK_ADMIN, "%s: failed to insert new administrator data into the database.", err);
         db.rollback();
@@ -490,7 +490,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError &e, const QVariant
     const QVariant typeVar = params.value(QStringLiteral("type"));
 
     if (!typeVar.canConvert<quint8>()) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("AdminAccount", "Invalid administrator type."));
         qCCritical(SK_ADMIN, "%s: invalid administrator type.", err);
         return ret;
@@ -499,7 +499,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError &e, const QVariant
     const AdminAccountType type = static_cast<AdminAccount::AdminAccountType>(typeVar.value<quint8>());
 
     if (type >= AdminAccount::getUserType(c)) {
-        e.setErrorType(SkaffariError::AuthorizationError);
+        e.setErrorType(SkaffariError::Authorization);
         e.setErrorText(c->translate("AdminAccount", "You are not allowed to set the type of this account to %1.").arg(AdminAccount::typeToName(type, c)));
         qCCritical(SK_ADMIN, "%s: not allowed to set the type of the account to %u.", err, type);
         return ret;
@@ -518,7 +518,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError &e, const QVariant
         }
 
         if (q.value(0).toInt() <= 1) {
-            e.setErrorType(SkaffariError::InputError);
+            e.setErrorType(SkaffariError::Input);
             e.setErrorText(c->translate("AdminAccount", "You can not remove the last administrator."));
             qCWarning(SK_ADMIN, "%s: can not remove the last super user account.", err);
             return ret;
@@ -546,7 +546,7 @@ bool AdminAccount::update(Cutelyst::Context *c, SkaffariError &e, const QVariant
                                                                               SkaffariConfig::admPwRounds(),
                                                                               24, 27);
         if (Q_UNLIKELY(encPw.isEmpty())) {
-            e.setErrorType(SkaffariError::ApplicationError);
+            e.setErrorType(SkaffariError::Application);
             e.setErrorText(c->translate("AdminAccount", "Password encryption failed. Please check your encryption settings."));
             qCCritical(SK_ADMIN, "%s: password encryption failed.", err);
             return ret;
@@ -659,7 +659,7 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError &e, const QVari
     Cutelyst::AuthenticationUser user = Cutelyst::Authentication::user(c);
 
     if (d->id != user.id().value<dbid_t>()) {
-        e.setErrorType(SkaffariError::AuthorizationError);
+        e.setErrorType(SkaffariError::Authorization);
         e.setErrorText(c->translate("AdminAccount", "You are not allowed to change this administrator account."));
         qCWarning(SK_ADMIN, "%s: access denied.", err);
         return ret;
@@ -670,7 +670,7 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError &e, const QVari
 
     if (!password.isEmpty()) {
         if (!Cutelyst::CredentialPassword::validatePassword(oldpassword.toUtf8(), user.value(QStringLiteral("password")).toString().toUtf8())) {
-            e.setErrorType(SkaffariError::AuthorizationError);
+            e.setErrorType(SkaffariError::Authorization);
             e.setErrorText(c->translate("AdminAccount", "The current password is not valid."));
             qCWarning(SK_ADMIN, "%s: invalid current password.", err);
             return ret;
@@ -683,7 +683,7 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError &e, const QVari
     const QLocale lang(langCode);
 
     if (lang.language() == QLocale::C) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("AdminAccount", "%1 is not a valid locale code.").arg(langCode));
         qCWarning(SK_ADMIN, "%s: invalid locale code %s.", err, qUtf8Printable(langCode));
         return ret;
@@ -691,7 +691,7 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError &e, const QVari
 
     QTimeZone timeZone(tz.toLatin1());
     if (!timeZone.isValid()) {
-        e.setErrorType(SkaffariError::InputError);
+        e.setErrorType(SkaffariError::Input);
         e.setErrorText(c->translate("AdminAccount", "%1 is not a valid IANA time zone ID.").arg(tz));
         qCWarning(SK_ADMIN, "%s: invalid IANA time zone ID %s.", err, qUtf8Printable(tz));
         return ret;
@@ -721,7 +721,7 @@ bool AdminAccount::updateOwn(Cutelyst::Context *c, SkaffariError &e, const QVari
                                                                               27);
 
         if (Q_UNLIKELY(encPw.isEmpty())) {
-            e.setErrorType(SkaffariError::ApplicationError);
+            e.setErrorType(SkaffariError::Application);
             e.setErrorText(c->translate("AdminAccount", "Password encryption failed. Please check your encryption settings."));
             qCCritical(SK_ADMIN, "%s: password encryption failed.", err);
             return ret;
@@ -813,7 +813,7 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError &e)
     const char *err = errBa.constData();
 
     if (d->type >= AdminAccount::getUserType(c)) {
-        e.setErrorType(SkaffariError::AuthorizationError);
+        e.setErrorType(SkaffariError::Authorization);
         e.setErrorText(c->translate("AdminAccount", "You are not allowed to remove accounts of type %1.").arg(typeName(c)));
         qCWarning(SK_ADMIN, "%s: not allowed to remove accounts of type %u.", err, d->type);
         return ret;
@@ -832,7 +832,7 @@ bool AdminAccount::remove(Cutelyst::Context *c, SkaffariError &e)
         }
 
         if (q.value(0).toInt() <= 1) {
-            e.setErrorType(SkaffariError::InputError);
+            e.setErrorType(SkaffariError::Input);
             e.setErrorText(c->translate("AdminAccount", "You can not remove the last super user."));
             qCWarning(SK_ADMIN, "%s: can not remove last super user account.", err);
             return ret;

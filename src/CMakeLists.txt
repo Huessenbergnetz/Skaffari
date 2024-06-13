@@ -1,8 +1,4 @@
 set (skaffari_SRCS
-    imap/skaffariimap.cpp
-    imap/skaffariimap.h
-    imap/skaffariimaperror.cpp
-    imap/skaffariimaperror.h
     imap/imap.cpp
     imap/imap.h
     imap/imapresponse.cpp
@@ -109,22 +105,22 @@ target_include_directories(skaffari
         ${ICU_INCLUDE_DIRS}
 )
 
-target_compile_features(skaffari
-    PRIVATE
-        cxx_auto_type
-        cxx_defaulted_move_initializers
-        cxx_generalized_initializers
-        cxx_lambdas
-        cxx_long_long_type
-        cxx_nonstatic_member_init
-        cxx_nullptr
-        cxx_override
-        cxx_range_for
-        cxx_right_angle_brackets
-        cxx_strong_enums
-        cxx_unicode_literals
-        cxx_uniform_initialization
-)
+# target_compile_features(skaffari
+#     PRIVATE
+#         cxx_auto_type
+#         cxx_defaulted_move_initializers
+#         cxx_generalized_initializers
+#         cxx_lambdas
+#         cxx_long_long_type
+#         cxx_nonstatic_member_init
+#         cxx_nullptr
+#         cxx_override
+#         cxx_range_for
+#         cxx_right_angle_brackets
+#         cxx_strong_enums
+#         cxx_unicode_literals
+#         cxx_uniform_initialization
+# )
 
 target_compile_definitions(skaffari
     PRIVATE

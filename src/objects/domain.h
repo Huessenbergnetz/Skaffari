@@ -237,7 +237,7 @@ public:
     /*!
      * \brief Returns the folder for the \a specialUse.
      */
-    Folder folder(SkaffariIMAP::SpecialUse specialUse) const;
+    Folder folder(Imap::SpecialUse specialUse) const;
 
     /*!
      * \brief Returns the folder to create for drafts.

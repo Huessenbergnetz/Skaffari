@@ -7,9 +7,12 @@
 #define SKAFFARI_IMAP_H
 
 #include <QSslSocket>
+#include <QLoggingCategory>
 
 #include "imap/imapresponse.h"
 #include "../../common/global.h"
+
+Q_DECLARE_LOGGING_CATEGORY(SK_IMAP)
 
 namespace Cutelyst {
 class Context;
@@ -46,6 +49,7 @@ public:
         Trash = 7,
         Other = 255
     };
+    Q_ENUM(SpecialUse);
 
     explicit Imap(Cutelyst::Context *, QObject *parent = nullptr);
 
@@ -58,6 +62,8 @@ public:
     [[nodiscard]] bool login();
 
     void logout();
+
+    [[nodiscard]] bool isLoggedIn() const;
 
     [[nodiscard]] bool createFolder(const QString &user, const QString &folder, SpecialUse specialUse = SpecialUse::None);
 
@@ -87,7 +93,7 @@ public:
 
     [[nodiscard]] bool setSpecialUse(const QString &folder, SpecialUse specialUse);
 
-    [[nodiscard]] bool subscribeFolder(const QString &folder);
+    [[nodiscard]] bool subscribeFolder(const QString &folder = {});
 
     static QString toUtf7Imap(const QString &str);
 

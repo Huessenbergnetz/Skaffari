@@ -80,11 +80,11 @@ void DomainTest::constructor()
         SimpleAdmin(2, QStringLiteral("admin2"))
     };
 
-    m_draftsFolder = Folder(18, 12, QStringLiteral("Drafts"), SkaffariIMAP::Drafts);
-    m_junkFolder = Folder(19, 12, QStringLiteral("Spam"), SkaffariIMAP::Junk);
-    m_sentFolder = Folder(20, 12, QStringLiteral("Sent Messages"), SkaffariIMAP::Sent);
-    m_trashFolder = Folder(21, 12, QStringLiteral("Trash"), SkaffariIMAP::Trash);
-    m_archiveFolder = Folder(22, 12, QStringLiteral("Archive"), SkaffariIMAP::Archive);
+    m_draftsFolder = Folder(18, 12, QStringLiteral("Drafts"), Imap::SpecialUse::Drafts);
+    m_junkFolder = Folder(19, 12, QStringLiteral("Spam"), Imap::SpecialUse::Junk);
+    m_sentFolder = Folder(20, 12, QStringLiteral("Sent Messages"), Imap::SpecialUse::Sent);
+    m_trashFolder = Folder(21, 12, QStringLiteral("Trash"), Imap::SpecialUse::Trash);
+    m_archiveFolder = Folder(22, 12, QStringLiteral("Archive"), Imap::SpecialUse::Archive);
 
     m_folders = std::vector<Folder>{
         m_draftsFolder,
@@ -199,22 +199,22 @@ void DomainTest::folders()
 
 void DomainTest::folder()
 {
-    QCOMPARE(m_dom.folder(SkaffariIMAP::Drafts), m_draftsFolder);
+    QCOMPARE(m_dom.folder(Imap::SpecialUse::Drafts), m_draftsFolder);
     QCOMPARE(Domain::staticMetaObject.property(Domain::staticMetaObject.indexOfProperty("draftsFolder")).readOnGadget(&m_dom).value<Folder>(), m_draftsFolder);
 
-    QCOMPARE(m_dom.folder(SkaffariIMAP::Junk), m_junkFolder);
+    QCOMPARE(m_dom.folder(Imap::SpecialUse::Junk), m_junkFolder);
     QCOMPARE(Domain::staticMetaObject.property(Domain::staticMetaObject.indexOfProperty("junkFolder")).readOnGadget(&m_dom).value<Folder>(), m_junkFolder);
 
-    QCOMPARE(m_dom.folder(SkaffariIMAP::Sent), m_sentFolder);
+    QCOMPARE(m_dom.folder(Imap::SpecialUse::Sent), m_sentFolder);
     QCOMPARE(Domain::staticMetaObject.property(Domain::staticMetaObject.indexOfProperty("sentFolder")).readOnGadget(&m_dom).value<Folder>(), m_sentFolder);
 
-    QCOMPARE(m_dom.folder(SkaffariIMAP::Trash), m_trashFolder);
+    QCOMPARE(m_dom.folder(Imap::SpecialUse::Trash), m_trashFolder);
     QCOMPARE(Domain::staticMetaObject.property(Domain::staticMetaObject.indexOfProperty("trashFolder")).readOnGadget(&m_dom).value<Folder>(), m_trashFolder);
 
-    QCOMPARE(m_dom.folder(SkaffariIMAP::Archive), m_archiveFolder);
+    QCOMPARE(m_dom.folder(Imap::SpecialUse::Archive), m_archiveFolder);
     QCOMPARE(Domain::staticMetaObject.property(Domain::staticMetaObject.indexOfProperty("archiveFolder")).readOnGadget(&m_dom).value<Folder>(), m_archiveFolder);
 
-    QCOMPARE(m_dom.folder(SkaffariIMAP::SkaffariOtherFolders), Folder());
+    QCOMPARE(m_dom.folder(Imap::SpecialUse::Other), Folder());
     QCOMPARE(Domain::staticMetaObject.property(Domain::staticMetaObject.indexOfProperty("otherFolders")).readOnGadget(&m_dom).value<Folder>(), Folder());
 }
 
@@ -297,9 +297,9 @@ void DomainTest::dataStream()
     admins.emplace_back(SimpleAdmin(1, QStringLiteral("admin")));
 
     std::vector<Folder> folders;
-    folders.emplace_back(Folder(1, 12, QStringLiteral("Papierkorb"), SkaffariIMAP::Trash));
-    folders.emplace_back(Folder(2, 12, QStringLiteral("Vorlagen"), SkaffariIMAP::SkaffariOtherFolders));
-    folders.emplace_back(Folder(3, 12, QStringLiteral("Versandte Nachrichten"), SkaffariIMAP::Sent));
+    folders.emplace_back(Folder(1, 12, QStringLiteral("Papierkorb"), Imap::SpecialUse::Trash));
+    folders.emplace_back(Folder(2, 12, QStringLiteral("Vorlagen"), Imap::SpecialUse::Other));
+    folders.emplace_back(Folder(3, 12, QStringLiteral("Versandte Nachrichten"), Imap::SpecialUse::Sent));
 
     Domain d1(12, 0, QStringLiteral("example.com"), QStringLiteral("xmp"), QStringLiteral("cyrus"), 1610612736, 1000, 1610612736000, 161061273600, true, false, 100, QDateTime(QDate(2018, 3, 28), QTime(16, 0)), QDateTime(QDate(2018, 3, 28), QTime(17, 0)), QDateTime(QDate(2118, 3, 28), QTime(16, 0)), Domain::AutoconfigDisabled, SimpleDomain(13, QStringLiteral("example.net")), children, admins, folders);
 

@@ -20,7 +20,7 @@
 #define ACCOUNT_H
 
 #include "../../common/global.h"
-#include "domain.h"
+#include "objects/domain.h"
 #include <Cutelyst/ParamsMultiMap>
 #include <Cutelyst/Plugins/Utils/Pagination>
 #include <QSharedDataPointer>

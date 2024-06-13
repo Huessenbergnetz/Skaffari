@@ -143,7 +143,7 @@ dbid_t Utils::strToDbid(const QString &str, bool *ok, const QString &errorMsg, C
         *ok = _ok;
     }
     if (!ok && !errorMsg.isEmpty() && c) {
-        SkaffariError::toStash(c, SkaffariError::InputError, errorMsg, true);
+        SkaffariError::toStash(c, SkaffariError::Input, errorMsg, true);
     }
     return val;
 }
