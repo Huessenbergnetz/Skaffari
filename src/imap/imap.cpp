@@ -44,6 +44,7 @@ bool Imap::login(const QString &user, const QString &password)
             return false;
         }
     } else {
+        setPeerVerifyName(SkaffariConfig::imapPeername());
         connectToHostEncrypted(SkaffariConfig::imapHost(), SkaffariConfig::imapPort(), ReadWrite, SkaffariConfig::imapProtocol());
         if (Q_UNLIKELY(!waitForEncrypted())) {
             const QList<QSslError> sslErrors = sslHandshakeErrors();
@@ -73,6 +74,8 @@ bool Imap::login(const QString &user, const QString &password)
             disconnectOnError(ImapError{ImapError::EncryptionError, m_c->translate("SkaffariIMAP", "STARTTLS is not supported.")});
             return false;
         }
+
+        setPeerVerifyName(SkaffariConfig::imapPeername());
 
         const QString tag = getTag();
 
@@ -151,6 +154,11 @@ bool Imap::login(const QString &user, const QString &password)
     }
 
     return true;
+}
+
+bool Imap::login()
+{
+    return login(SkaffariConfig::imapUser(), SkaffariConfig::imapPassword());
 }
 
 void Imap::logout()

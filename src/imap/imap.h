@@ -39,6 +39,8 @@ public:
 
     [[nodiscard]] bool login(const QString &user, const QString &password);
 
+    [[nodiscard]] bool login();
+
     void logout();
 
     [[nodiscard]] QStringList getCapabilities(bool reload = false);
