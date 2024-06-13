@@ -14,6 +14,7 @@ public:
 private Q_SLOTS:
     void testParseNamespaceReponse();
     void testParseGetquotarootResponse();
+    void testParseIdResponse();
 
 private:
     ImapParser m_parser;
@@ -44,6 +45,23 @@ void ImapParserTest::testParseGetquotarootResponse()
     QCOMPARE(parsed.at(1).type(), QMetaType::QVariantList);
     QCOMPARE(parsed.at(1).toList().size(), 3);
     QCOMPARE(parsed.at(1).toList().at(0).toString(), QStringLiteral("STORAGE"));
+}
+
+void ImapParserTest::testParseIdResponse()
+{
+    const QVariantList parsed = m_parser.parse(QStringLiteral(R"-(("name" "Cyrus IMAPD" "version" "3.2.12" "vendor" "Project Cyrus"))-"));
+    const QVariantList lst = parsed.at(0).toList();
+    int i = 0;
+    int size = lst.size();
+    QMap<QString,QString> id;
+    while (i < size) {
+        const auto key = lst.at(i).toString();
+        ++i;
+        const auto value = lst.at(i).toString();
+        ++i;
+        id.insert(key, value);
+    }
+    QCOMPARE(id.value(QStringLiteral("version")), QStringLiteral("3.2.12"));
 }
 
 QTEST_MAIN(ImapParserTest)
