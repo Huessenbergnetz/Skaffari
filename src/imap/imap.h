@@ -25,6 +25,12 @@ public:
     };
     Q_ENUM(EncryptionType)
 
+    enum class NamespaceType : int {
+        Personal = 0,
+        Others = 1,
+        Shared = 2
+    };
+
     explicit Imap(Cutelyst::Context *, QObject *parent = nullptr);
 
     ~Imap() override = default;
@@ -37,7 +43,7 @@ public:
 
     [[nodiscard]] QStringList getCapabilities(bool reload = false);
 
-    void getNamespaces();
+    QList<std::pair<QString,QString>> getNamespace(NamespaceType type);
 
     [[nodiscard]] bool hasCapability(const QString &capability, bool reload = false);
 
@@ -66,12 +72,12 @@ private:
 
     bool authCramMd5(const QString &user, const QString &password);
 
+    void getNamespaces();
+
     void sendId();
 
     ImapError m_lastError;
-    std::pair<QString,QChar> personalNamespace;
-    std::pair<QString,QChar> usersNamespace;
-    std::pair<QString,QChar> sharedNamespace;
+    QList<QList<std::pair<QString,QString>>> m_namespaces;
     Cutelyst::Context *m_c{nullptr};
     quint32 m_tagSequence{0};
     QStringList m_capabilites;

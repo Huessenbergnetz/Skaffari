@@ -4,6 +4,7 @@
  */
 
 #include "imap.h"
+#include "imapparser.h"
 #include "skaffariimap.h"
 #include "../utils/skaffariconfig.h"
 
@@ -28,6 +29,9 @@ bool Imap::login(const QString &user, const QString &password)
     if (m_loggedIn) {
         return true;
     }
+
+    qCDebug(SK_IMAP) << "Start login to IMAP server" << SkaffariConfig::imapHost() << "on port"
+                     << SkaffariConfig::imapPort() << "as user" << user;
 
     m_lastError.clear();
 
@@ -132,6 +136,8 @@ bool Imap::login(const QString &user, const QString &password)
             disconnectOnError(r.error());
             return false;
         }
+
+        qCDebug(SK_IMAP) << "User" << user << "successfully logged in using LOGIN";
     }
 
     m_loggedIn = true;
@@ -141,7 +147,7 @@ bool Imap::login(const QString &user, const QString &password)
     }
 
     if (hasCapability(QStringLiteral("NAMESPACE"))) {
-
+        getNamespaces();
     }
 
     return true;
@@ -169,6 +175,7 @@ void Imap::logout()
     }
 
     if (Q_UNLIKELY(!waitForResponse(true))) {
+        m_lastError.clear();
         return;
     }
 
@@ -188,28 +195,29 @@ void Imap::logout()
 QStringList Imap::getCapabilities(bool reload)
 {
     if (reload || m_capabilites.empty()) {
-        m_capabilites.clear();
 
         const QString tag = getTag();
 
         if (Q_UNLIKELY(!sendCommand(tag, QStringLiteral("CAPABILITY")))) {
+            m_lastError.clear();
             return m_capabilites;
         }
 
         if (Q_UNLIKELY(!waitForResponse())) {
+            m_lastError.clear();
             return m_capabilites;
         }
 
         ImapResponse r = checkResponse(readAll(), tag);
         if (!r) {
-            m_lastError = r.error();
             return m_capabilites;
         }
 
         if (r.lines().empty()) {
-            m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request capabilities from the IMAP server.")};
             return m_capabilites;
         }
+
+        m_capabilites.clear();
 
         const QStringList lines = r.lines();
         for (const auto &l : lines) {
@@ -221,41 +229,11 @@ QStringList Imap::getCapabilities(bool reload)
                 }
             }
         }
+
+        qCDebug(SK_IMAP) << "Requested capabilities:" << m_capabilites;
     }
 
     return m_capabilites;
-}
-
-void Imap::getNamespaces()
-{
-    const QString tag = getTag();
-
-    if (Q_UNLIKELY(!sendCommand(tag, QStringLiteral("CAPABILITY")))) {
-        return;
-    }
-
-    if (Q_UNLIKELY(!waitForResponse())) {
-        return;
-    }
-
-    ImapResponse r = checkResponse(readAll(), tag);
-    if (!r) {
-        m_lastError = r.error();
-        return;
-    }
-
-    if (r.lines().empty()) {
-        m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request namespaces from the IMAP server.")};
-        return;
-    }
-
-    QString nsLine = r.lines().constFirst();
-    if (Q_UNLIKELY(!nsLine.startsWith(QLatin1String("NAMESPACE"), Qt::CaseInsensitive))) {
-        m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Invalid response after NAMESPACE request.")};
-        return;
-    }
-
-    nsLine.remove(QLatin1String("NAMESPACE "), Qt::CaseInsensitive);
 }
 
 bool Imap::hasCapability(const QString &capability, bool reload)
@@ -433,6 +411,8 @@ bool Imap::authLogin(const QString &user, const QString &password)
         return false;
     }
 
+    qCDebug(SK_IMAP) << "User" << user << "successfully logged in using AUTH=LOGIN";
+
     return true;
 }
 
@@ -469,6 +449,8 @@ bool Imap::authPlain(const QString &user, const QString &password)
         disconnectOnError(r.error());
         return false;
     }
+
+    qCDebug(SK_IMAP) << "User" << user << "successfully logged in using AUTH=PLAIN";
 
     return true;
 }
@@ -518,6 +500,8 @@ bool Imap::authCramMd5(const QString &user, const QString &password)
         return false;
     }
 
+    qCDebug(SK_IMAP) << "User" << user << "successfully logged in using AUTH=CRAM-MD5";
+
     return true;
 }
 
@@ -540,10 +524,12 @@ void Imap::sendId()
     const QString cmd = QStringLiteral("ID (\"name\" \"%1\" \"version\" \"%2\" \"os\" \"%3\" \"os-version\" \"%4\")").arg(QCoreApplication::applicationName(), QCoreApplication::applicationVersion(), os, osVersion);
 
     if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        m_lastError.clear();
         return;
     }
 
     if (Q_UNLIKELY(!waitForResponse())) {
+        m_lastError.clear();
         return;
     }
 
@@ -553,9 +539,96 @@ void Imap::sendId()
         return;
     }
 
-    const QString &line = r.lines().first();
+    const QString &line = r.lines().constFirst();
 
     Q_UNUSED(line)
+}
+
+QList<std::pair<QString,QString>> Imap::getNamespace(Imap::NamespaceType type)
+{
+    if (!m_namespaceQueried) {
+        getNamespaces();
+    }
+
+    return m_namespaces.value(static_cast<int>(type));
+}
+
+void Imap::getNamespaces()
+{
+    m_lastError.clear();
+
+    const QString tag = getTag();
+
+    if (Q_UNLIKELY(!sendCommand(tag, QStringLiteral("NAMESPACE")))) {
+        return;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse())) {
+        return;
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+    if (!r) {
+        qCWarning(SK_IMAP) << "Failed to request namespaces from the IMAP server";
+        return;
+    }
+
+    if (r.lines().empty()) {
+        qCWarning(SK_IMAP) << "Failed to request namespaces from the IMAP server: empty response";
+        return;
+    }
+
+    QString nsLine = r.lines().constFirst();
+    if (Q_UNLIKELY(!nsLine.startsWith(QLatin1String("NAMESPACE"), Qt::CaseInsensitive))) {
+        qCWarning(SK_IMAP) << "Failed to request namespaces from the IMAP server: invalid response";
+        return;
+    }
+
+    nsLine.remove(QLatin1String("NAMESPACE "), Qt::CaseInsensitive);
+
+    ImapParser parser;
+    const QVariantList nsList = parser.parse(nsLine);
+    if (nsList.size() != 3) {
+        qCWarning(SK_IMAP) << "Failed to request namespaces from the IMAP server: invalid response";
+        return;
+    }
+
+    QList<QList<std::pair<QString,QString>>> namespaces;
+
+    for (const QVariant &v : nsList) {
+        if (v.type() == QMetaType::QString) {
+            const auto str = v.toString();
+            if (str.isEmpty()) {
+                namespaces << QList<std::pair<QString,QString>>();
+            } else {
+                // single string can only be NIL, if it is
+                // not parsed as empty string, the response is invalid
+                // or the parser is shit...
+                qCWarning(SK_IMAP) << "Failed to request namespaces from the IMAP server: invalid response, failed to parse";
+                return;
+            }
+        } else if (v.type() == QMetaType::QVariantList) {
+            const auto lst = v.toList();
+            QList<std::pair<QString,QString>> tmpNs;
+            for (const auto &li : lst) {
+                const QVariantList tmp = parser.parse(li.toString());
+                for (const auto &t : tmp) {
+                    const QVariantList lst2 = t.toList();
+                    tmpNs << std::make_pair(lst2.at(0).toString(), lst2.at(1).toString());
+                }
+            }
+            namespaces << tmpNs;
+        }
+    }
+
+    if (namespaces.size() != 3) {
+        qCWarning(SK_IMAP) << "Failed to request namespaces from the IMAP server: invalid response, failed to parse";
+        return;
+    }
+
+    m_namespaceQueried = true;
+
+    m_namespaces = namespaces;
 }
 
 #include "moc_imap.cpp"
