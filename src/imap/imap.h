@@ -54,6 +54,8 @@ public:
 
     [[nodiscard]] bool hasCapability(const QString &capability, bool reload = false);
 
+    [[nodiscard]] bool setQuota(const QString &user, quota_size_t quota);
+
 private:
     QString getTag();
 
