@@ -383,7 +383,7 @@ QString Imap::getDelimeter(NamespaceType nsType)
     const NsList nsList = getNamespace(nsType);
     if (!nsList.empty()) {
         const NsData ns = nsList.constFirst();
-        if (!ns.second.isEmpty()) {
+        if (!ns.second.isNull()) {
             return ns.second;
         }
     }
@@ -440,6 +440,62 @@ QString Imap::getDelimeter(NamespaceType nsType)
     }
 
     return m_delimeter;
+}
+
+QStringList Imap::getMailboxes()
+{
+    m_lastError.clear();
+
+    QString nsName;
+    QString delimeter;
+    const NsList nsList = getNamespace(NamespaceType::Others);
+    if (nsList.isEmpty() || nsList.constFirst().first.isNull()) {
+        delimeter = getDelimeter(NamespaceType::Others);
+        nsName = QStringLiteral("user") + delimeter;
+    } else {
+        nsName = nsList.constFirst().first;
+        delimeter = nsList.constFirst().second;
+    }
+
+    const QString tag = getTag();
+    const QString cmd = QLatin1String(R"(LIST ")") + nsName + QLatin1String(R"(" %)");
+
+    if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        return {};
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return {};
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+
+    if (!r) {
+        m_lastError = r.error();
+        return {};
+    }
+
+    const QStringList lines = r.lines();
+    if (lines.empty()) {
+        m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to get mailboxes from IMAP server: empty response")};
+        return {};
+    }
+
+    ImapParser parser;
+    QStringList lst;
+    for (const QString &l : lines) {
+        QString _l = l;
+        _l.remove(QLatin1String("LIST "));
+        const QVariantList parsed = parser.parse(_l);
+        if (parsed.size() != 3) {
+            return {};
+        }
+        QString mb = parsed.at(2).toString();
+        mb.remove(nsName);
+        lst << mb;
+    }
+
+    return lst;
 }
 
 bool Imap::hasCapability(const QString &capability, bool reload)
@@ -1060,10 +1116,12 @@ void Imap::getNamespaces()
     const QString tag = getTag();
 
     if (Q_UNLIKELY(!sendCommand(tag, QStringLiteral("NAMESPACE")))) {
+        m_lastError.clear();
         return;
     }
 
     if (Q_UNLIKELY(!waitForResponse())) {
+        m_lastError.clear();
         return;
     }
 

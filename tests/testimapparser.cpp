@@ -17,6 +17,7 @@ private Q_SLOTS:
     void testParseIdResponse();
     void testParseGetDelimeterResponse();
     void testParseGetQuotaResponse();
+    void testParseGetListResponse();
 
 private:
     ImapParser m_parser;
@@ -76,7 +77,7 @@ void ImapParserTest::testParseGetDelimeterResponse()
 
 void ImapParserTest::testParseGetQuotaResponse()
 {
-    const QVariantList parsed = m_parser.parse(QStringLiteral("user.buschmann (STORAGE 1478122 4194304)"));
+    const QVariantList parsed = m_parser.parse(QStringLiteral("user.joe (STORAGE 1478122 4194304)"));
     QCOMPARE(parsed.size(), 2);
     QCOMPARE(parsed.at(0).type(), QMetaType::QString);
     QCOMPARE(parsed.at(1).type(), QMetaType::QVariantList);
@@ -97,6 +98,16 @@ void ImapParserTest::testParseGetQuotaResponse()
     }
     QCOMPARE(quota.first, Q_INT64_C(1478122));
     QCOMPARE(quota.second, Q_INT64_C(4194304));
+}
+
+void ImapParserTest::testParseGetListResponse()
+{
+    const QVariantList parsed = m_parser.parse(QStringLiteral("(\\HasNoChildren) \".\" user.joe.Listen.kde-announce"));
+    QCOMPARE(parsed.size(), 3);
+    QCOMPARE(parsed.at(0).toList().at(0).toString(), QStringLiteral(R"(\HasNoChildren)"));
+    QCOMPARE(parsed.at(1).toString(), QStringLiteral("."));
+    QCOMPARE(parsed.at(2).toString(), QStringLiteral("user.joe.Listen.kde-announce"));
+    qDebug() << "PARSED:" << parsed;
 }
 
 QTEST_MAIN(ImapParserTest)

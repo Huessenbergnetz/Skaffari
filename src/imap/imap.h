@@ -69,6 +69,8 @@ public:
 
     [[nodiscard]] QString getDelimeter(NamespaceType nsType);
 
+    [[nodiscard]] QStringList getMailboxes();
+
     NsList getNamespace(NamespaceType type);
 
     [[nodiscard]] quota_pair getQuota(const QString &user);
