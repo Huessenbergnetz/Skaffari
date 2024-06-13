@@ -16,6 +16,7 @@ private Q_SLOTS:
     void testParseGetquotarootResponse();
     void testParseIdResponse();
     void testParseGetDelimeterResponse();
+    void testParseGetQuotaResponse();
 
 private:
     ImapParser m_parser;
@@ -71,6 +72,31 @@ void ImapParserTest::testParseGetDelimeterResponse()
     QCOMPARE(parsed.size(), 3);
     QCOMPARE(parsed.at(1).toString(), QStringLiteral("."));
     QVERIFY(parsed.at(2).toString().isEmpty());
+}
+
+void ImapParserTest::testParseGetQuotaResponse()
+{
+    const QVariantList parsed = m_parser.parse(QStringLiteral("user.buschmann (STORAGE 1478122 4194304)"));
+    QCOMPARE(parsed.size(), 2);
+    QCOMPARE(parsed.at(0).type(), QMetaType::QString);
+    QCOMPARE(parsed.at(1).type(), QMetaType::QVariantList);
+    const QVariantList quotaLst = parsed.at(1).toList();
+    QVERIFY(quotaLst.size() % 3 == 0);
+    std::pair<quint64,quint64> quota{0, 0};
+    for (int i = 0; i < quotaLst.size(); ++i) {
+        const auto quotaType = quotaLst.at(i).toString();
+        if (quotaType.compare(QLatin1String("STORAGE"), Qt::CaseInsensitive) == 0) {
+            if ((i + 2) < quotaLst.size()) {
+                quota.first = quotaLst.at(i + 1).toString().toULongLong();
+                quota.second = quotaLst.at(i + 2).toString().toULongLong();
+                break;
+            } else {
+                break;
+            }
+        }
+    }
+    QCOMPARE(quota.first, Q_INT64_C(1478122));
+    QCOMPARE(quota.second, Q_INT64_C(4194304));
 }
 
 QTEST_MAIN(ImapParserTest)

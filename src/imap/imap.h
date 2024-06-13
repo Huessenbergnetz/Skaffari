@@ -9,6 +9,7 @@
 #include <QSslSocket>
 
 #include "imap/imapresponse.h"
+#include "../../common/global.h"
 
 namespace Cutelyst {
 class Context;
@@ -49,6 +50,8 @@ public:
 
     QList<std::pair<QString,QString>> getNamespace(NamespaceType type);
 
+    [[nodiscard]] quota_pair getQuota(const QString &user);
+
     [[nodiscard]] bool hasCapability(const QString &capability, bool reload = false);
 
 private:
@@ -77,6 +80,8 @@ private:
     bool authCramMd5(const QString &user, const QString &password);
 
     void getNamespaces();
+
+    [[nodiscard]] QString getUserMailboxName(const QString &user, bool quoted = true);
 
     void sendId();
 

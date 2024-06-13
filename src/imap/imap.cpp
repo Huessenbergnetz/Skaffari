@@ -652,6 +652,82 @@ QList<std::pair<QString,QString>> Imap::getNamespace(Imap::NamespaceType type)
     return m_namespaces.value(static_cast<int>(type));
 }
 
+quota_pair Imap::getQuota(const QString &user)
+{
+    quota_pair quota{0, 0};
+
+    m_lastError.clear();
+
+    const QString tag = getTag();
+    const QString cmd = QLatin1String("GETQUOTA ") + getUserMailboxName(user);
+
+    if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        return quota;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return quota;
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+    if (!r) {
+        disconnectOnError(r.error());
+        return quota;
+    }
+
+    if (Q_UNLIKELY(r.lines().empty())) {
+        qCCritical(SK_IMAP) << "Failed to request storage quota for user" << user << ": invalid response";
+        m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request storage quota for user %1: invalid response").arg(user)};
+        return quota;
+    }
+
+    QString line = r.lines().constFirst();
+    line.remove(QLatin1String("QUOTA "));
+
+    ImapParser parser;
+    const QVariantList parsed = parser.parse(line);
+    if (Q_UNLIKELY(parsed.size() < 2)) {
+        qCCritical(SK_IMAP) << "Failed to request storage quota for user" << user << ": invalid response";
+        m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request storage quota for user %1: invalid response").arg(user)};
+        return quota;
+    }
+
+    const QVariantList quotaLst = parsed.at(1).toList();
+    if (quotaLst.empty() || quotaLst.size() % 3 != 0) {
+        qCCritical(SK_IMAP) << "Failed to request storage quota for user" << user << ": invalid response";
+        m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request storage quota for user %1: invalid response").arg(user)};
+        return quota;
+    }
+
+    for (int i = 0; i < quotaLst.size(); ++i) {
+        if (quotaLst.at(i).toString().compare(QLatin1String("STORAGE"), Qt::CaseInsensitive) == 0) {
+            if ((i + 2) < quotaLst.size()) {
+                bool sOk = false;
+                bool qOk = false;
+                const auto s = quotaLst.at(i + 1).toString().toULongLong(&sOk);
+                const auto q = quotaLst.at(i + 2).toString().toULongLong(&qOk);
+                if (!sOk || !qOk) {
+                    qCCritical(SK_IMAP) << "Failed to request storage quota for user" << user << ": invalid response";
+                    m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request storage quota for user %1: invalid response").arg(user)};
+                    return quota;
+                }
+                quota.first = s;
+                quota.second = q;
+                return quota;
+
+            } else {
+                qCCritical(SK_IMAP) << "Failed to request storage quota for user" << user << ": invalid response";
+                m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request storage quota for user %1: invalid response").arg(user)};
+                return quota;
+            }
+        }
+    }
+
+    qCCritical(SK_IMAP) << "Failed to request storage quota for user" << user << ": invalid response";
+    m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request storage quota for user %1: invalid response").arg(user)};
+    return quota;
+}
+
 void Imap::getNamespaces()
 {
     m_lastError.clear();
@@ -728,6 +804,22 @@ void Imap::getNamespaces()
     m_namespaceQueried = true;
 
     m_namespaces = namespaces;
+}
+
+QString Imap::getUserMailboxName(const QString &user, bool quoted)
+{
+    const QList<std::pair<QString,QString>> nsList = getNamespace(Imap::NamespaceType::Others);
+    if (!nsList.empty()) {
+        if (!nsList.constFirst().first.isEmpty()) {
+            if (quoted) {
+                return QLatin1Char('"') + nsList.constFirst().first + user + QLatin1Char('"');
+            } else {
+                return nsList.constFirst().first + user;
+            }
+        }
+    }
+    const QString delimeter = getDelimeter(Imap::NamespaceType::Others);
+    return QLatin1String(R"("user)") + delimeter + user + QLatin1Char('"');
 }
 
 #include "moc_imap.cpp"
