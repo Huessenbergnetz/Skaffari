@@ -107,7 +107,6 @@ void ImapParserTest::testParseGetListResponse()
     QCOMPARE(parsed.at(0).toList().at(0).toString(), QStringLiteral(R"(\HasNoChildren)"));
     QCOMPARE(parsed.at(1).toString(), QStringLiteral("."));
     QCOMPARE(parsed.at(2).toString(), QStringLiteral("user.joe.Listen.kde-announce"));
-    qDebug() << "PARSED:" << parsed;
 }
 
 QTEST_MAIN(ImapParserTest)
