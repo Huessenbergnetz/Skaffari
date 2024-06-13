@@ -236,6 +236,70 @@ QStringList Imap::getCapabilities(bool reload)
     return m_capabilites;
 }
 
+QString Imap::getDelimeter(NamespaceType nsType)
+{
+    const QList<std::pair<QString,QString>> nsList = getNamespace(nsType);
+    if (!nsList.empty()) {
+        const std::pair<QString,QString> ns = nsList.constFirst();
+        if (!ns.second.isEmpty()) {
+            return ns.second;
+        }
+    }
+
+    if (!m_delimeter.isEmpty()) {
+        return m_delimeter;
+    }
+
+    const QString tag = getTag();
+    const QString defaultDelimeter = SkaffariConfig::imapUnixhierarchysep() ? QStringLiteral("/") : QStringLiteral(".");
+
+    if (Q_UNLIKELY(!sendCommand(tag, QStringLiteral(R"(LIST "" "")")))) {
+        m_lastError.clear();
+        qCWarning(SK_IMAP) << "Failed to get delimeter character, using config default:" << defaultDelimeter;
+        return defaultDelimeter;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse())) {
+        m_lastError.clear();
+        qCWarning(SK_IMAP) << "Failed to get delimeter character, using config default:" << defaultDelimeter;
+        return defaultDelimeter;
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+
+    if (!r) {
+        qCWarning(SK_IMAP) << "Failed to get delimeter character, using config default:" << defaultDelimeter;
+        return defaultDelimeter;
+    }
+
+    if (Q_UNLIKELY(r.lines().empty())) {
+        qCWarning(SK_IMAP) << "Failed to get delimeter character, using config default:" << defaultDelimeter;
+        return defaultDelimeter;
+    }
+
+    QString line = r.lines().constFirst();
+    line.remove(QLatin1String("LIST "));
+    if (Q_UNLIKELY(line.isEmpty())) {
+        qCWarning(SK_IMAP) << "Failed to get delimeter character, using config default:" << defaultDelimeter;
+        return defaultDelimeter;
+    }
+
+    ImapParser parser;
+    const QVariantList parsed = parser.parse(line);
+    if (parsed.size() != 3) {
+        qCWarning(SK_IMAP) << "Failed to get delimeter character, using config default:" << defaultDelimeter;
+        return defaultDelimeter;
+    }
+
+    m_delimeter = parsed.at(1).toString();
+    if (m_delimeter.isEmpty()) {
+        qCWarning(SK_IMAP) << "Failed to get delimeter character, using config default:" << defaultDelimeter;
+        return defaultDelimeter;
+    }
+
+    return m_delimeter;
+}
+
 bool Imap::hasCapability(const QString &capability, bool reload)
 {
     if (reload) {
