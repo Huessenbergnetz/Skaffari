@@ -334,6 +334,71 @@ bool Imap::createMailbox(const QString &user)
     return true;
 }
 
+bool Imap::deleteMailbox(const QString &user)
+{
+    m_lastError.clear();
+
+    QList<std::pair<int, QString>> folders = getUserFolders(user);
+
+    if (folders.empty() && m_lastError) {
+        return false;
+    }
+
+    const QString userRoot = getUserMailboxName({user}, false);
+    const QString delimeter = getDelimeter(NamespaceType::Others);
+
+    if (!folders.empty()) {
+        std::sort(folders.begin(), folders.end(), [](const std::pair<int, QString> &a, const std::pair<int, QString> &b) {
+            return a.first > b.first;
+        });
+
+        qDebug(SK_IMAP) << "Folder to delete:" << folders;
+
+        for (const auto &f : std::as_const(folders)) {
+            const QString mb = userRoot + delimeter + f.second;
+
+            if (!setAcl(mb, SkaffariConfig::imapUser())) {
+                return false;
+            }
+
+            const QString tag = getTag();
+            const QString cmd = QLatin1String("DELETE \"") + mb + QLatin1Char('"');
+            if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+                return false;
+            }
+
+            if (Q_UNLIKELY(!waitForResponse(true))) {
+                return false;
+            }
+
+            const ImapResponse r = checkResponse(readAll(), tag);
+            if (!r) {
+                m_lastError = r.error();
+                return false;
+            }
+        }
+    }
+
+    const QString tag = getTag();
+    const QString cmd = QLatin1String("DELETE \"") + userRoot + QLatin1Char('"');
+
+    if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        return false;
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return false;
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+    if (!r) {
+        m_lastError = r.error();
+        return false;
+    }
+
+    return true;
+}
+
 QStringList Imap::getCapabilities(bool reload)
 {
     if (reload || m_capabilites.empty()) {
@@ -1169,6 +1234,53 @@ quota_pair Imap::getQuota(const QString &user)
     qCCritical(SK_IMAP) << "Failed to request storage quota for user" << user << ": invalid response";
     m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request storage quota for user %1: invalid response").arg(user)};
     return quota;
+}
+
+QList<std::pair<int,QString>> Imap::getUserFolders(const QString &user)
+{
+    m_lastError.clear();
+
+    const QString delimeter = getDelimeter(NamespaceType::Others);
+    const QString umn = getUserMailboxName({user}, false) + delimeter;
+    const QString tag = getTag();
+    const QString cmd = QLatin1String("LIST \"") + umn + QLatin1String("\" \"*\"");
+
+    if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
+        return {};
+    }
+
+    if (Q_UNLIKELY(!waitForResponse(true))) {
+        return {};
+    }
+
+    const ImapResponse r = checkResponse(readAll(), tag);
+    if (!r) {
+        m_lastError = r.error();
+        return {};
+    }
+
+    const QStringList lines = r.lines();
+    if (lines.empty()) {
+        m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to get folders for user %1: empty response").arg(user)};
+        return {};
+    }
+
+    QList<std::pair<int,QString>> lst;
+    ImapParser parser;
+    for (const QString &l : lines) {
+        QString _l = l;
+        _l.remove(QLatin1String("LIST "));
+        const QVariantList parsed = parser.parse(_l);
+        if (parsed.size() != 3) {
+            m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to get folders for user %1: invalid response").arg(user)};
+            return {};
+        }
+        QString folder = parsed.at(2).toString();
+        folder.remove(umn);
+        lst << std::make_pair(folder.count(delimeter), folder);
+    }
+
+    return lst;
 }
 
 void Imap::getNamespaces()
