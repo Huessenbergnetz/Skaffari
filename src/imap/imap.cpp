@@ -65,11 +65,7 @@ bool Imap::login(const QString &user, const QString &password)
         }
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    ImapResponse r = checkResponse(readAll());
+    ImapResponse r = checkResponse2(QStringLiteral("*"));
 
     if (!r) {
         disconnectOnError(r.error());
@@ -91,11 +87,7 @@ bool Imap::login(const QString &user, const QString &password)
             return false;
         }
 
-        if (Q_UNLIKELY(!waitForResponse(true))) {
-            return false;
-        }
-
-        r = checkResponse(readAll(), tag);
+        r = checkResponse2(tag);
         if (!r) {
             disconnectOnError(r.error());
             return false;
@@ -540,11 +532,7 @@ QStringList Imap::getMailboxes()
         return {};
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return {};
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
 
     if (!r) {
         m_lastError = r.error();
@@ -951,6 +939,52 @@ ImapResponse Imap::checkResponse(const QByteArray &data, const QString &tag)
         qCWarning(SK_IMAP) << "The IMAP response is undefined.";
         return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
     }
+
+    if (statusLine.startsWith(QLatin1String("OK"), Qt::CaseInsensitive)) {
+        return {ImapResponse::OK, statusLine.mid(3), lines};
+    } else if (statusLine.startsWith(QLatin1String("BAD"), Qt::CaseInsensitive)) {
+        qCCritical(SK_IMAP) << "We received a BAD response from the IMAP server:" << statusLine.mid(4);
+        return {ImapResponse::BAD, ImapError{ImapError::BadResponse, m_c->translate("SkaffariIMAP", "We received a BAD response from the IMAP server: %1").arg(statusLine.mid(4))}};
+    } else if (statusLine.startsWith(QLatin1String("NO"), Qt::CaseInsensitive)) {
+        qCCritical(SK_IMAP) << "We received a NO response from the IMAP server:" << statusLine.mid(3);
+        return {ImapResponse::NO, ImapError{ImapError::NoResponse, m_c->translate("SkaffariIMAP", "We received a NO response from the IMAP server: %1").arg(statusLine.mid(3))}};
+    } else {
+        qCCritical(SK_IMAP) << "The IMAP response is undefined";
+        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
+    }
+}
+
+ImapResponse Imap::checkResponse2(const QString &tag, int msecs)
+{
+    bool finished = false;
+    QStringList lines;
+    QString statusLine;
+    while (!finished) {
+        if (Q_UNLIKELY(!waitForReadyRead(msecs))) {
+            return {ImapResponse::Undefined, ImapError{ImapError::ConnectionTimeout, m_c->translate("SkaffariIMAP", "Connection to the IMAP server timed out.")}};
+        }
+        while (canReadLine()) {
+            const QByteArray rawLine = readLine();
+            const QString line = QString::fromLatin1(rawLine.trimmed());
+            if (!tag.isEmpty() && line.startsWith(tag)) {
+                statusLine = line.mid(tag.size() + 1);
+                finished = true;
+                break;
+            } else {
+                lines.push_back(line.mid(2));
+            }
+        }
+    }
+
+    if (SK_IMAP().isDebugEnabled()) {
+        int i = 1;
+        for (const QString &l : std::as_const(lines)) {
+            qCDebug(SK_IMAP).nospace() << "Response data (" << i << "): " << l.toLatin1();
+            i++;
+        }
+    }
+
+    qCDebug(SK_IMAP) << "Response status:" << statusLine;
 
     if (statusLine.startsWith(QLatin1String("OK"), Qt::CaseInsensitive)) {
         return {ImapResponse::OK, statusLine.mid(3), lines};
