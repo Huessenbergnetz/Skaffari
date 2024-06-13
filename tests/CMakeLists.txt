@@ -48,6 +48,8 @@ function(skaffari_test _testname _link1 _link2 _link3)
     target_compile_features(${_testname}_exec PRIVATE cxx_nullptr)
     target_link_libraries(${_testname}_exec Qt5::Test ${_link1} ${_link2} ${_link3} skaffari)
 #    target_include_directories(${_testname}_exec SYSTEM PRIVATE ${Cutelyst2Qt5_INCLUDE_DIR})
+# message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
+    target_include_directories(${_testname}_exec PRIVATE ${CMAKE_SOURCE_DIR}/src)
 endfunction(skaffari_test _testname _link1 _link2 _link3)
 
 function(skaffari_app_test _testname _link1 _link2 _link3)
@@ -75,6 +77,7 @@ skaffari_test(testsimpledomain "" "" "")
 skaffari_test(testautoconfigserver "" "" "")
 skaffari_test(testcuteleeplugin Cutelee::Templates "" "")
 skaffari_test(testimapparser "" "" "")
+skaffari_test(testimap Qt5::Network "" "")
 
 # ConfigChecker test
 add_executable(testconfigchecker_exec

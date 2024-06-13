@@ -32,6 +32,18 @@ public:
         Shared = 2
     };
 
+    enum class SpecialUse : int {
+        None = 0,
+        All = 1,
+        Archive = 2,
+        Drafts = 3,
+        Flagged = 4,
+        Junk = 5,
+        Sent = 6,
+        Trash = 7,
+        Other = 255
+    };
+
     explicit Imap(Cutelyst::Context *, QObject *parent = nullptr);
 
     ~Imap() override = default;
@@ -44,6 +56,10 @@ public:
 
     void logout();
 
+    [[nodiscard]] bool createFolder(const QString &user, const QString &folder, SpecialUse specialUse = SpecialUse::None);
+
+    [[nodiscard]] bool createMailbox(const QString &user);
+
     [[nodiscard]] QStringList getCapabilities(bool reload = false);
 
     [[nodiscard]] QString getDelimeter(NamespaceType nsType);
@@ -55,6 +71,10 @@ public:
     [[nodiscard]] bool hasCapability(const QString &capability, bool reload = false);
 
     [[nodiscard]] bool setQuota(const QString &user, quota_size_t quota);
+
+    static QString toUtf7Imap(const QString &str);
+
+    static QString fromUtf7Imap(const QString &str);
 
 private:
     QString getTag();
