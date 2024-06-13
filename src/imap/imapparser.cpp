@@ -134,6 +134,9 @@ QString ImapParser::parseQuotedString()
         bool reachedInputEnd = true;
         int i = m_position;
         for (;;) {
+            if (i >= m_size) {
+                break;
+            }
             const QChar ch = m_line.at(i);
             if (ch == QLatin1Char(' ') ||
                 ch == QLatin1Char('(') ||
