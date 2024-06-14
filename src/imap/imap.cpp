@@ -20,6 +20,11 @@
 
 Q_LOGGING_CATEGORY(SK_IMAP, "skaffari.imap")
 
+consteval std::size_t _strlen(const char *s, std::size_t padding = 0)
+{
+    return std::char_traits<char>::length(s) + padding;
+}
+
 Imap::Imap(Cutelyst::Context *c, QObject *parent)
     : QSslSocket{parent}
     , m_c{c}
@@ -447,15 +452,8 @@ QString Imap::getDelimeter(NamespaceType nsType)
         return defaultDelimeter;
     }
 
-    QString line = r.lines().constFirst();
-    line.remove(QLatin1String("LIST "));
-    if (Q_UNLIKELY(line.isEmpty())) {
-        qCWarning(SK_IMAP) << "Failed to get delimeter character, using config default:" << defaultDelimeter;
-        return defaultDelimeter;
-    }
-
     ImapParser parser;
-    const QVariantList parsed = parser.parse(line);
+    const QVariantList parsed = parser.parse(r.lines().constFirst().mid(_strlen("LIST ")));
     if (parsed.size() != 3) {
         qCWarning(SK_IMAP) << "Failed to get delimeter character, using config default:" << defaultDelimeter;
         return defaultDelimeter;
@@ -509,7 +507,7 @@ QStringList Imap::getMailboxes()
     QStringList lst;
     for (const QString &l : lines) {
         // starts after "LIST "
-        const QVariantList parsed = parser.parse(l.mid(5));
+        const QVariantList parsed = parser.parse(l.mid(_strlen("LIST ")));
         if (parsed.size() != 3) {
             return {};
         }
@@ -1098,7 +1096,7 @@ void Imap::sendId()
     }
 
     ImapParser parser;
-    const QVariantList responseList = parser.parse(r.lines().constFirst().mid(std::char_traits<char>::length("ID ")));
+    const QVariantList responseList = parser.parse(r.lines().constFirst().mid(_strlen("ID ")));
     if (responseList.empty()) {
         qCWarning(SK_IMAP) << "Failed to parse ID response";
         return;
@@ -1165,7 +1163,7 @@ quota_pair Imap::getQuota(const QString &user)
 
     ImapParser parser;
     // start after "QUOTA "
-    const QVariantList parsed = parser.parse(r.lines().constFirst().mid(6));
+    const QVariantList parsed = parser.parse(r.lines().constFirst().mid(_strlen("QUOTA ")));
     if (Q_UNLIKELY(parsed.size() < 2)) {
         qCCritical(SK_IMAP) << "Failed to request storage quota for user" << user << ": invalid response";
         m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request storage quota for user %1: invalid response").arg(user)};
@@ -1237,7 +1235,7 @@ QList<std::pair<int,QString>> Imap::getUserFolders(const QString &user)
     ImapParser parser;
     for (const QString &l : lines) {
         // start after "LIST "
-        const QVariantList parsed = parser.parse(l.mid(5));
+        const QVariantList parsed = parser.parse(l.mid(_strlen("LIST ")));
         if (parsed.size() != 3) {
             m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to get folders for user %1: invalid response").arg(user)};
             return {};
@@ -1280,7 +1278,7 @@ void Imap::getNamespaces()
 
     ImapParser parser;
     // start after "NAMESPACE "
-    const QVariantList nsList = parser.parse(nsLine.mid(10));
+    const QVariantList nsList = parser.parse(nsLine.mid(_strlen("NAMESPACE ")));
     if (nsList.size() != 3) {
         qCWarning(SK_IMAP) << "Failed to request namespaces from the IMAP server: invalid response";
         return;
