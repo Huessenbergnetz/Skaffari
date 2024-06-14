@@ -905,17 +905,6 @@ bool Account::remove(Cutelyst::Context *c, SkaffariError &e) const
         return ret;
     }
 
-    if (Q_UNLIKELY(!imap.setAcl(d->username, SkaffariConfig::imapUser()))) {
-        // if Skaffari is responsible for mailbox creation, direct or indirect,
-        // remove will fail if we can not delete the mailbox on the IMAP server
-        if (SkaffariConfig::imapCreatemailbox() > DoNotCreate) {
-            e.setImapError(imap.lastError(), c->translate("Account", "Setting the access rights for the IMAP administrator to delete the mailbox %1 failed.").arg(d->username));
-            qCCritical(SK_ACCOUNT, "%s failed to set the access rights for the IMAP administrator to delete the mailbox of account %s: %s", uniStr, aniStr, qUtf8Printable(imap.lastError().text()));
-            imap.logout();
-            return ret;
-        }
-    }
-
     if (!imap.deleteMailbox(d->username) && (SkaffariConfig::imapCreatemailbox() != DoNotCreate)) {
         // if Skaffari is responsible for mailbox creation, direct or indirect,
         // remove will fail if we can not delete the mailbox on the IMAP server

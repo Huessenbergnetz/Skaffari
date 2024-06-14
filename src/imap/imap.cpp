@@ -229,9 +229,11 @@ bool Imap::createFolder(const QString &user, const QString &folder, SpecialUse s
 
     m_lastError.clear();
 
+    qCDebug(SK_IMAP) << "Start creating folder" << folder << "of type" << specialUse << "for user" << user;
+
     const QString _folder = Imap::toUtf7Imap(folder);
 
-    if (Q_UNLIKELY(!_folder.isEmpty())) {
+    if (Q_UNLIKELY(_folder.isEmpty())) {
         m_lastError = ImapError{ImapError::InternalError, m_c->translate("SkaffariIMAP", "Failed to convert folder name into UTF-7-IMAP.")};
         return false;
     }
@@ -323,6 +325,8 @@ bool Imap::createMailbox(const QString &user)
 
 bool Imap::deleteMailbox(const QString &user)
 {
+    qCDebug(SK_IMAP) << "Start to delete mailbox of user" << user;
+
     m_lastError.clear();
 
     QList<std::pair<int, QString>> folders = getUserFolders(user);
@@ -331,25 +335,26 @@ bool Imap::deleteMailbox(const QString &user)
         return false;
     }
 
-    const QString userRoot = getUserMailboxName({user}, false);
     const QString delimeter = getDelimeter(NamespaceType::Others);
+    const QString userRoot = getUserMailboxName({user}, false);
 
     if (!folders.empty()) {
         std::sort(folders.begin(), folders.end(), [](const std::pair<int, QString> &a, const std::pair<int, QString> &b) {
             return a.first > b.first;
         });
 
-        qCDebug(SK_IMAP) << "Folder to delete:" << folders;
+        qCDebug(SK_IMAP) << "Folders to delete:" << folders;
 
         for (const auto &f : std::as_const(folders)) {
-            const QString mb = userRoot + delimeter + f.second;
+            const QString mb = user + delimeter + f.second;
 
             if (!setAcl(mb, SkaffariConfig::imapUser())) {
                 return false;
             }
 
+            const QString utf7fName = Imap::toUtf7Imap(f.second);
             const QString tag = getTag();
-            const QString cmd = QLatin1String("DELETE \"") + mb + QLatin1Char('"');
+            const QString cmd = QLatin1String("DELETE \"") + userRoot + delimeter + utf7fName + QLatin1Char('"');
             if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
                 return false;
             }
@@ -360,6 +365,10 @@ bool Imap::deleteMailbox(const QString &user)
                 return false;
             }
         }
+    }
+
+    if (!setAcl(user, SkaffariConfig::imapUser())) {
+        return false;
     }
 
     const QString tag = getTag();
@@ -588,7 +597,7 @@ bool Imap::setQuota(const QString &user, quota_size_t quota)
     m_lastError.clear();
 
     const QString tag = getTag();
-    const QString cmd = QLatin1String("SETQUOTA ") + getUserMailboxName({user}) + QLatin1String("(STORAGE ") + QString::number(quota) + QLatin1Char(')');
+    const QString cmd = QLatin1String("SETQUOTA ") + getUserMailboxName({user}) + QLatin1String(" (STORAGE ") + QString::number(quota) + QLatin1Char(')');
 
     if (Q_UNLIKELY(!sendCommand(tag, cmd))) {
         return false;
@@ -662,14 +671,14 @@ bool Imap::setSpecialUse(const QString &folder, Imap::SpecialUse specialUse)
 
 bool Imap::subscribeFolder(const QString &folder)
 {
-    Q_ASSERT_X(!folder.isEmpty(), "set special use", "empty folder name");
+    Q_ASSERT_X(!folder.isEmpty(), "subscribe folder", "empty folder name");
 
     m_lastError.clear();
 
     QString _folder;
     if (!folder.isEmpty()) {
         _folder = Imap::toUtf7Imap(folder);
-        if (Q_UNLIKELY(!_folder.isEmpty())) {
+        if (Q_UNLIKELY(_folder.isEmpty())) {
             m_lastError = ImapError{ImapError::InternalError, m_c->translate("SkaffariIMAP", "Failed to convert folder name into UTF-7-IMAP.")};
             return false;
         }
@@ -916,7 +925,7 @@ ImapResponse Imap::checkResponse2(const QString &tag, int msecs)
     if (SK_IMAP().isDebugEnabled()) {
         int i = 1;
         for (const QString &l : std::as_const(lines)) {
-            qCDebug(SK_IMAP).nospace() << "Response data (" << i << "): " << l.toLatin1();
+            qCDebug(SK_IMAP).nospace() << "Response data (" << i << "): " << l;
             i++;
         }
     }
@@ -1226,10 +1235,6 @@ QList<std::pair<int,QString>> Imap::getUserFolders(const QString &user)
     }
 
     const QStringList lines = r.lines();
-    if (lines.empty()) {
-        m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to get folders for user %1: empty response").arg(user)};
-        return {};
-    }
 
     QList<std::pair<int,QString>> lst;
     ImapParser parser;
@@ -1240,8 +1245,7 @@ QList<std::pair<int,QString>> Imap::getUserFolders(const QString &user)
             m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to get folders for user %1: invalid response").arg(user)};
             return {};
         }
-        QString folder = parsed.at(2).toString();
-        folder.remove(umn);
+        const QString folder = Imap::fromUtf7Imap(parsed.at(2).toString().mid(umn.size()));
         lst << std::make_pair(folder.count(delimeter), folder);
     }
 
