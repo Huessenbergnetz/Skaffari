@@ -106,7 +106,7 @@ bool Imap::login(const QString &user, const QString &password)
         }
     }
 
-    QStringList caps = getCapabilities(true);
+    const QStringList caps = getCapabilities(true);
 
     if (caps.contains(QStringLiteral("AUTH=CRAM-MD5"))) {
         qCDebug(SK_IMAP) << "Using AUTH=CRAM-MD5";
@@ -133,11 +133,7 @@ bool Imap::login(const QString &user, const QString &password)
             return false;
         }
 
-        if (Q_UNLIKELY(!waitForResponse(true))) {
-            return false;
-        }
-
-        r = checkResponse(readAll(), tag);
+        r = checkResponse2(tag);
         if (!r) {
             disconnectOnError(r.error());
             return false;
@@ -185,12 +181,7 @@ void Imap::logout()
         return;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        m_lastError.clear();
-        return;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
 
     if (!r) {
         disconnectOnError();
@@ -252,11 +243,7 @@ bool Imap::createFolder(const QString &user, const QString &folder, SpecialUse s
         return false;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
 
     if (!r) {
         m_lastError = r.error();
@@ -299,11 +286,7 @@ bool Imap::createFolder(const QString &folder, Imap::SpecialUse specialUse)
         return false;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
 
     if (!r) {
         m_lastError = r.error();
@@ -324,11 +307,7 @@ bool Imap::createMailbox(const QString &user)
         return false;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
     if (!r) {
         m_lastError = r.error();
         return false;
@@ -370,11 +349,7 @@ bool Imap::deleteMailbox(const QString &user)
                 return false;
             }
 
-            if (Q_UNLIKELY(!waitForResponse(true))) {
-                return false;
-            }
-
-            const ImapResponse r = checkResponse(readAll(), tag);
+            const ImapResponse r = checkResponse2(tag);
             if (!r) {
                 m_lastError = r.error();
                 return false;
@@ -389,11 +364,7 @@ bool Imap::deleteMailbox(const QString &user)
         return false;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
     if (!r) {
         m_lastError = r.error();
         return false;
@@ -413,12 +384,7 @@ QStringList Imap::getCapabilities(bool reload)
             return m_capabilites;
         }
 
-        if (Q_UNLIKELY(!waitForResponse())) {
-            m_lastError.clear();
-            return m_capabilites;
-        }
-
-        ImapResponse r = checkResponse(readAll(), tag);
+        const ImapResponse r = checkResponse2(tag);
         if (!r) {
             return m_capabilites;
         }
@@ -469,13 +435,7 @@ QString Imap::getDelimeter(NamespaceType nsType)
         return defaultDelimeter;
     }
 
-    if (Q_UNLIKELY(!waitForResponse())) {
-        m_lastError.clear();
-        qCWarning(SK_IMAP) << "Failed to get delimeter character, using config default:" << defaultDelimeter;
-        return defaultDelimeter;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
 
     if (!r) {
         qCWarning(SK_IMAP) << "Failed to get delimeter character, using config default:" << defaultDelimeter;
@@ -548,9 +508,8 @@ QStringList Imap::getMailboxes()
     ImapParser parser;
     QStringList lst;
     for (const QString &l : lines) {
-        QString _l = l;
-        _l.remove(QLatin1String("LIST "));
-        const QVariantList parsed = parser.parse(_l);
+        // starts after "LIST "
+        const QVariantList parsed = parser.parse(l.mid(5));
         if (parsed.size() != 3) {
             return {};
         }
@@ -589,11 +548,7 @@ bool Imap::setAcl(const QString &mailbox, const QString &user, const QString &ac
         return false;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
 
     if (!r) {
         m_lastError = r.error();
@@ -620,11 +575,7 @@ bool Imap::deleteAcl(const QString &mailbox, const QString &user)
         return false;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
 
     if (!r) {
         m_lastError = r.error();
@@ -645,11 +596,7 @@ bool Imap::setQuota(const QString &user, quota_size_t quota)
         return false;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
 
     if (!r) {
         m_lastError = r.error();
@@ -705,11 +652,7 @@ bool Imap::setSpecialUse(const QString &folder, Imap::SpecialUse specialUse)
         return false;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
 
     if (!r) {
         m_lastError = r.error();
@@ -747,11 +690,7 @@ bool Imap::subscribeFolder(const QString &folder)
         return false;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
 
     if (!r) {
         m_lastError = r.error();
@@ -895,64 +834,64 @@ bool Imap::waitForResponse(bool disCon, const QString &errorString, int msecs)
     return false;
 }
 
-ImapResponse Imap::checkResponse(const QByteArray &data, const QString &tag)
-{
-    if (Q_UNLIKELY(data.isEmpty())) {
-        qCWarning(SK_IMAP) << "The IMAP response is empty.";
-        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is empty.")}};
-    }
+// ImapResponse Imap::checkResponse(const QByteArray &data, const QString &tag)
+// {
+//     if (Q_UNLIKELY(data.isEmpty())) {
+//         qCWarning(SK_IMAP) << "The IMAP response is empty.";
+//         return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is empty.")}};
+//     }
 
-    const QString dataStr = QString::fromLatin1(data);
-    const QStringList dataLines = dataStr.split(QStringLiteral("\r\n"), Qt::SkipEmptyParts);
-    if (Q_UNLIKELY(dataLines.empty())) {
-        qCWarning(SK_IMAP) << "The IMAP response is empty.";
-        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is empty.")}};
-    }
+//     const QString dataStr = QString::fromLatin1(data);
+//     const QStringList dataLines = dataStr.split(QStringLiteral("\r\n"), Qt::SkipEmptyParts);
+//     if (Q_UNLIKELY(dataLines.empty())) {
+//         qCWarning(SK_IMAP) << "The IMAP response is empty.";
+//         return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is empty.")}};
+//     }
 
-    QString statusLine;
-    QStringList lines;
+//     QString statusLine;
+//     QStringList lines;
 
-    for (const auto &dataLine : dataLines) {
-        const QString line = dataLine.trimmed();
-        if (!tag.isEmpty() && line.startsWith(tag)) {
-            statusLine = line.mid(tag.size() + 1);
-        } else {
-            lines.push_back(line.mid(2));
-        }
-    }
+//     for (const auto &dataLine : dataLines) {
+//         const QString line = dataLine.trimmed();
+//         if (!tag.isEmpty() && line.startsWith(tag)) {
+//             statusLine = line.mid(tag.size() + 1);
+//         } else {
+//             lines.push_back(line.mid(2));
+//         }
+//     }
 
-    if (SK_IMAP().isDebugEnabled()) {
-        int i = 1;
-        for (const QString &l : std::as_const(lines)) {
-            qCDebug(SK_IMAP).nospace() << "Response data (" << i << "): " << l.toLatin1();
-            i++;
-        }
-    }
+//     if (SK_IMAP().isDebugEnabled()) {
+//         int i = 1;
+//         for (const QString &l : std::as_const(lines)) {
+//             qCDebug(SK_IMAP).nospace() << "Response data (" << i << "): " << l.toLatin1();
+//             i++;
+//         }
+//     }
 
-    if (statusLine.isEmpty() && !lines.empty()) {
-        statusLine = lines.takeLast();
-    }
+//     if (statusLine.isEmpty() && !lines.empty()) {
+//         statusLine = lines.takeLast();
+//     }
 
-    qCDebug(SK_IMAP) << "Response status:" << statusLine;
+//     qCDebug(SK_IMAP) << "Response status:" << statusLine;
 
-    if (Q_UNLIKELY(statusLine.isEmpty())) {
-        qCWarning(SK_IMAP) << "The IMAP response is undefined.";
-        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
-    }
+//     if (Q_UNLIKELY(statusLine.isEmpty())) {
+//         qCWarning(SK_IMAP) << "The IMAP response is undefined.";
+//         return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
+//     }
 
-    if (statusLine.startsWith(QLatin1String("OK"), Qt::CaseInsensitive)) {
-        return {ImapResponse::OK, statusLine.mid(3), lines};
-    } else if (statusLine.startsWith(QLatin1String("BAD"), Qt::CaseInsensitive)) {
-        qCCritical(SK_IMAP) << "We received a BAD response from the IMAP server:" << statusLine.mid(4);
-        return {ImapResponse::BAD, ImapError{ImapError::BadResponse, m_c->translate("SkaffariIMAP", "We received a BAD response from the IMAP server: %1").arg(statusLine.mid(4))}};
-    } else if (statusLine.startsWith(QLatin1String("NO"), Qt::CaseInsensitive)) {
-        qCCritical(SK_IMAP) << "We received a NO response from the IMAP server:" << statusLine.mid(3);
-        return {ImapResponse::NO, ImapError{ImapError::NoResponse, m_c->translate("SkaffariIMAP", "We received a NO response from the IMAP server: %1").arg(statusLine.mid(3))}};
-    } else {
-        qCCritical(SK_IMAP) << "The IMAP response is undefined";
-        return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
-    }
-}
+//     if (statusLine.startsWith(QLatin1String("OK"), Qt::CaseInsensitive)) {
+//         return {ImapResponse::OK, statusLine.mid(3), lines};
+//     } else if (statusLine.startsWith(QLatin1String("BAD"), Qt::CaseInsensitive)) {
+//         qCCritical(SK_IMAP) << "We received a BAD response from the IMAP server:" << statusLine.mid(4);
+//         return {ImapResponse::BAD, ImapError{ImapError::BadResponse, m_c->translate("SkaffariIMAP", "We received a BAD response from the IMAP server: %1").arg(statusLine.mid(4))}};
+//     } else if (statusLine.startsWith(QLatin1String("NO"), Qt::CaseInsensitive)) {
+//         qCCritical(SK_IMAP) << "We received a NO response from the IMAP server:" << statusLine.mid(3);
+//         return {ImapResponse::NO, ImapError{ImapError::NoResponse, m_c->translate("SkaffariIMAP", "We received a NO response from the IMAP server: %1").arg(statusLine.mid(3))}};
+//     } else {
+//         qCCritical(SK_IMAP) << "The IMAP response is undefined";
+//         return {ImapResponse::Undefined, ImapError{ImapError::UndefinedResponse, m_c->translate("SkaffariIMAP", "The IMAP response is undefined.")}};
+//     }
+// }
 
 ImapResponse Imap::checkResponse2(const QString &tag, int msecs)
 {
@@ -1037,11 +976,7 @@ bool Imap::authLogin(const QString &user, const QString &password)
         return false;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
     if (!r) {
         disconnectOnError(r.error());
         return false;
@@ -1076,11 +1011,7 @@ bool Imap::authPlain(const QString &user, const QString &password)
         return false;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
     if (!r) {
         disconnectOnError(r.error());
         return false;
@@ -1126,11 +1057,7 @@ bool Imap::authCramMd5(const QString &user, const QString &password)
         return false;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return false;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
     if (!r) {
         disconnectOnError(r.error());
         return false;
@@ -1164,19 +1091,14 @@ void Imap::sendId()
         return;
     }
 
-    if (Q_UNLIKELY(!waitForResponse())) {
-        m_lastError.clear();
-        return;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
 
     if (r.lines().empty()) {
         return;
     }
 
     ImapParser parser;
-    const QVariantList responseList = parser.parse(r.lines().constFirst());
+    const QVariantList responseList = parser.parse(r.lines().constFirst().mid(std::char_traits<char>::length("ID ")));
     if (responseList.empty()) {
         qCWarning(SK_IMAP) << "Failed to parse ID response";
         return;
@@ -1229,11 +1151,7 @@ quota_pair Imap::getQuota(const QString &user)
         return quota;
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return quota;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
     if (!r) {
         disconnectOnError(r.error());
         return quota;
@@ -1245,11 +1163,9 @@ quota_pair Imap::getQuota(const QString &user)
         return quota;
     }
 
-    QString line = r.lines().constFirst();
-    line.remove(QLatin1String("QUOTA "));
-
     ImapParser parser;
-    const QVariantList parsed = parser.parse(line);
+    // start after "QUOTA "
+    const QVariantList parsed = parser.parse(r.lines().constFirst().mid(6));
     if (Q_UNLIKELY(parsed.size() < 2)) {
         qCCritical(SK_IMAP) << "Failed to request storage quota for user" << user << ": invalid response";
         m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to request storage quota for user %1: invalid response").arg(user)};
@@ -1305,11 +1221,7 @@ QList<std::pair<int,QString>> Imap::getUserFolders(const QString &user)
         return {};
     }
 
-    if (Q_UNLIKELY(!waitForResponse(true))) {
-        return {};
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
     if (!r) {
         m_lastError = r.error();
         return {};
@@ -1324,9 +1236,8 @@ QList<std::pair<int,QString>> Imap::getUserFolders(const QString &user)
     QList<std::pair<int,QString>> lst;
     ImapParser parser;
     for (const QString &l : lines) {
-        QString _l = l;
-        _l.remove(QLatin1String("LIST "));
-        const QVariantList parsed = parser.parse(_l);
+        // start after "LIST "
+        const QVariantList parsed = parser.parse(l.mid(5));
         if (parsed.size() != 3) {
             m_lastError = ImapError{ImapError::ResponseError, m_c->translate("SkaffariIMAP", "Failed to get folders for user %1: invalid response").arg(user)};
             return {};
@@ -1350,12 +1261,7 @@ void Imap::getNamespaces()
         return;
     }
 
-    if (Q_UNLIKELY(!waitForResponse())) {
-        m_lastError.clear();
-        return;
-    }
-
-    const ImapResponse r = checkResponse(readAll(), tag);
+    const ImapResponse r = checkResponse2(tag);
     if (!r) {
         qCWarning(SK_IMAP) << "Failed to request namespaces from the IMAP server";
         return;
@@ -1366,16 +1272,15 @@ void Imap::getNamespaces()
         return;
     }
 
-    QString nsLine = r.lines().constFirst();
+    const QString nsLine = r.lines().constFirst();
     if (Q_UNLIKELY(!nsLine.startsWith(QLatin1String("NAMESPACE"), Qt::CaseInsensitive))) {
         qCWarning(SK_IMAP) << "Failed to request namespaces from the IMAP server: invalid response";
         return;
     }
 
-    nsLine.remove(QLatin1String("NAMESPACE "), Qt::CaseInsensitive);
-
     ImapParser parser;
-    const QVariantList nsList = parser.parse(nsLine);
+    // start after "NAMESPACE "
+    const QVariantList nsList = parser.parse(nsLine.mid(10));
     if (nsList.size() != 3) {
         qCWarning(SK_IMAP) << "Failed to request namespaces from the IMAP server: invalid response";
         return;

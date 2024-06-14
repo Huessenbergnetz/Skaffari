@@ -116,7 +116,7 @@ private:
 
     bool waitForResponse(bool disCon = false, const QString &errorString = {}, int msecs = 30'000);
 
-    ImapResponse checkResponse(const QByteArray &data, const QString &tag = {});
+    // ImapResponse checkResponse(const QByteArray &data, const QString &tag = {});
 
     ImapResponse checkResponse2(const QString &tag, int msecs = 30'000);
 
