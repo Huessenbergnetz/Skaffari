@@ -5,7 +5,6 @@
 
 #include "imap.h"
 #include "imapparser.h"
-#include "skaffariimap.h"
 #include "../utils/skaffariconfig.h"
 
 #include <Cutelyst/Context>
