@@ -44,9 +44,9 @@ compasset() {
     FUG=$(stat --printf="%U:%G" ${FILE})
     FM=$(stat --printf="%a" ${FILE})
     echo "Compressing: ${FILE}"
-    zopfli -i30 $FILE
-    chown ${FUG} ${FILE}.gz
-    chmod ${FM} ${FILE}.gz
+#    zopfli -i30 $FILE
+#    chown ${FUG} ${FILE}.gz
+#    chmod ${FM} ${FILE}.gz
     brotli -f -Z -k $FILE
     chown ${FUG} ${FILE}.br
     chmod ${FM} ${FILE}.br
@@ -97,15 +97,15 @@ done
 
 pushd /tmp
 rm -f "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.xz"
-rm -f "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz"
+#rm -f "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz"
 tar -cJf "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.xz" ${PRJNAME}-${VERSION}
-tar -czf "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz" ${PRJNAME}-${VERSION}
+#tar -czf "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz" ${PRJNAME}-${VERSION}
 rm -rf ${PRJNAME}-${VERSION}
 popd
 
 if [ $SIGNTARBALL -gt 0 ]
 then
     gpg --armor --detach-sign --yes --default-key 6607CA3F41B25F45 --output "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.xz.sig" "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.xz"
-    gpg --armor --detach-sign --yes --default-key 6607CA3F41B25F45 --output "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz.sig" "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz"
+#    gpg --armor --detach-sign --yes --default-key 6607CA3F41B25F45 --output "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz.sig" "${OUTPUTDIR}/${PRJNAME}-${VERSION}.tar.gz"
 fi
 exit 0
