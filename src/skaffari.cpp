@@ -1,6 +1,6 @@
 /*
  * Skaffari - a mail account administration web interface based on Cutelyst
- * Copyright (C) 2017-2018 Matthias Fehring <mf@huessenbergnetz.de>
+ * Copyright (C) 2017-2018, 2026 Matthias Fehring <mf@huessenbergnetz.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -111,9 +111,9 @@ void journaldMessageOutput(QtMsgType type, const QMessageLogContext &context, co
     }
 
 #ifdef QT_DEBUG
-    sd_journal_send("PRIORITY=%i", prio, "SYSLOG_FACILITY=%hhu", 1, "SYSLOG_IDENTIFIER=%s", context.category, "SYSLOG_PID=%lli", QCoreApplication::applicationPid(), "MESSAGE=%s", qFormatLogMessage(type, context, msg).toUtf8().constData(), "CODE_FILE=%s", context.file, "CODE_LINE=%i", context.line, "CODE_FUNC=%s", context.function, NULL);
+    sd_journal_send("PRIORITY=%i", prio, "SYSLOG_FACILITY=%hhu", 1, "SYSLOG_IDENTIFIER=%s", "skaffari", "SYSLOG_PID=%lli", QCoreApplication::applicationPid(), "MESSAGE=%s", qFormatLogMessage(type, context, msg).toUtf8().constData(), "CODE_FILE=%s", context.file, "CODE_LINE=%i", context.line, "CODE_FUNC=%s", context.function, NULL);
 #else
-    sd_journal_send("PRIORITY=%i", prio, "SYSLOG_FACILITY=%hhu", 1, "SYSLOG_IDENTIFIER=%s", context.category, "SYSLOG_PID=%lli", QCoreApplication::applicationPid(), "MESSAGE=%s", qFormatLogMessage(type, context, msg).toUtf8().constData(), NULL);
+    sd_journal_send("PRIORITY=%i", prio, "SYSLOG_FACILITY=%hhu", 1, "SYSLOG_IDENTIFIER=%s", "skaffari", "SYSLOG_PID=%lli", QCoreApplication::applicationPid(), "MESSAGE=%s", qFormatLogMessage(type, context, msg).toUtf8().constData(), NULL);
 #endif
 
     if (prio == 0) {
@@ -143,7 +143,7 @@ void syslogMessageOutput(QtMsgType type, const QMessageLogContext &context, cons
         break;
     }
 
-    openlog(context.category, LOG_PID, LOG_USER);
+    openlog("skaffari", LOG_PID, LOG_USER);
     syslog(prio, "%s", qFormatLogMessage(type, context, msg).toUtf8().constData());
     closelog();
 
@@ -171,19 +171,19 @@ bool Skaffari::init()
     if (!messageHandlerInstalled) {
         const QString backend = generalConfig.value(QStringLiteral("logging_backend")).toString();
         if (backend.compare(QLatin1String("syslog"), Qt::CaseInsensitive) == 0) {
-            qSetMessagePattern(QStringLiteral("%{message}"));
+            qSetMessagePattern(QStringLiteral("%{if-category}%{category}: %{endif}%{message}"));
             qInstallMessageHandler(syslogMessageOutput);
             qCInfo(SK_CORE, "Logging backend: syslog");
         }
 #ifdef WITH_SYSTEMD
         else if (backend.compare(QLatin1String("journald"), Qt::CaseInsensitive) == 0) {
-            qSetMessagePattern(QStringLiteral("%{message}"));
+            qSetMessagePattern(QStringLiteral("%{if-category}%{category}: %{endif}%{message}"));
             qInstallMessageHandler(journaldMessageOutput);
             qCInfo(SK_CORE, "Logging backend: journald");
         }
 #endif
         else {
-            qCInfo(SK_CORE, "Logging backend: stdout");
+            qCInfo(SK_CORE, "Logging backend: Qt default");
         }
         messageHandlerInstalled = true;
     }
