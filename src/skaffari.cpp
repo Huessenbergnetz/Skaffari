@@ -46,6 +46,7 @@
 #include <QJsonObject>
 #include <QLoggingCategory>
 #include <QMutexLocker>
+#include <QThread>
 
 extern "C"
 {
@@ -110,11 +111,46 @@ void journaldMessageOutput(QtMsgType type, const QMessageLogContext &context, co
         break;
     }
 
-#ifdef QT_DEBUG
-    sd_journal_send("PRIORITY=%i", prio, "SYSLOG_FACILITY=%hhu", 1, "SYSLOG_IDENTIFIER=%s", "skaffari", "SYSLOG_PID=%lli", QCoreApplication::applicationPid(), "MESSAGE=%s", qFormatLogMessage(type, context, msg).toUtf8().constData(), "CODE_FILE=%s", context.file, "CODE_LINE=%i", context.line, "CODE_FUNC=%s", context.function, NULL);
-#else
-    sd_journal_send("PRIORITY=%i", prio, "SYSLOG_FACILITY=%hhu", 1, "SYSLOG_IDENTIFIER=%s", "skaffari", "SYSLOG_PID=%lli", QCoreApplication::applicationPid(), "MESSAGE=%s", qFormatLogMessage(type, context, msg).toUtf8().constData(), NULL);
-#endif
+    const QByteArray messageField           = QByteArrayLiteral("MESSAGE=") + qFormatLogMessage(type, context, msg).toUtf8();
+    const QByteArray priorityField          = QByteArrayLiteral("PRIORITY=") + QByteArray::number(prio);
+    const QByteArray tidField               = QByteArrayLiteral("TID=") + QByteArray::number(qintptr(QThread::currentThreadId()));
+    const QByteArray syslogFacilityField    = QByteArrayLiteral("SYSLOG_FACILITY=1");
+    const QByteArray syslogIdentifierField  = QByteArrayLiteral("SYSLOG_IDENTIFIER=skaffari");
+    const QByteArray syslogPidField         = QByteArrayLiteral("SYSLOG_PID=") + QByteArray::number(QCoreApplication::applicationPid());
+    const QByteArray fileField              = context.file ? QByteArrayLiteral("CODE_FILE=") + context.file : QByteArray();
+    const QByteArray funcField              = context.function ? QByteArrayLiteral("CODE_FUNC") + context.function : QByteArray();
+    const QByteArray lineField              = context.line ? QByteArrayLiteral("CODE_LINE") + QByteArray::number(context.line) : QByteArray();
+    const QByteArray categoryField          = context.category ? QByteArrayLiteral("QT_CATEGORY=") + context.category : QByteArray();
+
+    auto toIovec = [](const QByteArray &ba) {
+        return iovec{const_cast<char*>(ba.data()), size_t(ba.size())};
+    };
+
+    struct iovec fields[10] = {
+        toIovec(messageField),
+        toIovec(priorityField),
+        toIovec(tidField),
+        toIovec(syslogFacilityField),
+        toIovec(syslogIdentifierField),
+        toIovec(syslogPidField)
+    };
+
+    int nFields = 6;
+
+    if (context.file) {
+        fields[nFields++] = toIovec(fileField);
+    }
+    if (context.function) {
+        fields[nFields++] = toIovec(funcField);
+    }
+    if (context.line) {
+        fields[nFields++] = toIovec(lineField);
+    }
+    if (context.category) {
+        fields[nFields++] = toIovec(categoryField);
+    }
+
+    sd_journal_sendv(fields, nFields);
 
     if (prio == 0) {
         abort();
